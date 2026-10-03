@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 41e098192092e92468b53aa434b68118, type: 3}
+  m_Name: UpgradeCatalog
+  m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.UpgradeCatalog
+  weapons:
+  - {fileID: 11400000, guid: e2bc1d3f94e429040a6da63b55695aea, type: 2}
+  - {fileID: 11400000, guid: e5ae1e5de97212740bf42a7c18e1bf99, type: 2}
+  - {fileID: 11400000, guid: 7150af81c0f59284983deed9b44211c4, type: 2}
+  passives:
+  - {fileID: 11400000, guid: b6d6f1921eb5b3146b9fc4dcf3a074db, type: 2}
+  - {fileID: 11400000, guid: d277ffd8033cc3f4a96334d797d92381, type: 2}
+  - {fileID: 11400000, guid: 0be9714902ac6fb4190327dda9977b62, type: 2}
+  - {fileID: 11400000, guid: ff894f40196a218488fda3f75b978048, type: 2}
+  - {fileID: 11400000, guid: a1c285421d49c4f4eaa5dc03df193da3, type: 2}
+  - {fileID: 11400000, guid: 216e31a4dd855c6499ec7e8075124ea1, type: 2}
+  - {fileID: 11400000, guid: fc7e69ec31716ad429251bd5eb0ed7ba, type: 2}

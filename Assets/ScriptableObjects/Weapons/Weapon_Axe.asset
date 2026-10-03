@@ -13,6 +13,8 @@ MonoBehaviour:
   m_Name: Weapon_Axe
   m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.WeaponData
   displayName: "\uD68C\uC804 \uB3C4\uB07C"
+  description: "\uD50C\uB808\uC774\uC5B4 \uC8FC\uC704\uB97C \uB3C4\uB294 \uB3C4\uB07C\uAC00
+    \uC801\uC744 \uBCA0\uC5B4\uB0C5\uB2C8\uB2E4."
   type: 2
   sprite: {fileID: 21300000, guid: 69c2f8666eeb71b4eae3bebbe6df5a9b, type: 3}
   tint: {r: 1, g: 1, b: 1, a: 1}

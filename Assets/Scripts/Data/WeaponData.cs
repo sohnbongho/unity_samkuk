@@ -14,6 +14,7 @@ namespace Samkuk.Data
     public class WeaponData : ScriptableObject
     {
         public string displayName = "무기";
+        [TextArea] public string description;
         public WeaponType type;
         [Tooltip("투사체/이펙트/칼날 스프라이트 (비우면 기본값)")]
         public Sprite sprite;

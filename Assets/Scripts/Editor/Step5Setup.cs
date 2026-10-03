@@ -29,7 +29,7 @@ namespace Samkuk.EditorTools
             AssetDatabase.Refresh();
 
             SetupPlayerPrefab();
-            Debug.Log("[Samkuk] Step 5 setup 완료 (활, 검 베기, 회전 도끼 장착. Play 후 F2: 무기 레벨업)");
+            Debug.Log("[Samkuk] Step 5 setup 완료 (시작 무기: 활. Play 후 F2: 무기 레벨업)");
         }
 
         // ───────────────────────── 스프라이트 ─────────────────────────
@@ -189,10 +189,9 @@ namespace Samkuk.EditorTools
             var so = new SerializedObject(wc);
             so.FindProperty("projectilePrefab").objectReferenceValue = projectile;
             var list = so.FindProperty("startingWeapons");
-            list.arraySize = 3;
+            // 시작 무기는 활 하나. 나머지는 레벨업(Step 6)으로 얻는다.
+            list.arraySize = 1;
             list.GetArrayElementAtIndex(0).objectReferenceValue = bow;
-            list.GetArrayElementAtIndex(1).objectReferenceValue = sword;
-            list.GetArrayElementAtIndex(2).objectReferenceValue = axe;
             so.ApplyModifiedPropertiesWithoutUndo();
 
             PrefabUtility.SaveAsPrefabAsset(root, PlayerPrefabPath);

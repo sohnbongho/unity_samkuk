@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fecc662bd57eea4e8c706d5ec47e23c, type: 3}
+  m_Name: Passive_Wisdom
+  m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.PassiveData
+  displayName: "\uC9C0\uB7B5"
+  description: "\uACBD\uD5D8\uCE58 \uD68D\uB4DD\uB7C9\uC774 15% \uC99D\uAC00\uD569\uB2C8\uB2E4."
+  type: 5
+  valuePerLevel: 0.15
+  maxLevel: 5
+  icon: {fileID: 0}

@@ -14,6 +14,7 @@ namespace Samkuk.Player
         [SerializeField] SpriteRenderer body;
 
         Rigidbody2D rb;
+        PlayerStats stats;
         InputAction moveAction;
         Vector2 moveInput;
 
@@ -26,6 +27,7 @@ namespace Samkuk.Player
         void Awake()
         {
             rb = GetComponent<Rigidbody2D>();
+            stats = GetComponent<PlayerStats>();
             if (body == null) body = GetComponentInChildren<SpriteRenderer>();
             BuildInput();
         }
@@ -71,7 +73,8 @@ namespace Samkuk.Player
 
         void FixedUpdate()
         {
-            rb.linearVelocity = moveInput * moveSpeed;
+            float speed = moveSpeed * (stats != null ? stats.MoveSpeedMultiplier : 1f);
+            rb.linearVelocity = moveInput * speed;
         }
     }
 }

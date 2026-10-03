@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Samkuk.Data;
 using Samkuk.Enemies;
 using Samkuk.Player;
@@ -5,7 +6,7 @@ using UnityEngine;
 
 namespace Samkuk.Weapons
 {
-    /// <summary>무기 공통 기반. 레벨에 따른 능력치 계산을 제공한다.</summary>
+    /// <summary>무기 공통 기반. 레벨과 패시브(PlayerStats)에 따른 능력치 계산을 제공한다.</summary>
     public abstract class Weapon : MonoBehaviour
     {
         public WeaponData Data { get; private set; }
@@ -14,11 +15,14 @@ namespace Samkuk.Weapons
         protected PlayerController Owner { get; private set; }
         protected EnemyManager Enemies { get; private set; }
         protected WeaponController Controller { get; private set; }
+        protected PlayerStats Stats { get; private set; }
 
-        public float Damage => Data.damage * (1f + Data.damagePerLevel * (Level - 1));
+        public float Damage =>
+            Data.damage * (1f + Data.damagePerLevel * (Level - 1)) * (Stats != null ? Stats.DamageMultiplier : 1f);
 
         public float Cooldown =>
-            Data.cooldown * Mathf.Max(0.3f, 1f - Data.cooldownReductionPerLevel * (Level - 1));
+            Data.cooldown * Mathf.Max(0.3f, 1f - Data.cooldownReductionPerLevel * (Level - 1))
+                          * (Stats != null ? Stats.CooldownMultiplier : 1f);
 
         public int Count =>
             Data.count + (Data.levelsPerExtraCount > 0 ? (Level - 1) / Data.levelsPerExtraCount : 0);
@@ -31,6 +35,7 @@ namespace Samkuk.Weapons
             Controller = controller;
             Owner = owner;
             Enemies = enemies;
+            Stats = owner != null ? owner.GetComponent<PlayerStats>() : null;
             Level = 1;
             OnInitialized();
         }
@@ -41,6 +46,19 @@ namespace Samkuk.Weapons
             Level++;
             OnLevelChanged();
             return true;
+        }
+
+        /// <summary>다음 레벨에서 좋아지는 점을 설명하는 문자열 (레벨업 선택지용).</summary>
+        public string NextLevelDescription()
+        {
+            var parts = new List<string>();
+            if (Data.damagePerLevel > 0f)
+                parts.Add($"공격력 +{Data.damagePerLevel * 100f:0}%");
+            if (Data.cooldownReductionPerLevel > 0f && Data.type != WeaponType.Orbit)
+                parts.Add($"쿨다운 -{Data.cooldownReductionPerLevel * 100f:0}%");
+            if (Data.levelsPerExtraCount > 0 && Level % Data.levelsPerExtraCount == 0)
+                parts.Add("수량 +1");
+            return string.Join("\n", parts);
         }
 
         /// <summary>적 매니저를 지연 연결할 수 있도록 갱신.</summary>
