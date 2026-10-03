@@ -33,7 +33,7 @@
 | 10-3 | 중국풍 UI 스킨(`UiTheme` 에셋, `UiSkin` 이름 규칙 스킨, 코드 생성 프레임 스프라이트, 레벨업 카드 종류별 색, 타이틀 구분선) | 완료 | adbad4a |
 | 10-4 | 밸런싱(목표 난이도 "보통"): `BalanceModel` 어림 모델 + 밸런스 테스트, 경험치 곡선, 선택지 가중치, 장수 무기 진화 5종, 웨이브/무기 수치 조정 | 완료 | 25f8439 |
 | 10-5 | 장수 선택 카드 초상화: `HeroData.portrait` 슬롯, 카드 4:5 레이아웃, 메뉴 `Step 10-5` 연결, 규격/프롬프트 `docs/HERO_PORTRAITS.md` (임시 그림 5장은 코드로 생성) | 완료 | 9607907 |
-| 10-6 | 게임 안 장수 4방향 걷기 애니메이션: `HeroData.walkSheet`, `HeroSpriteSet`(4x4 시트를 실행 중 슬라이스), `PlayerAnimator`, 메뉴 `Step 10-6`, 규격 `docs/HERO_WALK_SHEETS.md` (임시 그림 5장은 코드로 생성) | 완료 | - |
+| 10-6 | 게임 안 장수 4방향 걷기 애니메이션: `HeroData.walkSheet`, `HeroSpriteSet`(4x4 시트를 실행 중 슬라이스), `PlayerAnimator`, 메뉴 `Step 10-6`, 규격 `docs/HERO_WALK_SHEETS.md` (임시 그림 5장은 코드로 생성) | 완료 | 69c35a0 |
 | 11 | PC 빌드 | 대기(보류) | - |
 
 ## 남은 작업
