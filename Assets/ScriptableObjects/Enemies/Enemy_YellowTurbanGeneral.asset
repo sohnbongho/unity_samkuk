@@ -13,9 +13,12 @@ MonoBehaviour:
   m_Name: Enemy_YellowTurbanGeneral
   m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.EnemyData
   displayName: "\uD669\uAC74 \uC7A5\uC218"
+  role: 0
   sprite: {fileID: 0}
   tint: {r: 1, g: 0.9, b: 0.2, a: 1}
   scale: 1.6
+  walkSheet: {fileID: 2800000, guid: 84e313229d958c941a8706e061bdb687, type: 3}
+  walkPixelsPerUnit: 104
   moveSpeed: 1.7
   maxHp: 120
   contactDamage: 12
@@ -24,4 +27,11 @@ MonoBehaviour:
   chargeWindup: 0.6
   chargeDuration: 0.8
   chargeSpeedMultiplier: 3
+  attackRange: 0
+  fireInterval: 2.4
+  projectileSpeed: 6
+  projectileDamage: 6
+  projectileLifetime: 3
+  projectileSize: 0.18
+  projectileTint: {r: 1, g: 0.45, b: 0.25, a: 1}
   colliderRadius: 0.4

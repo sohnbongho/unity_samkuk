@@ -1,6 +1,7 @@
 using System;
 using Samkuk.Core;
 using Samkuk.Data;
+using Samkuk.Player;
 using UnityEngine;
 
 namespace Samkuk.Enemies
@@ -33,6 +34,13 @@ namespace Samkuk.Enemies
         float shootClock;
         bool telegraphing;
 
+        // 걷기 애니메이션 (EnemyManager가 이동 루프에서 갱신)
+        HeroSpriteSet walkSet;
+        FacingDir facing = FacingDir.Down;
+        float animClock;
+        float animPhase;
+        float animFps = 6f;
+
         // 돌진 패턴 상태
         Phase phase;
         float phaseTimer;
@@ -45,6 +53,13 @@ namespace Samkuk.Enemies
         /// <summary>월드 기준 반지름 (콜라이더 반지름 × 스케일).</summary>
         public float Radius { get; private set; }
         public Rigidbody2D Body => body;
+        /// <summary>걷기 시트를 쓰는 중인가 (false 면 단색 스프라이트 + 좌우 반전).</summary>
+        public bool HasWalkSheet => walkSet != null;
+        public FacingDir Facing => facing;
+        /// <summary>현재 걷기 프레임 (0~3, 서 있으면 0).</summary>
+        public int WalkFrame { get; private set; }
+        /// <summary>평소 색. 걷기 그림이 있으면 그림 색 그대로(흰색), 없으면 데이터의 tint.</summary>
+        Color BaseColor => walkSet != null ? Color.white : Data.tint;
         public Vector2 Position => body.position;
 
         /// <summary>피해를 받았을 때 (적, 피해량). 데미지 숫자 표시 등에 사용.</summary>
@@ -82,8 +97,14 @@ namespace Samkuk.Enemies
             phase = Phase.Chase;
             chargeClock = 0f;
             enabled = false;
-            sr.sprite = data.sprite != null ? data.sprite : defaultSprite;
-            sr.color = data.tint;
+            walkSet = data.walkSheet != null ? HeroSpriteSet.Get(data.walkSheet, data.walkPixelsPerUnit) : null;
+            facing = FacingDir.Down;
+            animClock = 0f;
+            WalkFrame = 0;
+            animPhase = UnityEngine.Random.value * HeroSpriteSet.Columns; // 무리가 같은 발로 걷지 않도록
+            animFps = Mathf.Clamp(data.moveSpeed * 2.5f, 4f, 12f);
+            sr.sprite = walkSet != null ? walkSet.Get(facing, 0) : (data.sprite != null ? data.sprite : defaultSprite);
+            sr.color = BaseColor;
             sr.flipX = false;
             transform.localScale = Vector3.one * baseScale;
             col.radius = data.colliderRadius;
@@ -99,6 +120,29 @@ namespace Samkuk.Enemies
         }
 
         public void SetFacing(bool faceLeft) => sr.flipX = faceLeft;
+
+        /// <summary>
+        /// 걷기 애니메이션을 dt만큼 진행한다. faceDir 쪽을 바라보고(보통 플레이어 방향), moving 이면 프레임을 돌린다.
+        /// 시트가 없으면 아무것도 하지 않는다. 스프라이트는 바뀔 때만 교체해 많은 적에서도 가볍다.
+        /// </summary>
+        public void TickAnimation(Vector2 faceDir, bool moving, float dt)
+        {
+            if (walkSet == null) return;
+
+            facing = PlayerAnimator.PickDirection(faceDir, facing);
+            if (moving)
+            {
+                animClock += dt * animFps * (IsCharging ? 1.6f : 1f);
+                WalkFrame = ((int)(animClock + animPhase) + 1) % HeroSpriteSet.Columns;
+            }
+            else
+            {
+                WalkFrame = 0;
+            }
+
+            var sprite = walkSet.Get(facing, WalkFrame);
+            if (sr.sprite != sprite) sr.sprite = sprite;
+        }
 
         /// <summary>발사 예고 중인가 (노랗게 깜빡임).</summary>
         public bool IsTelegraphingShot => telegraphing;
@@ -137,7 +181,7 @@ namespace Samkuk.Enemies
         {
             if (telegraphing == on) return;
             telegraphing = on;
-            sr.color = on ? ShotWarningTint : Data.tint;
+            sr.color = on ? ShotWarningTint : BaseColor;
         }
 
         /// <summary>현재 넉백 속도 (시간이 지나며 감쇠).</summary>
@@ -182,7 +226,7 @@ namespace Samkuk.Enemies
             stunTimer -= dt;
             if (stunTimer > 0f) return true;
 
-            sr.color = Data.tint;
+            sr.color = BaseColor;
             return false;
         }
 
@@ -221,7 +265,7 @@ namespace Samkuk.Enemies
                     {
                         phase = Phase.Charge;
                         phaseTimer = Data.chargeDuration;
-                        sr.color = Data.tint;
+                        sr.color = BaseColor;
                     }
                     return true;
 

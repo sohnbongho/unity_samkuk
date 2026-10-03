@@ -13,11 +13,25 @@ MonoBehaviour:
   m_Name: Enemy_Scout
   m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.EnemyData
   displayName: "\uD669\uAC74\uC801 \uCC99\uD6C4"
+  role: 0
   sprite: {fileID: 0}
   tint: {r: 1, g: 0.65, b: 0.25, a: 1}
   scale: 0.8
+  walkSheet: {fileID: 2800000, guid: 24e64aa4075162847b5e64b01e4653bc, type: 3}
+  walkPixelsPerUnit: 112
   moveSpeed: 2.6
   maxHp: 6
   contactDamage: 3
   expReward: 1
+  chargeInterval: 0
+  chargeWindup: 0.6
+  chargeDuration: 0.8
+  chargeSpeedMultiplier: 3
+  attackRange: 0
+  fireInterval: 2.4
+  projectileSpeed: 6
+  projectileDamage: 6
+  projectileLifetime: 3
+  projectileSize: 0.18
+  projectileTint: {r: 1, g: 0.45, b: 0.25, a: 1}
   colliderRadius: 0.4

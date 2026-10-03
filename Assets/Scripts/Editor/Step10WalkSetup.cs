@@ -93,14 +93,14 @@ namespace Samkuk.EditorTools
     }
 
     /// <summary>
-    /// Assets/Sprites/HeroWalk 의 PNG를 걷기 시트용 텍스처로 가져온다.
+    /// Assets/Sprites/HeroWalk, Assets/Sprites/EnemyWalk 의 PNG를 걷기 시트용 텍스처로 가져온다.
     /// 실행 중에 직접 자르므로 스프라이트 슬라이스는 쓰지 않고, 선명하게(밉맵/압축 없음) 투명 배경을 유지한다.
     /// </summary>
     class HeroWalkImporter : AssetPostprocessor
     {
         void OnPreprocessTexture()
         {
-            if (!assetPath.StartsWith(Step10WalkSetup.SheetDir + "/")) return;
+            if (!assetPath.StartsWith(Step10WalkSetup.SheetDir + "/") && !assetPath.StartsWith(Step10EnemyWalkSetup.SheetDir + "/")) return;
 
             var importer = (TextureImporter)assetImporter;
             importer.textureType = TextureImporterType.Default;

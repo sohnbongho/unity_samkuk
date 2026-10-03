@@ -12,7 +12,7 @@
 
 ## 진행 상황
 
-마지막 갱신: 2026-10-04 (10-6 장수 걷기 애니메이션 완료. 타격감/연출 작업 중이라 Step 11 빌드는 보류)
+마지막 갱신: 2026-10-04 (10-7 적 걷기 애니메이션 완료. 타격감/연출 작업 중이라 Step 11 빌드는 보류)
 
 | Step | 내용 | 상태 | 커밋 |
 |---|---|---|---|
@@ -34,6 +34,7 @@
 | 10-4 | 밸런싱(목표 난이도 "보통"): `BalanceModel` 어림 모델 + 밸런스 테스트, 경험치 곡선, 선택지 가중치, 장수 무기 진화 5종, 웨이브/무기 수치 조정 | 완료 | 25f8439 |
 | 10-5 | 장수 선택 카드 초상화: `HeroData.portrait` 슬롯, 카드 4:5 레이아웃, 메뉴 `Step 10-5` 연결, 규격/프롬프트 `docs/HERO_PORTRAITS.md` (임시 그림 5장은 코드로 생성) | 완료 | 9607907 |
 | 10-6 | 게임 안 장수 4방향 걷기 애니메이션: `HeroData.walkSheet`, `HeroSpriteSet`(4x4 시트를 실행 중 슬라이스), `PlayerAnimator`, 메뉴 `Step 10-6`, 규격 `docs/HERO_WALK_SHEETS.md` (임시 그림 5장은 코드로 생성) | 완료 | 69c35a0 |
+| 10-7 | 적 10종 4방향 걷기 애니메이션: `EnemyData.walkSheet`, `Enemy.TickAnimation`(EnemyManager 이동 루프에서 호출, 플레이어를 바라봄), 메뉴 `Step 10-7`, 기병/보스는 말 + 기수 (임시 그림은 코드로 생성) | 완료 | - |
 | 11 | PC 빌드 | 대기(보류) | - |
 
 ## 남은 작업
@@ -50,6 +51,7 @@
 
 - 스프라이트(번개, 불길, 궁병, 기병 등)는 코드로 만든 **플레이스홀더**. Step 10에서 교체/다듬기.
 - 장수 걷기 시트: `Assets/Sprites/HeroWalk/<장수 에셋 이름>_Walk.png`(4열 x 4행: 열=프레임 0~3, 행=아래/위/왼쪽/오른쪽, 칸 96x96, 배경 투명). 현재 5장은 **코드로 그린 임시 그림**(`tools/hero_art/HeroSprites.cs`, `generate.ps1 -Only walk`). 시트가 있는 장수는 `PlayerController`가 좌우 반전을 하지 않고 `PlayerAnimator`가 방향/프레임을 정하며, 장수 색(`tint`)도 입히지 않는다(`HeroSelectController.Apply`). 시트가 없으면 예전 동작(원 스프라이트 + tint + 반전). Player 프리팹에 `PlayerAnimator`를 붙이는 것은 `Step 10-6`이므로 셋업을 돌려야 한다.
+- 적 걷기 시트: `Assets/Sprites/EnemyWalk/<적 에셋 이름>_Walk.png`(장수와 같은 4x4 규격, `HeroSpriteSet` 재사용). 시트가 있는 적은 그림 색 그대로(`Enemy.BaseColor`가 흰색)이고 `SetFacing` 좌우 반전 대신 `TickAnimation`으로 플레이어를 바라본다. 시트가 없으면 예전 동작(단색 스프라이트 + tint + 반전). 크기는 `walkPixelsPerUnit` x `scale`. 임시 그림은 `tools/hero_art/EnemySprites.cs`, `generate.ps1 -Only enemy`. 규격/목록은 `docs/HERO_WALK_SHEETS.md`.
 - 장수 초상화: 현재 5장은 **코드로 그린 임시 그림**(`tools/hero_art/HeroArt.cs`, `generate.ps1`로 재생성, 직접 그린 그림으로 덮어쓰면 생성 스크립트는 쓰지 않는다). 교체용 그림은 사용자가 준비해 `Assets/Sprites/Heroes/<장수 에셋 이름>.png`(512x640, 세로 4:5, 투명 배경)에 넣고 메뉴 `Step 10-5`로 연결한다. 가져오기 설정은 `HeroPortraitImporter`가 자동으로 맞춘다. 그림이 없는 장수는 기존 실루엣 + `tint`로 보이고(`HeroSelectUI.ShowPortrait`), 이미 연결된 초상화는 셋업이 덮어쓰지 않는다. 카드 레이아웃을 키웠으므로(높이 640→700) 적용하려면 `Step 8`(또는 Run All)을 다시 실행해야 한다.
 - 장수 전용 시작 무기(쌍고검, 청룡언월도 등)는 진화 대상이 아니다. 필요하면 `EvolutionData` 추가.
 - 게임 씬은 한 판 1분 스테이지 기준이라 진화 필요 레벨을 5로 낮춰 둠(`Evo_*.asset`의 Required Level).

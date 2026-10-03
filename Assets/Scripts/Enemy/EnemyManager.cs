@@ -159,7 +159,9 @@ namespace Samkuk.Enemies
                 Vector2 sep = Vector2.ClampMagnitude(push * separationStrength, maxSeparationSpeed);
 
                 e.Body.linearVelocity = desired + sep + e.TickKnockback(dt);
-                if (desired.x > 0.05f) e.SetFacing(false);
+                if (e.HasWalkSheet)
+                    e.TickAnimation(dirToPlayer, desired.sqrMagnitude > 0.0025f, dt); // 플레이어를 바라보며 걷는다 (궁병이 물러날 때도 정면)
+                else if (desired.x > 0.05f) e.SetFacing(false);
                 else if (desired.x < -0.05f) e.SetFacing(true);
             }
         }

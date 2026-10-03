@@ -13,9 +13,12 @@ MonoBehaviour:
   m_Name: Enemy_LvbuElite
   m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.EnemyData
   displayName: "\uC5EC\uD3EC\uAD70 \uC815\uC608"
+  role: 0
   sprite: {fileID: 0}
   tint: {r: 1, g: 0.8, b: 0.3, a: 1}
   scale: 1.2
+  walkSheet: {fileID: 2800000, guid: 43a8366555d4b0c4b894b3ec9ea027fc, type: 3}
+  walkPixelsPerUnit: 108
   moveSpeed: 2.2
   maxHp: 60
   contactDamage: 12
@@ -24,4 +27,11 @@ MonoBehaviour:
   chargeWindup: 0.6
   chargeDuration: 0.8
   chargeSpeedMultiplier: 3
+  attackRange: 0
+  fireInterval: 2.4
+  projectileSpeed: 6
+  projectileDamage: 6
+  projectileLifetime: 3
+  projectileSize: 0.18
+  projectileTint: {r: 1, g: 0.45, b: 0.25, a: 1}
   colliderRadius: 0.4

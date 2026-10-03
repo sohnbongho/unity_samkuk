@@ -20,6 +20,9 @@ namespace Samkuk.Data
         public Sprite sprite;
         public Color tint = Color.white;
         public float scale = 1f;
+        [Tooltip("걷기 스프라이트 시트 (4열 x 4행: 열=걷기 프레임, 행=아래/위/왼쪽/오른쪽). 있으면 sprite/tint 대신 쓰고 그림 색 그대로 보인다")]
+        public Texture2D walkSheet;
+        [Tooltip("걷기 시트의 픽셀/유닛 (클수록 작게 보임)")] public float walkPixelsPerUnit = 96f;
 
         [Header("능력치")]
         public float moveSpeed = 1.5f;

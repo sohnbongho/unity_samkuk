@@ -21,6 +21,12 @@ public static partial class HeroArt
         public string name;
         public Color skin, robe, dark, trim, pants, boots, hair, accent;
         public float bw = 16f;   // 몸통 반폭
+
+        // 적 전용
+        public string hat = "", prop = "";
+        public Color hatC, hatDark, plume, maskC, horse, horseDark;
+        public bool mask, beard, cav;
+        public int feathers;
     }
 
     static St StyleOf(string name)

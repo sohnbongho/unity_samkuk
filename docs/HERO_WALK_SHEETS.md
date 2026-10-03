@@ -43,6 +43,30 @@
 5장 모두 **코드로 그린 임시 그림**(머리가 큰 2등신 평면 벡터풍)입니다. `tools/hero_art/HeroSprites.cs` 가 그리며
 `powershell -File tools\hero_art\generate.ps1 -Only walk` 로 다시 만들 수 있습니다. 직접 그린 그림으로 덮어쓴 뒤에는 이 스크립트를 실행하지 마세요.
 
+## 적 걷기 시트
+
+적도 같은 규격(4열 x 4행, 칸 96x96, 투명 PNG)을 씁니다. 파일은 `Assets/Sprites/EnemyWalk/<적 에셋 이름>_Walk.png` 에 넣고
+메뉴 **Samkuk > Step 10-7 - Link Enemy Walk Sheets** 로 `EnemyData.walkSheet` 에 연결합니다.
+
+| 적 | 파일 이름 |
+|---|---|
+| 황건적 병사 | `Enemy_Soldier_Walk.png` |
+| 황건적 척후 | `Enemy_Scout_Walk.png` |
+| 황건 궁병 | `Enemy_YellowArcher_Walk.png` |
+| 황건 장수 | `Enemy_YellowTurbanGeneral_Walk.png` |
+| 동탁군 보병 | `Enemy_DongzhuoInfantry_Walk.png` |
+| 동탁군 노수 | `Enemy_DongzhuoCrossbow_Walk.png` |
+| 여포군 정예 | `Enemy_LvbuElite_Walk.png` |
+| 여포군 신궁 | `Enemy_LvbuArcher_Walk.png` |
+| 서량 기병 | `Enemy_XiliangCavalry_Walk.png` |
+| 보스 여포 | `Boss_Lvbu_Walk.png` |
+
+- 적은 **이동 방향이 아니라 플레이어를 바라봅니다**(그래서 물러나며 쏘는 궁병도 정면). 쫓아가는 동안만 프레임이 돌고, 플레이어 앞에서 멈추면 서 있는 자세입니다.
+- 걷기 시트가 있으면 그림 색 그대로 보이고(`tint` 는 사망 입자 색에만 쓰임), 기절(푸른색)/돌진 예고(붉은색)/사격 예고(노란색) 깜빡임은 그림 위에 색을 곱해 그대로 표시됩니다.
+- 크기는 `Walk Pixels Per Unit`(클수록 작게)과 적의 `Scale` 을 곱한 값입니다. 처음 연결할 때 `Step10EnemyWalkSetup` 표의 값으로 정해지며 이후에는 직접 바꿔도 덮어쓰지 않습니다.
+- 임시 그림은 `powershell -File tools\hero_art\generate.ps1 -Only enemy` 로 다시 만들 수 있습니다 (`tools/hero_art/EnemySprites.cs`).
+- 성능: 적마다 `Update` 를 돌리지 않고 `EnemyManager` 의 이동 루프 안에서 `Enemy.TickAnimation` 을 부르며, 스프라이트는 바뀔 때만 교체합니다.
+
 ## 동작 방식 (참고)
 
 - `HeroSpriteSet` 이 시트를 실행 중에 4x4로 잘라 `Sprite` 16개를 만든다(에디터 슬라이스 불필요, 텍스처당 한 번만).
