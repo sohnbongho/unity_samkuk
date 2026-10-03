@@ -147,7 +147,7 @@ namespace Samkuk.EditorTools
             AssetDatabase.CreateAsset(w, path);
         }
 
-        static Sprite LoadSprite(string name) =>
+        internal static Sprite LoadSprite(string name) =>
             AssetDatabase.LoadAssetAtPath<Sprite>($"{SpriteDir}/{name}.png");
 
         // ───────────────────────── 장수 ─────────────────────────
@@ -341,7 +341,7 @@ namespace Samkuk.EditorTools
             EditorSceneManager.SaveScene(scene);
         }
 
-        static void DestroyChild(Transform parent, string name)
+        internal static void DestroyChild(Transform parent, string name)
         {
             var child = parent.Find(name);
             if (child != null) Object.DestroyImmediate(child.gameObject);
@@ -398,7 +398,7 @@ namespace Samkuk.EditorTools
             panelGo = panel.gameObject;
         }
 
-        static HeroCardView BuildHeroCard(RectTransform parent, Font font, Sprite portraitSprite, int index, float preferredWidth, float minWidth)
+        internal static HeroCardView BuildHeroCard(RectTransform parent, Font font, Sprite portraitSprite, int index, float preferredWidth, float minWidth)
         {
             var rt = NewRect($"Hero{index + 1}", parent);
             var le = rt.gameObject.AddComponent<LayoutElement>();
@@ -463,7 +463,7 @@ namespace Samkuk.EditorTools
         }
 
         /// <summary>카드를 가로로 나열하는 컨테이너. 화면 폭이 모자라면 카드 폭이 자동으로 줄어든다.</summary>
-        static RectTransform CreateCardRow(RectTransform parent, string name, float anchorY, float height, float spacing)
+        internal static RectTransform CreateCardRow(RectTransform parent, string name, float anchorY, float height, float spacing)
         {
             var row = NewRect(name, parent);
             row.anchorMin = new Vector2(0.02f, anchorY);
@@ -482,14 +482,14 @@ namespace Samkuk.EditorTools
             return row;
         }
 
-        static RectTransform NewRect(string name, Transform parent)
+        internal static RectTransform NewRect(string name, Transform parent)
         {
             var go = new GameObject(name, typeof(RectTransform));
             go.transform.SetParent(parent, false);
             return (RectTransform)go.transform;
         }
 
-        static Text NewText(string name, Transform parent, Font font, int size, TextAnchor anchor, string value)
+        internal static Text NewText(string name, Transform parent, Font font, int size, TextAnchor anchor, string value)
         {
             var rt = NewRect(name, parent);
             var t = rt.gameObject.AddComponent<Text>();
@@ -502,7 +502,7 @@ namespace Samkuk.EditorTools
             return t;
         }
 
-        static void Stretch(RectTransform rt)
+        internal static void Stretch(RectTransform rt)
         {
             rt.anchorMin = Vector2.zero;
             rt.anchorMax = Vector2.one;

@@ -23,6 +23,7 @@ namespace Samkuk.Enemies
         [SerializeField, Tooltip("접촉 판정에 더해지는 여유 거리")] float contactPadding = 0.15f;
 
         readonly List<Enemy> enemies = new List<Enemy>(512);
+        readonly List<IEnemyTarget> extraTargets = new List<IEnemyTarget>(4);
         readonly int[] head = new int[BucketCount];
         readonly int[] visited = new int[9];
         int[] next = new int[512];
@@ -41,6 +42,8 @@ namespace Samkuk.Enemies
         /// <summary>궁병이 쏘는 투사체를 처리하는 시스템 (없으면 궁병은 쏘지 못함).</summary>
         public EnemyProjectileSystem Projectiles { get => projectiles; set => projectiles = value; }
         public int Count => enemies.Count;
+        /// <summary>플레이어 외에 적이 노릴 수 있는 대상(아군).</summary>
+        public IReadOnlyList<IEnemyTarget> ExtraTargets => extraTargets;
         public IReadOnlyList<Enemy> Active => enemies;
 
         /// <summary>플레이어에게서 너무 멀어진 적이 있을 때 호출된다 (재배치/제거는 구독자가 결정).</summary>
@@ -57,6 +60,13 @@ namespace Samkuk.Enemies
                 if (pc != null) target = pc.transform;
             }
         }
+
+        public void RegisterTarget(IEnemyTarget t)
+        {
+            if (t != null && !extraTargets.Contains(t)) extraTargets.Add(t);
+        }
+
+        public void UnregisterTarget(IEnemyTarget t) => extraTargets.Remove(t);
 
         public void Register(Enemy e)
         {
@@ -121,46 +131,72 @@ namespace Samkuk.Enemies
                 Vector2 p = positions[i];
                 float r = e.Radius;
 
-                Vector2 toPlayer = tp - p;
-                float distSqr = toPlayer.sqrMagnitude;
+                float playerDistSqr = (tp - p).sqrMagnitude;
 
-                if (distSqr > tooFarSqr)
+                if (playerDistSqr > tooFarSqr)
                 {
                     EnemyTooFar?.Invoke(e);
                     continue;
                 }
 
-                float stop = playerRadius + r;
+                // 목표: 플레이어, 또는 그보다 가까운 (쓰러지지 않은) 아군
+                IEnemyTarget ally = null;
+                Vector2 targetPos = tp;
+                float targetRadius = playerRadius;
+                float distSqr = playerDistSqr;
+                for (int t = 0; t < extraTargets.Count; t++)
+                {
+                    IEnemyTarget cand = extraTargets[t];
+                    if (!cand.IsTargetable) continue;
+
+                    float ds = (cand.Position - p).sqrMagnitude;
+                    if (ds >= distSqr) continue;
+
+                    distSqr = ds;
+                    ally = cand;
+                    targetPos = cand.Position;
+                    targetRadius = cand.Radius;
+                }
+
+                Vector2 toTarget = targetPos - p;
+                float stop = targetRadius + r;
                 bool stunned = e.TickStun(dt);
 
-                if (canHurtPlayer && !stunned) // 기절한 적은 접촉 피해를 주지 못한다
+                if (!stunned) // 기절한 적은 접촉 피해를 주지 못한다
                 {
                     float contact = stop + contactPadding;
                     if (distSqr <= contact * contact)
                     {
-                        playerHealth.TryContactDamage(e.Data.contactDamage);
-                        canHurtPlayer = playerHealth.CanTakeContactDamage;
+                        if (ally != null)
+                        {
+                            ally.TryContactDamage(e.Data.contactDamage);
+                        }
+                        else if (canHurtPlayer)
+                        {
+                            playerHealth.TryContactDamage(e.Data.contactDamage);
+                            canHurtPlayer = playerHealth.CanTakeContactDamage;
+                        }
                     }
                 }
 
                 Vector2 desired = Vector2.zero;
-                Vector2 dirToPlayer = distSqr > 1e-6f ? toPlayer / Mathf.Sqrt(distSqr) : Vector2.right;
+                Vector2 dirToTarget = distSqr > 1e-6f ? toTarget / Mathf.Sqrt(distSqr) : Vector2.right;
 
                 if (stunned)
                     desired = Vector2.zero; // 기절 중: 제자리 (겹침 방지 밀림만 받음)
-                else if (e.Data.chargeInterval > 0f && e.TickCharge(dt, dirToPlayer, out Vector2 chargeVelocity))
+                else if (e.Data.chargeInterval > 0f && e.TickCharge(dt, dirToTarget, out Vector2 chargeVelocity))
                     desired = chargeVelocity; // 돌진 패턴이 이동을 지배 (예고 중에는 정지)
                 else if (e.Data.attackRange > 0f)
-                    desired = MoveAsArcher(e, dirToPlayer, distSqr, dt, tp);
+                    desired = MoveAsArcher(e, dirToTarget, distSqr, dt, targetPos);
                 else if (distSqr > stop * stop)
-                    desired = dirToPlayer * e.Data.moveSpeed;
+                    desired = dirToTarget * e.Data.moveSpeed;
 
                 Vector2 push = ComputePush(i, p, r);
                 Vector2 sep = Vector2.ClampMagnitude(push * separationStrength, maxSeparationSpeed);
 
                 e.Body.linearVelocity = desired + sep + e.TickKnockback(dt);
                 if (e.HasWalkSheet)
-                    e.TickAnimation(dirToPlayer, desired.sqrMagnitude > 0.0025f, dt); // 플레이어를 바라보며 걷는다 (궁병이 물러날 때도 정면)
+                    e.TickAnimation(dirToTarget, desired.sqrMagnitude > 0.0025f, dt); // 목표를 바라보며 걷는다 (궁병이 물러날 때도 정면)
                 else if (desired.x > 0.05f) e.SetFacing(false);
                 else if (desired.x < -0.05f) e.SetFacing(true);
             }
@@ -170,16 +206,16 @@ namespace Samkuk.Enemies
         /// 궁병 이동: 사정거리보다 멀면 접근, 너무 가까우면(사정거리의 65% 안) 물러나며, 그 사이에서는 멈춰 쏜다.
         /// 사격 타이머도 여기서 진행하며 간격이 차면 투사체를 발사한다.
         /// </summary>
-        Vector2 MoveAsArcher(Enemy e, Vector2 dirToPlayer, float distSqr, float dt, Vector2 playerPos)
+        Vector2 MoveAsArcher(Enemy e, Vector2 dirToTarget, float distSqr, float dt, Vector2 targetPos)
         {
             float range = e.Data.attackRange;
             float dist = Mathf.Sqrt(distSqr);
 
             if (e.TickShoot(dt, dist <= range * 1.15f) && projectiles != null)
-                projectiles.Fire(e.Body.position, dirToPlayer, e.Data);
+                projectiles.Fire(e.Body.position, dirToTarget, e.Data);
 
-            if (dist > range) return dirToPlayer * e.Data.moveSpeed;
-            if (dist < range * 0.65f) return -dirToPlayer * (e.Data.moveSpeed * 0.7f);
+            if (dist > range) return dirToTarget * e.Data.moveSpeed;
+            if (dist < range * 0.65f) return -dirToTarget * (e.Data.moveSpeed * 0.7f);
             return Vector2.zero;
         }
 

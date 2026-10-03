@@ -19,6 +19,7 @@ namespace Samkuk.Weapons
         readonly HashSet<WeaponData> evolvedBases = new HashSet<WeaponData>();
         ObjectPool<Projectile> pool;
         PlayerController owner;
+        PlayerStats ownerStats;
 
         public IReadOnlyList<Weapon> Weapons => weapons;
 
@@ -40,6 +41,7 @@ namespace Samkuk.Weapons
         void Awake()
         {
             owner = GetComponent<PlayerController>();
+            ownerStats = GetComponent<PlayerStats>();
 
             // 이펙트는 월드 좌표에 고정되어야 하므로 플레이어의 자식으로 두지 않는다.
             var fxGo = new GameObject("WeaponFx");
@@ -75,23 +77,14 @@ namespace Samkuk.Weapons
             var go = new GameObject($"Weapon_{data.displayName}");
             go.transform.SetParent(transform, false);
 
-            Weapon weapon;
-            switch (data.type)
+            Weapon weapon = WeaponFactory.Attach(go, data.type);
+            if (weapon == null)
             {
-                case WeaponType.Arrow: weapon = go.AddComponent<ArrowWeapon>(); break;
-                case WeaponType.Slash: weapon = go.AddComponent<SlashWeapon>(); break;
-                case WeaponType.Orbit: weapon = go.AddComponent<OrbitWeapon>(); break;
-                case WeaponType.Thrust: weapon = go.AddComponent<ThrustWeapon>(); break;
-                case WeaponType.FireZone: weapon = go.AddComponent<FireZoneWeapon>(); break;
-                case WeaponType.Lightning: weapon = go.AddComponent<LightningWeapon>(); break;
-                case WeaponType.Rain: weapon = go.AddComponent<RainWeapon>(); break;
-                case WeaponType.Nova: weapon = go.AddComponent<NovaWeapon>(); break;
-                default:
-                    Destroy(go);
-                    return null;
+                Destroy(go);
+                return null;
             }
 
-            weapon.Initialize(data, this, owner, enemyManager);
+            weapon.Initialize(data, this, owner.transform, ownerStats, enemyManager);
             weapons.Add(weapon);
             return weapon;
         }

@@ -9,7 +9,7 @@ namespace Samkuk.Player
     /// 최종 능력치(배율/보너스)를 계산해 제공한다.
     /// 구성: 패시브(레벨 누적) × 장수 보정 × 시간제 버프.
     /// </summary>
-    public class PlayerStats : MonoBehaviour
+    public class PlayerStats : MonoBehaviour, Samkuk.Weapons.IWeaponStats
     {
         class Buff
         {

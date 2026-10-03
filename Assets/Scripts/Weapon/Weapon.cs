@@ -12,10 +12,11 @@ namespace Samkuk.Weapons
         public WeaponData Data { get; private set; }
         public int Level { get; private set; } = 1;
 
-        protected PlayerController Owner { get; private set; }
+        /// <summary>무기를 든 쪽(플레이어 또는 아군)의 Transform.</summary>
+        protected Transform Owner { get; private set; }
         protected EnemyManager Enemies { get; private set; }
         protected WeaponController Controller { get; private set; }
-        protected PlayerStats Stats { get; private set; }
+        protected IWeaponStats Stats { get; private set; }
 
         /// <summary>일회성 이펙트 재생기 (없을 수 있음).</summary>
         protected WeaponFx Fx => Controller != null ? Controller.Fx : null;
@@ -32,13 +33,16 @@ namespace Samkuk.Weapons
 
         public bool IsMaxLevel => Level >= Data.maxLevel;
 
-        public void Initialize(WeaponData data, WeaponController controller, PlayerController owner, EnemyManager enemies)
+        /// <summary>
+        /// controller 는 이펙트(Fx)와 투사체 풀을 빌려 주는 쪽이다. 아군의 무기는 플레이어의 WeaponController 를 함께 쓴다.
+        /// </summary>
+        public void Initialize(WeaponData data, WeaponController controller, Transform owner, IWeaponStats stats, EnemyManager enemies)
         {
             Data = data;
             Controller = controller;
             Owner = owner;
             Enemies = enemies;
-            Stats = owner != null ? owner.GetComponent<PlayerStats>() : null;
+            Stats = stats;
             Level = 1;
             OnInitialized();
         }
@@ -70,7 +74,7 @@ namespace Samkuk.Weapons
         protected virtual void OnInitialized() { }
         protected virtual void OnLevelChanged() { }
 
-        protected Vector2 OwnerPosition => Owner.transform.position;
+        protected Vector2 OwnerPosition => Owner.position;
 
         /// <summary>공격이 발동할 때 무기 종류에 맞는 효과음을 낸다.</summary>
         protected void PlayAttackSound() => Audio.AudioManager.PlayWeapon(Data.type);

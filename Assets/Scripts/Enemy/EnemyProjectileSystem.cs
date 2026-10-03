@@ -21,6 +21,7 @@ namespace Samkuk.Enemies
         ObjectPool<EnemyProjectile> pool;
         PlayerHealth playerHealth;
         Transform healthLookupTarget;
+        EnemyManager manager;
 
         public EnemyProjectile Prefab { get => prefab; set => prefab = value; }
         public Transform Target { get => target; set => target = value; }
@@ -83,11 +84,30 @@ namespace Samkuk.Enemies
                 }
 
                 float reach = p.Radius + playerRadius;
-                if ((tp - pos).sqrMagnitude > reach * reach) continue;
+                if ((tp - pos).sqrMagnitude <= reach * reach)
+                {
+                    HitCount++;
+                    if (playerHealth != null) playerHealth.TryContactDamage(p.Damage);
+                    ReleaseAt(i);
+                    continue;
+                }
 
-                HitCount++;
-                if (playerHealth != null) playerHealth.TryContactDamage(p.Damage);
-                ReleaseAt(i);
+                // 아군에게 명중 (쓰러진 아군은 통과)
+                if (manager == null) manager = FindAnyObjectByType<EnemyManager>();
+                var allies = manager != null ? manager.ExtraTargets : null;
+                if (allies == null) continue;
+                for (int t = 0; t < allies.Count; t++)
+                {
+                    IEnemyTarget ally = allies[t];
+                    if (!ally.IsTargetable) continue;
+
+                    float allyReach = p.Radius + ally.Radius;
+                    if ((ally.Position - pos).sqrMagnitude > allyReach * allyReach) continue;
+
+                    ally.TryContactDamage(p.Damage);
+                    ReleaseAt(i);
+                    break;
+                }
             }
         }
 

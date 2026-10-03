@@ -27,6 +27,7 @@ namespace Samkuk.EditorTools
             Step10PortraitSetup.Run(); // 장수 에셋이 만들어진 뒤
             Step10WalkSetup.Run();     // Player 프리팹이 만들어진 뒤
             Step10EnemyWalkSetup.Run(); // 적 에셋이 만들어진 뒤
+            Step10AllySetup.Run();      // 장수 선택 컨트롤러(Step 8)가 만들어진 뒤
             Debug.Log("[Samkuk] 전체 셋업(Step 2-9 + 타이틀) 완료");
         }
     }
