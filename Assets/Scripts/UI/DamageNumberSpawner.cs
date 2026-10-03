@@ -34,7 +34,19 @@ namespace Samkuk.UI
             cursor = (cursor + 1) % pool.Length;
 
             Vector2 pos = enemy.Position + new Vector2(Random.Range(-0.2f, 0.2f), enemy.Radius + 0.1f);
-            t.Show(pos, Format(amount), color);
+            GetStyle(amount, color, out Color tierColor, out float tierScale);
+            t.Show(pos, Format(amount), tierColor, tierScale);
+        }
+
+        /// <summary>
+        /// 피해량에 따른 숫자 모양: 12 미만은 기본 색, 30 미만은 주황(1.3배), 그 이상은 붉은 주황(1.6배).
+        /// 큰 한 방이 한눈에 보이도록 한다.
+        /// </summary>
+        public static void GetStyle(float amount, Color baseColor, out Color color, out float scale)
+        {
+            if (amount >= 30f) { color = new Color(1f, 0.35f, 0.25f); scale = 1.6f; }
+            else if (amount >= 12f) { color = new Color(1f, 0.6f, 0.2f); scale = 1.3f; }
+            else { color = baseColor; scale = 1f; }
         }
 
         DamageText CreateText(int index)

@@ -80,6 +80,8 @@ namespace Samkuk.Tests
             public Text gold, resetLabel, recordsText, shopGold;
             public Button sound;
             public Text soundLabel;
+            public Button shake;
+            public Text shakeLabel;
             public RectTransform rows;
         }
 
@@ -120,6 +122,7 @@ namespace Samkuk.Tests
             p.reset = NewButton(p.main.transform, "Reset", out p.resetLabel);
             p.quit = NewButton(p.main.transform, "Quit", out _);
             p.sound = NewButton(p.main.transform, "Sound", out p.soundLabel);
+            p.shake = NewButton(p.main.transform, "Shake", out p.shakeLabel);
             p.gold = NewText(p.main.transform, "Gold");
 
             p.shopClose = NewButton(p.shopPanel.transform, "Close", out _);
@@ -157,6 +160,8 @@ namespace Samkuk.Tests
             so.FindProperty("resetLabel").objectReferenceValue = p.resetLabel;
             so.FindProperty("soundButton").objectReferenceValue = p.sound;
             so.FindProperty("soundLabel").objectReferenceValue = p.soundLabel;
+            so.FindProperty("shakeButton").objectReferenceValue = p.shake;
+            so.FindProperty("shakeLabel").objectReferenceValue = p.shakeLabel;
             so.FindProperty("catalog").objectReferenceValue = catalog;
             so.ApplyModifiedPropertiesWithoutUndo();
 
@@ -495,7 +500,7 @@ namespace Samkuk.Tests
 
             CollectionAssert.Contains(missing, "startButton");
             CollectionAssert.Contains(missing, "catalog");
-            Assert.AreEqual(17, missing.Count);
+            Assert.AreEqual(19, missing.Count);
         }
 
         [UnityTest]
@@ -520,6 +525,27 @@ namespace Samkuk.Tests
             p.sound.onClick.Invoke();
             Assert.AreEqual(0.35f, SaveSystem.Current.sfxVolume, 0.001f);
             StringAssert.Contains("작게", p.soundLabel.text);
+            Audio.AudioManager.DestroyInstance();
+        }
+
+        [UnityTest]
+        public IEnumerator Title_ShakeButton_TogglesSetting_ShowsLabel_AndSaves()
+        {
+            var p = BuildTitle(MakeCatalog());
+            yield return null;
+            Assert.IsTrue(SaveSystem.Current.screenShake, "기본값은 켬");
+            StringAssert.Contains("켬", p.shakeLabel.text);
+
+            p.shake.onClick.Invoke();
+            Assert.IsFalse(SaveSystem.Current.screenShake);
+            StringAssert.Contains("끔", p.shakeLabel.text);
+
+            SaveSystem.ResetCache();
+            Assert.IsFalse(SaveSystem.Load().screenShake, "설정이 파일에 저장됨");
+
+            p.shake.onClick.Invoke();
+            Assert.IsTrue(SaveSystem.Current.screenShake);
+            StringAssert.Contains("켬", p.shakeLabel.text);
             Audio.AudioManager.DestroyInstance();
         }
 

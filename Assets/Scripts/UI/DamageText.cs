@@ -14,9 +14,10 @@ namespace Samkuk.UI
 
         public void Setup(TextMesh tm) => text = tm;
 
-        public void Show(Vector2 position, string value, Color color)
+        public void Show(Vector2 position, string value, Color color, float scale = 1f)
         {
             transform.position = position;
+            transform.localScale = Vector3.one * scale;
             text.text = value;
             baseColor = color;
             text.color = color;

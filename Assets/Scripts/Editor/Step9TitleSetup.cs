@@ -157,6 +157,15 @@ namespace Samkuk.EditorTools
             soundRt.anchoredPosition = new Vector2(40f, -30f);
             var soundLabel = soundBtn.GetComponentInChildren<Text>();
             soundLabel.fontSize = 30;
+
+            // 화면 흔들림 켜기/끄기 버튼 (효과음 버튼 아래)
+            var shakeBtn = NewButton("ShakeButton", main, font, "화면 흔들림: 켬", 1f, new Vector2(360f, 70f), new Color(0.22f, 0.28f, 0.4f));
+            var shakeRt = (RectTransform)shakeBtn.transform;
+            shakeRt.anchorMin = shakeRt.anchorMax = new Vector2(0f, 1f);
+            shakeRt.pivot = new Vector2(0f, 1f);
+            shakeRt.anchoredPosition = new Vector2(40f, -110f);
+            var shakeLabel = shakeBtn.GetComponentInChildren<Text>();
+            shakeLabel.fontSize = 30;
             var resetLabel = resetBtn.GetComponentInChildren<Text>();
             resetLabel.fontSize = 28;
             quitBtn.GetComponentInChildren<Text>().fontSize = 28;
@@ -241,6 +250,8 @@ namespace Samkuk.EditorTools
             so.FindProperty("resetLabel").objectReferenceValue = resetLabel;
             so.FindProperty("soundButton").objectReferenceValue = soundBtn;
             so.FindProperty("soundLabel").objectReferenceValue = soundLabel;
+            so.FindProperty("shakeButton").objectReferenceValue = shakeBtn;
+            so.FindProperty("shakeLabel").objectReferenceValue = shakeLabel;
             so.FindProperty("catalog").objectReferenceValue = catalog;
             so.ApplyModifiedPropertiesWithoutUndo();
 

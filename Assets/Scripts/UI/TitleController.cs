@@ -29,6 +29,7 @@ namespace Samkuk.UI
         [SerializeField] Button resetButton;
         [SerializeField] Button quitButton;
         [SerializeField] Button soundButton;
+        [SerializeField] Button shakeButton;
 
         [Header("하위 화면")]
         [SerializeField] Button shopCloseButton;
@@ -40,6 +41,7 @@ namespace Samkuk.UI
         [SerializeField] Text goldLabel;
         [SerializeField] Text resetLabel;
         [SerializeField] Text soundLabel;
+        [SerializeField] Text shakeLabel;
         [SerializeField] MetaCatalog catalog;
         [SerializeField, Tooltip("저장 초기화 확인 대기 시간(초)")] float resetConfirmSeconds = 3f;
 
@@ -72,6 +74,7 @@ namespace Samkuk.UI
             Bind(resetButton, OnResetClicked);
             Bind(quitButton, Quit);
             Bind(soundButton, CycleSfxVolume);
+            Bind(shakeButton, ToggleScreenShake);
             Bind(shopCloseButton, ShowMain);
             Bind(recordsCloseButton, ShowMain);
 
@@ -84,6 +87,7 @@ namespace Samkuk.UI
         {
             ShowMain();
             RefreshSoundLabel();
+            RefreshShakeLabel();
         }
 
         void OnDestroy()
@@ -174,6 +178,7 @@ namespace Samkuk.UI
             if (shopUi != null) shopUi.Bind(shop);
             RefreshGold();
             RefreshSoundLabel();
+            RefreshShakeLabel();
         }
 
         void DisarmReset()
@@ -194,6 +199,20 @@ namespace Samkuk.UI
 
             RefreshSoundLabel();
             AudioManager.Play(SfxId.Click); // 바뀐 볼륨으로 들려준다 (끔이면 소리 없음)
+        }
+
+        /// <summary>화면 흔들림을 켜고 끈다 (멀미가 나는 사람을 위한 설정). 저장된다.</summary>
+        public void ToggleScreenShake()
+        {
+            var save = SaveSystem.Current;
+            save.screenShake = !save.screenShake;
+            SaveSystem.SaveCurrent();
+            RefreshShakeLabel();
+        }
+
+        void RefreshShakeLabel()
+        {
+            if (shakeLabel != null) shakeLabel.text = $"화면 흔들림: {(SaveSystem.Current.screenShake ? "켬" : "끔")}";
         }
 
         void RefreshSoundLabel()
@@ -232,6 +251,8 @@ namespace Samkuk.UI
             Check(resetLabel, nameof(resetLabel));
             Check(soundButton, nameof(soundButton));
             Check(soundLabel, nameof(soundLabel));
+            Check(shakeButton, nameof(shakeButton));
+            Check(shakeLabel, nameof(shakeLabel));
             Check(catalog, nameof(catalog));
             return missing;
         }

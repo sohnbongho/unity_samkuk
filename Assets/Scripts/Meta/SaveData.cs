@@ -29,6 +29,7 @@ namespace Samkuk.Meta
 
         // 설정
         public float sfxVolume = 0.7f;
+        public bool screenShake = true;
 
         public int GetUpgradeLevel(string id)
         {
