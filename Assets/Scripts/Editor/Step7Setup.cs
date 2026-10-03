@@ -117,11 +117,12 @@ namespace Samkuk.EditorTools
             stage.duration = 60f;
 
             stage.waves.Clear();
-            stage.waves.Add(MakeWave("황건적 습격", 0f, 3f, 80, (soldier, 1f)));
-            stage.waves.Add(MakeWave("황건 척후대", 15f, 6f, 120, (soldier, 3f), (scout, 1f)));
-            stage.waves.Add(MakeWave("동탁군 출병", 30f, 6f, 160, (infantry, 3f), (cavalry, 1f), (soldier, 1f)));
+            // 적이 화면을 뒤덮지 않도록 스폰 속도와 동시 최대 수를 처음보다 30% 줄임 (경험치 곡선도 함께 조정: PlayerExperience)
+            stage.waves.Add(MakeWave("황건적 습격", 0f, 2.1f, 56, (soldier, 1f)));
+            stage.waves.Add(MakeWave("황건 척후대", 15f, 4.2f, 84, (soldier, 3f), (scout, 1f)));
+            stage.waves.Add(MakeWave("동탁군 출병", 30f, 4.2f, 112, (infantry, 3f), (cavalry, 1f), (soldier, 1f)));
             // 마지막 웨이브: 정예 비중을 낮추고 스폰 속도를 줄여 평균 빌드 기준 압박비가 약 0.7~1.0이 되도록 (BalanceModel)
-            stage.waves.Add(MakeWave("여포군 돌격", 45f, 6f, 220, (lvbuElite, 2f), (cavalry, 2f), (infantry, 2f)));
+            stage.waves.Add(MakeWave("여포군 돌격", 45f, 4.2f, 154, (lvbuElite, 2f), (cavalry, 2f), (infantry, 2f)));
 
             stage.events.Clear();
             stage.events.Add(MakeEvent(20f, general, 1, false, "황건 장수 출현!"));

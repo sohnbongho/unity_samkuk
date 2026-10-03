@@ -88,7 +88,7 @@ namespace Samkuk.Tests
             var times = BalanceModel.LevelUpTimes(BalanceModel.ExpPerSecond(stage));
             int finalLevel = times.Count + 1;
 
-            // 너무 빠르면(과거 17레벨) 선택 창이 쉴 새 없이 떠서 흐름이 끊기고, 너무 느리면 빌드가 만들어지지 않는다
+            // 너무 빠르면(처음 17레벨) 선택 창이 쉴 새 없이 떠서 흐름이 끊기고, 너무 느리면 빌드가 만들어지지 않는다
             Assert.GreaterOrEqual(finalLevel, 10, $"1분에 도달하는 레벨이 너무 낮음 ({finalLevel})");
             Assert.LessOrEqual(finalLevel, 14, $"1분에 도달하는 레벨이 너무 높음 ({finalLevel})");
         }
@@ -130,11 +130,11 @@ namespace Samkuk.Tests
                 ratios.Add(AveragePressure(w.startTime + 5f, levelUps, extras));
 
             Assert.AreEqual(4, ratios.Count, "웨이브 4개");
-            // 초반은 여유롭게(1 이상), 마지막 웨이브는 평균 빌드로는 살짝 밀리고 진화/집중 빌드로 버티는 수준
-            Assert.That(ratios[0], Is.InRange(1.1f, 2.0f), $"웨이브 1 압박비 {ratios[0]:0.00}");
-            Assert.That(ratios[1], Is.InRange(1.0f, 1.8f), $"웨이브 2 압박비 {ratios[1]:0.00}");
-            Assert.That(ratios[2], Is.InRange(0.7f, 1.2f), $"웨이브 3 압박비 {ratios[2]:0.00}");
-            Assert.That(ratios[3], Is.InRange(0.55f, 1.0f), $"웨이브 4 압박비 {ratios[3]:0.00}");
+            // 적 수를 30% 줄인 뒤의 기준: 초반은 여유롭게, 마지막 웨이브는 평균 빌드와 비슷한 수준(진화/집중 빌드는 앞섬)
+            Assert.That(ratios[0], Is.InRange(1.5f, 2.5f), $"웨이브 1 압박비 {ratios[0]:0.00}");
+            Assert.That(ratios[1], Is.InRange(1.4f, 2.4f), $"웨이브 2 압박비 {ratios[1]:0.00}");
+            Assert.That(ratios[2], Is.InRange(0.9f, 1.6f), $"웨이브 3 압박비 {ratios[2]:0.00}");
+            Assert.That(ratios[3], Is.InRange(0.7f, 1.3f), $"웨이브 4 압박비 {ratios[3]:0.00}");
 
             for (int i = 1; i < ratios.Count; i++)
                 Assert.LessOrEqual(ratios[i], ratios[i - 1] + 0.05f, $"웨이브 {i + 1}는 앞 웨이브보다 쉬워지면 안 됨 (난이도가 계단식으로 오름)");
@@ -152,7 +152,7 @@ namespace Samkuk.Tests
                 {
                     float r = BalanceModel.PressureRatio(stage, w.startTime + 5f, levelUps, hero.startingWeapon, extras);
                     Assert.Greater(r, 0.45f, $"{hero.displayName}: {w.name} 압박비 {r:0.00} — 해당 장수가 너무 불리함");
-                    Assert.Less(r, 2.6f, $"{hero.displayName}: {w.name} 압박비 {r:0.00} — 해당 장수가 너무 유리함");
+                    Assert.Less(r, 3.3f, $"{hero.displayName}: {w.name} 압박비 {r:0.00} — 해당 장수가 너무 유리함");
                 }
             }
         }
@@ -186,6 +186,54 @@ namespace Samkuk.Tests
                 Assert.That(ratio, Is.InRange(1.5f, 4.0f),
                     $"{evo.baseWeapon.displayName} → {evo.evolvedWeapon.displayName}: 진화 위력 비율 {ratio:0.00} (직전 {before:0} → {after:0})");
             }
+        }
+
+        [Test]
+        public void ArrowWeapons_AreFast_AndReachTheirTargetingRange()
+        {
+            var all = new List<WeaponData>(upgrades.weapons);
+            foreach (var evo in upgrades.evolutions) all.Add(evo.evolvedWeapon);
+            foreach (var h in heroes.heroes) all.Add(h.startingWeapon);
+
+            int checkedCount = 0;
+            foreach (var w in all)
+            {
+                if (w.type != WeaponType.Arrow) continue;
+                checkedCount++;
+
+                // 아군 화살은 시원하게 빠르게 (12~18). 천천히 날아가는 쪽은 적 궁병의 화살이다
+                Assert.GreaterOrEqual(w.projectileSpeed, 10f, $"{w.displayName}: 화살 속도 {w.projectileSpeed}");
+                // 속도를 줄여도 탐색 범위 끝의 적에게는 닿아야 한다 (속도 × 수명 ≥ 탐색 거리)
+                Assert.GreaterOrEqual(w.projectileSpeed * w.duration, w.range,
+                    $"{w.displayName}: 도달 거리 {w.projectileSpeed * w.duration:0.#} < 탐색 거리 {w.range}");
+            }
+            Assert.GreaterOrEqual(checkedCount, 6, "화살 계열 무기를 충분히 검사");
+        }
+
+        [Test]
+        public void EnemyArrows_AreSlowEnoughToDodge_AndStillReachTheShootingDistance()
+        {
+            const float playerBaseMoveSpeed = 4f; // PlayerController 기본 이동 속도
+            int archers = 0;
+
+            var seen = new HashSet<EnemyData>();
+            foreach (var w in stage.waves)
+                foreach (var e in w.enemies)
+                    if (e.data != null) seen.Add(e.data);
+
+            foreach (var e in seen)
+            {
+                if (e.attackRange <= 0f) continue;
+                archers++;
+
+                // 달려서 피할 수 있어야 한다 (화살은 발사 순간의 방향으로 직진)
+                Assert.LessOrEqual(e.projectileSpeed, playerBaseMoveSpeed * 0.8f,
+                    $"{e.displayName}: 화살 속도 {e.projectileSpeed}가 너무 빠름 (플레이어 이동 속도 {playerBaseMoveSpeed}의 80% 이하)");
+                // 궁병은 사거리의 1.15배 거리에서도 쏜다 (EnemyManager.MoveAsArcher)
+                Assert.GreaterOrEqual(e.projectileSpeed * e.projectileLifetime, e.attackRange * 1.15f,
+                    $"{e.displayName}: 화살이 사격 거리까지 닿지 않음");
+            }
+            Assert.GreaterOrEqual(archers, 3, "궁병 3종 이상 검사");
         }
 
         // ───────────────────────── 생존 ─────────────────────────

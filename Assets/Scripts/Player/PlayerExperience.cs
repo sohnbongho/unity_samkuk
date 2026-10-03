@@ -7,9 +7,9 @@ namespace Samkuk.Player
     public class PlayerExperience : MonoBehaviour
     {
         /// <summary>1레벨에서 2레벨로 가는 데 필요한 경험치.</summary>
-        public const int BaseRequired = 10;
+        public const int BaseRequired = 7;
         /// <summary>레벨이 하나 오를 때마다 늘어나는 필요 경험치. 1분 스테이지에서 약 12레벨이 되도록 맞춘 값(BalanceModel 참고).</summary>
-        public const int RequiredStep = 8;
+        public const int RequiredStep = 6;
 
         PlayerStats stats;
 

@@ -27,9 +27,9 @@ MonoBehaviour:
   chargeSpeedMultiplier: 3
   attackRange: 7
   fireInterval: 1.6
-  projectileSpeed: 8
+  projectileSpeed: 3
   projectileDamage: 10
-  projectileLifetime: 3
+  projectileLifetime: 4.5
   projectileSize: 0.22
   projectileTint: {r: 1, g: 0.45, b: 0.25, a: 1}
   colliderRadius: 0.4

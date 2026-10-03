@@ -109,7 +109,7 @@ namespace Samkuk.EditorTools
                 d.tint = new Color(1f, 0.92f, 0.45f); d.scale = 0.95f;
                 d.moveSpeed = 1.5f; d.maxHp = 9; d.contactDamage = 3; d.expReward = 2;
                 d.attackRange = 5.5f; d.fireInterval = 2.4f;
-                d.projectileSpeed = 6f; d.projectileDamage = 6; d.projectileLifetime = 3f;
+                d.projectileSpeed = 2f; d.projectileDamage = 6; d.projectileLifetime = 4.5f;
             });
             CreateEnemy("Enemy_DongzhuoCrossbow", d =>
             {
@@ -117,7 +117,7 @@ namespace Samkuk.EditorTools
                 d.tint = new Color(0.75f, 0.55f, 0.95f); d.scale = 1.05f;
                 d.moveSpeed = 1.3f; d.maxHp = 22; d.contactDamage = 6; d.expReward = 3;
                 d.attackRange = 6.5f; d.fireInterval = 2.0f;
-                d.projectileSpeed = 7f; d.projectileDamage = 8; d.projectileLifetime = 3f;
+                d.projectileSpeed = 2.5f; d.projectileDamage = 8; d.projectileLifetime = 4.5f;
             });
             CreateEnemy("Enemy_LvbuArcher", d =>
             {
@@ -125,7 +125,7 @@ namespace Samkuk.EditorTools
                 d.tint = new Color(1f, 0.7f, 0.35f); d.scale = 1.1f;
                 d.moveSpeed = 1.6f; d.maxHp = 38; d.contactDamage = 8; d.expReward = 4;
                 d.attackRange = 7f; d.fireInterval = 1.6f;
-                d.projectileSpeed = 8f; d.projectileDamage = 10; d.projectileLifetime = 3f; d.projectileSize = 0.22f;
+                d.projectileSpeed = 3f; d.projectileDamage = 10; d.projectileLifetime = 4.5f; d.projectileSize = 0.22f;
             });
         }
 
