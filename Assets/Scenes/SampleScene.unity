@@ -225,6 +225,97 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &297618575
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 297618579}
+  - component: {fileID: 297618578}
+  - component: {fileID: 297618577}
+  - component: {fileID: 297618576}
+  m_Layer: 0
+  m_Name: GameSystems
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &297618576
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 297618575}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 095131a14abe51141bb119f415abf1c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Core.DebugOverlay
+  spawner: {fileID: 297618577}
+  manager: {fileID: 297618578}
+  burstCount: 100
+--- !u!114 &297618577
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 297618575}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 544a2139bf7342b4a8e9d26e26c15188, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Enemies.EnemySpawner
+  enemyPrefab: {fileID: 7292686257079920750, guid: 133811d619566824c9facba170f50075, type: 3}
+  manager: {fileID: 297618578}
+  cam: {fileID: 519420031}
+  spawnTable:
+  - data: {fileID: 11400000, guid: 472d80332addcc540923e8c9cd95da51, type: 2}
+    weight: 3
+  - data: {fileID: 11400000, guid: 8ad87b1166731764080bb10336e3ab40, type: 2}
+    weight: 1
+  spawnPerSecond: 6
+  maxAlive: 400
+  spawnMargin: 1.5
+  autoSpawn: 1
+--- !u!114 &297618578
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 297618575}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89cdda7d34dbbb7479b15d1dbd03ca80, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Enemies.EnemyManager
+  target: {fileID: 299974861}
+  separationStrength: 3
+  maxSeparationSpeed: 3
+  tooFarDistance: 25
+  playerRadius: 0.4
+  cellSize: 1.5
+--- !u!4 &297618579
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 297618575}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &299974860
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -549,3 +640,4 @@ SceneRoots:
   - {fileID: 619394802}
   - {fileID: 299974860}
   - {fileID: 246243727}
+  - {fileID: 297618579}
