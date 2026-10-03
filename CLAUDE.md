@@ -29,7 +29,7 @@
 | 9-1 | 저장, 영구 강화 로직, 결과 화면, 일시정지 | 완료 | ea433f4 |
 | 9-2 | 타이틀 씬, 영구 강화 상점, 기록, 저장 초기화, 씬 흐름 | 완료 | 082e8d4 |
 | 10-2 | 효과음(코드 합성 `SfxSynth`, `AudioManager`, `SfxHooks`, 타이틀 효과음 볼륨 버튼) | 완료 | ce823ba |
-| 10-1 | 타격감(화면 흔들림 `ScreenShake`, 입자 `BurstFx`, 피격 번쩍임 `DamageFlashView`, 데미지 숫자 단계, `FeedbackHooks`, 타이틀 화면 흔들림 설정) | 완료 | b5ab14f |
+| 10-1 | 타격감(화면 흔들림 `ScreenShake`, 입자 `BurstFx`, 피격 번쩍임 `DamageFlashView`, 데미지 숫자 단계, `FeedbackHooks`, 타이틀 화면 흔들림 설정) | 완료 | 94e4e26 |
 | 10-3, 10-4 | UI 스킨 / 밸런싱 | 대기 | - |
 | 11 | PC 빌드 | 대기 | - |
 
