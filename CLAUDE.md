@@ -35,7 +35,7 @@
 | 10-5 | 장수 선택 카드 초상화: `HeroData.portrait` 슬롯, 카드 4:5 레이아웃, 메뉴 `Step 10-5` 연결, 규격/프롬프트 `docs/HERO_PORTRAITS.md` (임시 그림 5장은 코드로 생성) | 완료 | 9607907 |
 | 10-6 | 게임 안 장수 4방향 걷기 애니메이션: `HeroData.walkSheet`, `HeroSpriteSet`(4x4 시트를 실행 중 슬라이스), `PlayerAnimator`, 메뉴 `Step 10-6`, 규격 `docs/HERO_WALK_SHEETS.md` (임시 그림 5장은 코드로 생성) | 완료 | 69c35a0 |
 | 10-7 | 적 10종 4방향 걷기 애니메이션: `EnemyData.walkSheet`, `Enemy.TickAnimation`(EnemyManager 이동 루프에서 호출, 플레이어를 바라봄), 메뉴 `Step 10-7`, 기병/보스는 말 + 기수 (임시 그림은 코드로 생성) | 완료 | 15be588 |
-| 10-8 | 아군(동행 장수): 장수 선택 뒤 나머지 중 2명을 골라 데려감. 주인공을 따라다니며 시작 무기로 자동 공격, 적에게 공격받아 쓰러지면 15초 뒤 부활. `AllyController/AllyManager/AllyConfig`, `IEnemyTarget`(적 목표 확장), `IWeaponStats`/`WeaponFactory`(무기 소유자 일반화), `AllySelectUI`, 메뉴 `Step 10-8`, 설명 `docs/ALLIES.md` | 완료 | - |
+| 10-8 | 아군(동행 장수): 장수 선택 뒤 나머지 중 2명을 골라 데려감. 주인공을 따라다니며 시작 무기로 자동 공격, 적에게 공격받아 쓰러지면 15초 뒤 부활. `AllyController/AllyManager/AllyConfig`, `IEnemyTarget`(적 목표 확장), `IWeaponStats`/`WeaponFactory`(무기 소유자 일반화), `AllySelectUI`, 메뉴 `Step 10-8`, 설명 `docs/ALLIES.md` | 완료 | 38e097b |
 | 11 | PC 빌드 | 대기(보류) | - |
 
 ## 남은 작업
