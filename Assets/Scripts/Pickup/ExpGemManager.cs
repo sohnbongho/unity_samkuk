@@ -72,6 +72,13 @@ namespace Samkuk.Pickups
             return gem;
         }
 
+        /// <summary>떨어져 있는 모든 보석을 플레이어에게 끌어당긴다 (스킬용).</summary>
+        public void AttractAll()
+        {
+            foreach (var gem in gems)
+                if (!gem.Attracted) gem.Attract(startSpeed);
+        }
+
         void Update()
         {
             if (target == null || experience == null || gems.Count == 0) return;

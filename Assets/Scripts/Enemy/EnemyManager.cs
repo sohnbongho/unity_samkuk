@@ -123,8 +123,9 @@ namespace Samkuk.Enemies
                 }
 
                 float stop = playerRadius + r;
+                bool stunned = e.TickStun(dt);
 
-                if (canHurtPlayer)
+                if (canHurtPlayer && !stunned) // 기절한 적은 접촉 피해를 주지 못한다
                 {
                     float contact = stop + contactPadding;
                     if (distSqr <= contact * contact)
@@ -137,7 +138,9 @@ namespace Samkuk.Enemies
                 Vector2 desired = Vector2.zero;
                 Vector2 dirToPlayer = distSqr > 1e-6f ? toPlayer / Mathf.Sqrt(distSqr) : Vector2.right;
 
-                if (e.Data.chargeInterval > 0f && e.TickCharge(dt, dirToPlayer, out Vector2 chargeVelocity))
+                if (stunned)
+                    desired = Vector2.zero; // 기절 중: 제자리 (겹침 방지 밀림만 받음)
+                else if (e.Data.chargeInterval > 0f && e.TickCharge(dt, dirToPlayer, out Vector2 chargeVelocity))
                     desired = chargeVelocity; // 돌진 패턴이 이동을 지배 (예고 중에는 정지)
                 else if (distSqr > stop * stop)
                     desired = dirToPlayer * e.Data.moveSpeed;

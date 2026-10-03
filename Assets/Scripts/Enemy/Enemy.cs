@@ -14,6 +14,7 @@ namespace Samkuk.Enemies
     {
         const float FlashDuration = 0.1f;
         const float FlashScalePunch = 0.25f;
+        static readonly Color StunTint = new Color(0.6f, 0.8f, 1f);
 
         enum Phase { Chase, Windup, Charge }
 
@@ -23,6 +24,7 @@ namespace Samkuk.Enemies
         Sprite defaultSprite;
         float flashTimer;
         float baseScale = 1f;
+        float stunTimer;
 
         // 돌진 패턴 상태
         Phase phase;
@@ -66,6 +68,7 @@ namespace Samkuk.Enemies
             Alive = true;
             baseScale = data.scale;
             flashTimer = 0f;
+            stunTimer = 0f;
             phase = Phase.Chase;
             chargeClock = 0f;
             enabled = false;
@@ -86,6 +89,29 @@ namespace Samkuk.Enemies
         }
 
         public void SetFacing(bool faceLeft) => sr.flipX = faceLeft;
+
+        public bool IsStunned => stunTimer > 0f;
+
+        /// <summary>일정 시간 움직이지 못하게 한다 (진행 중인 돌진 패턴은 취소).</summary>
+        public void Stun(float seconds)
+        {
+            if (!Alive || seconds <= 0f) return;
+            stunTimer = Mathf.Max(stunTimer, seconds);
+            phase = Phase.Chase;
+            chargeClock = 0f;
+            sr.color = StunTint;
+        }
+
+        /// <summary>기절 시간을 dt만큼 진행시킨다. 아직 기절 중이면 true.</summary>
+        internal bool TickStun(float dt)
+        {
+            if (stunTimer <= 0f) return false;
+            stunTimer -= dt;
+            if (stunTimer > 0f) return true;
+
+            sr.color = Data.tint;
+            return false;
+        }
 
         /// <summary>돌진 중인가 (예고 포함하지 않음).</summary>
         public bool IsCharging => phase == Phase.Charge;

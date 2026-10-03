@@ -16,6 +16,8 @@ namespace Samkuk.Player
         PlayerStats stats;
         float appliedBonus;
         float invulnTimer;
+        float skillInvulnTimer;
+        Color baseColor = Color.white;
         float regenAccumulator;
 
         public float Current { get; private set; }
@@ -23,7 +25,10 @@ namespace Samkuk.Player
         public float Max => maxHp + (stats != null ? stats.MaxHpBonus : 0f);
         public bool IsDead { get; private set; }
         /// <summary>접촉 피해를 받을 수 있는 상태인가 (무적/사망이면 false).</summary>
-        public bool CanTakeContactDamage => !IsDead && invulnTimer <= 0f;
+        public bool CanTakeContactDamage => !IsDead && invulnTimer <= 0f && skillInvulnTimer <= 0f;
+        /// <summary>스킬 효과로 무적인가.</summary>
+        public bool IsSkillInvulnerable => skillInvulnTimer > 0f;
+        public Color BaseColor => baseColor;
 
         /// <summary>(현재 체력, 최대 체력)</summary>
         public event Action<float, float> Changed;
@@ -57,6 +62,19 @@ namespace Samkuk.Player
             Changed?.Invoke(Current, Max);
         }
 
+        /// <summary>플레이어 스프라이트의 기본 색(장수 색)을 지정한다.</summary>
+        public void SetBaseColor(Color color)
+        {
+            baseColor = color;
+            if (body != null && invulnTimer <= 0f) body.color = baseColor;
+        }
+
+        /// <summary>스킬 효과로 일정 시간 모든 피해를 무시한다.</summary>
+        public void SetInvulnerable(float seconds)
+        {
+            if (seconds > skillInvulnTimer) skillInvulnTimer = seconds;
+        }
+
         public void Heal(float amount)
         {
             if (IsDead || amount <= 0f) return;
@@ -64,10 +82,10 @@ namespace Samkuk.Player
             Changed?.Invoke(Current, Max);
         }
 
-        /// <summary>무적 시간을 무시하고 피해를 준다.</summary>
+        /// <summary>피해를 준다 (피격 후 무적 시간은 무시하지만 스킬 무적은 적용).</summary>
         public void TakeDamage(float amount)
         {
-            if (IsDead || amount <= 0f) return;
+            if (IsDead || amount <= 0f || skillInvulnTimer > 0f) return;
 
             Current = Mathf.Max(0f, Current - amount);
             Changed?.Invoke(Current, Max);
@@ -87,7 +105,7 @@ namespace Samkuk.Player
         void Die()
         {
             IsDead = true;
-            if (body != null) body.color = Color.white;
+            if (body != null) body.color = baseColor;
 
             var controller = GetComponent<PlayerController>();
             if (controller != null) controller.enabled = false;
@@ -97,6 +115,7 @@ namespace Samkuk.Player
 
         void Update()
         {
+            if (skillInvulnTimer > 0f) skillInvulnTimer -= Time.deltaTime;
             UpdateInvulnerability();
             UpdateRegen();
         }
@@ -109,9 +128,9 @@ namespace Samkuk.Player
             if (body == null) return;
 
             if (invulnTimer <= 0f || IsDead)
-                body.color = Color.white;
+                body.color = baseColor;
             else
-                body.color = Mathf.FloorToInt(invulnTimer * 20f) % 2 == 0 ? new Color(1f, 1f, 1f, 0.35f) : Color.white;
+                body.color = Mathf.FloorToInt(invulnTimer * 20f) % 2 == 0 ? new Color(baseColor.r, baseColor.g, baseColor.b, 0.35f) : baseColor;
         }
 
         void UpdateRegen()

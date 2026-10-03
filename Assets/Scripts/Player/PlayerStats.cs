@@ -5,10 +5,21 @@ using UnityEngine;
 
 namespace Samkuk.Player
 {
-    /// <summary>획득한 패시브의 누적 효과(배율/보너스)를 계산해 제공한다.</summary>
+    /// <summary>
+    /// 최종 능력치(배율/보너스)를 계산해 제공한다.
+    /// 구성: 패시브(레벨 누적) × 장수 보정 × 시간제 버프.
+    /// </summary>
     public class PlayerStats : MonoBehaviour
     {
+        class Buff
+        {
+            public float damage, cooldown, speed, remaining;
+        }
+
         readonly Dictionary<PassiveData, int> levels = new Dictionary<PassiveData, int>();
+        readonly List<Buff> buffs = new List<Buff>();
+
+        float heroDamage = 1f, heroSpeed = 1f, heroExp = 1f, heroPickup = 1f, heroMaxHp;
 
         public float DamageMultiplier { get; private set; } = 1f;
         public float CooldownMultiplier { get; private set; } = 1f;
@@ -18,10 +29,11 @@ namespace Samkuk.Player
         public float MaxHpBonus { get; private set; }
         public float RegenPerSecond { get; private set; }
 
-        /// <summary>패시브가 바뀔 때마다 호출된다.</summary>
+        /// <summary>능력치가 바뀔 때마다 호출된다.</summary>
         public event Action Changed;
 
         public IReadOnlyDictionary<PassiveData, int> Levels => levels;
+        public int ActiveBuffCount => buffs.Count;
         public int GetLevel(PassiveData passive) => levels.TryGetValue(passive, out int lv) ? lv : 0;
         public bool CanUpgrade(PassiveData passive) => passive != null && GetLevel(passive) < passive.maxLevel;
 
@@ -31,6 +43,48 @@ namespace Samkuk.Player
             levels[passive] = GetLevel(passive) + 1;
             Recalculate();
             return true;
+        }
+
+        /// <summary>장수의 기본 보정치를 적용한다 (null이면 보정 없음).</summary>
+        public void ApplyHero(HeroData hero)
+        {
+            heroDamage = hero != null ? hero.damageMultiplier : 1f;
+            heroSpeed = hero != null ? hero.moveSpeedMultiplier : 1f;
+            heroExp = hero != null ? hero.expMultiplier : 1f;
+            heroPickup = hero != null ? hero.pickupRadiusMultiplier : 1f;
+            heroMaxHp = hero != null ? hero.maxHpBonus : 0f;
+            Recalculate();
+        }
+
+        /// <summary>
+        /// 시간제 버프를 추가한다. damage/speed는 증가 비율, cooldown은 감소 비율(0.3 = 30% 단축).
+        /// </summary>
+        public void AddBuff(float damageBonus, float cooldownReduction, float speedBonus, float duration)
+        {
+            if (duration <= 0f) return;
+            buffs.Add(new Buff
+            {
+                damage = damageBonus, cooldown = cooldownReduction, speed = speedBonus, remaining = duration
+            });
+            Recalculate();
+        }
+
+        void Update()
+        {
+            if (buffs.Count == 0) return;
+
+            bool expired = false;
+            float dt = Time.deltaTime;
+            for (int i = buffs.Count - 1; i >= 0; i--)
+            {
+                buffs[i].remaining -= dt;
+                if (buffs[i].remaining <= 0f)
+                {
+                    buffs.RemoveAt(i);
+                    expired = true;
+                }
+            }
+            if (expired) Recalculate();
         }
 
         void Recalculate()
@@ -52,12 +106,20 @@ namespace Samkuk.Player
                 }
             }
 
-            DamageMultiplier = 1f + damage;
-            CooldownMultiplier = Mathf.Max(0.3f, 1f - cooldown);
-            MoveSpeedMultiplier = 1f + speed;
-            PickupRadiusMultiplier = 1f + pickup;
-            ExpMultiplier = 1f + exp;
-            MaxHpBonus = maxHp;
+            float buffDamage = 1f, buffCooldown = 1f, buffSpeed = 1f;
+            foreach (var b in buffs)
+            {
+                buffDamage *= 1f + b.damage;
+                buffCooldown *= 1f - b.cooldown;
+                buffSpeed *= 1f + b.speed;
+            }
+
+            DamageMultiplier = (1f + damage) * heroDamage * buffDamage;
+            CooldownMultiplier = Mathf.Max(0.3f, (1f - cooldown) * buffCooldown);
+            MoveSpeedMultiplier = (1f + speed) * heroSpeed * buffSpeed;
+            PickupRadiusMultiplier = (1f + pickup) * heroPickup;
+            ExpMultiplier = (1f + exp) * heroExp;
+            MaxHpBonus = maxHp + heroMaxHp;
             RegenPerSecond = regen;
             Changed?.Invoke();
         }
