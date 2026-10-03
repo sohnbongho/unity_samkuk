@@ -94,6 +94,16 @@ namespace Samkuk.Enemies
             return SpawnAt(data, RandomRingPosition());
         }
 
+        /// <summary>지정한 적을 화면 밖 원 위에 스폰 (엘리트/보스 이벤트용).</summary>
+        public Enemy SpawnRing(EnemyData data) => SpawnAt(data, RandomRingPosition());
+
+        /// <summary>스폰 테이블 전체를 교체한다 (웨이브 전환용).</summary>
+        public void ReplaceSpawnTable(IEnumerable<Entry> entries)
+        {
+            spawnTable.Clear();
+            spawnTable.AddRange(entries);
+        }
+
         /// <summary>디버그/웨이브용: 여러 마리를 한 번에 스폰.</summary>
         public void SpawnBurst(int count)
         {

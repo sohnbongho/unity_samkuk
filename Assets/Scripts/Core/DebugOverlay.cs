@@ -1,12 +1,13 @@
 using Samkuk.Enemies;
 using Samkuk.Player;
+using Samkuk.Stages;
 using Samkuk.Weapons;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace Samkuk.Core
 {
-    /// <summary>개발용 오버레이: FPS, 활성 적 수, F1 적 +100, F2 전체 무기 레벨업, F3 경험치 +10.</summary>
+    /// <summary>개발용 오버레이: FPS, 활성 적 수, F1 적 +100, F2 전체 무기 레벨업, F3 경험치 +10, F4 시간 +10초.</summary>
     public class DebugOverlay : MonoBehaviour
     {
         [SerializeField] EnemySpawner spawner;
@@ -17,6 +18,7 @@ namespace Samkuk.Core
         GUIStyle style;
         WeaponController weapons;
         PlayerExperience experience;
+        StageController stage;
 
         public EnemySpawner Spawner { get => spawner; set => spawner = value; }
         public EnemyManager Manager { get => manager; set => manager = value; }
@@ -42,6 +44,12 @@ namespace Samkuk.Core
                 if (experience == null) experience = FindAnyObjectByType<PlayerExperience>();
                 if (experience != null) experience.AddExp(10);
             }
+
+            if (kb.f4Key.wasPressedThisFrame)
+            {
+                if (stage == null) stage = FindAnyObjectByType<StageController>();
+                if (stage != null) stage.Tick(10f);
+            }
         }
 
         void OnGUI()
@@ -55,7 +63,7 @@ namespace Samkuk.Core
             int count = manager != null ? manager.Count : 0;
             float fps = smoothedDelta > 0f ? 1f / smoothedDelta : 0f;
             GUI.Label(new Rect(10, 8, 500, 26), $"FPS {fps:0}   Enemies {count}", style);
-            GUI.Label(new Rect(10, 30, 500, 26), $"F1: +{burstCount} enemies   F2: weapons level up   F3: +10 exp", style);
+            GUI.Label(new Rect(10, 30, 800, 26), $"F1: +{burstCount} enemies   F2: weapons level up   F3: +10 exp   F4: +10 sec", style);
         }
     }
 }

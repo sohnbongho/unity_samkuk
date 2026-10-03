@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e753af4cefcb8b7438cb018d77508afc, type: 3}
+  m_Name: Stage_YellowTurban
+  m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.StageData
+  displayName: "\uD669\uAC74\uC801\uC758 \uB09C"
+  duration: 60
+  waves:
+  - name: "\uD669\uAC74\uC801 \uC2B5\uACA9"
+    startTime: 0
+    spawnPerSecond: 3
+    maxAlive: 80
+    enemies:
+    - data: {fileID: 11400000, guid: 472d80332addcc540923e8c9cd95da51, type: 2}
+      weight: 1
+  - name: "\uD669\uAC74 \uCC99\uD6C4\uB300"
+    startTime: 15
+    spawnPerSecond: 5
+    maxAlive: 120
+    enemies:
+    - data: {fileID: 11400000, guid: 472d80332addcc540923e8c9cd95da51, type: 2}
+      weight: 3
+    - data: {fileID: 11400000, guid: 8ad87b1166731764080bb10336e3ab40, type: 2}
+      weight: 1
+  - name: "\uB3D9\uD0C1\uAD70 \uCD9C\uBCD1"
+    startTime: 30
+    spawnPerSecond: 6
+    maxAlive: 160
+    enemies:
+    - data: {fileID: 11400000, guid: a8b906dc7e293c14fbb3f0c37065516c, type: 2}
+      weight: 3
+    - data: {fileID: 11400000, guid: 85987cf53acd70a47b2d89b52a94e8c5, type: 2}
+      weight: 1
+    - data: {fileID: 11400000, guid: 472d80332addcc540923e8c9cd95da51, type: 2}
+      weight: 1
+  - name: "\uC5EC\uD3EC\uAD70 \uB3CC\uACA9"
+    startTime: 45
+    spawnPerSecond: 8
+    maxAlive: 220
+    enemies:
+    - data: {fileID: 11400000, guid: 3366d0ce40fefcd41b3f2f3dc9e0fd6f, type: 2}
+      weight: 3
+    - data: {fileID: 11400000, guid: 85987cf53acd70a47b2d89b52a94e8c5, type: 2}
+      weight: 2
+    - data: {fileID: 11400000, guid: a8b906dc7e293c14fbb3f0c37065516c, type: 2}
+      weight: 1
+  events:
+  - time: 20
+    enemy: {fileID: 11400000, guid: 7b363ad0bff88f647aadf44d44110a85, type: 2}
+    count: 1
+    isBoss: 0
+    message: "\uD669\uAC74 \uC7A5\uC218 \uCD9C\uD604!"
+  - time: 38
+    enemy: {fileID: 11400000, guid: 7b363ad0bff88f647aadf44d44110a85, type: 2}
+    count: 2
+    isBoss: 0
+    message: "\uD669\uAC74 \uC7A5\uC218 \uB458\uC774 \uB098\uD0C0\uB0AC\uB2E4!"
+  - time: 45
+    enemy: {fileID: 11400000, guid: 9897d05d60af6e540a0ded5923582099, type: 2}
+    count: 1
+    isBoss: 1
+    message: "\uC5EC\uD3EC \uCD9C\uD604!"

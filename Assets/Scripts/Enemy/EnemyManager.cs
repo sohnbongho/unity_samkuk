@@ -30,6 +30,7 @@ namespace Samkuk.Enemies
         float[] nearestDist = new float[16];
         bool gridBuilt;
         int queryStamp;
+        float maxEnemyRadius;
 
         PlayerHealth playerHealth;
         Transform healthLookupTarget;
@@ -57,6 +58,7 @@ namespace Samkuk.Enemies
             if (e.ManagerIndex >= 0) return;
             e.ManagerIndex = enemies.Count;
             enemies.Add(e);
+            if (e.Radius > maxEnemyRadius) maxEnemyRadius = e.Radius;
         }
 
         public void Unregister(Enemy e)
@@ -100,6 +102,7 @@ namespace Samkuk.Enemies
             gridBuilt = true;
 
             Vector2 tp = target.position;
+            float dt = Time.fixedDeltaTime;
             float tooFarSqr = tooFarDistance * tooFarDistance;
             bool canHurtPlayer = playerHealth != null && playerHealth.CanTakeContactDamage;
 
@@ -132,8 +135,12 @@ namespace Samkuk.Enemies
                 }
 
                 Vector2 desired = Vector2.zero;
-                if (distSqr > stop * stop)
-                    desired = toPlayer / Mathf.Sqrt(distSqr) * e.Data.moveSpeed;
+                Vector2 dirToPlayer = distSqr > 1e-6f ? toPlayer / Mathf.Sqrt(distSqr) : Vector2.right;
+
+                if (e.Data.chargeInterval > 0f && e.TickCharge(dt, dirToPlayer, out Vector2 chargeVelocity))
+                    desired = chargeVelocity; // 돌진 패턴이 이동을 지배 (예고 중에는 정지)
+                else if (distSqr > stop * stop)
+                    desired = dirToPlayer * e.Data.moveSpeed;
 
                 Vector2 push = ComputePush(i, p, r);
                 Vector2 sep = Vector2.ClampMagnitude(push * separationStrength, maxSeparationSpeed);
@@ -207,7 +214,7 @@ namespace Samkuk.Enemies
 
             int stamp = ++queryStamp;
             float invCell = 1f / cellSize;
-            float pad = cellSize * 0.5f; // 적 반지름의 상한
+            float pad = Mathf.Max(maxEnemyRadius, 0.01f); // 지금까지 등록된 가장 큰 적(보스 등)의 반지름
             int x0 = Mathf.FloorToInt((center.x - radius - pad) * invCell);
             int x1 = Mathf.FloorToInt((center.x + radius + pad) * invCell);
             int y0 = Mathf.FloorToInt((center.y - radius - pad) * invCell);

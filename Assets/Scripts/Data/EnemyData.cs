@@ -18,6 +18,16 @@ namespace Samkuk.Data
         public int contactDamage = 5;
         public int expReward = 1;
 
+        [Header("돌진 패턴 (보스/기병용)")]
+        [Tooltip("돌진 주기(초). 0이면 돌진하지 않음")]
+        public float chargeInterval = 0f;
+        [Tooltip("돌진 전 예고 시간(초): 멈춰서 붉게 깜빡임")]
+        public float chargeWindup = 0.6f;
+        [Tooltip("돌진 지속 시간(초)")]
+        public float chargeDuration = 0.8f;
+        [Tooltip("돌진 중 이동 속도 배율")]
+        public float chargeSpeedMultiplier = 3f;
+
         [Header("충돌")]
         [Tooltip("스케일 적용 전 콜라이더 반지름")]
         public float colliderRadius = 0.4f;

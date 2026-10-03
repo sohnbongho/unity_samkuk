@@ -15,12 +15,20 @@ namespace Samkuk.Enemies
         const float FlashDuration = 0.1f;
         const float FlashScalePunch = 0.25f;
 
+        enum Phase { Chase, Windup, Charge }
+
         Rigidbody2D body;
         SpriteRenderer sr;
         CircleCollider2D col;
         Sprite defaultSprite;
         float flashTimer;
         float baseScale = 1f;
+
+        // 돌진 패턴 상태
+        Phase phase;
+        float phaseTimer;
+        float chargeClock;
+        Vector2 chargeDir = Vector2.right;
 
         public EnemyData Data { get; private set; }
         public float Hp { get; private set; }
@@ -58,6 +66,8 @@ namespace Samkuk.Enemies
             Alive = true;
             baseScale = data.scale;
             flashTimer = 0f;
+            phase = Phase.Chase;
+            chargeClock = 0f;
             enabled = false;
             sr.sprite = data.sprite != null ? data.sprite : defaultSprite;
             sr.color = data.tint;
@@ -76,6 +86,57 @@ namespace Samkuk.Enemies
         }
 
         public void SetFacing(bool faceLeft) => sr.flipX = faceLeft;
+
+        /// <summary>돌진 중인가 (예고 포함하지 않음).</summary>
+        public bool IsCharging => phase == Phase.Charge;
+        /// <summary>돌진 예고 중인가.</summary>
+        public bool IsWindingUp => phase == Phase.Windup;
+
+        /// <summary>
+        /// 돌진 패턴 상태를 갱신한다. 패턴이 이동을 지배하는 동안(예고/돌진) true를 반환하고
+        /// velocity에 원하는 속도(예고 중에는 0)를 돌려준다.
+        /// </summary>
+        internal bool TickCharge(float dt, Vector2 dirToPlayer, out Vector2 velocity)
+        {
+            velocity = Vector2.zero;
+            if (Data.chargeInterval <= 0f) return false;
+
+            switch (phase)
+            {
+                case Phase.Chase:
+                    chargeClock += dt;
+                    if (chargeClock >= Data.chargeInterval)
+                    {
+                        phase = Phase.Windup;
+                        phaseTimer = Data.chargeWindup;
+                        chargeDir = dirToPlayer;
+                        sr.color = new Color(1f, 0.3f, 0.3f);
+                        return true; // 예고 시작 틱부터 멈춘다
+                    }
+                    return false;
+
+                case Phase.Windup:
+                    chargeDir = dirToPlayer; // 예고 중에는 플레이어를 계속 조준
+                    phaseTimer -= dt;
+                    if (phaseTimer <= 0f)
+                    {
+                        phase = Phase.Charge;
+                        phaseTimer = Data.chargeDuration;
+                        sr.color = Data.tint;
+                    }
+                    return true;
+
+                default: // Charge
+                    phaseTimer -= dt;
+                    velocity = chargeDir * (Data.moveSpeed * Data.chargeSpeedMultiplier);
+                    if (phaseTimer <= 0f)
+                    {
+                        phase = Phase.Chase;
+                        chargeClock = 0f;
+                    }
+                    return true;
+            }
+        }
 
         public void TakeDamage(float amount)
         {
