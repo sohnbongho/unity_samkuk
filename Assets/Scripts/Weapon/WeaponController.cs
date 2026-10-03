@@ -16,10 +16,14 @@ namespace Samkuk.Weapons
         [SerializeField] EnemyManager enemyManager;
 
         readonly List<Weapon> weapons = new List<Weapon>();
+        readonly HashSet<WeaponData> evolvedBases = new HashSet<WeaponData>();
         ObjectPool<Projectile> pool;
         PlayerController owner;
 
         public IReadOnlyList<Weapon> Weapons => weapons;
+
+        /// <summary>무기가 진화했을 때 (기본 무기, 진화 무기).</summary>
+        public event System.Action<WeaponData, WeaponData> Evolved;
         public Projectile ProjectilePrefab { get => projectilePrefab; set => projectilePrefab = value; }
         /// <summary>일회성 이펙트 재생기 (Awake에서 생성).</summary>
         public WeaponFx Fx { get; private set; }
@@ -90,6 +94,39 @@ namespace Samkuk.Weapons
             weapon.Initialize(data, this, owner, enemyManager);
             weapons.Add(weapon);
             return weapon;
+        }
+
+        /// <summary>해당 무기를 현재 보유 중인가.</summary>
+        public bool Owns(WeaponData data) => Find(data) != null;
+
+        /// <summary>해당 무기가 이미 다른 무기로 진화했는가 (다시 새 무기로 나오지 않게 하는 데 사용).</summary>
+        public bool HasEvolved(WeaponData baseWeapon) => evolvedBases.Contains(baseWeapon);
+
+        Weapon Find(WeaponData data)
+        {
+            foreach (var w in weapons)
+                if (w.Data == data) return w;
+            return null;
+        }
+
+        /// <summary>
+        /// 기본 무기를 진화 무기로 교체한다. 기본 무기를 갖고 있지 않거나 진화 무기를 이미 갖고 있으면 null.
+        /// 진화 무기는 1레벨에서 시작하며 이후 다시 강화할 수 있다.
+        /// </summary>
+        public Weapon Evolve(WeaponData from, WeaponData to)
+        {
+            if (from == null || to == null || from == to) return null;
+
+            var old = Find(from);
+            if (old == null || Owns(to)) return null;
+
+            weapons.Remove(old);
+            Destroy(old.gameObject);
+            evolvedBases.Add(from);
+
+            var evolved = AddWeapon(to);
+            Evolved?.Invoke(from, to);
+            return evolved;
         }
 
         public void LevelUpAll()

@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f23153a77f91d1144b31227e10f9c0bb, type: 3}
+  m_Name: Evo_Nova
+  m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.EvolutionData
+  baseWeapon: {fileID: 11400000, guid: 454ed27f96b21e94a93c2f46250c45fb, type: 2}
+  requiredPassive: {fileID: 11400000, guid: 216e31a4dd855c6499ec7e8075124ea1, type: 2}
+  evolvedWeapon: {fileID: 11400000, guid: b305ca7b250d89f4d8cfcdf1883c631b, type: 2}
+  requiredLevel: 5
+  requiredPassiveLevel: 1

@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c4883b553af1be4a8b5ffc15a42639a, type: 3}
+  m_Name: Weapon_Evo_RedCliff
+  m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.WeaponData
+  displayName: "\uC801\uBCBD\uB300\uD654"
+  description: "\uC801\uBCBD\uC744 \uD0DC\uC6B4 \uBD88\uBC14\uB2E4. \uB113\uC740
+    \uBD88\uAE38 \uC14B\uC774 \uC624\uB798 \uD0C0\uC624\uB978\uB2E4."
+  type: 4
+  sprite: {fileID: 21300000, guid: 418ac3079ebf6ec42bc1a5183643a4a7, type: 3}
+  tint: {r: 1, g: 0.6, b: 0.4, a: 1}
+  damage: 9
+  cooldown: 2.5
+  range: 9
+  count: 3
+  projectileSpeed: 10
+  pierce: 1
+  duration: 4
+  size: 2
+  rotateSpeed: 180
+  tickInterval: 0.3
+  knockback: 0
+  maxLevel: 8
+  damagePerLevel: 0.2
+  cooldownReductionPerLevel: 0.05
+  levelsPerExtraCount: 3

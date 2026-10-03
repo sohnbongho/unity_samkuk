@@ -30,8 +30,11 @@ namespace Samkuk.UI
         [SerializeField] GameObject panel;
         [SerializeField] UpgradeCardView[] cards;
 
+        static readonly Color EvolveColor = new Color(0.62f, 0.46f, 0.1f, 1f);
+
         Action<int> onChosen;
         int visibleCards;
+        Color[] baseColors;
 
         public bool IsVisible => panel != null && panel.activeSelf;
 
@@ -45,6 +48,14 @@ namespace Samkuk.UI
             onChosen = chosenCallback;
             visibleCards = Mathf.Min(options.Count, cards.Length);
 
+            // 카드 기본 색은 처음 표시할 때 기억해 두고, 진화 카드만 금빛으로 강조한다
+            if (baseColors == null)
+            {
+                baseColors = new Color[cards.Length];
+                for (int i = 0; i < cards.Length; i++)
+                    baseColors[i] = cards[i].button.targetGraphic != null ? cards[i].button.targetGraphic.color : Color.white;
+            }
+
             for (int i = 0; i < cards.Length; i++)
             {
                 var card = cards[i];
@@ -53,6 +64,8 @@ namespace Samkuk.UI
                 if (!active) continue;
 
                 card.title.text = options[i].Title;
+                if (card.button.targetGraphic != null)
+                    card.button.targetGraphic.color = options[i].Kind == UpgradeKind.Evolve ? EvolveColor : baseColors[i];
                 card.description.text = options[i].Description;
                 if (card.hotkey != null) card.hotkey.text = $"[{i + 1}]";
 

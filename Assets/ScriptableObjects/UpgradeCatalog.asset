@@ -31,3 +31,11 @@ MonoBehaviour:
   - {fileID: 11400000, guid: a1c285421d49c4f4eaa5dc03df193da3, type: 2}
   - {fileID: 11400000, guid: 216e31a4dd855c6499ec7e8075124ea1, type: 2}
   - {fileID: 11400000, guid: fc7e69ec31716ad429251bd5eb0ed7ba, type: 2}
+  evolutions:
+  - {fileID: 11400000, guid: b0b54bbe7406bc34699a3501582f15aa, type: 2}
+  - {fileID: 11400000, guid: 4ff6778ff90093f4f813d628666befb9, type: 2}
+  - {fileID: 11400000, guid: 167096764f4c0294ca43c44f66ecd2e0, type: 2}
+  - {fileID: 11400000, guid: 71c1fb9df01e673409d942578b8146af, type: 2}
+  - {fileID: 11400000, guid: 3c6b445c12c2c434aaa6f281c7c49263, type: 2}
+  - {fileID: 11400000, guid: a5860e9ef27724f4ab853c0999a2d849, type: 2}
+  - {fileID: 11400000, guid: 1230b3d949c068a4aa555c25719deb17, type: 2}

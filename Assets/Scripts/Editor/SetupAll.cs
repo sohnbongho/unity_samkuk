@@ -15,6 +15,7 @@ namespace Samkuk.EditorTools
             Step5Setup.Run();
             Step6Setup.Run();
             Step8WeaponsSetup.Run();
+            Step8EvolutionSetup.Run();
             Step7Setup.Run();
             Step8EnemiesSetup.Run();
             Step8Setup.Run();
