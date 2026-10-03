@@ -24,7 +24,7 @@ MonoBehaviour:
       weight: 1
   - name: "\uD669\uAC74 \uCC99\uD6C4\uB300"
     startTime: 15
-    spawnPerSecond: 5
+    spawnPerSecond: 6
     maxAlive: 120
     enemies:
     - data: {fileID: 11400000, guid: 472d80332addcc540923e8c9cd95da51, type: 2}
@@ -48,15 +48,15 @@ MonoBehaviour:
       weight: 1
   - name: "\uC5EC\uD3EC\uAD70 \uB3CC\uACA9"
     startTime: 45
-    spawnPerSecond: 8
+    spawnPerSecond: 6
     maxAlive: 220
     enemies:
     - data: {fileID: 11400000, guid: 3366d0ce40fefcd41b3f2f3dc9e0fd6f, type: 2}
-      weight: 3
+      weight: 2
     - data: {fileID: 11400000, guid: 85987cf53acd70a47b2d89b52a94e8c5, type: 2}
       weight: 2
     - data: {fileID: 11400000, guid: a8b906dc7e293c14fbb3f0c37065516c, type: 2}
-      weight: 1
+      weight: 2
     - data: {fileID: 11400000, guid: 66505e79b18cee0419daec700040cfb0, type: 2}
       weight: 1
   events:

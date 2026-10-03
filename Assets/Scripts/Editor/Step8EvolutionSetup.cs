@@ -1,4 +1,5 @@
 using System.IO;
+using Samkuk.Balance;
 using Samkuk.Data;
 using UnityEditor;
 using UnityEngine;
@@ -24,6 +25,12 @@ namespace Samkuk.EditorTools
             ("Weapon_Lightning", "Passive_Strategy", "Weapon_Evo_HeavenThunder", "Evo_Lightning"),
             ("Weapon_Thrust",    "Passive_Rations",  "Weapon_Evo_DragonSpear",   "Evo_Thrust"),
             ("Weapon_Nova",      "Passive_Virtue",   "Weapon_Evo_HeavenDrum",    "Evo_Nova"),
+            // 장수 시작 무기: 시작 무기가 곧 주력이므로 진화 가능해야 한다 (진화 도달 가능성 점검 결과)
+            ("Weapon_TwinSwords",   "Passive_Virtue",   "Weapon_Evo_TwinDragons",   "Evo_TwinSwords"),
+            ("Weapon_GreenDragon",  "Passive_Horse",    "Weapon_Evo_MoonDragon",    "Evo_GreenDragon"),
+            ("Weapon_SerpentSpear", "Passive_Armor",    "Weapon_Evo_FlyingSpear",   "Evo_SerpentSpear"),
+            ("Weapon_YitianSword",  "Passive_Strategy", "Weapon_Evo_OverlordSword", "Evo_YitianSword"),
+            ("Weapon_SkyPiercer",   "Passive_Haste",    "Weapon_Evo_PeerlessHalberd", "Evo_SkyPiercer"),
         };
 
         [MenuItem("Samkuk/Step 8-4 - Setup Weapon Evolutions")]
@@ -97,15 +104,56 @@ namespace Samkuk.EditorTools
                 w.displayName = "용담창"; w.type = WeaponType.Thrust; w.sprite = Sprite("Arrow");
                 w.description = "용의 쓸개처럼 날카로운 창. 세 방향으로 동시에 내지른다.";
                 w.tint = new Color(1f, 0.9f, 0.5f);
-                w.damage = 30f; w.cooldown = 0.9f; w.range = 4.5f; w.size = 0.55f; w.count = 3; w.duration = 0.18f;
+                w.damage = 20f; w.cooldown = 0.9f; w.range = 4.5f; w.size = 0.55f; w.count = 3; w.duration = 0.18f;
                 w.knockback = 8f; w.levelsPerExtraCount = 0;
+            });
+            // ── 장수 시작 무기 진화 ──
+            Create("Weapon_Evo_TwinDragons", w =>
+            {
+                w.displayName = "쌍룡자웅검"; w.type = WeaponType.Slash; w.sprite = Sprite("Slash");
+                w.description = "두 자루 검이 용이 되어 좌우를 크게 휩쓴다.";
+                w.tint = new Color(0.6f, 1f, 0.7f);
+                w.damage = 26f; w.cooldown = 0.85f; w.range = 3.2f; w.count = 2; w.duration = 0.2f; w.knockback = 4f;
+                w.levelsPerExtraCount = 0;
+            });
+            Create("Weapon_Evo_MoonDragon", w =>
+            {
+                w.displayName = "청룡참월도"; w.type = WeaponType.Slash; w.sprite = Sprite("Slash");
+                w.description = "달까지 벨 기세의 거대한 청룡도. 사방의 적을 베어 날린다.";
+                w.tint = new Color(0.45f, 1f, 0.7f);
+                w.damage = 42f; w.cooldown = 1.1f; w.range = 4.4f; w.count = 2; w.duration = 0.24f; w.knockback = 8f;
+                w.levelsPerExtraCount = 0;
+            });
+            Create("Weapon_Evo_FlyingSpear", w =>
+            {
+                w.displayName = "비룡사모"; w.type = WeaponType.Arrow; w.sprite = Sprite("Arrow");
+                w.description = "하늘을 나는 용처럼 적진을 꿰뚫는 창을 연달아 던진다.";
+                w.tint = new Color(0.85f, 0.85f, 1f);
+                w.damage = 30f; w.cooldown = 0.8f; w.range = 10f; w.count = 2;
+                w.projectileSpeed = 16f; w.pierce = 8; w.duration = 1.2f; w.size = 0.4f; w.levelsPerExtraCount = 3;
+            });
+            Create("Weapon_Evo_OverlordSword", w =>
+            {
+                w.displayName = "패왕의천검"; w.type = WeaponType.Arrow; w.sprite = Sprite("Arrow");
+                w.description = "검기를 사방으로 쏟아내는 패왕의 검.";
+                w.tint = new Color(0.55f, 0.75f, 1f);
+                w.damage = 16f; w.cooldown = 0.7f; w.range = 10f; w.count = 4;
+                w.projectileSpeed = 14f; w.pierce = 3; w.duration = 1.5f; w.size = 0.35f; w.levelsPerExtraCount = 3;
+            });
+            Create("Weapon_Evo_PeerlessHalberd", w =>
+            {
+                w.displayName = "천하무쌍극"; w.type = WeaponType.Orbit; w.sprite = Sprite("Blade");
+                w.description = "천하에 둘도 없는 방천화극이 네 자루로 불어나 거세게 맴돈다.";
+                w.tint = new Color(1f, 0.55f, 0.4f);
+                w.damage = 18f; w.range = 2.4f; w.count = 4; w.size = 0.7f; w.rotateSpeed = 280f; w.tickInterval = 0.25f;
+                w.levelsPerExtraCount = 3;
             });
             Create("Weapon_Evo_HeavenDrum", w =>
             {
                 w.displayName = "천고"; w.type = WeaponType.Nova; w.sprite = Sprite("Slash");
                 w.description = "하늘을 울리는 거대한 북소리. 더 넓고 강한 충격파가 퍼진다.";
                 w.tint = new Color(1f, 0.9f, 0.6f);
-                w.damage = 28f; w.cooldown = 3.0f; w.range = 6.5f; w.duration = 0.6f; w.knockback = 12f;
+                w.damage = 36f; w.cooldown = 2.6f; w.range = 6.5f; w.duration = 0.6f; w.knockback = 12f;
                 w.levelsPerExtraCount = 0;
             });
         }
@@ -141,7 +189,7 @@ namespace Samkuk.EditorTools
                 if (evo == null)
                 {
                     evo = ScriptableObject.CreateInstance<EvolutionData>();
-                    evo.requiredLevel = 5; // 1분 클리어 구조에서도 체험할 수 있도록 5레벨
+                    evo.requiredLevel = BalanceModel.EvolutionRequiredLevel; // 1분 스테이지에서 도달 가능한 레벨
                     evo.requiredPassiveLevel = 1;
                     AssetDatabase.CreateAsset(evo, path);
                 }

@@ -118,9 +118,10 @@ namespace Samkuk.EditorTools
 
             stage.waves.Clear();
             stage.waves.Add(MakeWave("황건적 습격", 0f, 3f, 80, (soldier, 1f)));
-            stage.waves.Add(MakeWave("황건 척후대", 15f, 5f, 120, (soldier, 3f), (scout, 1f)));
+            stage.waves.Add(MakeWave("황건 척후대", 15f, 6f, 120, (soldier, 3f), (scout, 1f)));
             stage.waves.Add(MakeWave("동탁군 출병", 30f, 6f, 160, (infantry, 3f), (cavalry, 1f), (soldier, 1f)));
-            stage.waves.Add(MakeWave("여포군 돌격", 45f, 8f, 220, (lvbuElite, 3f), (cavalry, 2f), (infantry, 1f)));
+            // 마지막 웨이브: 정예 비중을 낮추고 스폰 속도를 줄여 평균 빌드 기준 압박비가 약 0.7~1.0이 되도록 (BalanceModel)
+            stage.waves.Add(MakeWave("여포군 돌격", 45f, 6f, 220, (lvbuElite, 2f), (cavalry, 2f), (infantry, 2f)));
 
             stage.events.Clear();
             stage.events.Add(MakeEvent(20f, general, 1, false, "황건 장수 출현!"));

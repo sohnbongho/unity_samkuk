@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f23153a77f91d1144b31227e10f9c0bb, type: 3}
-  m_Name: Evo_Lightning
+  m_Name: Evo_SerpentSpear
   m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.EvolutionData
-  baseWeapon: {fileID: 11400000, guid: b853537ccfc1eeb489a5a562d266a3c3, type: 2}
-  requiredPassive: {fileID: 11400000, guid: b6d6f1921eb5b3146b9fc4dcf3a074db, type: 2}
-  evolvedWeapon: {fileID: 11400000, guid: 25e0b5f9d309d904c8ba1039c6b53328, type: 2}
+  baseWeapon: {fileID: 11400000, guid: 849d6f72b898d9f4080f57a7879be06b, type: 2}
+  requiredPassive: {fileID: 11400000, guid: ff894f40196a218488fda3f75b978048, type: 2}
+  evolvedWeapon: {fileID: 11400000, guid: 100b1a672dcf55d419a7f87e1b195f36, type: 2}
   requiredLevel: 3
   requiredPassiveLevel: 1

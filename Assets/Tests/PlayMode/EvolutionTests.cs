@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
+using Samkuk.Balance;
 using Samkuk.Data;
 using Samkuk.Enemies;
 using Samkuk.Player;
@@ -18,6 +19,7 @@ namespace Samkuk.Tests
     public class EvolutionTests
     {
         const string CatalogPath = "Assets/ScriptableObjects/UpgradeCatalog.asset";
+        const string HeroCatalogPath = "Assets/ScriptableObjects/HeroCatalog.asset";
 
         GameObject playerGo;
         PlayerStats stats;
@@ -336,7 +338,7 @@ namespace Samkuk.Tests
             var c = go.AddComponent<LevelUpController>();
             c.Experience = exp; c.Weapons = wc; c.Stats = stats; c.Health = health; c.Catalog = catalog; c.View = view;
 
-            exp.AddExp(5); // 레벨업
+            exp.AddExp(exp.ToNext); // 레벨업
 
             Assert.IsTrue(c.IsShowing);
             Assert.AreEqual(UpgradeKind.Evolve, view.LastOptions[0].Kind, "레벨업 화면의 첫 카드가 진화");
@@ -418,7 +420,19 @@ namespace Samkuk.Tests
         {
             var catalog = AssetDatabase.LoadAssetAtPath<UpgradeCatalog>(CatalogPath);
             Assert.IsNotNull(catalog, "UpgradeCatalog 가 없습니다. Samkuk > Step 6 / 8-2 / 8-4 를 먼저 실행하세요.");
-            Assert.GreaterOrEqual(catalog.evolutions.Count, 5, "진화 조합 5개 이상 (Step 8-4 실행)");
+            Assert.GreaterOrEqual(catalog.evolutions.Count, 12, "진화 조합 12개 (일반 무기 7 + 장수 시작 무기 5). Run All Setup 을 실행하세요");
+
+            // 장수의 시작 무기도 진화 대상이어야 한다 (시작 무기가 곧 주력이므로)
+            var heroCatalog = AssetDatabase.LoadAssetAtPath<HeroCatalog>(HeroCatalogPath);
+            Assert.IsNotNull(heroCatalog, "HeroCatalog 가 없습니다");
+            var heroWeapons = new HashSet<WeaponData>();
+            foreach (var h in heroCatalog.heroes)
+            {
+                Assert.IsNotNull(h.startingWeapon, $"{h.displayName}: 시작 무기");
+                heroWeapons.Add(h.startingWeapon);
+                Assert.IsTrue(catalog.evolutions.Exists(e => e.baseWeapon == h.startingWeapon),
+                    $"{h.displayName}: 시작 무기({h.startingWeapon.displayName})의 진화 조합이 없음");
+            }
 
             var bases = new HashSet<WeaponData>();
             var evolvedSet = new HashSet<WeaponData>();
@@ -429,13 +443,16 @@ namespace Samkuk.Tests
             {
                 Assert.IsNotNull(evo, "빈 진화 항목");
                 Assert.IsTrue(evo.IsValid, $"{evo.name}: 필드 누락");
-                Assert.Contains(evo.baseWeapon, catalog.weapons, $"{evo.name}: 기본 무기가 카탈로그에 있어야 함");
+                Assert.IsTrue(catalog.weapons.Contains(evo.baseWeapon) || heroWeapons.Contains(evo.baseWeapon),
+                    $"{evo.name}: 기본 무기는 카탈로그 무기이거나 장수의 시작 무기여야 함");
                 Assert.Contains(evo.requiredPassive, catalog.passives, $"{evo.name}: 필요 패시브가 카탈로그에 있어야 함");
                 Assert.IsFalse(catalog.weapons.Contains(evo.evolvedWeapon), $"{evo.name}: 진화 무기가 일반 선택지에 섞이면 안 됨");
                 Assert.IsTrue(bases.Add(evo.baseWeapon), $"{evo.name}: 같은 기본 무기에 진화 조합이 둘");
                 Assert.IsTrue(evolvedSet.Add(evo.evolvedWeapon), $"{evo.name}: 진화 무기 중복");
 
                 Assert.LessOrEqual(evo.requiredLevel, evo.baseWeapon.maxLevel, $"{evo.name}: 필요 레벨이 최대 레벨 이하");
+                Assert.AreEqual(BalanceModel.EvolutionRequiredLevel, evo.requiredLevel,
+                    $"{evo.name}: 필요 레벨은 밸런스 기준값 (Samkuk > Step 10-4 로 맞춤)");
                 Assert.GreaterOrEqual(evo.requiredLevel, 2);
 
                 var b = evo.baseWeapon; var e = evo.evolvedWeapon;

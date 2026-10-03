@@ -15,5 +15,5 @@ MonoBehaviour:
   baseWeapon: {fileID: 11400000, guid: e5ae1e5de97212740bf42a7c18e1bf99, type: 2}
   requiredPassive: {fileID: 11400000, guid: 0be9714902ac6fb4190327dda9977b62, type: 2}
   evolvedWeapon: {fileID: 11400000, guid: a4668f3b33903ca4c955ebcb362a416d, type: 2}
-  requiredLevel: 5
+  requiredLevel: 3
   requiredPassiveLevel: 1

@@ -39,3 +39,11 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 3c6b445c12c2c434aaa6f281c7c49263, type: 2}
   - {fileID: 11400000, guid: a5860e9ef27724f4ab853c0999a2d849, type: 2}
   - {fileID: 11400000, guid: 1230b3d949c068a4aa555c25719deb17, type: 2}
+  - {fileID: 11400000, guid: 5ac8c08996527814cbd40e17cbf46207, type: 2}
+  - {fileID: 11400000, guid: 2ee265f9b0a7ccc489a285fac29b368b, type: 2}
+  - {fileID: 11400000, guid: fa2c3ea880954864785283dbc5579e60, type: 2}
+  - {fileID: 11400000, guid: aa1ccb38c2520234c96e7d075c68d869, type: 2}
+  - {fileID: 11400000, guid: 9decd7a52402fd3408d11f70bf6d8baa, type: 2}
+  weaponLevelUpWeight: 4
+  passiveWeight: 2
+  newWeaponWeight: 1

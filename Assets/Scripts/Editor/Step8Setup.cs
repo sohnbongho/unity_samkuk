@@ -125,14 +125,14 @@ namespace Samkuk.EditorTools
             {
                 w.displayName = "의천검"; w.type = WeaponType.Arrow; w.sprite = LoadSprite("Arrow");
                 w.description = "검기를 두 갈래로 쏘아 보낸다.";
-                w.tint = new Color(0.5f, 0.7f, 1f); w.damage = 8f; w.cooldown = 1.0f; w.range = 9f; w.count = 2;
+                w.tint = new Color(0.5f, 0.7f, 1f); w.damage = 10f; w.cooldown = 1.0f; w.range = 9f; w.count = 2;
                 w.projectileSpeed = 12f; w.pierce = 1; w.duration = 1.5f; w.size = 0.3f;
             });
             CreateWeapon("Weapon_SkyPiercer", w =>
             {
                 w.displayName = "방천화극"; w.type = WeaponType.Orbit; w.sprite = LoadSprite("Blade");
                 w.description = "주위를 맴도는 화극이 적을 벤다.";
-                w.tint = new Color(1f, 0.5f, 0.4f); w.damage = 9f; w.range = 1.9f; w.count = 2; w.size = 0.5f;
+                w.tint = new Color(1f, 0.5f, 0.4f); w.damage = 7f; w.range = 1.9f; w.count = 2; w.size = 0.5f;
                 w.rotateSpeed = 220f; w.tickInterval = 0.25f; w.levelsPerExtraCount = 2;
             });
         }

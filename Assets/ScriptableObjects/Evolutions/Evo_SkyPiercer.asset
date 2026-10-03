@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f23153a77f91d1144b31227e10f9c0bb, type: 3}
-  m_Name: Evo_Lightning
+  m_Name: Evo_SkyPiercer
   m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.EvolutionData
-  baseWeapon: {fileID: 11400000, guid: b853537ccfc1eeb489a5a562d266a3c3, type: 2}
-  requiredPassive: {fileID: 11400000, guid: b6d6f1921eb5b3146b9fc4dcf3a074db, type: 2}
-  evolvedWeapon: {fileID: 11400000, guid: 25e0b5f9d309d904c8ba1039c6b53328, type: 2}
+  baseWeapon: {fileID: 11400000, guid: 7afa5681e1f9df6448c5d08ceb0758b3, type: 2}
+  requiredPassive: {fileID: 11400000, guid: d277ffd8033cc3f4a96334d797d92381, type: 2}
+  evolvedWeapon: {fileID: 11400000, guid: ae684458b1158f54a90705d94f1419e6, type: 2}
   requiredLevel: 3
   requiredPassiveLevel: 1

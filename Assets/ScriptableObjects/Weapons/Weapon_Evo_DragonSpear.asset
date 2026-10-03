@@ -18,7 +18,7 @@ MonoBehaviour:
   type: 3
   sprite: {fileID: 21300000, guid: 1ffade8cbb8800c4190d6ab27b7bac13, type: 3}
   tint: {r: 1, g: 0.9, b: 0.5, a: 1}
-  damage: 30
+  damage: 20
   cooldown: 0.9
   range: 4.5
   count: 3

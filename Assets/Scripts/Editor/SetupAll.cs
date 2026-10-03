@@ -15,14 +15,15 @@ namespace Samkuk.EditorTools
             Step5Setup.Run();
             Step6Setup.Run();
             Step8WeaponsSetup.Run();
-            Step8EvolutionSetup.Run();
             Step7Setup.Run();
             Step8EnemiesSetup.Run();
             Step8Setup.Run();
+            Step8EvolutionSetup.Run(); // 장수 시작 무기도 진화하므로 Step 8(장수) 이후
             Step10ThemeSetup.Run();
             Step9Setup.Run();
             Step10Setup.Run();
             Step9TitleSetup.Run();
+            Step10BalanceSetup.Run();
             Debug.Log("[Samkuk] 전체 셋업(Step 2-9 + 타이틀) 완료");
         }
     }

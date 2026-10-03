@@ -137,8 +137,8 @@ namespace Samkuk.Tests
             int levelUps = 0;
             exp.LevelUp += _ => levelUps++;
 
-            Assert.AreEqual(5, PlayerExperience.RequiredFor(1));
-            exp.AddExp(7);
+            int need = PlayerExperience.RequiredFor(1);
+            exp.AddExp(need + 2);
 
             Assert.AreEqual(2, exp.Level);
             Assert.AreEqual(2, exp.Current, "남은 경험치는 이월");
@@ -487,7 +487,7 @@ namespace Samkuk.Tests
             UpgradeOption chosen = null;
             c.Chosen += o => chosen = o;
 
-            exp.AddExp(5);
+            exp.AddExp(exp.ToNext);
 
             Assert.IsTrue(c.IsShowing);
             Assert.AreEqual(1, view.ShowCount);
@@ -509,7 +509,8 @@ namespace Samkuk.Tests
             var view = new FakeView();
             var c = MakeController(view);
 
-            exp.AddExp(30); // 5 + 9 + 13 = 27 → 3레벨업
+            // 1→2, 2→3, 3→4 레벨에 필요한 경험치를 한꺼번에 → 3레벨업
+            exp.AddExp(PlayerExperience.RequiredFor(1) + PlayerExperience.RequiredFor(2) + PlayerExperience.RequiredFor(3));
 
             Assert.AreEqual(3, c.PendingCount);
             int picks = 0;
@@ -533,7 +534,7 @@ namespace Samkuk.Tests
             var c = MakeController(view);
 
             c.Choose(0); // 표시 중이 아님
-            exp.AddExp(5);
+            exp.AddExp(exp.ToNext);
             c.Choose(-1);
             c.Choose(99);
 
@@ -548,7 +549,7 @@ namespace Samkuk.Tests
             var c = MakeController(view);
             health.TakeDamage(1000f);
 
-            exp.AddExp(5);
+            exp.AddExp(exp.ToNext);
 
             Assert.AreEqual(0, view.ShowCount);
             Assert.IsFalse(c.IsShowing);

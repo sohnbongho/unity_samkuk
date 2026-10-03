@@ -363,7 +363,7 @@ namespace Samkuk.Tests
             for (int i = 0; i < 4; i++) spawner.SpawnAt(enemy, new Vector2(8f + i, 0f)).TakeDamage(100f);
             spawner.SpawnAt(enemy, new Vector2(8f, 3f)); // 살려 둔 적은 세지 않음
             stage.Tick(12.5f);
-            exp.AddExp(7); // 레벨 2
+            exp.AddExp(exp.ToNext); // 레벨 2
 
             Assert.AreEqual(4, run.Kills);
             Assert.AreEqual(12.5f, run.Seconds, 0.3f, "스테이지 경과 시간 (프레임 갱신분 오차 허용)");
