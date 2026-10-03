@@ -137,6 +137,17 @@ namespace Samkuk.EditorTools
             subtitle.color = new Color(0.85f, 0.75f, 0.7f);
             Anchor(subtitle.rectTransform, 0.5f, 0.69f, new Vector2(1000f, 60f));
 
+            // 부제 아래 장식 구분선 (테마가 있을 때만)
+            var theme = AssetDatabase.LoadAssetAtPath<UiTheme>("Assets/Resources/UiTheme.asset");
+            if (theme != null && theme.divider != null)
+            {
+                var divider = NewRect("Divider", main);
+                Anchor(divider, 0.5f, 0.635f, new Vector2(760f, 24f));
+                var dividerImage = divider.gameObject.AddComponent<Image>();
+                dividerImage.sprite = theme.divider;
+                dividerImage.raycastTarget = false;
+            }
+
             var gold = NewText("Gold", main, font, 38, TextAnchor.UpperRight, "보유 골드  0");
             gold.color = new Color(1f, 0.9f, 0.5f);
             gold.rectTransform.anchorMin = gold.rectTransform.anchorMax = new Vector2(1f, 1f);
@@ -232,6 +243,7 @@ namespace Samkuk.EditorTools
             recordsPanel.gameObject.SetActive(false);
 
             // 컨트롤러 연결
+            canvasGo.AddComponent<UiSkin>(); // 중국풍 테마 (UiTheme.asset 이 없으면 아무것도 바꾸지 않음)
             var controller = canvasGo.AddComponent<TitleController>();
             var so = new SerializedObject(controller);
             so.FindProperty("mainPanel").objectReferenceValue = main.gameObject;

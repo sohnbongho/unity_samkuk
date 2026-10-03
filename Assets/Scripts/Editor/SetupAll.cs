@@ -19,6 +19,7 @@ namespace Samkuk.EditorTools
             Step7Setup.Run();
             Step8EnemiesSetup.Run();
             Step8Setup.Run();
+            Step10ThemeSetup.Run();
             Step9Setup.Run();
             Step10Setup.Run();
             Step9TitleSetup.Run();

@@ -14,10 +14,6 @@ namespace Samkuk.UI
     {
         const float RowHeight = 96f;
 
-        static readonly Color RowColor = new Color(0.16f, 0.18f, 0.27f, 0.97f);
-        static readonly Color BuyColor = new Color(0.25f, 0.5f, 0.3f, 1f);
-        static readonly Color DisabledColor = new Color(0.3f, 0.3f, 0.34f, 1f);
-
         [SerializeField, Tooltip("행이 채워질 세로 레이아웃 컨테이너")] RectTransform container;
         [SerializeField] Text goldLabel;
 
@@ -80,7 +76,7 @@ namespace Samkuk.UI
 
                 row.buttonLabel.text = entry.IsMax ? "MAX" : $"구매  {entry.Cost}G";
                 row.button.interactable = entry.CanBuy;
-                row.buttonImage.color = entry.CanBuy ? BuyColor : DisabledColor;
+                row.buttonImage.color = entry.CanBuy ? UiTheme.Get().positive : UiTheme.Get().disabled;
             }
         }
 
@@ -93,7 +89,7 @@ namespace Samkuk.UI
             var rowGo = new GameObject($"Row_{upgrade.name}", typeof(RectTransform), typeof(Image),
                 typeof(HorizontalLayoutGroup), typeof(LayoutElement));
             rowGo.transform.SetParent(container, false);
-            rowGo.GetComponent<Image>().color = RowColor;
+            UiSkin.StyleCard(rowGo.GetComponent<Image>()); // 카드 바탕 + 금빛 프레임
             var le = rowGo.GetComponent<LayoutElement>();
             le.preferredHeight = RowHeight;
             le.minHeight = RowHeight;
@@ -124,6 +120,7 @@ namespace Samkuk.UI
             var btnImage = btnGo.GetComponent<Image>();
             var button = btnGo.GetComponent<Button>();
             button.targetGraphic = btnImage;
+            UiSkin.StyleButton(button, recolor: false); // 색은 구매 가능 여부에 따라 Refresh 가 정한다
             var colors = button.colors;
             colors.highlightedColor = new Color(1.2f, 1.2f, 1.1f, 1f);
             colors.pressedColor = new Color(0.8f, 0.8f, 0.8f, 1f);

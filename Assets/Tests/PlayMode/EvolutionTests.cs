@@ -397,16 +397,18 @@ namespace Samkuk.Tests
             ui.Show(evolveFirst, _ => { });
 
             var evolveColor = cards[0].button.targetGraphic.color;
-            Assert.AreNotEqual(baseColor, evolveColor, "진화 카드는 다른 색");
+            Assert.AreEqual(UiSkin.CardTint(UpgradeKind.Evolve), evolveColor, "진화 카드는 진화색");
             Assert.Greater(evolveColor.r, evolveColor.b, "금빛 계열");
-            Assert.AreEqual(baseColor, cards[1].button.targetGraphic.color);
-            Assert.AreEqual(baseColor, cards[2].button.targetGraphic.color);
+            Assert.AreEqual(UiSkin.CardTint(UpgradeKind.Passive), cards[1].button.targetGraphic.color, "패시브는 패시브색");
+            Assert.AreEqual(UiSkin.CardTint(UpgradeKind.Heal), cards[2].button.targetGraphic.color, "회복은 회복색");
+            Assert.AreNotEqual(cards[1].button.targetGraphic.color, cards[2].button.targetGraphic.color, "종류가 다르면 색도 다름");
 
             var normal = new List<UpgradeOption>(evolveFirst);
             normal[0] = new UpgradeOption { Kind = UpgradeKind.NewWeapon, Title = "새 무기", Description = "d" };
             ui.Show(normal, _ => { });
 
-            Assert.AreEqual(baseColor, cards[0].button.targetGraphic.color, "진화가 아니면 원래 색으로 복원");
+            Assert.AreEqual(UiSkin.CardTint(UpgradeKind.NewWeapon), cards[0].button.targetGraphic.color, "진화가 아니면 진화색이 남지 않음");
+            Assert.AreNotEqual(evolveColor, cards[0].button.targetGraphic.color);
         }
 
         // ───────────────────────── 실제 에셋 ─────────────────────────

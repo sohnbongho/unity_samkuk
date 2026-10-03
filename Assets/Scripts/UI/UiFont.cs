@@ -14,7 +14,13 @@ namespace Samkuk.UI
         public static Font Get()
         {
             if (font == null)
-                font = Font.CreateDynamicFontFromOSFont(new[] { "Malgun Gothic", "맑은 고딕", "Arial" }, 16);
+            {
+                // 테마에 폰트가 지정되어 있으면 그것을, 아니면 한글이 되는 OS 폰트를 쓴다
+                var themed = UiTheme.Get().font;
+                font = themed != null
+                    ? themed
+                    : Font.CreateDynamicFontFromOSFont(new[] { "Malgun Gothic", "맑은 고딕", "Arial" }, 16);
+            }
             return font;
         }
 

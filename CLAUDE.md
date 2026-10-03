@@ -12,7 +12,7 @@
 
 ## 진행 상황
 
-마지막 갱신: 2026-10-03 (Step 10-1 완료, 다음: 10-3 UI 스킨)
+마지막 갱신: 2026-10-03 (Step 10-3 완료, 다음: 10-4 밸런싱)
 
 | Step | 내용 | 상태 | 커밋 |
 |---|---|---|---|
@@ -30,13 +30,14 @@
 | 9-2 | 타이틀 씬, 영구 강화 상점, 기록, 저장 초기화, 씬 흐름 | 완료 | 082e8d4 |
 | 10-2 | 효과음(코드 합성 `SfxSynth`, `AudioManager`, `SfxHooks`, 타이틀 효과음 볼륨 버튼) | 완료 | ce823ba |
 | 10-1 | 타격감(화면 흔들림 `ScreenShake`, 입자 `BurstFx`, 피격 번쩍임 `DamageFlashView`, 데미지 숫자 단계, `FeedbackHooks`, 타이틀 화면 흔들림 설정) | 완료 | 94e4e26 |
-| 10-3, 10-4 | UI 스킨 / 밸런싱 | 대기 | - |
+| 10-3 | 중국풍 UI 스킨(`UiTheme` 에셋, `UiSkin` 이름 규칙 스킨, 코드 생성 프레임 스프라이트, 레벨업 카드 종류별 색, 타이틀 구분선) | 완료 | (커밋 후 기재) |
+| 10-4 | 밸런싱 | 대기 | - |
 | 11 | PC 빌드 | 대기 | - |
 
 ## 남은 작업
 
 1. **Step 10 나머지** (진행하면서 이 목록을 갱신)
-   - 10-3 중국풍 UI 스킨(색/프레임), 장수/적 스프라이트 교체 지점 정리
+   - 장수/적 스프라이트 교체 지점 정리 (10-3 UI 스킨은 완료)
    - 10-4 밸런싱: 1분 스테이지 기준 난이도 곡선, 무기/진화/영구 강화 수치 점검
    - (선택) BGM: 현재는 효과음만 있음. `AudioManager`에 BGM 슬롯/볼륨을 추가하는 작업이 남아 있음
 2. **Step 11 빌드**: 빌드 설정(타이틀→게임 순서는 9-2에서 등록됨), 최적화(GC/풀링 점검), 실행 파일 출력, 필요 시 모바일 터치.
@@ -47,6 +48,8 @@
 - 스프라이트(번개, 불길, 궁병, 기병 등)는 코드로 만든 **플레이스홀더**. Step 10에서 교체/다듬기.
 - 장수 전용 시작 무기(쌍고검, 청룡언월도 등)는 진화 대상이 아니다. 필요하면 `EvolutionData` 추가.
 - 게임 씬은 한 판 1분 스테이지 기준이라 진화 필요 레벨을 5로 낮춰 둠(`Evo_*.asset`의 Required Level).
+- UI 스킨 스프라이트(`Assets/Sprites/UI/*.png`)는 코드로 만든 **임시 아트**. 직접 만든 PNG로 교체해도 셋업이 덮어쓰지 않는다(`Resources/UiTheme.asset` 슬롯만 채움). 모양을 다시 생성하려면 해당 PNG를 지우고 `Step 10-3` 실행.
+- 폰트는 아직 OS 한글 폰트(맑은 고딕). 붓글씨체 등을 쓰려면 ttf를 `UiTheme.font` 슬롯에 지정(코드 수정 불필요).
 - 타격감 수치(흔들림 세기, 입자 개수, 번쩍임 강도)는 `FeedbackHooks`에 상수로 있음. 느낌이 과하거나 부족하면 거기서 조정. 입자는 코드로 만든 4x4 흰 사각형 스프라이트(에셋 없음).
 - 효과음은 코드로 합성한 **임시 소리**(`SfxSynth`). 실제 음원은 `AudioManager`의 `overrides` 슬롯에 클립을 넣어 교체(코드 수정 불필요).
 - 효과음 볼륨은 `SaveData.sfxVolume`(기본 0.7)에 저장, 타이틀 왼쪽 위 버튼으로 끔/작게/보통/크게 순환. 게임 중 볼륨 조절 UI는 아직 없음.
@@ -72,6 +75,7 @@
 - 한 판의 끝: `GameManager.Finished` → `ResultController`가 골드 계산/저장 → 결과 화면. 일시정지는 `PauseController`(ESC).
 - 타격감: `FeedbackHooks`(GameSystems)가 이벤트→연출을 연결. 화면 흔들림은 카메라의 `ScreenShake`가 `Offset`만 계산하고 `CameraFollow`가 추적 위치(basePos)에 더해 적용(카메라 위치를 직접 흔들면 추적 보간에 섞여 누적됨). 흔들림은 `SaveData.screenShake`로 끌 수 있음(타이틀 버튼). 처치 비중은 적 maxHp로 구분(보스 300+, 정예 60+).
 - 소리: `AudioManager`는 처음 `Play`할 때 스스로 만들어지는 싱글턴(씬에 둘 필요 없음, `DontDestroyOnLoad`). 같은 소리는 소리별 최소 간격으로 제한하고 AudioSource 8개를 돌려 쓴다. 게임 이벤트→소리 연결은 `SfxHooks`(GameSystems), 무기 공격음은 각 무기가 `PlayAttackSound()`, UI 버튼은 각 UI의 `Bind`에서 클릭음. 새 효과음은 `SfxId` + `SfxSynth` 레시피를 추가하고, 새 무기 종류는 `SfxMap.ForWeapon`에도 추가.
+- UI 테마: 색/프레임/폰트는 `Resources/UiTheme.asset`(`UiTheme.Get()`) 한 곳. `UiSkin`(HUD·타이틀 캔버스에 부착)이 **이름 규칙**으로 입힌다 — `Card#`/`Hero#`+Button=카드, 그 밖의 Button=버튼, `Box`=패널, `HpBar/ExpBar/BossBar/SkillHud`=얇은 프레임, 이름이 `Title`인 Text=금색. **새 UI를 만들 때 이 이름을 따르면 자동으로 스킨이 입혀진다.** 런타임에 만드는 UI는 `UiSkin.StyleCard/StyleButton`을 직접 호출. 레벨업 카드 색은 `UiSkin.CardTint(kind)`.
 - UI는 uGUI 레거시 `Text` + `UiFont`(한글 폰트). 뷰는 인터페이스(`ILevelUpView`, `IResultView`, `IPauseView`...)로 분리해 테스트에서 가짜 뷰를 쓴다.
 
 ### 디버그 키 (게임 씬)
@@ -82,7 +86,7 @@ F2 무기 레벨업, F3 경험치 지급, F4 스테이지 15초 건너뛰기, ES
 ## 작업 규칙
 
 ### 셋업 / 에셋
-- 씬 배치와 프리팹/SO 생성은 에디터 스크립트로 자동화한다. 메뉴 `Samkuk > Run All Setup (Step 2-9 + 타이틀)`(10 효과음 + 타격감 연결 포함) 한 번이면 전체 구성. 새 Step을 만들면 `SetupAll.cs`에도 추가한다.
+- 씬 배치와 프리팹/SO 생성은 에디터 스크립트로 자동화한다. 메뉴 `Samkuk > Run All Setup (Step 2-9 + 타이틀)`(10 효과음 + 타격감 + 10-3 테마 포함) 한 번이면 전체 구성. 새 Step을 만들면 `SetupAll.cs`에도 추가한다.
 - 셋업은 **멱등**이어야 한다: 이미 있는 에셋은 덮어쓰지 않아 사용자가 조정한 수치를 보존하고, 카탈로그는 **누적 방식**(없는 항목만 추가)으로 채운다.
 - 셋업에서 `EditorSceneManager.OpenScene/NewScene` **이후에** 에셋을 로드한다 (씬 전환이 로드된 에셋 참조를 무효화할 수 있음).
 - 셋업 순서 주의: Step 7을 단독 재실행하면 웨이브가 초기화되어 8-3의 궁병 편성이 빠진다 → 항상 `Run All`을 쓰거나 8-3을 이어서 실행.

@@ -5,6 +5,7 @@ using Samkuk.Heroes;
 using Samkuk.Player;
 using Samkuk.Skills;
 using Samkuk.Stages;
+using Samkuk.UI;
 using Samkuk.Upgrades;
 using Samkuk.Weapons;
 using UnityEditor;
@@ -55,6 +56,10 @@ namespace Samkuk.EditorTools
                 Debug.LogError("[Samkuk] SfxHooks 참조 연결 실패");
 
             BuildFeedback(player, systems);
+
+            // 중국풍 UI 스킨 (HUD 아래의 카드/버튼/패널/바에 테마를 입힌다)
+            var hud = GameObject.Find("HUD");
+            if (hud != null && hud.GetComponent<UiSkin>() == null) hud.AddComponent<UiSkin>();
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
