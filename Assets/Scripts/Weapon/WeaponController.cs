@@ -21,6 +21,8 @@ namespace Samkuk.Weapons
 
         public IReadOnlyList<Weapon> Weapons => weapons;
         public Projectile ProjectilePrefab { get => projectilePrefab; set => projectilePrefab = value; }
+        /// <summary>일회성 이펙트 재생기 (Awake에서 생성).</summary>
+        public WeaponFx Fx { get; private set; }
         public EnemyManager EnemyManager
         {
             get => enemyManager;
@@ -31,7 +33,19 @@ namespace Samkuk.Weapons
             }
         }
 
-        void Awake() => owner = GetComponent<PlayerController>();
+        void Awake()
+        {
+            owner = GetComponent<PlayerController>();
+
+            // 이펙트는 월드 좌표에 고정되어야 하므로 플레이어의 자식으로 두지 않는다.
+            var fxGo = new GameObject("WeaponFx");
+            Fx = fxGo.AddComponent<WeaponFx>();
+        }
+
+        void OnDestroy()
+        {
+            if (Fx != null) Destroy(Fx.gameObject);
+        }
 
         void Start()
         {
@@ -63,6 +77,11 @@ namespace Samkuk.Weapons
                 case WeaponType.Arrow: weapon = go.AddComponent<ArrowWeapon>(); break;
                 case WeaponType.Slash: weapon = go.AddComponent<SlashWeapon>(); break;
                 case WeaponType.Orbit: weapon = go.AddComponent<OrbitWeapon>(); break;
+                case WeaponType.Thrust: weapon = go.AddComponent<ThrustWeapon>(); break;
+                case WeaponType.FireZone: weapon = go.AddComponent<FireZoneWeapon>(); break;
+                case WeaponType.Lightning: weapon = go.AddComponent<LightningWeapon>(); break;
+                case WeaponType.Rain: weapon = go.AddComponent<RainWeapon>(); break;
+                case WeaponType.Nova: weapon = go.AddComponent<NovaWeapon>(); break;
                 default:
                     Destroy(go);
                     return null;

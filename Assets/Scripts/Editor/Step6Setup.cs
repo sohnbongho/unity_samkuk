@@ -113,19 +113,20 @@ namespace Samkuk.EditorTools
                 AssetDatabase.CreateAsset(catalog, CatalogPath);
             }
 
-            catalog.weapons.Clear();
+            // 누적 방식: 이미 들어 있는 항목(Step 8-2에서 추가한 무기 등)은 유지하고 빠진 것만 채운다.
+            catalog.weapons.RemoveAll(w => w == null);
             foreach (var n in WeaponNames)
             {
                 var w = AssetDatabase.LoadAssetAtPath<WeaponData>($"{WeaponDir}/{n}.asset");
-                if (w != null) catalog.weapons.Add(w);
-                else Debug.LogWarning($"[Samkuk] {n} 을(를) 찾을 수 없습니다. Step 5 를 먼저 실행하세요.");
+                if (w == null) Debug.LogWarning($"[Samkuk] {n} 을(를) 찾을 수 없습니다. Step 5 를 먼저 실행하세요.");
+                else if (!catalog.weapons.Contains(w)) catalog.weapons.Add(w);
             }
 
-            catalog.passives.Clear();
+            catalog.passives.RemoveAll(p => p == null);
             foreach (var n in PassiveNames)
             {
                 var p = AssetDatabase.LoadAssetAtPath<PassiveData>($"{PassiveDir}/{n}.asset");
-                if (p != null) catalog.passives.Add(p);
+                if (p != null && !catalog.passives.Contains(p)) catalog.passives.Add(p);
             }
             EditorUtility.SetDirty(catalog);
         }

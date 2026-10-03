@@ -29,6 +29,7 @@ namespace Samkuk.Enemies
         Vector2[] positions = new Vector2[512];
         float[] nearestDist = new float[16];
         bool gridBuilt;
+        bool gridDirty = true;
         int queryStamp;
         float maxEnemyRadius;
 
@@ -58,6 +59,7 @@ namespace Samkuk.Enemies
             if (e.ManagerIndex >= 0) return;
             e.ManagerIndex = enemies.Count;
             enemies.Add(e);
+            gridDirty = true;
             if (e.Radius > maxEnemyRadius) maxEnemyRadius = e.Radius;
         }
 
@@ -70,6 +72,7 @@ namespace Samkuk.Enemies
             enemies[idx] = moved;
             moved.ManagerIndex = idx;
             enemies.RemoveAt(last);
+            gridDirty = true;
             e.ManagerIndex = -1;
         }
 
@@ -100,6 +103,7 @@ namespace Samkuk.Enemies
                 head[b] = i;
             }
             gridBuilt = true;
+            gridDirty = false;
 
             Vector2 tp = target.position;
             float dt = Time.fixedDeltaTime;
@@ -148,7 +152,7 @@ namespace Samkuk.Enemies
                 Vector2 push = ComputePush(i, p, r);
                 Vector2 sep = Vector2.ClampMagnitude(push * separationStrength, maxSeparationSpeed);
 
-                e.Body.linearVelocity = desired + sep;
+                e.Body.linearVelocity = desired + sep + e.TickKnockback(dt);
                 if (desired.x > 0.05f) e.SetFacing(false);
                 else if (desired.x < -0.05f) e.SetFacing(true);
             }
@@ -213,7 +217,12 @@ namespace Samkuk.Enemies
         /// </summary>
         public void OverlapCircle(Vector2 center, float radius, List<Enemy> results)
         {
-            if (!gridBuilt) return;
+            // 그리드가 아직 없거나, 마지막 구성 이후 적이 등록/해제되어 낡았다면 전수 검색으로 정확성을 보장한다.
+            if (!gridBuilt || gridDirty)
+            {
+                OverlapLinear(center, radius, results);
+                return;
+            }
 
             int stamp = ++queryStamp;
             float invCell = 1f / cellSize;
@@ -241,6 +250,18 @@ namespace Samkuk.Enemies
                         results.Add(e);
                     }
                 }
+            }
+        }
+
+        void OverlapLinear(Vector2 center, float radius, List<Enemy> results)
+        {
+            for (int i = 0; i < enemies.Count; i++)
+            {
+                Enemy e = enemies[i];
+                if (!e.Alive) continue;
+
+                float reach = radius + e.Radius;
+                if ((e.Body.position - center).sqrMagnitude <= reach * reach) results.Add(e);
             }
         }
 

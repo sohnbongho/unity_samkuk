@@ -15,6 +15,8 @@ namespace Samkuk.Enemies
         const float FlashDuration = 0.1f;
         const float FlashScalePunch = 0.25f;
         static readonly Color StunTint = new Color(0.6f, 0.8f, 1f);
+        const float KnockbackDecay = 8f;
+        const float MaxKnockbackSpeed = 14f;
 
         enum Phase { Chase, Windup, Charge }
 
@@ -25,6 +27,7 @@ namespace Samkuk.Enemies
         float flashTimer;
         float baseScale = 1f;
         float stunTimer;
+        Vector2 knockVelocity;
 
         // 돌진 패턴 상태
         Phase phase;
@@ -69,6 +72,7 @@ namespace Samkuk.Enemies
             baseScale = data.scale;
             flashTimer = 0f;
             stunTimer = 0f;
+            knockVelocity = Vector2.zero;
             phase = Phase.Chase;
             chargeClock = 0f;
             enabled = false;
@@ -89,6 +93,27 @@ namespace Samkuk.Enemies
         }
 
         public void SetFacing(bool faceLeft) => sr.flipX = faceLeft;
+
+        /// <summary>현재 넉백 속도 (시간이 지나며 감쇠).</summary>
+        public Vector2 KnockbackVelocity => knockVelocity;
+
+        /// <summary>순간적으로 밀려나게 한다 (velocity는 초당 이동 거리, 감쇠하며 사라짐).</summary>
+        public void Knockback(Vector2 velocity)
+        {
+            if (!Alive) return;
+            knockVelocity = Vector2.ClampMagnitude(knockVelocity + velocity, MaxKnockbackSpeed);
+        }
+
+        /// <summary>넉백 속도를 반환하고 dt만큼 감쇠시킨다.</summary>
+        internal Vector2 TickKnockback(float dt)
+        {
+            if (knockVelocity == Vector2.zero) return Vector2.zero;
+
+            Vector2 current = knockVelocity;
+            knockVelocity *= Mathf.Exp(-KnockbackDecay * dt);
+            if (knockVelocity.sqrMagnitude < 0.01f) knockVelocity = Vector2.zero;
+            return current;
+        }
 
         public bool IsStunned => stunTimer > 0f;
 

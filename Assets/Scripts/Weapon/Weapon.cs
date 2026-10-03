@@ -17,6 +17,9 @@ namespace Samkuk.Weapons
         protected WeaponController Controller { get; private set; }
         protected PlayerStats Stats { get; private set; }
 
+        /// <summary>일회성 이펙트 재생기 (없을 수 있음).</summary>
+        protected WeaponFx Fx => Controller != null ? Controller.Fx : null;
+
         public float Damage =>
             Data.damage * (1f + Data.damagePerLevel * (Level - 1)) * (Stats != null ? Stats.DamageMultiplier : 1f);
 
@@ -68,5 +71,15 @@ namespace Samkuk.Weapons
         protected virtual void OnLevelChanged() { }
 
         protected Vector2 OwnerPosition => Owner.transform.position;
+
+        /// <summary>무기 데이터의 넉백 값이 있으면 origin 반대 방향으로 적을 민다 (살아있는 적만).</summary>
+        protected void Knock(Enemy enemy, Vector2 origin)
+        {
+            if (Data.knockback <= 0f || !enemy.Alive) return;
+
+            Vector2 away = enemy.Position - origin;
+            if (away.sqrMagnitude < 1e-6f) away = Vector2.right;
+            enemy.Knockback(away.normalized * Data.knockback);
+        }
     }
 }

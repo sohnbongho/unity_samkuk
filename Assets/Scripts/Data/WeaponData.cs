@@ -6,7 +6,12 @@ namespace Samkuk.Data
     {
         Arrow,  // 가장 가까운 적을 향해 투사체 발사
         Slash,  // 바라보는 방향의 근접 범위 공격
-        Orbit   // 플레이어 주위를 도는 칼날
+        Orbit,  // 플레이어 주위를 도는 칼날
+        Thrust, // 가까운 적 방향으로 긴 창을 내질러 직선상의 적을 꿰뚫음
+        FireZone, // 적이 있는 곳에 불길(장판)을 깔아 지속 피해
+        Lightning, // 가까운 적 위에 벼락을 떨어뜨림 (범위 피해)
+        Rain,   // 적 주변에 화살비를 쏟아 예고 후 폭격
+        Nova    // 플레이어를 중심으로 퍼지는 충격파 (넉백)
     }
 
     /// <summary>무기 기본 능력치. 레벨당 증가량도 여기서 정의한다.</summary>
@@ -38,8 +43,10 @@ namespace Samkuk.Data
         public float size = 0.25f;
         [Tooltip("Orbit 회전 속도 (도/초)")]
         public float rotateSpeed = 180f;
-        [Tooltip("Orbit 피해 간격(초)")]
+        [Tooltip("Orbit/FireZone 피해 간격(초)")]
         public float tickInterval = 0.3f;
+        [Tooltip("맞은 적을 밀어내는 힘 (0이면 밀지 않음)")]
+        public float knockback = 0f;
 
         [Header("레벨 성장")]
         public int maxLevel = 8;

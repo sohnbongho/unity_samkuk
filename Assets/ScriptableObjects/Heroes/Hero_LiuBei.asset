@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d89265a2d8f37c48be9cadf1f3da7c8, type: 3}
+  m_Name: Hero_LiuBei
+  m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.HeroData
+  displayName: "\uC720\uBE44"
+  title: "\uC778\uB355\uC758 \uAD70\uC8FC"
+  description: "\uC0AC\uB78C\uC744 \uB04C\uC5B4\uBAA8\uC73C\uB294 \uB355\uC73C\uB85C
+    \uBE60\uB974\uAC8C \uC131\uC7A5\uD55C\uB2E4."
+  tint: {r: 0.5, g: 0.95, b: 0.6, a: 1}
+  maxHpBonus: 20
+  damageMultiplier: 1
+  moveSpeedMultiplier: 1
+  expMultiplier: 1.2
+  pickupRadiusMultiplier: 1.3
+  startingWeapon: {fileID: 11400000, guid: e0248df0308ed51439defb13f7776e40, type: 2}
+  skill: {fileID: 11400000, guid: d3f12965096be004fbcdcb158e91fe82, type: 2}

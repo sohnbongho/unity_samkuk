@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c4883b553af1be4a8b5ffc15a42639a, type: 3}
+  m_Name: Weapon_FireZone
+  m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.WeaponData
+  displayName: "\uD654\uACC4"
+  description: "\uC801\uC774 \uBAA8\uC778 \uACF3\uC5D0 \uBD88\uAE38\uC744 \uC77C\uC73C\uCF1C
+    \uC9C0\uC18D \uD53C\uD574\uB97C \uC900\uB2E4."
+  type: 4
+  sprite: {fileID: 21300000, guid: 418ac3079ebf6ec42bc1a5183643a4a7, type: 3}
+  tint: {r: 1, g: 1, b: 1, a: 1}
+  damage: 5
+  cooldown: 3.5
+  range: 8
+  count: 1
+  projectileSpeed: 10
+  pierce: 1
+  duration: 3
+  size: 1.3
+  rotateSpeed: 180
+  tickInterval: 0.4
+  knockback: 0
+  maxLevel: 8
+  damagePerLevel: 0.2
+  cooldownReductionPerLevel: 0.05
+  levelsPerExtraCount: 2

@@ -58,7 +58,11 @@ namespace Samkuk.Weapons
             hits.Clear();
             Enemies.OverlapCircle(center, radius, hits);
             float dmg = Damage;
-            for (int i = 0; i < hits.Count; i++) hits[i].TakeDamage(dmg);
+            for (int i = 0; i < hits.Count; i++)
+            {
+                hits[i].TakeDamage(dmg);
+                Knock(hits[i], OwnerPosition);
+            }
 
             ShowEffect(center, radius);
         }

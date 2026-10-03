@@ -16,6 +16,13 @@ MonoBehaviour:
   - {fileID: 11400000, guid: e2bc1d3f94e429040a6da63b55695aea, type: 2}
   - {fileID: 11400000, guid: e5ae1e5de97212740bf42a7c18e1bf99, type: 2}
   - {fileID: 11400000, guid: 7150af81c0f59284983deed9b44211c4, type: 2}
+  - {fileID: 11400000, guid: fd7483fdfb56a254fa03d21bdab3fece, type: 2}
+  - {fileID: 11400000, guid: 6fca5cad936b85045bc57a42b6dc4132, type: 2}
+  - {fileID: 11400000, guid: b853537ccfc1eeb489a5a562d266a3c3, type: 2}
+  - {fileID: 11400000, guid: 5539c6350d100fb48a773c43cba902f9, type: 2}
+  - {fileID: 11400000, guid: 454ed27f96b21e94a93c2f46250c45fb, type: 2}
+  - {fileID: 11400000, guid: 6427e8369dcc7f846a6f76740fe257d0, type: 2}
+  - {fileID: 11400000, guid: f17b599a0842aff4294303ae9dd03a0f, type: 2}
   passives:
   - {fileID: 11400000, guid: b6d6f1921eb5b3146b9fc4dcf3a074db, type: 2}
   - {fileID: 11400000, guid: d277ffd8033cc3f4a96334d797d92381, type: 2}

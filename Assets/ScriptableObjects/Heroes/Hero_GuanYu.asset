@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d89265a2d8f37c48be9cadf1f3da7c8, type: 3}
+  m_Name: Hero_GuanYu
+  m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.HeroData
+  displayName: "\uAD00\uC6B0"
+  title: "\uBBF8\uC5FC\uACF5"
+  description: "\uCCAD\uB8E1\uC5B8\uC6D4\uB3C4\uB97C \uD718\uB450\uB974\uB294 \uBB34\uC2E0.
+    \uACF5\uACA9\uB825\uC774 \uB192\uB2E4."
+  tint: {r: 0.2, g: 0.6, b: 0.3, a: 1}
+  maxHpBonus: 0
+  damageMultiplier: 1.15
+  moveSpeedMultiplier: 0.95
+  expMultiplier: 1
+  pickupRadiusMultiplier: 1
+  startingWeapon: {fileID: 11400000, guid: 85026fa3534bc32458a6b93f0bb08bf8, type: 2}
+  skill: {fileID: 11400000, guid: 153099d5dd4ee464aaf49ac43473bda9, type: 2}
