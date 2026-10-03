@@ -2,7 +2,8 @@
     "name": "Samkuk.Runtime",
     "rootNamespace": "Samkuk",
     "references": [
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "UnityEngine.UI"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

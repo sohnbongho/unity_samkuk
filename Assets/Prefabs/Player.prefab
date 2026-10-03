@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 6006744706619435004}
   - component: {fileID: 1389092277544383540}
   - component: {fileID: 2438707987808270782}
+  - component: {fileID: 2815200119997141228}
+  - component: {fileID: 4863142534199652350}
   m_Layer: 8
   m_Name: Player
   m_TagString: Untagged
@@ -112,6 +114,38 @@ MonoBehaviour:
   m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Player.PlayerController
   moveSpeed: 4
   body: {fileID: 4669377229966509973}
+--- !u!114 &2815200119997141228
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 245955694875138283}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f34a9e3c5c9cdb94985c743a7dda97d7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Player.PlayerHealth
+  maxHp: 100
+  invulnerableTime: 0.5
+--- !u!114 &4863142534199652350
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 245955694875138283}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 334c221f3201e4b469de7f8871f7f5b7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Weapons.WeaponController
+  projectilePrefab: {fileID: 6725090337757757273, guid: 3844b181e55bc5c4fb779c25ff01381b, type: 3}
+  startingWeapons:
+  - {fileID: 11400000, guid: e2bc1d3f94e429040a6da63b55695aea, type: 2}
+  - {fileID: 11400000, guid: e5ae1e5de97212740bf42a7c18e1bf99, type: 2}
+  - {fileID: 11400000, guid: 7150af81c0f59284983deed9b44211c4, type: 2}
+  enemyManager: {fileID: 0}
 --- !u!1 &6283811947933118378
 GameObject:
   m_ObjectHideFlags: 0

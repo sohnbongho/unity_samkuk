@@ -3,7 +3,8 @@
     "rootNamespace": "Samkuk.EditorTools",
     "references": [
         "Samkuk.Runtime",
-        "Unity.RenderPipelines.Universal.2D.Runtime"
+        "Unity.RenderPipelines.Universal.2D.Runtime",
+        "UnityEngine.UI"
     ],
     "includePlatforms": [
         "Editor"
