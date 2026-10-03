@@ -48,6 +48,18 @@ namespace Samkuk.Meta
             return true;
         }
 
+        /// <summary>level 레벨일 때의 효과를 사람이 읽을 문자열로 만든다 (예: "+8%", "+30", "+0.45/초").</summary>
+        public static string EffectText(MetaUpgradeData upgrade, int level)
+        {
+            float v = upgrade.valuePerLevel * Mathf.Max(0, level);
+            switch (upgrade.stat)
+            {
+                case MetaStat.MaxHp: return $"+{v:0.#}";
+                case MetaStat.Regen: return $"+{v:0.##}/초";
+                default: return $"+{v * 100f:0.#}%";
+            }
+        }
+
         /// <summary>보유한 영구 강화들의 효과를 합산한다.</summary>
         public static MetaBonuses ComputeBonuses(MetaCatalog catalog, SaveData save)
         {

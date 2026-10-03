@@ -14,6 +14,7 @@ namespace Samkuk.Core
     public class GameManager : MonoBehaviour
     {
         public const string TitleSceneName = "TitleScene";
+        public const string GameSceneName = "SampleScene";
 
         [SerializeField] PlayerHealth playerHealth;
         [SerializeField] GameObject gameOverPanel;
