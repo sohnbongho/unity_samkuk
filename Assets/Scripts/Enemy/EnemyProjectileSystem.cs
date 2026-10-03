@@ -52,6 +52,7 @@ namespace Samkuk.Enemies
                 data.projectileLifetime, data.projectileSize, data.projectileTint);
             active.Add(p);
             FiredCount++;
+            Audio.AudioManager.Play(Audio.SfxId.EnemyShot, 0.7f);
             return p;
         }
 

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Samkuk.Audio;
 using Samkuk.Meta;
 using UnityEngine;
 using UnityEngine.UI;
@@ -143,7 +144,10 @@ namespace Samkuk.UI
             lrt.offsetMin = Vector2.zero; lrt.offsetMax = Vector2.zero;
 
             var data = upgrade;
-            button.onClick.AddListener(() => shop.Purchase(data));
+            button.onClick.AddListener(() =>
+            {
+                if (shop.Purchase(data)) AudioManager.Play(SfxId.Buy);
+            });
 
             return new Row { info = info, button = button, buttonLabel = label, buttonImage = btnImage };
         }

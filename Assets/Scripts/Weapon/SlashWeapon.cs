@@ -44,6 +44,7 @@ namespace Samkuk.Weapons
             timer += Time.deltaTime;
             if (timer < Cooldown) return;
             timer = 0f;
+            PlayAttackSound();
 
             Slash(side);
             if (Count >= 2) Slash(-side);

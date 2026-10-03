@@ -34,6 +34,7 @@ namespace Samkuk.Tests
         [TearDown]
         public void TearDown()
         {
+            Audio.AudioManager.DestroyInstance();
             Time.timeScale = 1f;
             SaveSystem.Delete();
             SaveSystem.PathOverride = null;
@@ -77,6 +78,8 @@ namespace Samkuk.Tests
             public Button start, shop, records, reset, quit, shopClose, recordsClose;
             public MetaShopUI shopUi;
             public Text gold, resetLabel, recordsText, shopGold;
+            public Button sound;
+            public Text soundLabel;
             public RectTransform rows;
         }
 
@@ -116,6 +119,7 @@ namespace Samkuk.Tests
             p.records = NewButton(p.main.transform, "Records", out _);
             p.reset = NewButton(p.main.transform, "Reset", out p.resetLabel);
             p.quit = NewButton(p.main.transform, "Quit", out _);
+            p.sound = NewButton(p.main.transform, "Sound", out p.soundLabel);
             p.gold = NewText(p.main.transform, "Gold");
 
             p.shopClose = NewButton(p.shopPanel.transform, "Close", out _);
@@ -151,6 +155,8 @@ namespace Samkuk.Tests
             so.FindProperty("recordsText").objectReferenceValue = p.recordsText;
             so.FindProperty("goldLabel").objectReferenceValue = p.gold;
             so.FindProperty("resetLabel").objectReferenceValue = p.resetLabel;
+            so.FindProperty("soundButton").objectReferenceValue = p.sound;
+            so.FindProperty("soundLabel").objectReferenceValue = p.soundLabel;
             so.FindProperty("catalog").objectReferenceValue = catalog;
             so.ApplyModifiedPropertiesWithoutUndo();
 
@@ -489,7 +495,32 @@ namespace Samkuk.Tests
 
             CollectionAssert.Contains(missing, "startButton");
             CollectionAssert.Contains(missing, "catalog");
-            Assert.AreEqual(15, missing.Count);
+            Assert.AreEqual(17, missing.Count);
+        }
+
+        [UnityTest]
+        public IEnumerator Title_SoundButton_CyclesVolume_ShowsLabel_AndSaves()
+        {
+            SaveSystem.Current.sfxVolume = 0.7f;
+            var p = BuildTitle(MakeCatalog());
+            yield return null;
+            StringAssert.Contains("보통", p.soundLabel.text);
+
+            p.sound.onClick.Invoke();
+            Assert.AreEqual(1f, SaveSystem.Current.sfxVolume, 0.001f);
+            StringAssert.Contains("크게", p.soundLabel.text);
+
+            p.sound.onClick.Invoke();
+            Assert.AreEqual(0f, SaveSystem.Current.sfxVolume, 0.001f, "끝에서 처음(끔)으로");
+            StringAssert.Contains("끔", p.soundLabel.text);
+
+            SaveSystem.ResetCache();
+            Assert.AreEqual(0f, SaveSystem.Load().sfxVolume, 0.001f, "설정이 파일에 저장됨");
+
+            p.sound.onClick.Invoke();
+            Assert.AreEqual(0.35f, SaveSystem.Current.sfxVolume, 0.001f);
+            StringAssert.Contains("작게", p.soundLabel.text);
+            Audio.AudioManager.DestroyInstance();
         }
 
         // ───────────────────────── 실제 씬 / 빌드 설정 ─────────────────────────

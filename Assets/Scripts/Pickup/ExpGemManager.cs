@@ -114,6 +114,7 @@ namespace Samkuk.Pickups
                 if (dist <= collectRadius || step >= dist)
                 {
                     experience.AddExp(gem.Value);
+                    Audio.AudioManager.Play(Audio.SfxId.Gem);
                     ReleaseAt(i);
                     continue;
                 }

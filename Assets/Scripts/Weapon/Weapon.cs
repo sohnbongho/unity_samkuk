@@ -72,6 +72,9 @@ namespace Samkuk.Weapons
 
         protected Vector2 OwnerPosition => Owner.transform.position;
 
+        /// <summary>공격이 발동할 때 무기 종류에 맞는 효과음을 낸다.</summary>
+        protected void PlayAttackSound() => Audio.AudioManager.PlayWeapon(Data.type);
+
         /// <summary>무기 데이터의 넉백 값이 있으면 origin 반대 방향으로 적을 민다 (살아있는 적만).</summary>
         protected void Knock(Enemy enemy, Vector2 origin)
         {

@@ -149,6 +149,14 @@ namespace Samkuk.EditorTools
             var recordsBtn = NewButton("RecordsButton", main, font, "기록", 0.33f, new Vector2(480f, 80f));
             var resetBtn = NewButton("ResetButton", main, font, "저장 초기화", 0.24f, new Vector2(480f, 66f), new Color(0.3f, 0.22f, 0.22f));
             var quitBtn = NewButton("QuitButton", main, font, "종료", 0.16f, new Vector2(480f, 66f));
+            // 효과음 볼륨 버튼 (왼쪽 위): 누를 때마다 끔 → 작게 → 보통 → 크게
+            var soundBtn = NewButton("SoundButton", main, font, "효과음: 보통", 1f, new Vector2(360f, 70f), new Color(0.22f, 0.28f, 0.4f));
+            var soundRt = (RectTransform)soundBtn.transform;
+            soundRt.anchorMin = soundRt.anchorMax = new Vector2(0f, 1f);
+            soundRt.pivot = new Vector2(0f, 1f);
+            soundRt.anchoredPosition = new Vector2(40f, -30f);
+            var soundLabel = soundBtn.GetComponentInChildren<Text>();
+            soundLabel.fontSize = 30;
             var resetLabel = resetBtn.GetComponentInChildren<Text>();
             resetLabel.fontSize = 28;
             quitBtn.GetComponentInChildren<Text>().fontSize = 28;
@@ -231,6 +239,8 @@ namespace Samkuk.EditorTools
             so.FindProperty("recordsText").objectReferenceValue = recText;
             so.FindProperty("goldLabel").objectReferenceValue = gold;
             so.FindProperty("resetLabel").objectReferenceValue = resetLabel;
+            so.FindProperty("soundButton").objectReferenceValue = soundBtn;
+            so.FindProperty("soundLabel").objectReferenceValue = soundLabel;
             so.FindProperty("catalog").objectReferenceValue = catalog;
             so.ApplyModifiedPropertiesWithoutUndo();
 

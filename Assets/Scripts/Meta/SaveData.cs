@@ -27,6 +27,9 @@ namespace Samkuk.Meta
         public int bestKills;
         public string lastHero;
 
+        // 설정
+        public float sfxVolume = 0.7f;
+
         public int GetUpgradeLevel(string id)
         {
             foreach (var u in upgrades)

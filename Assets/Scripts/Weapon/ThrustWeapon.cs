@@ -28,6 +28,7 @@ namespace Samkuk.Weapons
             if (Enemies.FindNearest(origin, Data.range + 1f, nearest) == 0) return;
 
             timer = 0f;
+            PlayAttackSound();
             Vector2 toTarget = nearest[0].Position - origin;
             float baseAngle = Mathf.Atan2(toTarget.y, toTarget.x) * Mathf.Rad2Deg;
             nearest[0] = null;

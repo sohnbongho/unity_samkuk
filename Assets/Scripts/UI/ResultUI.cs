@@ -1,4 +1,5 @@
 using System;
+using Samkuk.Audio;
 using Samkuk.Meta;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -53,7 +54,11 @@ namespace Samkuk.UI
         {
             if (button == null) return;
             button.onClick.RemoveAllListeners();
-            button.onClick.AddListener(() => action?.Invoke());
+            button.onClick.AddListener(() =>
+            {
+                AudioManager.Play(SfxId.Click);
+                action?.Invoke();
+            });
         }
 
         /// <summary>결과 요약 텍스트.</summary>

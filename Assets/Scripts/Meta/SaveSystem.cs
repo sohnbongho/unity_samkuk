@@ -91,6 +91,7 @@ namespace Samkuk.Meta
             d.clears = Mathf.Max(0, d.clears);
             d.bestKills = Mathf.Max(0, d.bestKills);
             d.bestSeconds = Mathf.Max(0f, d.bestSeconds);
+            d.sfxVolume = Mathf.Clamp01(d.sfxVolume);
             d.upgrades ??= new System.Collections.Generic.List<MetaLevel>();
             d.upgrades.RemoveAll(u => u == null || string.IsNullOrEmpty(u.id));
             foreach (var u in d.upgrades) u.level = Mathf.Max(0, u.level);

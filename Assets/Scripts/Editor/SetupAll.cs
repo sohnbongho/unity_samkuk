@@ -20,6 +20,7 @@ namespace Samkuk.EditorTools
             Step8EnemiesSetup.Run();
             Step8Setup.Run();
             Step9Setup.Run();
+            Step10Setup.Run();
             Step9TitleSetup.Run();
             Debug.Log("[Samkuk] 전체 셋업(Step 2-9 + 타이틀) 완료");
         }

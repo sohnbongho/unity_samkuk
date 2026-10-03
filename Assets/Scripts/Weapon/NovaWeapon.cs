@@ -56,6 +56,7 @@ namespace Samkuk.Weapons
             nearest[0] = null;
 
             timer = 0f;
+            PlayAttackSound();
             Begin();
         }
 

@@ -12,7 +12,7 @@
 
 ## 진행 상황
 
-마지막 갱신: 2026-10-03 (Step 9-2 완료, 다음: Step 10)
+마지막 갱신: 2026-10-03 (Step 10-2 완료, 다음: 10-1 타격감)
 
 | Step | 내용 | 상태 | 커밋 |
 |---|---|---|---|
@@ -27,17 +27,18 @@
 | 8-3 | 적 병과(궁병 3종, 적 투사체), 선택 카드 반응형 | 완료 | 0b6c605 |
 | 8-4 | 진화 무기 7종/진화 시스템 | 완료 | 78b978e |
 | 9-1 | 저장, 영구 강화 로직, 결과 화면, 일시정지 | 완료 | ea433f4 |
-| 9-2 | 타이틀 씬, 영구 강화 상점, 기록, 저장 초기화, 씬 흐름 | 완료 | Step 9-2 커밋(`git log`에서 "Step 9-2" 검색) |
-| 10 | 연출·밸런스 | 대기 | - |
+| 9-2 | 타이틀 씬, 영구 강화 상점, 기록, 저장 초기화, 씬 흐름 | 완료 | 082e8d4 |
+| 10-2 | 효과음(코드 합성 `SfxSynth`, `AudioManager`, `SfxHooks`, 타이틀 효과음 볼륨 버튼) | 완료 | (아래 커밋) |
+| 10-1, 10-3, 10-4 | 타격감 연출 / UI 스킨 / 밸런싱 | 대기 | - |
 | 11 | PC 빌드 | 대기 | - |
 
 ## 남은 작업
 
-1. **Step 10 연출·밸런스** (세부 계획, 진행하면서 이 목록을 갱신)
-   - 피격/처치 이펙트(파티클), 화면 흔들림, 데미지 숫자 점검
-   - 사운드/BGM 훅(AudioManager, 설정값 저장), 에셋 없이도 동작해야 함
-   - 중국풍 UI 스킨(색/프레임), 장수/적 스프라이트 교체 지점 정리
-   - 밸런싱: 1분 스테이지 기준 난이도 곡선, 무기/진화/영구 강화 수치 점검
+1. **Step 10 나머지** (진행하면서 이 목록을 갱신)
+   - 10-1 타격감: 피격/처치 이펙트(파티클), 화면 흔들림, 데미지 숫자 점검
+   - 10-3 중국풍 UI 스킨(색/프레임), 장수/적 스프라이트 교체 지점 정리
+   - 10-4 밸런싱: 1분 스테이지 기준 난이도 곡선, 무기/진화/영구 강화 수치 점검
+   - (선택) BGM: 현재는 효과음만 있음. `AudioManager`에 BGM 슬롯/볼륨을 추가하는 작업이 남아 있음
 2. **Step 11 빌드**: 빌드 설정(타이틀→게임 순서는 9-2에서 등록됨), 최적화(GC/풀링 점검), 실행 파일 출력, 필요 시 모바일 터치.
 3. **미결정(PLAN.md 8번)**: 모바일 포함 여부, 실제 아트 에셋 사용 여부, 장수/무기 최종 목록.
 
@@ -46,13 +47,15 @@
 - 스프라이트(번개, 불길, 궁병, 기병 등)는 코드로 만든 **플레이스홀더**. Step 10에서 교체/다듬기.
 - 장수 전용 시작 무기(쌍고검, 청룡언월도 등)는 진화 대상이 아니다. 필요하면 `EvolutionData` 추가.
 - 게임 씬은 한 판 1분 스테이지 기준이라 진화 필요 레벨을 5로 낮춰 둠(`Evo_*.asset`의 Required Level).
+- 효과음은 코드로 합성한 **임시 소리**(`SfxSynth`). 실제 음원은 `AudioManager`의 `overrides` 슬롯에 클립을 넣어 교체(코드 수정 불필요).
+- 효과음 볼륨은 `SaveData.sfxVolume`(기본 0.7)에 저장, 타이틀 왼쪽 위 버튼으로 끔/작게/보통/크게 순환. 게임 중 볼륨 조절 UI는 아직 없음.
 - git의 `LF will be replaced by CRLF` 경고는 무시해도 된다.
 
 ---
 
 ## 프로젝트 구조
 
-- 코드: `Assets/Scripts/<영역>/` — Core, Player, Enemy, Weapon, Skill, Hero, Stage, Pickup, Upgrade, Meta, UI, Data, Editor
+- 코드: `Assets/Scripts/<영역>/` — Core, Player, Enemy, Weapon, Skill, Hero, Stage, Pickup, Upgrade, Meta, Audio, UI, Data, Editor
   - 네임스페이스는 `Samkuk.*` (예: `Samkuk.Weapons`, `Samkuk.Enemies`, `Samkuk.Meta`, `Samkuk.UI`)
   - 런타임은 `Samkuk.Runtime.asmdef`, 에디터 스크립트는 `Editor/` 폴더
 - 데이터: `Assets/ScriptableObjects/<종류>/` — Weapons, Enemies, Passives, Heroes, Skills, Evolutions, Meta, Stage, 그리고 `UpgradeCatalog`, `HeroCatalog`, `MetaCatalog`
@@ -66,6 +69,7 @@
 - 레벨업: `UpgradeGenerator`가 선택지 생성(진화 카드 최우선). 진화는 `WeaponController.Evolve`.
 - 능력치: `PlayerStats` 계층 = 패시브 × 장수 × 영구 강화(`ApplyMeta`) × 버프.
 - 한 판의 끝: `GameManager.Finished` → `ResultController`가 골드 계산/저장 → 결과 화면. 일시정지는 `PauseController`(ESC).
+- 소리: `AudioManager`는 처음 `Play`할 때 스스로 만들어지는 싱글턴(씬에 둘 필요 없음, `DontDestroyOnLoad`). 같은 소리는 소리별 최소 간격으로 제한하고 AudioSource 8개를 돌려 쓴다. 게임 이벤트→소리 연결은 `SfxHooks`(GameSystems), 무기 공격음은 각 무기가 `PlayAttackSound()`, UI 버튼은 각 UI의 `Bind`에서 클릭음. 새 효과음은 `SfxId` + `SfxSynth` 레시피를 추가하고, 새 무기 종류는 `SfxMap.ForWeapon`에도 추가.
 - UI는 uGUI 레거시 `Text` + `UiFont`(한글 폰트). 뷰는 인터페이스(`ILevelUpView`, `IResultView`, `IPauseView`...)로 분리해 테스트에서 가짜 뷰를 쓴다.
 
 ### 디버그 키 (게임 씬)
@@ -76,7 +80,7 @@ F2 무기 레벨업, F3 경험치 지급, F4 스테이지 15초 건너뛰기, ES
 ## 작업 규칙
 
 ### 셋업 / 에셋
-- 씬 배치와 프리팹/SO 생성은 에디터 스크립트로 자동화한다. 메뉴 `Samkuk > Run All Setup (Step 2-9 + 타이틀)` 한 번이면 전체 구성. 새 Step을 만들면 `SetupAll.cs`에도 추가한다.
+- 씬 배치와 프리팹/SO 생성은 에디터 스크립트로 자동화한다. 메뉴 `Samkuk > Run All Setup (Step 2-9 + 타이틀)`(10-2 효과음 연결 포함) 한 번이면 전체 구성. 새 Step을 만들면 `SetupAll.cs`에도 추가한다.
 - 셋업은 **멱등**이어야 한다: 이미 있는 에셋은 덮어쓰지 않아 사용자가 조정한 수치를 보존하고, 카탈로그는 **누적 방식**(없는 항목만 추가)으로 채운다.
 - 셋업에서 `EditorSceneManager.OpenScene/NewScene` **이후에** 에셋을 로드한다 (씬 전환이 로드된 에셋 참조를 무효화할 수 있음).
 - 셋업 순서 주의: Step 7을 단독 재실행하면 웨이브가 초기화되어 8-3의 궁병 편성이 빠진다 → 항상 `Run All`을 쓰거나 8-3을 이어서 실행.
@@ -87,6 +91,7 @@ F2 무기 레벨업, F3 경험치 지급, F4 스테이지 15초 건너뛰기, ES
 - `Update` 안의 할당을 피하고(풀링, 재사용 리스트), 무기/적/투사체는 풀링한다.
 - 월드에 고정되어야 하는 이펙트/장판/충격파 링은 플레이어의 자식으로 두지 않는다.
 - 필요한 대상이 없으면 쿨다운을 소모하지 않고 대기하는 무기 규칙을 유지한다.
+- `Enemy.Damaged`는 `Alive=false`가 되기 **전에** 발생한다(마지막 타격 구분은 `Hp > 0`으로).
 - 시간 정지(`timeScale = 0`) 중 동작하면 안 되는 것(스킬, 무기)과 되어야 하는 것(UI 확인 타이머는 `unscaledDeltaTime`)을 구분한다.
 
 ### 테스트 / 검증

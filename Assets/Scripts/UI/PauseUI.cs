@@ -1,4 +1,5 @@
 using System;
+using Samkuk.Audio;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -44,7 +45,11 @@ namespace Samkuk.UI
         {
             if (button == null) return;
             button.onClick.RemoveAllListeners();
-            button.onClick.AddListener(() => action?.Invoke());
+            button.onClick.AddListener(() =>
+            {
+                AudioManager.Play(SfxId.Click);
+                action?.Invoke();
+            });
         }
     }
 }

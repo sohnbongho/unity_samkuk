@@ -24,6 +24,7 @@ namespace Samkuk.Weapons
             if (Enemies.FindNearest(origin, Data.range, nearest) == 0) return; // 대상이 없으면 준비 상태 유지
 
             timer = 0f;
+            PlayAttackSound();
             Vector2 toTarget = nearest[0].Position - origin;
             float baseAngle = Mathf.Atan2(toTarget.y, toTarget.x) * Mathf.Rad2Deg;
             int shots = Count;

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Samkuk.Audio;
 using Samkuk.Core;
 using Samkuk.Data;
 using Samkuk.Meta;
@@ -27,6 +28,7 @@ namespace Samkuk.UI
         [SerializeField] Button recordsButton;
         [SerializeField] Button resetButton;
         [SerializeField] Button quitButton;
+        [SerializeField] Button soundButton;
 
         [Header("하위 화면")]
         [SerializeField] Button shopCloseButton;
@@ -37,6 +39,7 @@ namespace Samkuk.UI
         [Header("표시")]
         [SerializeField] Text goldLabel;
         [SerializeField] Text resetLabel;
+        [SerializeField] Text soundLabel;
         [SerializeField] MetaCatalog catalog;
         [SerializeField, Tooltip("저장 초기화 확인 대기 시간(초)")] float resetConfirmSeconds = 3f;
 
@@ -68,6 +71,7 @@ namespace Samkuk.UI
             Bind(recordsButton, OpenRecords);
             Bind(resetButton, OnResetClicked);
             Bind(quitButton, Quit);
+            Bind(soundButton, CycleSfxVolume);
             Bind(shopCloseButton, ShowMain);
             Bind(recordsCloseButton, ShowMain);
 
@@ -76,16 +80,26 @@ namespace Samkuk.UI
             if (shopUi != null) shopUi.Bind(shop);
         }
 
-        void Start() => ShowMain();
+        void Start()
+        {
+            ShowMain();
+            RefreshSoundLabel();
+        }
 
         void OnDestroy()
         {
             if (shop != null) shop.Changed -= RefreshGold;
         }
 
+        /// <summary>버튼에 동작을 연결한다. 누를 때마다 클릭음이 난다.</summary>
         static void Bind(Button button, UnityEngine.Events.UnityAction action)
         {
-            if (button != null) button.onClick.AddListener(action);
+            if (button == null) return;
+            button.onClick.AddListener(() =>
+            {
+                AudioManager.Play(SfxId.Click);
+                action();
+            });
         }
 
         void Update()
@@ -159,12 +173,32 @@ namespace Samkuk.UI
             shop.Changed += RefreshGold;
             if (shopUi != null) shopUi.Bind(shop);
             RefreshGold();
+            RefreshSoundLabel();
         }
 
         void DisarmReset()
         {
             resetArmedLeft = 0f;
             if (resetLabel != null) resetLabel.text = ResetIdleText;
+        }
+
+        /// <summary>효과음 볼륨을 다음 단계(끔 → 작게 → 보통 → 크게)로 바꾸고 저장한다.</summary>
+        public void CycleSfxVolume()
+        {
+            var save = SaveSystem.Current;
+            save.sfxVolume = AudioManager.NextVolumeStep(save.sfxVolume);
+            SaveSystem.SaveCurrent();
+
+            var manager = AudioManager.Instance;
+            if (manager != null) manager.SetSfxVolume(save.sfxVolume);
+
+            RefreshSoundLabel();
+            AudioManager.Play(SfxId.Click); // 바뀐 볼륨으로 들려준다 (끔이면 소리 없음)
+        }
+
+        void RefreshSoundLabel()
+        {
+            if (soundLabel != null) soundLabel.text = $"효과음: {AudioManager.VolumeName(SaveSystem.Current.sfxVolume)}";
         }
 
         static void DefaultQuit()
@@ -196,6 +230,8 @@ namespace Samkuk.UI
             Check(recordsText, nameof(recordsText));
             Check(goldLabel, nameof(goldLabel));
             Check(resetLabel, nameof(resetLabel));
+            Check(soundButton, nameof(soundButton));
+            Check(soundLabel, nameof(soundLabel));
             Check(catalog, nameof(catalog));
             return missing;
         }

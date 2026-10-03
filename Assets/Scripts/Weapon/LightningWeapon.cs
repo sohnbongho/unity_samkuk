@@ -30,6 +30,7 @@ namespace Samkuk.Weapons
             if (found == 0) return; // 대상이 없으면 준비 상태 유지
 
             timer = 0f;
+            PlayAttackSound();
             int strikes = Mathf.Min(Count, found);
 
             for (int i = 0; i < strikes; i++)
