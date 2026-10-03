@@ -18,6 +18,8 @@ MonoBehaviour:
     \uACF5\uACA9\uB825\uC774 \uB192\uB2E4."
   tint: {r: 0.2, g: 0.6, b: 0.3, a: 1}
   portrait: {fileID: 21300000, guid: bff7ab278186f42439a1c34dfd1ade79, type: 3}
+  walkSheet: {fileID: 2800000, guid: 75197cc61fd565c4ca74c1a10896df0f, type: 3}
+  walkPixelsPerUnit: 96
   maxHpBonus: 0
   damageMultiplier: 1.15
   moveSpeedMultiplier: 0.95

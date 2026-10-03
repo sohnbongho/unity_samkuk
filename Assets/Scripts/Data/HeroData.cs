@@ -13,6 +13,9 @@ namespace Samkuk.Data
         [Tooltip("플레이어 스프라이트에 입힐 색")] public Color tint = Color.white;
         [Tooltip("장수 선택 카드에 보일 초상화 (세로 4:5 권장, 예: 512x640). 비어 있으면 실루엣 + 색으로 대체")]
         public Sprite portrait;
+        [Tooltip("게임 안 걷기 스프라이트 시트 (4열 x 4행: 열=걷기 프레임, 행=아래/위/왼쪽/오른쪽). 비어 있으면 기본 스프라이트 + 장수 색")]
+        public Texture2D walkSheet;
+        [Tooltip("걷기 시트의 픽셀/유닛 (96이면 한 칸이 월드 1칸 크기)")] public float walkPixelsPerUnit = 96f;
 
         [Header("능력치 보정")]
         [Tooltip("최대 체력 증감 (기본 100)")] public float maxHpBonus = 0f;

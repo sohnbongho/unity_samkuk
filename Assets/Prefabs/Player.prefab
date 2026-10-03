@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 5874273717405551429}
   - component: {fileID: 3976830602440398481}
   - component: {fileID: 2586790973424379695}
+  - component: {fileID: 2562547689399335478}
   m_Layer: 8
   m_Name: Player
   m_TagString: Untagged
@@ -185,6 +186,19 @@ MonoBehaviour:
   skill: {fileID: 0}
   enemies: {fileID: 0}
   gems: {fileID: 0}
+--- !u!114 &2562547689399335478
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 245955694875138283}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a62ed9a20bcca54f8e3e2ed91035148, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Player.PlayerAnimator
+  framesPerSecond: 9
 --- !u!1 &6283811947933118378
 GameObject:
   m_ObjectHideFlags: 0

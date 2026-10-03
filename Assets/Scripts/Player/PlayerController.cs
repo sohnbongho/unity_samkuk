@@ -15,6 +15,7 @@ namespace Samkuk.Player
 
         Rigidbody2D rb;
         PlayerStats stats;
+        PlayerAnimator animator;
         InputAction moveAction;
         Vector2 moveInput;
 
@@ -28,6 +29,7 @@ namespace Samkuk.Player
         {
             rb = GetComponent<Rigidbody2D>();
             stats = GetComponent<PlayerStats>();
+            animator = GetComponent<PlayerAnimator>();
             if (body == null) body = GetComponentInChildren<SpriteRenderer>();
             BuildInput();
         }
@@ -66,7 +68,9 @@ namespace Samkuk.Player
             if (moveInput.sqrMagnitude > 0.0001f)
             {
                 FacingDirection = moveInput.normalized;
-                if (body != null && Mathf.Abs(moveInput.x) > 0.01f)
+                // 걷기 시트가 있으면 방향별 그림이 따로 있으므로 좌우 반전은 하지 않는다 (PlayerAnimator)
+                bool animated = animator != null && animator.HasSheet;
+                if (body != null && !animated && Mathf.Abs(moveInput.x) > 0.01f)
                     body.flipX = moveInput.x < 0f;
             }
         }

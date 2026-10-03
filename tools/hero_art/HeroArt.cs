@@ -6,7 +6,7 @@ using System.Drawing.Imaging;
 using System.IO;
 
 // 장수 초상화(512x640, 투명 배경)를 GDI+ 로 그린다. 평면 색 + 잉크 외곽선 + 간단한 명암.
-public static class HeroArt
+public static partial class HeroArt
 {
     public const int W = 512, H = 640;
     static readonly Color Ink = Color.FromArgb(255, 36, 22, 20);

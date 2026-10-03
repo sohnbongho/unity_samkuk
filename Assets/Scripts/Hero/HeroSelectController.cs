@@ -79,7 +79,11 @@ namespace Samkuk.Heroes
             GameSession.SelectedHero = hero;
 
             if (stats != null) stats.ApplyHero(hero);
-            if (health != null) health.SetBaseColor(hero.tint);
+            // 걷기 그림이 있으면 그림 색 그대로, 없으면 기본 스프라이트에 장수 색을 입힌다
+            var animator = health != null ? health.GetComponent<PlayerAnimator>() : null;
+            if (animator != null) animator.SetHero(hero);
+            bool hasArt = animator != null && animator.HasSheet;
+            if (health != null) health.SetBaseColor(hasArt ? Color.white : hero.tint);
             if (weapons != null && hero.startingWeapon != null) weapons.AddWeapon(hero.startingWeapon);
             if (skills != null) skills.SetSkill(hero.skill);
 

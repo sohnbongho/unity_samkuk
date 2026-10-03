@@ -737,6 +737,28 @@ namespace Samkuk.Tests
             Assert.IsFalse(ui.IsVisible);
         }
 
+        [Test]
+        public void HeroSelect_Apply_KeepsArtColor_WhenHeroHasWalkSheet_AndTintsOtherwise()
+        {
+            var animator = playerGo.AddComponent<PlayerAnimator>();
+            var tex = new Texture2D(8, 8);
+            toDestroy.Add(tex);
+
+            var withArt = MakeHero("유비", Color.red);
+            withArt.walkSheet = tex;
+            var plain = MakeHero("관우", Color.green);
+
+            var ctrl = MakeController(MakeCatalog(withArt, plain), new FakeHeroView(), out _, out _);
+
+            ctrl.Apply(withArt);
+            Assert.IsTrue(animator.HasSheet);
+            Assert.AreEqual(Color.white, health.BaseColor, "걷기 그림이 있으면 장수 색을 입히지 않음");
+
+            ctrl.Apply(plain);
+            Assert.IsFalse(animator.HasSheet);
+            Assert.AreEqual(Color.green, health.BaseColor, "걷기 그림이 없으면 기존처럼 장수 색");
+        }
+
         // ───────────────────────── 실제 에셋 ─────────────────────────
 
         [Test]

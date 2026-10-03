@@ -25,6 +25,7 @@ namespace Samkuk.EditorTools
             Step9TitleSetup.Run();
             Step10BalanceSetup.Run();
             Step10PortraitSetup.Run(); // 장수 에셋이 만들어진 뒤
+            Step10WalkSetup.Run();     // Player 프리팹이 만들어진 뒤
             Debug.Log("[Samkuk] 전체 셋업(Step 2-9 + 타이틀) 완료");
         }
     }
