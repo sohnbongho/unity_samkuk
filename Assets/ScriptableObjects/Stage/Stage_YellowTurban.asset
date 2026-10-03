@@ -17,15 +17,15 @@ MonoBehaviour:
   waves:
   - name: "\uD669\uAC74\uC801 \uC2B5\uACA9"
     startTime: 0
-    spawnPerSecond: 2.1
-    maxAlive: 56
+    spawnPerSecond: 0.63
+    maxAlive: 17
     enemies:
     - data: {fileID: 11400000, guid: 472d80332addcc540923e8c9cd95da51, type: 2}
       weight: 1
   - name: "\uD669\uAC74 \uCC99\uD6C4\uB300"
     startTime: 15
-    spawnPerSecond: 4.2
-    maxAlive: 84
+    spawnPerSecond: 1.26
+    maxAlive: 25
     enemies:
     - data: {fileID: 11400000, guid: 472d80332addcc540923e8c9cd95da51, type: 2}
       weight: 3
@@ -35,8 +35,8 @@ MonoBehaviour:
       weight: 1
   - name: "\uB3D9\uD0C1\uAD70 \uCD9C\uBCD1"
     startTime: 30
-    spawnPerSecond: 4.2
-    maxAlive: 112
+    spawnPerSecond: 1.26
+    maxAlive: 34
     enemies:
     - data: {fileID: 11400000, guid: a8b906dc7e293c14fbb3f0c37065516c, type: 2}
       weight: 3
@@ -48,8 +48,8 @@ MonoBehaviour:
       weight: 1
   - name: "\uC5EC\uD3EC\uAD70 \uB3CC\uACA9"
     startTime: 45
-    spawnPerSecond: 4.2
-    maxAlive: 154
+    spawnPerSecond: 1.26
+    maxAlive: 46
     enemies:
     - data: {fileID: 11400000, guid: 3366d0ce40fefcd41b3f2f3dc9e0fd6f, type: 2}
       weight: 2
