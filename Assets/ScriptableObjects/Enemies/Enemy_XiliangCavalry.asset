@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: Enemy_XiliangCavalry
   m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.EnemyData
   displayName: "\uC11C\uB7C9 \uAE30\uBCD1"
-  sprite: {fileID: 0}
+  role: 2
+  sprite: {fileID: 21300000, guid: eafa6bea43be2bd4fa8bec9a73a9eeae, type: 3}
   tint: {r: 0.85, g: 0.55, b: 0.25, a: 1}
   scale: 0.95
   moveSpeed: 2.4
@@ -24,4 +25,11 @@ MonoBehaviour:
   chargeWindup: 0.5
   chargeDuration: 0.6
   chargeSpeedMultiplier: 3
+  attackRange: 0
+  fireInterval: 2.4
+  projectileSpeed: 6
+  projectileDamage: 6
+  projectileLifetime: 3
+  projectileSize: 0.18
+  projectileTint: {r: 1, g: 0.45, b: 0.25, a: 1}
   colliderRadius: 0.4

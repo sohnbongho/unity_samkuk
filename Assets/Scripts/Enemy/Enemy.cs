@@ -15,6 +15,8 @@ namespace Samkuk.Enemies
         const float FlashDuration = 0.1f;
         const float FlashScalePunch = 0.25f;
         static readonly Color StunTint = new Color(0.6f, 0.8f, 1f);
+        const float ShotWarningSeconds = 0.4f;
+        static readonly Color ShotWarningTint = new Color(1f, 1f, 0.45f);
         const float KnockbackDecay = 8f;
         const float MaxKnockbackSpeed = 14f;
 
@@ -28,6 +30,8 @@ namespace Samkuk.Enemies
         float baseScale = 1f;
         float stunTimer;
         Vector2 knockVelocity;
+        float shootClock;
+        bool telegraphing;
 
         // 돌진 패턴 상태
         Phase phase;
@@ -73,6 +77,8 @@ namespace Samkuk.Enemies
             flashTimer = 0f;
             stunTimer = 0f;
             knockVelocity = Vector2.zero;
+            shootClock = 0f;
+            telegraphing = false;
             phase = Phase.Chase;
             chargeClock = 0f;
             enabled = false;
@@ -93,6 +99,46 @@ namespace Samkuk.Enemies
         }
 
         public void SetFacing(bool faceLeft) => sr.flipX = faceLeft;
+
+        /// <summary>발사 예고 중인가 (노랗게 깜빡임).</summary>
+        public bool IsTelegraphingShot => telegraphing;
+
+        /// <summary>
+        /// 사격 타이머를 dt만큼 진행시킨다. 사정거리 안(canShoot)이고 발사 간격이 찼으면 true(= 지금 발사).
+        /// 사정거리 밖에서는 발사 예고 직전까지만 시간이 쌓인다.
+        /// </summary>
+        internal bool TickShoot(float dt, bool canShoot)
+        {
+            if (Data.attackRange <= 0f) return false;
+
+            float interval = Mathf.Max(0.1f, Data.fireInterval);
+            float warnAt = Mathf.Max(0f, interval - ShotWarningSeconds);
+            shootClock += dt;
+
+            if (!canShoot)
+            {
+                shootClock = Mathf.Min(shootClock, warnAt);
+                SetTelegraph(false);
+                return false;
+            }
+
+            if (shootClock >= interval)
+            {
+                shootClock = 0f;
+                SetTelegraph(false);
+                return true;
+            }
+
+            SetTelegraph(shootClock >= warnAt);
+            return false;
+        }
+
+        void SetTelegraph(bool on)
+        {
+            if (telegraphing == on) return;
+            telegraphing = on;
+            sr.color = on ? ShotWarningTint : Data.tint;
+        }
 
         /// <summary>현재 넉백 속도 (시간이 지나며 감쇠).</summary>
         public Vector2 KnockbackVelocity => knockVelocity;
@@ -122,6 +168,8 @@ namespace Samkuk.Enemies
         {
             if (!Alive || seconds <= 0f) return;
             stunTimer = Mathf.Max(stunTimer, seconds);
+            shootClock = 0f;
+            telegraphing = false;
             phase = Phase.Chase;
             chargeClock = 0f;
             sr.color = StunTint;

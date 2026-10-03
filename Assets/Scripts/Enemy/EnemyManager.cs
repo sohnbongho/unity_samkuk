@@ -34,9 +34,12 @@ namespace Samkuk.Enemies
         float maxEnemyRadius;
 
         PlayerHealth playerHealth;
+        EnemyProjectileSystem projectiles;
         Transform healthLookupTarget;
 
         public Transform Target { get => target; set => target = value; }
+        /// <summary>궁병이 쏘는 투사체를 처리하는 시스템 (없으면 궁병은 쏘지 못함).</summary>
+        public EnemyProjectileSystem Projectiles { get => projectiles; set => projectiles = value; }
         public int Count => enemies.Count;
         public IReadOnlyList<Enemy> Active => enemies;
 
@@ -47,6 +50,7 @@ namespace Samkuk.Enemies
 
         void Start()
         {
+            if (projectiles == null) projectiles = FindAnyObjectByType<EnemyProjectileSystem>();
             if (target == null)
             {
                 var pc = FindAnyObjectByType<PlayerController>();
@@ -146,6 +150,8 @@ namespace Samkuk.Enemies
                     desired = Vector2.zero; // 기절 중: 제자리 (겹침 방지 밀림만 받음)
                 else if (e.Data.chargeInterval > 0f && e.TickCharge(dt, dirToPlayer, out Vector2 chargeVelocity))
                     desired = chargeVelocity; // 돌진 패턴이 이동을 지배 (예고 중에는 정지)
+                else if (e.Data.attackRange > 0f)
+                    desired = MoveAsArcher(e, dirToPlayer, distSqr, dt, tp);
                 else if (distSqr > stop * stop)
                     desired = dirToPlayer * e.Data.moveSpeed;
 
@@ -156,6 +162,23 @@ namespace Samkuk.Enemies
                 if (desired.x > 0.05f) e.SetFacing(false);
                 else if (desired.x < -0.05f) e.SetFacing(true);
             }
+        }
+
+        /// <summary>
+        /// 궁병 이동: 사정거리보다 멀면 접근, 너무 가까우면(사정거리의 65% 안) 물러나며, 그 사이에서는 멈춰 쏜다.
+        /// 사격 타이머도 여기서 진행하며 간격이 차면 투사체를 발사한다.
+        /// </summary>
+        Vector2 MoveAsArcher(Enemy e, Vector2 dirToPlayer, float distSqr, float dt, Vector2 playerPos)
+        {
+            float range = e.Data.attackRange;
+            float dist = Mathf.Sqrt(distSqr);
+
+            if (e.TickShoot(dt, dist <= range * 1.15f) && projectiles != null)
+                projectiles.Fire(e.Body.position, dirToPlayer, e.Data);
+
+            if (dist > range) return dirToPlayer * e.Data.moveSpeed;
+            if (dist < range * 0.65f) return -dirToPlayer * (e.Data.moveSpeed * 0.7f);
+            return Vector2.zero;
         }
 
         Vector2 ComputePush(int self, Vector2 p, float r)

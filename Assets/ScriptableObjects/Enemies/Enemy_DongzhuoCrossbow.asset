@@ -10,25 +10,25 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c97378ecdf5ecd74a96b1ffea2c824ec, type: 3}
-  m_Name: Boss_Lvbu
+  m_Name: Enemy_DongzhuoCrossbow
   m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.EnemyData
-  displayName: "\uC5EC\uD3EC"
-  role: 2
-  sprite: {fileID: 21300000, guid: eafa6bea43be2bd4fa8bec9a73a9eeae, type: 3}
-  tint: {r: 1, g: 0.35, b: 0.2, a: 1}
-  scale: 2.4
-  moveSpeed: 2
-  maxHp: 500
-  contactDamage: 20
-  expReward: 40
-  chargeInterval: 4
-  chargeWindup: 0.8
-  chargeDuration: 0.9
-  chargeSpeedMultiplier: 3.5
-  attackRange: 0
-  fireInterval: 2.4
-  projectileSpeed: 6
-  projectileDamage: 6
+  displayName: "\uB3D9\uD0C1\uAD70 \uB178\uC218"
+  role: 1
+  sprite: {fileID: 21300000, guid: 750faca5e87278b40906ecc8dcc9a407, type: 3}
+  tint: {r: 0.75, g: 0.55, b: 0.95, a: 1}
+  scale: 1.05
+  moveSpeed: 1.3
+  maxHp: 22
+  contactDamage: 6
+  expReward: 3
+  chargeInterval: 0
+  chargeWindup: 0.6
+  chargeDuration: 0.8
+  chargeSpeedMultiplier: 3
+  attackRange: 6.5
+  fireInterval: 2
+  projectileSpeed: 7
+  projectileDamage: 8
   projectileLifetime: 3
   projectileSize: 0.18
   projectileTint: {r: 1, g: 0.45, b: 0.25, a: 1}

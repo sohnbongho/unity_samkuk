@@ -388,22 +388,23 @@ namespace Samkuk.EditorTools
             hint.rectTransform.anchorMin = hint.rectTransform.anchorMax = new Vector2(0.5f, 0.865f);
             hint.rectTransform.sizeDelta = new Vector2(1000f, 40f);
 
+            // 카드는 화면 폭에 맞춰 자동으로 줄어드는 가로 레이아웃에 넣는다 (좁은 해상도에서도 잘리지 않도록)
+            var row = CreateCardRow(panel, "Heroes", 0.44f, 640f, 14f);
             cards = new HeroCardView[5];
-            float[] xs = { -680f, -340f, 0f, 340f, 680f };
             for (int i = 0; i < 5; i++)
-                cards[i] = BuildHeroCard(panel, font, portraitSprite, i, xs[i]);
+                cards[i] = BuildHeroCard(row, font, portraitSprite, i, 320f, 190f);
 
             panel.gameObject.SetActive(false);
             panelGo = panel.gameObject;
         }
 
-        static HeroCardView BuildHeroCard(RectTransform parent, Font font, Sprite portraitSprite, int index, float x)
+        static HeroCardView BuildHeroCard(RectTransform parent, Font font, Sprite portraitSprite, int index, float preferredWidth, float minWidth)
         {
             var rt = NewRect($"Hero{index + 1}", parent);
-            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.44f);
-            rt.pivot = new Vector2(0.5f, 0.5f);
-            rt.sizeDelta = new Vector2(320f, 640f);
-            rt.anchoredPosition = new Vector2(x, 0f);
+            var le = rt.gameObject.AddComponent<LayoutElement>();
+            le.preferredWidth = preferredWidth;
+            le.minWidth = minWidth;
+            le.flexibleWidth = 0f;
 
             var img = rt.gameObject.AddComponent<Image>();
             img.color = new Color(0.17f, 0.2f, 0.3f, 1f);
@@ -458,6 +459,26 @@ namespace Samkuk.EditorTools
             {
                 button = btn, hotkey = hotkey, heroName = heroName, title = title, description = desc, portrait = portraitImg
             };
+        }
+
+        /// <summary>카드를 가로로 나열하는 컨테이너. 화면 폭이 모자라면 카드 폭이 자동으로 줄어든다.</summary>
+        static RectTransform CreateCardRow(RectTransform parent, string name, float anchorY, float height, float spacing)
+        {
+            var row = NewRect(name, parent);
+            row.anchorMin = new Vector2(0.02f, anchorY);
+            row.anchorMax = new Vector2(0.98f, anchorY);
+            row.pivot = new Vector2(0.5f, 0.5f);
+            row.sizeDelta = new Vector2(0f, height);
+            row.anchoredPosition = Vector2.zero;
+
+            var group = row.gameObject.AddComponent<HorizontalLayoutGroup>();
+            group.spacing = spacing;
+            group.childAlignment = TextAnchor.MiddleCenter;
+            group.childControlWidth = true;
+            group.childControlHeight = true;
+            group.childForceExpandWidth = false;
+            group.childForceExpandHeight = true;
+            return row;
         }
 
         static RectTransform NewRect(string name, Transform parent)

@@ -2,11 +2,20 @@ using UnityEngine;
 
 namespace Samkuk.Data
 {
+    /// <summary>적의 병과. 행동 방식은 데이터(attackRange, chargeInterval 등)로 결정되며 이 값은 분류/표시용이다.</summary>
+    public enum EnemyRole
+    {
+        Infantry, // 보병: 플레이어에게 곧장 달려듦
+        Archer,   // 궁병: 거리를 유지하며 원거리 공격
+        Cavalry   // 기병: 빠르게 접근, 돌진 패턴
+    }
+
     /// <summary>적 종류별 능력치/외형 데이터.</summary>
     [CreateAssetMenu(menuName = "Samkuk/Enemy Data", fileName = "Enemy_New")]
     public class EnemyData : ScriptableObject
     {
         public string displayName = "황건적";
+        public EnemyRole role = EnemyRole.Infantry;
         [Tooltip("비워두면 프리팹의 기본 스프라이트를 사용")]
         public Sprite sprite;
         public Color tint = Color.white;
@@ -27,6 +36,18 @@ namespace Samkuk.Data
         public float chargeDuration = 0.8f;
         [Tooltip("돌진 중 이동 속도 배율")]
         public float chargeSpeedMultiplier = 3f;
+
+        [Header("원거리 공격 (궁병용)")]
+        [Tooltip("유지하려는 사격 거리. 0이면 근접 적(원거리 공격 없음)")]
+        public float attackRange = 0f;
+        [Tooltip("발사 간격(초). 발사 0.4초 전부터 노랗게 깜빡여 예고한다")]
+        public float fireInterval = 2.4f;
+        public float projectileSpeed = 6f;
+        public int projectileDamage = 6;
+        public float projectileLifetime = 3f;
+        [Tooltip("투사체 충돌 반지름")]
+        public float projectileSize = 0.18f;
+        public Color projectileTint = new Color(1f, 0.45f, 0.25f);
 
         [Header("충돌")]
         [Tooltip("스케일 적용 전 콜라이더 반지름")]

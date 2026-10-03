@@ -31,6 +31,8 @@ MonoBehaviour:
       weight: 3
     - data: {fileID: 11400000, guid: 8ad87b1166731764080bb10336e3ab40, type: 2}
       weight: 1
+    - data: {fileID: 11400000, guid: 743d4455825842d42a6af7de48a0e354, type: 2}
+      weight: 1
   - name: "\uB3D9\uD0C1\uAD70 \uCD9C\uBCD1"
     startTime: 30
     spawnPerSecond: 6
@@ -42,6 +44,8 @@ MonoBehaviour:
       weight: 1
     - data: {fileID: 11400000, guid: 472d80332addcc540923e8c9cd95da51, type: 2}
       weight: 1
+    - data: {fileID: 11400000, guid: c7a815770f355b944b54e8be1196de8a, type: 2}
+      weight: 1
   - name: "\uC5EC\uD3EC\uAD70 \uB3CC\uACA9"
     startTime: 45
     spawnPerSecond: 8
@@ -52,6 +56,8 @@ MonoBehaviour:
     - data: {fileID: 11400000, guid: 85987cf53acd70a47b2d89b52a94e8c5, type: 2}
       weight: 2
     - data: {fileID: 11400000, guid: a8b906dc7e293c14fbb3f0c37065516c, type: 2}
+      weight: 1
+    - data: {fileID: 11400000, guid: 66505e79b18cee0419daec700040cfb0, type: 2}
       weight: 1
   events:
   - time: 20

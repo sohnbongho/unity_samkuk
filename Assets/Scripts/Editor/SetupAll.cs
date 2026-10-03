@@ -16,6 +16,7 @@ namespace Samkuk.EditorTools
             Step6Setup.Run();
             Step8WeaponsSetup.Run();
             Step7Setup.Run();
+            Step8EnemiesSetup.Run();
             Step8Setup.Run();
             Debug.Log("[Samkuk] 전체 셋업(Step 2-8) 완료");
         }

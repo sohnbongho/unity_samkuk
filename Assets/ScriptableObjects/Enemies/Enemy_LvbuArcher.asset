@@ -10,26 +10,26 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c97378ecdf5ecd74a96b1ffea2c824ec, type: 3}
-  m_Name: Boss_Lvbu
+  m_Name: Enemy_LvbuArcher
   m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.EnemyData
-  displayName: "\uC5EC\uD3EC"
-  role: 2
-  sprite: {fileID: 21300000, guid: eafa6bea43be2bd4fa8bec9a73a9eeae, type: 3}
-  tint: {r: 1, g: 0.35, b: 0.2, a: 1}
-  scale: 2.4
-  moveSpeed: 2
-  maxHp: 500
-  contactDamage: 20
-  expReward: 40
-  chargeInterval: 4
-  chargeWindup: 0.8
-  chargeDuration: 0.9
-  chargeSpeedMultiplier: 3.5
-  attackRange: 0
-  fireInterval: 2.4
-  projectileSpeed: 6
-  projectileDamage: 6
+  displayName: "\uC5EC\uD3EC\uAD70 \uC2E0\uAD81"
+  role: 1
+  sprite: {fileID: 21300000, guid: 750faca5e87278b40906ecc8dcc9a407, type: 3}
+  tint: {r: 1, g: 0.7, b: 0.35, a: 1}
+  scale: 1.1
+  moveSpeed: 1.6
+  maxHp: 38
+  contactDamage: 8
+  expReward: 4
+  chargeInterval: 0
+  chargeWindup: 0.6
+  chargeDuration: 0.8
+  chargeSpeedMultiplier: 3
+  attackRange: 7
+  fireInterval: 1.6
+  projectileSpeed: 8
+  projectileDamage: 10
   projectileLifetime: 3
-  projectileSize: 0.18
+  projectileSize: 0.22
   projectileTint: {r: 1, g: 0.45, b: 0.25, a: 1}
   colliderRadius: 0.4
