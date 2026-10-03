@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a159f91897b65849a17c810350c85a2, type: 3}
+  m_Name: Meta_Study
+  m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.MetaUpgradeData
+  displayName: "\uBCD1\uBC95 \uC5F0\uAD6C"
+  description: "\uACBD\uD5D8\uCE58 \uD68D\uB4DD\uB7C9\uC774 \uB298\uC5B4\uB09C\uB2E4."
+  stat: 5
+  valuePerLevel: 0.05
+  maxLevel: 5
+  baseCost: 90
+  costGrowth: 1.6

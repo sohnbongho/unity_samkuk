@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f40f1938b2974ab43b1e4631c2283a51, type: 3}
+  m_Name: MetaCatalog
+  m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.MetaCatalog
+  upgrades:
+  - {fileID: 11400000, guid: 35faf21afc9396f43a8206c7eeacefb1, type: 2}
+  - {fileID: 11400000, guid: 0032ca19d5cc66d43bd1d44bf3d2ea23, type: 2}
+  - {fileID: 11400000, guid: 3b02e8d5f92b26a4dae625d1b31d55fb, type: 2}
+  - {fileID: 11400000, guid: ece96662c154fb148bf54b1718186737, type: 2}
+  - {fileID: 11400000, guid: b5f5e3f03e72ddd47ae254bc4f26665a, type: 2}
+  - {fileID: 11400000, guid: 53a993e16e2c69b4cb12570e217a63c8, type: 2}
+  - {fileID: 11400000, guid: fa1b37053df65aa47be3688bc7273d75, type: 2}

@@ -20,6 +20,7 @@ namespace Samkuk.Player
         readonly List<Buff> buffs = new List<Buff>();
 
         float heroDamage = 1f, heroSpeed = 1f, heroExp = 1f, heroPickup = 1f, heroMaxHp;
+        Meta.MetaBonuses meta;
 
         public float DamageMultiplier { get; private set; } = 1f;
         public float CooldownMultiplier { get; private set; } = 1f;
@@ -43,6 +44,13 @@ namespace Samkuk.Player
             levels[passive] = GetLevel(passive) + 1;
             Recalculate();
             return true;
+        }
+
+        /// <summary>영구 강화(메타) 보너스를 적용한다. 장수 보정/패시브와 곱해진다.</summary>
+        public void ApplyMeta(Meta.MetaBonuses bonuses)
+        {
+            meta = bonuses;
+            Recalculate();
         }
 
         /// <summary>장수의 기본 보정치를 적용한다 (null이면 보정 없음).</summary>
@@ -114,13 +122,13 @@ namespace Samkuk.Player
                 buffSpeed *= 1f + b.speed;
             }
 
-            DamageMultiplier = (1f + damage) * heroDamage * buffDamage;
+            DamageMultiplier = (1f + damage) * heroDamage * (1f + meta.damage) * buffDamage;
             CooldownMultiplier = Mathf.Max(0.3f, (1f - cooldown) * buffCooldown);
-            MoveSpeedMultiplier = (1f + speed) * heroSpeed * buffSpeed;
-            PickupRadiusMultiplier = (1f + pickup) * heroPickup;
-            ExpMultiplier = (1f + exp) * heroExp;
-            MaxHpBonus = maxHp + heroMaxHp;
-            RegenPerSecond = regen;
+            MoveSpeedMultiplier = (1f + speed) * heroSpeed * (1f + meta.moveSpeed) * buffSpeed;
+            PickupRadiusMultiplier = (1f + pickup) * heroPickup * (1f + meta.pickupRadius);
+            ExpMultiplier = (1f + exp) * heroExp * (1f + meta.expGain);
+            MaxHpBonus = maxHp + heroMaxHp + meta.maxHp;
+            RegenPerSecond = regen + meta.regen;
             Changed?.Invoke();
         }
     }

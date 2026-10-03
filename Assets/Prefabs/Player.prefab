@@ -12,11 +12,11 @@ GameObject:
   - component: {fileID: 6006744706619435004}
   - component: {fileID: 1389092277544383540}
   - component: {fileID: 2438707987808270782}
-  - component: {fileID: 4961975492754113274}
-  - component: {fileID: 5827440886171601442}
-  - component: {fileID: 6262082707193185832}
-  - component: {fileID: 648780409225639168}
-  - component: {fileID: 8472430556053499821}
+  - component: {fileID: 1825955270784529131}
+  - component: {fileID: 3219701436285460505}
+  - component: {fileID: 2236881361591462775}
+  - component: {fileID: 1124988386873065621}
+  - component: {fileID: 8303987032315676716}
   m_Layer: 8
   m_Name: Player
   m_TagString: Untagged
@@ -117,7 +117,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Player.PlayerController
   moveSpeed: 4
   body: {fileID: 4669377229966509973}
---- !u!114 &4961975492754113274
+--- !u!114 &1825955270784529131
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -131,7 +131,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Player.PlayerHealth
   maxHp: 100
   invulnerableTime: 0.5
---- !u!114 &5827440886171601442
+--- !u!114 &3219701436285460505
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -146,7 +146,7 @@ MonoBehaviour:
   projectilePrefab: {fileID: 6725090337757757273, guid: 3844b181e55bc5c4fb779c25ff01381b, type: 3}
   startingWeapons: []
   enemyManager: {fileID: 0}
---- !u!114 &6262082707193185832
+--- !u!114 &2236881361591462775
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -158,7 +158,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f1036060f62dfe948a3f849dd61812b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Player.PlayerStats
---- !u!114 &648780409225639168
+--- !u!114 &1124988386873065621
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -170,7 +170,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5715161201c785446a92975a695026d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Player.PlayerExperience
---- !u!114 &8472430556053499821
+--- !u!114 &8303987032315676716
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

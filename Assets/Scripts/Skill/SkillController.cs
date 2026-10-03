@@ -92,6 +92,9 @@ namespace Samkuk.Skills
 
         void Update()
         {
+            // 일시정지/선택 화면 중(timeScale 0)에는 스킬을 쓸 수 없다
+            if (Time.timeScale <= 0f) return;
+
             float dt = Time.deltaTime;
             if (cooldownLeft > 0f) cooldownLeft -= dt;
 

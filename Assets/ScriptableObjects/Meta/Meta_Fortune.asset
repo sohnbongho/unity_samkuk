@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a159f91897b65849a17c810350c85a2, type: 3}
+  m_Name: Meta_Fortune
+  m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.MetaUpgradeData
+  displayName: "\uC7AC\uBB3C\uC6B4"
+  description: "\uD310\uC774 \uB05D\uB0A0 \uB54C \uC5BB\uB294 \uACE8\uB4DC\uAC00
+    \uB298\uC5B4\uB09C\uB2E4."
+  stat: 6
+  valuePerLevel: 0.1
+  maxLevel: 5
+  baseCost: 120
+  costGrowth: 1.7
