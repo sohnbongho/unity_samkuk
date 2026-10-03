@@ -11,6 +11,8 @@ namespace Samkuk.Data
         [Tooltip("별칭 (예: 인덕의 군주)")] public string title;
         [TextArea] public string description;
         [Tooltip("플레이어 스프라이트에 입힐 색")] public Color tint = Color.white;
+        [Tooltip("장수 선택 카드에 보일 초상화 (세로 4:5 권장, 예: 512x640). 비어 있으면 실루엣 + 색으로 대체")]
+        public Sprite portrait;
 
         [Header("능력치 보정")]
         [Tooltip("최대 체력 증감 (기본 100)")] public float maxHpBonus = 0f;

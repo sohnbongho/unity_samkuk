@@ -389,7 +389,7 @@ namespace Samkuk.EditorTools
             hint.rectTransform.sizeDelta = new Vector2(1000f, 40f);
 
             // 카드는 화면 폭에 맞춰 자동으로 줄어드는 가로 레이아웃에 넣는다 (좁은 해상도에서도 잘리지 않도록)
-            var row = CreateCardRow(panel, "Heroes", 0.44f, 640f, 14f);
+            var row = CreateCardRow(panel, "Heroes", 0.44f, 700f, 14f);
             cards = new HeroCardView[5];
             for (int i = 0; i < 5; i++)
                 cards[i] = BuildHeroCard(row, font, portraitSprite, i, 320f, 190f);
@@ -425,8 +425,9 @@ namespace Samkuk.EditorTools
             var portrait = NewRect("Portrait", rt);
             portrait.anchorMin = portrait.anchorMax = new Vector2(0.5f, 1f);
             portrait.pivot = new Vector2(0.5f, 1f);
-            portrait.sizeDelta = new Vector2(110f, 110f);
-            portrait.anchoredPosition = new Vector2(0f, -48f);
+            // 초상화는 세로 4:5 (예: 512x640 PNG). 없는 장수는 실루엣이 이 칸 안에 맞춰 들어간다
+            portrait.sizeDelta = new Vector2(176f, 220f);
+            portrait.anchoredPosition = new Vector2(0f, -44f);
             var portraitImg = portrait.gameObject.AddComponent<Image>();
             portraitImg.sprite = portraitSprite;
             portraitImg.preserveAspect = true;
@@ -437,7 +438,7 @@ namespace Samkuk.EditorTools
             heroName.rectTransform.anchorMax = new Vector2(1f, 1f);
             heroName.rectTransform.pivot = new Vector2(0.5f, 1f);
             heroName.rectTransform.sizeDelta = new Vector2(0f, 50f);
-            heroName.rectTransform.anchoredPosition = new Vector2(0f, -170f);
+            heroName.rectTransform.anchoredPosition = new Vector2(0f, -272f);
 
             var title = NewText("Title", rt, font, 22, TextAnchor.MiddleCenter, "별칭");
             title.color = new Color(1f, 0.85f, 0.4f);
@@ -445,13 +446,13 @@ namespace Samkuk.EditorTools
             title.rectTransform.anchorMax = new Vector2(1f, 1f);
             title.rectTransform.pivot = new Vector2(0.5f, 1f);
             title.rectTransform.sizeDelta = new Vector2(0f, 34f);
-            title.rectTransform.anchoredPosition = new Vector2(0f, -222f);
+            title.rectTransform.anchoredPosition = new Vector2(0f, -324f);
 
             var desc = NewText("Description", rt, font, 20, TextAnchor.UpperLeft, "설명");
             desc.rectTransform.anchorMin = Vector2.zero;
             desc.rectTransform.anchorMax = Vector2.one;
             desc.rectTransform.offsetMin = new Vector2(18f, 14f);
-            desc.rectTransform.offsetMax = new Vector2(-18f, -266f);
+            desc.rectTransform.offsetMax = new Vector2(-18f, -366f);
             desc.horizontalOverflow = HorizontalWrapMode.Wrap;
             desc.verticalOverflow = VerticalWrapMode.Truncate;
 

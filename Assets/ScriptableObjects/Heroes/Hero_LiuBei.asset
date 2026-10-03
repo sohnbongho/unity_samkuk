@@ -17,6 +17,7 @@ MonoBehaviour:
   description: "\uC0AC\uB78C\uC744 \uB04C\uC5B4\uBAA8\uC73C\uB294 \uB355\uC73C\uB85C
     \uBE60\uB974\uAC8C \uC131\uC7A5\uD55C\uB2E4."
   tint: {r: 0.5, g: 0.95, b: 0.6, a: 1}
+  portrait: {fileID: 21300000, guid: 59971aa561a669e45bf1bfea02b67cd3, type: 3}
   maxHpBonus: 20
   damageMultiplier: 1
   moveSpeedMultiplier: 1

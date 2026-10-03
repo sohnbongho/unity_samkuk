@@ -16,6 +16,7 @@ MonoBehaviour:
   title: "\uB09C\uC138\uC758 \uAC04\uC6C5"
   description: "\uCC45\uB7B5\uC73C\uB85C \uC804\uD669\uC744 \uB4A4\uC9D1\uB294\uB2E4."
   tint: {r: 0.4, g: 0.55, b: 1, a: 1}
+  portrait: {fileID: 21300000, guid: 2bd865f92fccac64bb6c13ef29da9b9a, type: 3}
   maxHpBonus: 0
   damageMultiplier: 1
   moveSpeedMultiplier: 1.05

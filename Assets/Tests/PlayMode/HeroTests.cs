@@ -713,6 +713,26 @@ namespace Samkuk.Tests
             cards[1].button.onClick.Invoke();
             Assert.AreEqual(1, picked);
 
+            // 초상화: 있는 장수는 원래 색 그대로 그 그림을, 없는 장수는 기본 실루엣 + 장수 색을 보인다
+            var fallback = Sprite.Create(new Texture2D(2, 2), new Rect(0, 0, 2, 2), new Vector2(0.5f, 0.5f));
+            var art = Sprite.Create(new Texture2D(4, 5), new Rect(0, 0, 4, 5), new Vector2(0.5f, 0.5f));
+            toDestroy.Add(art.texture);
+            toDestroy.Add(fallback.texture);
+            foreach (var c in cards) c.portrait.sprite = fallback;
+            other.portrait = art;
+
+            ui.Show(new List<HeroData> { hero, other }, _ => { });
+            Assert.AreSame(fallback, cards[0].portrait.sprite, "초상화 없는 장수는 기본 실루엣");
+            Assert.AreEqual(hero.tint, cards[0].portrait.color);
+            Assert.AreSame(art, cards[1].portrait.sprite, "초상화가 있는 장수는 그 그림");
+            Assert.AreEqual(Color.white, cards[1].portrait.color, "초상화는 색을 입히지 않음");
+
+            // 카드가 다른 장수로 바뀌면 기본 실루엣으로 되돌아간다
+            ui.Show(new List<HeroData> { other, hero }, _ => { });
+            Assert.AreSame(art, cards[0].portrait.sprite);
+            Assert.AreSame(fallback, cards[1].portrait.sprite, "초상화 없는 장수로 바뀌면 실루엣 복원");
+            Assert.AreEqual(hero.tint, cards[1].portrait.color);
+
             ui.Hide();
             Assert.IsFalse(ui.IsVisible);
         }

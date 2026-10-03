@@ -24,6 +24,9 @@ namespace Samkuk.UI
         public Text title;
         public Text description;
         public Image portrait;
+
+        /// <summary>초상화가 없는 장수를 위한 기본 실루엣 (처음 한 번 저장해 두었다가 되돌린다).</summary>
+        [NonSerialized] public Sprite fallbackSprite;
     }
 
     /// <summary>장수 선택 카드 UI. 마우스 클릭 또는 1~5 키로 선택한다.</summary>
@@ -59,7 +62,7 @@ namespace Samkuk.UI
                 card.heroName.text = hero.displayName;
                 card.title.text = hero.title;
                 card.description.text = BuildDescription(hero);
-                if (card.portrait != null) card.portrait.color = hero.tint;
+                ShowPortrait(card, hero);
 
                 int index = i;
                 card.button.onClick.RemoveAllListeners();
@@ -67,6 +70,24 @@ namespace Samkuk.UI
             }
 
             panel.SetActive(true);
+        }
+
+        /// <summary>초상화가 있으면 원래 색 그대로, 없으면 기본 실루엣에 장수 색을 입힌다.</summary>
+        static void ShowPortrait(HeroCardView card, HeroData hero)
+        {
+            if (card.portrait == null) return;
+
+            if (card.fallbackSprite == null) card.fallbackSprite = card.portrait.sprite;
+            if (hero.portrait != null)
+            {
+                card.portrait.sprite = hero.portrait;
+                card.portrait.color = Color.white;
+            }
+            else
+            {
+                card.portrait.sprite = card.fallbackSprite;
+                card.portrait.color = hero.tint;
+            }
         }
 
         public void Hide()
