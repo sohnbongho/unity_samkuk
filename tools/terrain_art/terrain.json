@@ -1,0 +1,81 @@
+{
+  "_설명": "전투 맵의 지형별 바닥 타일과 소품(나무, 바위 등) 기준표. 그림 생성기(generate.ps1)와 유니티 셋업(Step12TerrainSetup)이 같이 읽는다. kind=그리는 방식, colors=그 방식이 쓰는 색(#rrggbb), weight=나올 확률 비중, scaleMin/Max=크기 배율, density=한 칸(12x12 유닛)당 소품 평균 개수. 파일 이름은 Assets/Sprites/Terrain/<file>.png",
+  "shared": [
+    { "file": "Prop_Pond", "kind": "pond", "colors": ["#3f7fae", "#2c5a7c"], "scaleMin": 0.8, "scaleMax": 1.5 },
+    { "file": "Prop_Banner", "kind": "banner", "colors": ["#b83a34"], "scaleMin": 0.95, "scaleMax": 1.1 }
+  ],
+  "themes": [
+    {
+      "terrain": "Plain", "density": 9,
+      "river": { "file": "River_Plain", "water": "#4388b8", "bank": "#7a6a44", "width": 3.4 },
+      "ground": { "file": "Ground_Plain", "base": "#3f5e35", "accents": ["#4a6f3d", "#34522d", "#587a45"], "detail": "grass" },
+      "props": [
+        { "file": "Prop_Plain_Tree", "kind": "tree", "colors": ["#3f7a3a", "#2e5e2c"], "weight": 2.0, "scaleMin": 0.9, "scaleMax": 1.3 },
+        { "file": "Prop_Plain_Bush", "kind": "bush", "colors": ["#4a8a3e", "#376a30"], "weight": 2.5, "scaleMin": 0.8, "scaleMax": 1.2 },
+        { "file": "Prop_Plain_Grass", "kind": "tuft", "colors": ["#6aa04a", "#4f8238"], "weight": 5.0, "scaleMin": 0.8, "scaleMax": 1.3 },
+        { "file": "Prop_Plain_Flowers", "kind": "flowers", "colors": ["#5a9444", "#f0d85a", "#e8e8f0"], "weight": 2.0, "scaleMin": 0.8, "scaleMax": 1.2 },
+        { "file": "Prop_Plain_Rock", "kind": "rock", "colors": ["#8b8d8f", "#b4b6b8"], "weight": 1.5, "scaleMin": 0.7, "scaleMax": 1.2 }
+      ]
+    },
+    {
+      "terrain": "Steppe", "density": 7,
+      "river": { "file": "River_Steppe", "water": "#5a8fa8", "bank": "#8a7a4a", "width": 2.8 },
+      "ground": { "file": "Ground_Steppe", "base": "#7a6c3e", "accents": ["#867848", "#6c5f36", "#8f8050"], "detail": "dry" },
+      "props": [
+        { "file": "Prop_Steppe_DryGrass", "kind": "tuft", "colors": ["#b3a05a", "#8f7e42"], "weight": 6.0, "scaleMin": 0.9, "scaleMax": 1.4 },
+        { "file": "Prop_Steppe_Rock", "kind": "rock", "colors": ["#a09378", "#c4b898"], "weight": 2.0, "scaleMin": 0.7, "scaleMax": 1.2 },
+        { "file": "Prop_Steppe_DeadTree", "kind": "deadtree", "colors": ["#6a5238"], "weight": 1.2, "scaleMin": 0.9, "scaleMax": 1.3 },
+        { "file": "Prop_Steppe_Yurt", "kind": "yurt", "colors": ["#d8cfb4", "#8a3b30"], "weight": 0.6, "scaleMin": 0.9, "scaleMax": 1.1 },
+        { "file": "Prop_Steppe_Shrub", "kind": "bush", "colors": ["#8f8a4a", "#6e6a38"], "weight": 2.0, "scaleMin": 0.7, "scaleMax": 1.1 }
+      ]
+    },
+    {
+      "terrain": "Mountain", "density": 10,
+      "river": { "file": "River_Mountain", "water": "#4a8aa8", "bank": "#6a6a62", "width": 2.6 },
+      "ground": { "file": "Ground_Mountain", "base": "#566358", "accents": ["#617064", "#4a564c", "#6c7a6e"], "detail": "stone" },
+      "props": [
+        { "file": "Prop_Mountain_Pine", "kind": "pine", "colors": ["#2f6a48", "#1f4e34"], "weight": 3.0, "scaleMin": 0.9, "scaleMax": 1.4 },
+        { "file": "Prop_Mountain_Boulder", "kind": "boulder", "colors": ["#6f7378", "#9a9ea4"], "weight": 2.5, "scaleMin": 0.8, "scaleMax": 1.3 },
+        { "file": "Prop_Mountain_BigRock", "kind": "bigrock", "colors": ["#5f6368", "#8c9096"], "weight": 1.0, "scaleMin": 0.9, "scaleMax": 1.3 },
+        { "file": "Prop_Mountain_Shrub", "kind": "bush", "colors": ["#3f6a44", "#2e5034"], "weight": 2.0, "scaleMin": 0.7, "scaleMax": 1.1 },
+        { "file": "Prop_Mountain_Stump", "kind": "stump", "colors": ["#7a5a3c", "#c8a070"], "weight": 1.0, "scaleMin": 0.8, "scaleMax": 1.2 }
+      ]
+    },
+    {
+      "terrain": "River", "density": 8,
+      "river": { "file": "River_River", "water": "#3a8ab0", "bank": "#5f6a4a", "width": 5.0 },
+      "ground": { "file": "Ground_River", "base": "#3a6258", "accents": ["#44705f", "#2f5248", "#4f7e6c"], "detail": "wet" },
+      "props": [
+        { "file": "Prop_River_Reed", "kind": "reed", "colors": ["#7fa05a", "#8b6a3c"], "weight": 4.0, "scaleMin": 0.8, "scaleMax": 1.3 },
+        { "file": "Prop_River_Willow", "kind": "willow", "colors": ["#6f9a50", "#6a5238"], "weight": 1.8, "scaleMin": 0.9, "scaleMax": 1.3 },
+        { "file": "Prop_River_Rock", "kind": "rock", "colors": ["#7c8a88", "#a8b6b4"], "weight": 1.5, "scaleMin": 0.7, "scaleMax": 1.1 },
+        { "file": "Prop_River_Boat", "kind": "boat", "colors": ["#7a5436", "#e2d8bc"], "weight": 0.5, "scaleMin": 0.9, "scaleMax": 1.1 },
+        { "file": "Prop_River_Grass", "kind": "tuft", "colors": ["#5fa07a", "#47805f"], "weight": 4.0, "scaleMin": 0.8, "scaleMax": 1.3 }
+      ]
+    },
+    {
+      "terrain": "Jungle", "density": 11,
+      "river": { "file": "River_Jungle", "water": "#2f7a78", "bank": "#3a4a2a", "width": 4.0 },
+      "ground": { "file": "Ground_Jungle", "base": "#265434", "accents": ["#2e6340", "#1f4528", "#387048"], "detail": "jungle" },
+      "props": [
+        { "file": "Prop_Jungle_Palm", "kind": "palm", "colors": ["#3f9a4c", "#7a5a3c"], "weight": 2.5, "scaleMin": 0.9, "scaleMax": 1.3 },
+        { "file": "Prop_Jungle_Tree", "kind": "tree", "colors": ["#2c7a3c", "#1f5a2c"], "weight": 2.5, "scaleMin": 1.0, "scaleMax": 1.5 },
+        { "file": "Prop_Jungle_Fern", "kind": "fern", "colors": ["#4aa858", "#2f7e40"], "weight": 4.0, "scaleMin": 0.8, "scaleMax": 1.3 },
+        { "file": "Prop_Jungle_Bush", "kind": "bush", "colors": ["#2f8a44", "#1f6632"], "weight": 3.0, "scaleMin": 0.8, "scaleMax": 1.2 },
+        { "file": "Prop_Jungle_MossRock", "kind": "mossrock", "colors": ["#6e7468", "#4f9a50"], "weight": 1.5, "scaleMin": 0.8, "scaleMax": 1.2 }
+      ]
+    },
+    {
+      "terrain": "Loess", "density": 7,
+      "river": { "file": "River_Loess", "water": "#d4ac5a", "bank": "#5e4426", "width": 4.4 },
+      "ground": { "file": "Ground_Loess", "base": "#80633a", "accents": ["#8c6e42", "#715732", "#97784a"], "detail": "cracks" },
+      "props": [
+        { "file": "Prop_Loess_Tree", "kind": "tree", "colors": ["#8a8a42", "#6e6e34"], "weight": 1.2, "scaleMin": 0.8, "scaleMax": 1.1 },
+        { "file": "Prop_Loess_Mound", "kind": "mound", "colors": ["#a07a46", "#c19a62"], "weight": 2.5, "scaleMin": 0.8, "scaleMax": 1.4 },
+        { "file": "Prop_Loess_Terrace", "kind": "terrace", "colors": ["#9a7444", "#6e5230"], "weight": 1.0, "scaleMin": 0.9, "scaleMax": 1.3 },
+        { "file": "Prop_Loess_Shrub", "kind": "bush", "colors": ["#8a7a3e", "#6a5c2e"], "weight": 2.5, "scaleMin": 0.7, "scaleMax": 1.1 },
+        { "file": "Prop_Loess_Rock", "kind": "rock", "colors": ["#a08460", "#c8aa80"], "weight": 2.0, "scaleMin": 0.7, "scaleMax": 1.2 }
+      ]
+    }
+  ]
+}

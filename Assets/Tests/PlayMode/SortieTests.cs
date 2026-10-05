@@ -22,6 +22,7 @@ namespace Samkuk.Tests
         {
             GameSession.SortieCastle = null;
             GameSession.SortieOrigin = null;
+            TerrainThemeCatalog.Disabled = true; // 이 파일의 배경 테스트는 색 덮개(지형 그림 없음) 방식을 확인한다. 지형 맵은 TerrainTests
         }
 
         [TearDown]
@@ -29,6 +30,7 @@ namespace Samkuk.Tests
         {
             GameSession.SortieCastle = null;
             GameSession.SortieOrigin = null;
+            TerrainThemeCatalog.Disabled = false;
             Audio.AudioManager.DestroyInstance();
             foreach (var o in toDestroy) if (o != null) Object.Destroy(o);
             toDestroy.Clear();

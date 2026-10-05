@@ -29,6 +29,7 @@ namespace Samkuk.EditorTools
             Step10EnemyWalkSetup.Run(); // 적 에셋이 만들어진 뒤
             Step10AllySetup.Run();      // 장수 선택 컨트롤러(Step 8)가 만들어진 뒤
             Step12CastleSetup.Run();    // 내정 성 46곳 (다른 Step 과 독립)
+            Step12TerrainSetup.Run();   // 전투 맵 지형 테마 (그림은 tools/terrain_art/generate.ps1)
             Step12StrategySetup.Run();  // 내정 화면 씬 (성 에셋과 Step 9-2 의 빌드 설정 뒤)
             Debug.Log("[Samkuk] 전체 셋업(Step 2-9 + 타이틀) 완료");
         }
