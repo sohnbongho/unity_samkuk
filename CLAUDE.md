@@ -39,7 +39,7 @@
 | 12-1 | 내정(삼국지3식) 시작: 성 46곳 `CastleData`/`CastleCatalog`(이름, 한자, 주, 지형, 크기, 전략 지도 위치, 인접 성), 성 배경 그림 46장(코드 생성 `tools/castle_art`, 지형·크기·강·시간대별), 셋업 `Step12CastleSetup`(메뉴 `Step 12-1`), 설명 `docs/CASTLES.md`. 내정 수치/화면은 아직 없음 | 완료 | 247b504 |
 | 12-2 | 내정 화면 1번(지도 + 성 화면): 새 씬 `StrategyScene`(빌드 2번), 전략 지도 그림(주별 색 영역, 해안·강·산, 코드 생성 `StrategyMap.png`), 성 마커 46개 + 인접 길, 성 선택 → 정보 상자 → 성 화면(배경 + 인접 성 이동), ESC = 성 → 지도 → 타이틀. `StrategyModel`(규칙) / `StrategyUI`(화면을 코드로 생성), 타이틀 [내정] 버튼, 메뉴 `Step 12-2`. 내정 수치/명령은 아직 없음 | 완료 | 247b504 |
 | 12-3 | 해상도 상향: 성 배경 1920x1080 / 전략 지도 2560x1440(그림 재생성), 내정 UI 기준 해상도 2560x1440(`StrategyUI.ReferenceResolution`, 지도 영역 1960x1102), 타이틀 해상도/창 모드 버튼(`DisplaySettings`, `SaveData.displayWidth/displayHeight/windowMode`) | 완료 | 247b504 |
-| 12-4 | 시작 성 선택과 출진: 내정을 열면 시작 성을 골라 "내 성"으로 저장(`SaveData.homeCastleId`, ★ 표시, [이 성에서 시작]/[시작 성 변경]), 내 성의 성 화면에서 [출진] → 전투(`GameSession.SortieCastle`, 성 지형 색 `BattleTerrain`), 결과 화면 [내정으로 (M)]. 타이틀 [시작]은 성 없이 시작. 전투 결과의 성 반영은 아직 없음 | 완료 | - |
+| 12-4 | 시작 성 선택과 출진: 내정을 열면 시작 성을 골라 "내 성"으로 저장(`SaveData.homeCastleId`, ★ 표시, [이 성에서 시작]/[시작 성 변경]), 내 성의 성 화면에서 [출진] → 전투(`GameSession.SortieCastle`, 성 지형 색 `BattleTerrain`), 결과 화면 [내정으로 (M)]. 타이틀 [시작]은 성 없이 시작. 전투 결과의 성 반영은 아직 없음 | 완료 | 13db09a |
 | 11 | PC 빌드 | 대기(보류) | - |
 
 ## 남은 작업
