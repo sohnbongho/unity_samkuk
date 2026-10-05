@@ -10,6 +10,9 @@ namespace Samkuk.Core
 
         public static HeroData SelectedHero { get; set; }
 
+        /// <summary>내정에서 출진한 성 (비어 있으면 타이틀의 [시작]처럼 성 없이 시작한 판). 전투 지형과 결과 화면의 "내정으로"에 쓴다.</summary>
+        public static CastleData SortieCastle { get; set; }
+
         /// <summary>마지막으로 고른 아군 장수들 (다시 시작할 때 미리 선택된 상태로 보여 준다).</summary>
         public static IReadOnlyList<HeroData> SelectedAllies => allies;
 

@@ -31,6 +31,9 @@ namespace Samkuk.Meta
         public float sfxVolume = 0.7f;
         public bool screenShake = true;
 
+        // 내정: 시작할 때 고른 "내 성" (CastleData.id, 비어 있으면 아직 고르지 않음)
+        public string homeCastleId;
+
         // 화면 (기본값은 프로젝트의 기본 설정과 같다: 1920x1080, 테두리 없는 전체화면)
         public int displayWidth = 1920;
         public int displayHeight = 1080;

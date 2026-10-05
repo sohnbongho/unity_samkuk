@@ -167,7 +167,11 @@ namespace Samkuk.UI
 
         // ───────────────────────── 동작 ─────────────────────────
 
-        public void StartGame() => SceneLoader?.Invoke(GameManager.BattleSceneName);
+        public void StartGame()
+        {
+            GameSession.SortieCastle = null; // 타이틀의 [시작]은 성 없이 시작하는 판
+            SceneLoader?.Invoke(GameManager.BattleSceneName);
+        }
 
         /// <summary>내정 모드(전략 지도)로 간다.</summary>
         public void OpenStrategy() => SceneLoader?.Invoke(GameManager.StrategySceneName);

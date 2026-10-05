@@ -131,7 +131,7 @@ namespace Samkuk.EditorTools
             RemoveComponent<PauseUI>(hud);
 
             var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            BuildResultPanel(hud.transform, font, out var resultPanel, out var rTitle, out var rDetails, out var rRetry, out var rTitleBtn);
+            BuildResultPanel(hud.transform, font, out var resultPanel, out var rTitle, out var rDetails, out var rRetry, out var rTitleBtn, out var rStrategyBtn);
             BuildPausePanel(hud.transform, font, out var pausePanel, out var pResume, out var pRestart, out var pTitleBtn);
 
             var resultUi = hud.AddComponent<ResultUI>();
@@ -141,6 +141,7 @@ namespace Samkuk.EditorTools
             ruSo.FindProperty("detailsLabel").objectReferenceValue = rDetails;
             ruSo.FindProperty("retryButton").objectReferenceValue = rRetry;
             ruSo.FindProperty("titleButton").objectReferenceValue = rTitleBtn;
+            ruSo.FindProperty("strategyButton").objectReferenceValue = rStrategyBtn;
             ruSo.ApplyModifiedPropertiesWithoutUndo();
 
             var pauseUi = hud.AddComponent<PauseUI>();
@@ -212,7 +213,7 @@ namespace Samkuk.EditorTools
         // ───────────────────────── UI 구성 ─────────────────────────
 
         static void BuildResultPanel(Transform hud, Font font, out GameObject panelGo, out Text title, out Text details,
-            out Button retry, out Button toTitle)
+            out Button retry, out Button toTitle, out Button toStrategy)
         {
             var panel = NewRect("ResultPanel", hud);
             Stretch(panel);
@@ -221,7 +222,7 @@ namespace Samkuk.EditorTools
             var box = NewRect("Box", panel);
             box.anchorMin = box.anchorMax = new Vector2(0.5f, 0.5f);
             box.pivot = new Vector2(0.5f, 0.5f);
-            box.sizeDelta = new Vector2(760f, 700f);
+            box.sizeDelta = new Vector2(760f, 780f); // 아래에 [내정으로] 줄이 하나 더 있다
             box.gameObject.AddComponent<Image>().color = new Color(0.1f, 0.12f, 0.18f, 0.98f);
 
             title = NewText("Title", box, font, 64, TextAnchor.MiddleCenter, "결과");
@@ -230,12 +231,15 @@ namespace Samkuk.EditorTools
             details = NewText("Details", box, font, 32, TextAnchor.UpperLeft, "");
             details.rectTransform.anchorMin = new Vector2(0f, 0f);
             details.rectTransform.anchorMax = new Vector2(1f, 1f);
-            details.rectTransform.offsetMin = new Vector2(80f, 130f);
+            details.rectTransform.offsetMin = new Vector2(80f, 250f);
             details.rectTransform.offsetMax = new Vector2(-60f, -170f);
             details.lineSpacing = 1.15f;
 
-            retry = NewButton("RetryButton", box, font, "다시 하기  [R]", new Vector2(-190f, 70f), new Vector2(320f, 74f));
-            toTitle = NewButton("TitleButton", box, font, "타이틀  [T]", new Vector2(190f, 70f), new Vector2(320f, 74f));
+            retry = NewButton("RetryButton", box, font, "다시 하기  [R]", new Vector2(-190f, 160f), new Vector2(320f, 74f));
+            toTitle = NewButton("TitleButton", box, font, "타이틀  [T]", new Vector2(190f, 160f), new Vector2(320f, 74f));
+            // 내정에서 출진한 판에서만 보인다 (ResultUI 가 켜고 끈다)
+            toStrategy = NewButton("StrategyButton", box, font, "내정으로  [M]", new Vector2(0f, 62f), new Vector2(660f, 74f));
+            toStrategy.gameObject.SetActive(false);
 
             panel.gameObject.SetActive(false);
             panelGo = panel.gameObject;

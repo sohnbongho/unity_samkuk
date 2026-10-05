@@ -77,6 +77,7 @@ namespace Samkuk.Core
             if (kb == null) return;
 
             if (kb.rKey.wasPressedThisFrame) Restart();
+            else if (kb.mKey.wasPressedThisFrame && GameSession.SortieCastle != null) GoToStrategy();
             else if (kb.tKey.wasPressedThisFrame) GoToTitle();
         }
 
@@ -84,6 +85,16 @@ namespace Samkuk.Core
         {
             Time.timeScale = 1f;
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+
+        /// <summary>내정(전략 지도) 씬으로 돌아간다. 내정 씬이 빌드에 없으면 타이틀로.</summary>
+        public void GoToStrategy()
+        {
+            Time.timeScale = 1f;
+            if (Application.CanStreamedLevelBeLoaded(StrategySceneName))
+                SceneManager.LoadScene(StrategySceneName);
+            else
+                GoToTitle();
         }
 
         /// <summary>타이틀 씬으로 이동한다. 타이틀 씬이 빌드에 없으면 현재 씬을 다시 시작한다.</summary>

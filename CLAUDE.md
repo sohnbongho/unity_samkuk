@@ -12,7 +12,7 @@
 
 ## 진행 상황
 
-마지막 갱신: 2026-10-05 (12-1 성/배경, 12-2 전략 지도+성 화면, 12-3 해상도 완료. 타격감/연출 작업 중이라 Step 11 빌드는 보류)
+마지막 갱신: 2026-10-05 (12-4 시작 성 선택/출진 완료. 타격감/연출 작업 중이라 Step 11 빌드는 보류)
 
 | Step | 내용 | 상태 | 커밋 |
 |---|---|---|---|
@@ -39,6 +39,7 @@
 | 12-1 | 내정(삼국지3식) 시작: 성 46곳 `CastleData`/`CastleCatalog`(이름, 한자, 주, 지형, 크기, 전략 지도 위치, 인접 성), 성 배경 그림 46장(코드 생성 `tools/castle_art`, 지형·크기·강·시간대별), 셋업 `Step12CastleSetup`(메뉴 `Step 12-1`), 설명 `docs/CASTLES.md`. 내정 수치/화면은 아직 없음 | 완료 | 247b504 |
 | 12-2 | 내정 화면 1번(지도 + 성 화면): 새 씬 `StrategyScene`(빌드 2번), 전략 지도 그림(주별 색 영역, 해안·강·산, 코드 생성 `StrategyMap.png`), 성 마커 46개 + 인접 길, 성 선택 → 정보 상자 → 성 화면(배경 + 인접 성 이동), ESC = 성 → 지도 → 타이틀. `StrategyModel`(규칙) / `StrategyUI`(화면을 코드로 생성), 타이틀 [내정] 버튼, 메뉴 `Step 12-2`. 내정 수치/명령은 아직 없음 | 완료 | 247b504 |
 | 12-3 | 해상도 상향: 성 배경 1920x1080 / 전략 지도 2560x1440(그림 재생성), 내정 UI 기준 해상도 2560x1440(`StrategyUI.ReferenceResolution`, 지도 영역 1960x1102), 타이틀 해상도/창 모드 버튼(`DisplaySettings`, `SaveData.displayWidth/displayHeight/windowMode`) | 완료 | 247b504 |
+| 12-4 | 시작 성 선택과 출진: 내정을 열면 시작 성을 골라 "내 성"으로 저장(`SaveData.homeCastleId`, ★ 표시, [이 성에서 시작]/[시작 성 변경]), 내 성의 성 화면에서 [출진] → 전투(`GameSession.SortieCastle`, 성 지형 색 `BattleTerrain`), 결과 화면 [내정으로 (M)]. 타이틀 [시작]은 성 없이 시작. 전투 결과의 성 반영은 아직 없음 | 완료 | - |
 | 11 | PC 빌드 | 대기(보류) | - |
 
 ## 남은 작업
@@ -49,13 +50,14 @@
    - (선택) BGM: 현재는 효과음만 있음. `AudioManager`에 BGM 슬롯/볼륨을 추가하는 작업이 남아 있음
 2. **10-4 이후 체감 조정**: 직접 플레이해 보고 "너무 쉬움/어려움" 구간을 알려주면 `BalanceModel` 보고서(메뉴 `Samkuk > Balance Report`)를 보며 수치를 조정한다.
 3. **Step 11 빌드**: 빌드 설정(타이틀→게임 순서는 9-2에서 등록됨), 최적화(GC/풀링 점검), 실행 파일 출력, 필요 시 모바일 터치.
-4. **내정(Step 12) 이어서**: 12-1/12-2(성, 지도, 성 화면) 다음 — 성별 내정 수치(농업/상업/인구/방어 등)와 명령(개발/징병 등)을 성 화면의 명령 자리(`CastlePanel` 아래 띠 `Note`)에 붙이기, 내정과 서바이버 전투의 연결 등. 사용자 방향을 확인한 뒤 진행.
+4. **내정(Step 12) 이어서**: 12-1~12-4(성, 지도, 성 화면, 시작 성/출진) 다음 — 성별 내정 수치(농업/상업/인구/방어 등)와 명령(개발/징병 등)을 성 화면의 명령 자리(`CastlePanel` 아래 띠 `Note`)에 붙이기, 전투 결과를 성에 반영하는 것(승리 보상, 수치 변화) 등. 사용자 방향을 확인한 뒤 진행.
 5. **미결정(PLAN.md 8번)**: 모바일 포함 여부, 실제 아트 에셋 사용 여부, 장수/무기 최종 목록.
 
 ## 알려진 이슈 / 메모
 
 - 스프라이트(번개, 불길, 궁병, 기병 등)는 코드로 만든 **플레이스홀더**. Step 10에서 교체/다듬기.
 - 장수 걷기 시트: `Assets/Sprites/HeroWalk/<장수 에셋 이름>_Walk.png`(4열 x 4행: 열=프레임 0~3, 행=아래/위/왼쪽/오른쪽, 칸 96x96, 배경 투명). 현재 5장은 **코드로 그린 임시 그림**(`tools/hero_art/HeroSprites.cs`, `generate.ps1 -Only walk`). 시트가 있는 장수는 `PlayerController`가 좌우 반전을 하지 않고 `PlayerAnimator`가 방향/프레임을 정하며, 장수 색(`tint`)도 입히지 않는다(`HeroSelectController.Apply`). 시트가 없으면 예전 동작(원 스프라이트 + tint + 반전). Player 프리팹에 `PlayerAnimator`를 붙이는 것은 `Step 10-6`이므로 셋업을 돌려야 한다.
+- 내정 시작/출진: 내정을 처음 열면 시작 성을 골라 내 성(`SaveData.homeCastleId`)으로 저장하고, 내 성 안에서만 [출진] 이 보인다. 출진하면 `GameSession.SortieCastle` 이 전투로 전달돼 `InfiniteBackground` 가 성 지형 색(`BattleTerrain`)을 배경 위에 한 겹 덮고, 결과 화면에 [내정으로] 가 생긴다(Step 9 셋업이 만드는 버튼이라 **Step 9/Run All 재실행 필요**). 타이틀 [시작] 은 `SortieCastle` 을 비우는 "성 없이 시작"이다. 규칙은 `docs/CASTLES.md`.
 - 씬 이름: 유니티 템플릿 기본 이름이던 `SampleScene` 을 역할에 맞게 `BattleScene`(서바이버 전투 한 판)으로 바꿨다. `.meta` 와 함께 옮겨 GUID 는 그대로이며, 코드 상수는 `GameManager.BattleSceneName`, 에디터 셋업은 `Step9TitleSetup.BattleScenePath`. 이전 이름이 남은 곳은 초기 기획 `PLAN.md` 뿐(당시 상태를 적은 문서라 그대로 둠).
 - 내정 화면: 씬 `StrategyScene`(타이틀 0, 게임 1, 내정 2 순서로 `Step12StrategySetup.RegisterBuildScenes` 가 등록)에는 카메라/이벤트 시스템/캔버스(+`StrategyUI`)만 있고, **화면 전체는 `StrategyUI` 가 실행 중에 코드로 만든다**(성이 바뀌어도 씬 재구성 불필요). 규칙은 `StrategyModel`(선택/입장/인접 이동, 마지막 성은 `StrategySession` 에 기억). 지도 그림 `Assets/Sprites/Strategy/StrategyMap.png`(2560x1440)는 코드로 만든 **임시 그림**(`tools/castle_art/MapArt.cs`, `generate.ps1 -Only Map`)이며 성 마커는 `mapPosition`(0~1)을 지도 영역(1960x1102)에 곱해 놓는다. 타이틀의 [내정] 버튼은 Step 9-2 를 **다시 실행해야** 생기고(없어도 동작), 버튼 배치가 바뀌었다. 런타임 UI라 스킨은 `UiSkin.StyleX` 를 직접 호출한다.
 - 내정 성: 기준표는 `tools/castle_art/castles.json` 한 곳(46곳, `links` 는 `"A-B"` 양방향)이고 그림 생성기와 `Step12CastleSetup` 이 같이 읽는다. 성 목록은 삼국지3의 도시 수(46)에 맞춘 **후한 말 지리 기준 근사**이며 원작 목록과 다를 수 있다. 배경(`Assets/Sprites/Castles/Castle_<id>.png`, 1920x1080 16:9)은 코드로 만든 **임시 그림**이고, 직접 그린 그림으로 덮어쓰면 그 성은 `generate.ps1 -Only`에서 피한다. 셋업은 멱등(기존 성 값은 덮어쓰지 않고 빠진 배경/연결만 채움)이라 값을 바꿀 땐 에셋을 직접 고친다. `CastleData` 가 Sprite 를 직접 참조해 카탈로그 로드 시 46장이 함께 로드된다(압축 후 약 50MB) — 내정 화면에서 부담이 되면 지연 로드로 바꿀 것. 규칙/방법은 `docs/CASTLES.md`.

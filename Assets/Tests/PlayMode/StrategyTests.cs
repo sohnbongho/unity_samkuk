@@ -1,9 +1,12 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using NUnit.Framework;
 using Samkuk.Audio;
 using Samkuk.Core;
 using Samkuk.Data;
+using Samkuk.Meta;
 using Samkuk.Strategy;
 using Samkuk.UI;
 using UnityEditor;
@@ -16,17 +19,31 @@ namespace Samkuk.Tests
     /// <summary>내정 화면(Step 12-2): 성 선택/입장/이동 규칙과 지도 UI.</summary>
     public class StrategyTests
     {
-        readonly List<Object> toDestroy = new List<Object>();
+        readonly List<UnityEngine.Object> toDestroy = new List<UnityEngine.Object>();
+        string savePath;
 
         [SetUp]
-        public void SetUp() => StrategySession.LastCastleId = null;
+        public void SetUp()
+        {
+            // 내 성 등을 저장하므로 실제 저장 파일을 건드리지 않도록 임시 경로를 쓴다
+            savePath = Path.Combine(Application.temporaryCachePath, $"test_strategy_save_{Guid.NewGuid():N}.json");
+            SaveSystem.PathOverride = savePath;
+            SaveSystem.ResetCache();
+            StrategySession.LastCastleId = null;
+            GameSession.SortieCastle = null;
+        }
 
         [TearDown]
         public void TearDown()
         {
             StrategySession.LastCastleId = null;
+            GameSession.SortieCastle = null;
+            SaveSystem.Delete();
+            SaveSystem.PathOverride = null;
+            SaveSystem.ResetCache();
+            if (File.Exists(savePath + ".tmp")) File.Delete(savePath + ".tmp");
             AudioManager.DestroyInstance();
-            foreach (var o in toDestroy) if (o != null) Object.Destroy(o);
+            foreach (var o in toDestroy) if (o != null) UnityEngine.Object.Destroy(o);
             toDestroy.Clear();
         }
 
@@ -163,6 +180,99 @@ namespace Samkuk.Tests
             Assert.IsFalse(second.InCastle);
         }
 
+        // ───────────────────────── 내 성 / 출진 (모델) ─────────────────────────
+
+        [Test]
+        public void Model_StartHere_SetsHome_Saves_AndEntersCastle()
+        {
+            var catalog = MakeCatalog(out var a, out _, out _, out _);
+            var model = new StrategyModel(catalog);
+            Assert.IsFalse(model.HasHome);
+            Assert.IsFalse(model.StartHere(), "고른 성이 없으면 시작할 수 없다");
+
+            model.Select(a);
+            Assert.IsTrue(model.StartHere());
+            Assert.AreSame(a, model.Home);
+            Assert.IsTrue(model.IsHome(a));
+            Assert.IsTrue(model.InCastle, "시작 성을 고르면 그 성 안으로 들어간다");
+            Assert.AreEqual("A", SaveSystem.Current.homeCastleId);
+
+            SaveSystem.ResetCache(); // 파일에서 다시 읽어도 유지
+            Assert.AreEqual("A", SaveSystem.Current.homeCastleId);
+        }
+
+        [Test]
+        public void Model_StartHere_IgnoredOnceHomeExists()
+        {
+            var catalog = MakeCatalog(out var a, out var b, out _, out _);
+            var model = new StrategyModel(catalog);
+            model.Select(a);
+            model.StartHere();
+            model.Leave();
+
+            model.Select(b);
+            Assert.IsFalse(model.StartHere(), "내 성이 이미 있으면 다시 정하지 않는다");
+            Assert.AreSame(a, model.Home);
+        }
+
+        [Test]
+        public void Model_Home_PersistsAcrossModels_AndStartsSelectedOnMap()
+        {
+            var catalog = MakeCatalog(out _, out var b, out _, out _);
+            var first = new StrategyModel(catalog);
+            first.Select(b);
+            first.StartHere();
+
+            StrategySession.LastCastleId = null; // 앱을 다시 켠 것처럼
+            var second = new StrategyModel(catalog);
+            Assert.AreSame(b, second.Home);
+            Assert.AreSame(b, second.Selected, "보던 성이 없으면 내 성이 선택된 채로 열린다");
+            Assert.IsFalse(second.InCastle, "성 안이 아니라 지도에서 시작");
+        }
+
+        [Test]
+        public void Model_ClearHome_ForgetsHome_AndLeavesCastle()
+        {
+            var catalog = MakeCatalog(out var a, out _, out _, out _);
+            var model = new StrategyModel(catalog);
+            Assert.IsFalse(model.ClearHome(), "내 성이 없으면 할 일이 없다");
+
+            model.Select(a);
+            model.StartHere();
+            Assert.IsTrue(model.ClearHome());
+            Assert.IsFalse(model.HasHome);
+            Assert.IsFalse(model.InCastle);
+            Assert.IsTrue(string.IsNullOrEmpty(SaveSystem.Current.homeCastleId));
+        }
+
+        [Test]
+        public void Model_Sortie_OnlyFromHomeCastle_SetsSessionAndNotifies()
+        {
+            var catalog = MakeCatalog(out var a, out var b, out _, out _);
+            var model = new StrategyModel(catalog);
+            CastleData sortied = null;
+            model.SortieStarted += c => sortied = c;
+
+            model.Select(a);
+            model.StartHere(); // A 가 내 성, 성 안
+            Assert.IsTrue(model.CanSortie);
+
+            model.MoveTo(b); // 다른 성으로 옮겨 가면 출진할 수 없다
+            Assert.IsFalse(model.CanSortie);
+            Assert.IsFalse(model.Sortie());
+            Assert.IsNull(GameSession.SortieCastle);
+            Assert.IsNull(sortied);
+
+            model.MoveTo(a);
+            model.Leave();
+            Assert.IsFalse(model.CanSortie, "지도에서는 출진할 수 없다");
+
+            model.Enter();
+            Assert.IsTrue(model.Sortie());
+            Assert.AreSame(a, GameSession.SortieCastle);
+            Assert.AreSame(a, sortied);
+        }
+
         // ───────────────────────── 화면 ─────────────────────────
 
         [UnityTest]
@@ -261,6 +371,88 @@ namespace Samkuk.Tests
 
             Assert.AreEqual(catalog.castles.Count, ui.MarkerCount);
             CollectionAssert.IsEmpty(ui.MissingReferences());
+        }
+
+        // ───────────────────────── 내 성 / 출진 (화면) ─────────────────────────
+
+        [UnityTest]
+        public IEnumerator Ui_WithoutHome_PrimaryButtonStartsAtSelectedCastle()
+        {
+            var catalog = MakeCatalog(out _, out var b, out _, out _);
+            var ui = MakeUi(catalog);
+            yield return null;
+
+            ui.Model.Select(b);
+            Assert.AreEqual("이 성에서 시작", Find(ui, "EnterButton").GetComponentInChildren<Text>().text);
+            Assert.IsFalse(Find(ui, "ChangeHomeButton").gameObject.activeSelf, "내 성이 없으면 [시작 성 변경]은 숨김");
+
+            Find(ui, "EnterButton").onClick.Invoke();
+            Assert.AreSame(b, ui.Model.Home);
+            Assert.IsTrue(ui.IsCastleVisible, "시작 성을 고르면 그 성 화면으로 들어간다");
+        }
+
+        [UnityTest]
+        public IEnumerator Ui_SecondClickOnMarker_StartsHereWhenNoHome_ThenEntersAfterwards()
+        {
+            var catalog = MakeCatalog(out var a, out var b, out _, out _);
+            var ui = MakeUi(catalog);
+            yield return null;
+
+            Find(ui, "Marker_A").onClick.Invoke();
+            Find(ui, "Marker_A").onClick.Invoke(); // 같은 성을 다시: 시작 성으로 정하고 들어간다
+            Assert.AreSame(a, ui.Model.Home);
+            Assert.IsTrue(ui.IsCastleVisible);
+
+            ui.Model.Leave();
+            Find(ui, "Marker_B").onClick.Invoke();
+            Find(ui, "Marker_B").onClick.Invoke(); // 내 성이 이미 있으므로 들어가기만 한다
+            Assert.AreSame(a, ui.Model.Home, "다른 성을 눌러도 내 성은 바뀌지 않는다");
+            Assert.AreSame(b, ui.Model.Selected);
+            Assert.IsTrue(ui.IsCastleVisible);
+            Assert.AreEqual("성에 들어가기", Find(ui, "EnterButton").GetComponentInChildren<Text>().text);
+        }
+
+        [UnityTest]
+        public IEnumerator Ui_SortieButton_OnlyInHomeCastle_AndLoadsBattleScene()
+        {
+            var catalog = MakeCatalog(out var a, out var b, out _, out _);
+            var ui = MakeUi(catalog);
+            string loaded = null;
+            ui.SceneLoader = name => loaded = name;
+            yield return null;
+
+            ui.Model.Select(a);
+            ui.Model.StartHere();
+            Assert.IsTrue(Find(ui, "SortieButton").gameObject.activeSelf, "내 성에서는 [출진]이 보인다");
+
+            ui.Model.MoveTo(b);
+            Assert.IsFalse(Find(ui, "SortieButton").gameObject.activeSelf, "내 성이 아니면 숨김");
+
+            ui.Model.MoveTo(a);
+            Find(ui, "SortieButton").onClick.Invoke();
+            Assert.AreEqual(GameManager.BattleSceneName, loaded);
+            Assert.AreSame(a, GameSession.SortieCastle);
+        }
+
+        [UnityTest]
+        public IEnumerator Ui_ChangeHomeButton_ClearsHome_AndAllowsPickingAgain()
+        {
+            var catalog = MakeCatalog(out var a, out var b, out _, out _);
+            var ui = MakeUi(catalog);
+            yield return null;
+
+            ui.Model.Select(a);
+            ui.Model.StartHere();
+            ui.Model.Leave();
+            Assert.IsTrue(Find(ui, "ChangeHomeButton").gameObject.activeSelf);
+
+            Find(ui, "ChangeHomeButton").onClick.Invoke();
+            Assert.IsFalse(ui.Model.HasHome);
+            Assert.IsFalse(Find(ui, "ChangeHomeButton").gameObject.activeSelf);
+
+            ui.Model.Select(b);
+            Find(ui, "EnterButton").onClick.Invoke();
+            Assert.AreSame(b, ui.Model.Home, "다른 성을 새 시작 성으로 고를 수 있다");
         }
 
         // ───────────────────────── 타이틀 / 씬 ─────────────────────────

@@ -23,8 +23,14 @@ namespace Samkuk.UI
         [SerializeField] Text detailsLabel;
         [SerializeField] Button retryButton;
         [SerializeField] Button titleButton;
+        [SerializeField, Tooltip("내정으로 돌아가기 (내정에서 출진한 판에서만 보임, 없어도 동작)")] Button strategyButton;
+
+        Action onStrategy;
 
         public bool IsVisible => panel != null && panel.activeSelf;
+
+        /// <summary>[내정으로] 동작을 정한다 (null 이면 버튼을 숨긴다). Show 전에 호출한다.</summary>
+        public void SetStrategyReturn(Action onStrategyReturn) => onStrategy = onStrategyReturn;
 
         void Awake()
         {
@@ -42,6 +48,11 @@ namespace Samkuk.UI
 
             Bind(retryButton, onRetry);
             Bind(titleButton, onTitle);
+            if (strategyButton != null)
+            {
+                strategyButton.gameObject.SetActive(onStrategy != null);
+                Bind(strategyButton, onStrategy);
+            }
             panel.SetActive(true);
         }
 
@@ -67,8 +78,9 @@ namespace Samkuk.UI
             int sec = Mathf.FloorToInt(r.seconds);
             string time = $"{sec / 60:00}:{sec % 60:00}";
             string hero = string.IsNullOrEmpty(r.heroName) ? "" : $"장수      {r.heroName}\n";
+            string castle = string.IsNullOrEmpty(r.castleName) ? "" : $"출진 성   {r.castleName}\n";
 
-            return hero +
+            return castle + hero +
                    $"생존 시간   {time}{(r.newBestTime ? "   ★ 최고 기록!" : "")}\n" +
                    $"처치 수      {r.kills}{(r.newBestKills ? "   ★ 최고 기록!" : "")}\n" +
                    $"도달 레벨   {r.level}\n\n" +

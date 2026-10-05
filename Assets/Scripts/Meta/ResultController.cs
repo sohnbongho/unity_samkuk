@@ -18,6 +18,8 @@ namespace Samkuk.Meta
         public bool newBestTime;
         public bool newBestKills;
         public string heroName;
+        /// <summary>내정에서 출진한 성의 이름 (타이틀의 [시작]으로 시작한 판은 비어 있음).</summary>
+        public string castleName;
     }
 
     /// <summary>
@@ -68,6 +70,8 @@ namespace Samkuk.Meta
         {
             var result = Settle(cleared);
             LastResult = result;
+            // 내정에서 출진한 판이면 결과 화면에 [내정으로] 버튼을 켠다
+            if (ui != null) ui.SetStrategyReturn(GameSession.SortieCastle != null ? (Action)OnStrategy : null);
             view?.Show(result, OnRetry, OnTitle);
         }
 
@@ -91,7 +95,8 @@ namespace Samkuk.Meta
                 goldEarned = earned,
                 newBestTime = seconds > save.bestSeconds,
                 newBestKills = kills > save.bestKills,
-                heroName = hero != null && hero.Current != null ? hero.Current.displayName : ""
+                heroName = hero != null && hero.Current != null ? hero.Current.displayName : "",
+                castleName = GameSession.SortieCastle != null ? GameSession.SortieCastle.displayName : ""
             };
 
             save.gold += earned;
@@ -114,6 +119,11 @@ namespace Samkuk.Meta
         void OnTitle()
         {
             if (game != null) game.GoToTitle();
+        }
+
+        void OnStrategy()
+        {
+            if (game != null) game.GoToStrategy();
         }
     }
 }

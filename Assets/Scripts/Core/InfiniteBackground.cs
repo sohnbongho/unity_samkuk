@@ -10,6 +10,8 @@ namespace Samkuk.Core
     [RequireComponent(typeof(SpriteRenderer))]
     public class InfiniteBackground : MonoBehaviour
     {
+        const string OverlayName = "TerrainOverlay";
+
         [SerializeField] Transform followTarget;
 
         SpriteRenderer sr;
@@ -21,12 +23,49 @@ namespace Samkuk.Core
         {
             sr = GetComponent<SpriteRenderer>();
             RefreshTileSize();
+            ApplyTerrainOverlay(BattleTerrain.ForCurrentSortie());
         }
 
         void Start()
         {
             if (followTarget == null && Camera.main != null)
                 followTarget = Camera.main.transform;
+        }
+
+        static Sprite whiteSprite;
+
+        /// <summary>지형 색을 배경 위에 한 겹 덮는다 (null 이면 기존 덮개를 없앤다). 배경과 같은 정렬 레이어에서 한 칸 위.</summary>
+        public void ApplyTerrainOverlay(Color? overlay)
+        {
+            if (sr == null) sr = GetComponent<SpriteRenderer>();
+            var existing = transform.Find(OverlayName);
+            if (overlay == null)
+            {
+                if (existing != null) Destroy(existing.gameObject);
+                return;
+            }
+
+            SpriteRenderer layer;
+            if (existing != null) layer = existing.GetComponent<SpriteRenderer>();
+            else
+            {
+                var go = new GameObject(OverlayName, typeof(SpriteRenderer));
+                go.transform.SetParent(transform, false);
+                layer = go.GetComponent<SpriteRenderer>();
+            }
+            if (whiteSprite == null)
+            {
+                var tex = new Texture2D(1, 1, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave };
+                tex.SetPixel(0, 0, Color.white);
+                tex.Apply();
+                whiteSprite = Sprite.Create(tex, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1f); // 1유닛 크기
+                whiteSprite.hideFlags = HideFlags.HideAndDontSave;
+            }
+            layer.sprite = whiteSprite;
+            layer.color = overlay.Value;
+            layer.sortingLayerID = sr.sortingLayerID;
+            layer.sortingOrder = sr.sortingOrder + 1;
+            layer.transform.localScale = new Vector3(Mathf.Max(1f, sr.size.x), Mathf.Max(1f, sr.size.y), 1f);
         }
 
         void RefreshTileSize()
