@@ -31,6 +31,11 @@ namespace Samkuk.Meta
         public float sfxVolume = 0.7f;
         public bool screenShake = true;
 
+        // 화면 (기본값은 프로젝트의 기본 설정과 같다: 1920x1080, 테두리 없는 전체화면)
+        public int displayWidth = 1920;
+        public int displayHeight = 1080;
+        public int windowMode = 1; // 0 창 모드, 1 전체화면(테두리 없음), 2 전용 전체화면
+
         public int GetUpgradeLevel(string id)
         {
             foreach (var u in upgrades)

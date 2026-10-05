@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e34e706c787ed74f9c0a1504c3e6cfc, type: 3}
+  m_Name: Castle_Shouchun
+  m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.CastleData
+  id: Shouchun
+  displayName: "\uC218\uCD98"
+  hanja: "\u58FD\u6625"
+  region: 11
+  terrain: 3
+  size: 1
+  hasWater: 1
+  mapPosition: {x: 0.67, y: 0.45}
+  neighbors:
+  - {fileID: 11400000, guid: b093c5410666ef541a1429b272818455, type: 2}
+  - {fileID: 11400000, guid: 6509a2229122a904b9312b2621ca3659, type: 2}
+  - {fileID: 11400000, guid: 1463527a67b16db4485a191763de8544, type: 2}
+  - {fileID: 11400000, guid: d12d00f8c22a8fb4bb54ff2634d18752, type: 2}
+  - {fileID: 11400000, guid: e6cd017b6182f6f4f8fe4c3d6c987213, type: 2}
+  background: {fileID: 21300000, guid: 455bf6e1fd3b90b4bb0676d1c5c63fab, type: 3}

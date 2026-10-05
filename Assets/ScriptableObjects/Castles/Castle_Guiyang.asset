@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e34e706c787ed74f9c0a1504c3e6cfc, type: 3}
+  m_Name: Castle_Guiyang
+  m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.CastleData
+  id: Guiyang
+  displayName: "\uACC4\uC591"
+  hanja: "\u6842\u967D"
+  region: 10
+  terrain: 4
+  size: 0
+  hasWater: 0
+  mapPosition: {x: 0.53, y: 0.76}
+  neighbors:
+  - {fileID: 11400000, guid: 4f6a708acc4b53a44b12b69237919676, type: 2}
+  - {fileID: 11400000, guid: 9e386a65610cabb428445f602fff936d, type: 2}
+  - {fileID: 11400000, guid: e0eeef41e99589246b96cb126dc82c58, type: 2}
+  background: {fileID: 21300000, guid: 7744fd5737516a8458bd9b18fa4c6876, type: 3}

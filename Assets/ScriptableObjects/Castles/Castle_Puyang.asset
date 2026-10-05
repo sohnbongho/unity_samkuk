@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e34e706c787ed74f9c0a1504c3e6cfc, type: 3}
+  m_Name: Castle_Puyang
+  m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.CastleData
+  id: Puyang
+  displayName: "\uBCF5\uC591"
+  hanja: "\u6FEE\u967D"
+  region: 4
+  terrain: 0
+  size: 0
+  hasWater: 0
+  mapPosition: {x: 0.66, y: 0.29}
+  neighbors:
+  - {fileID: 11400000, guid: d24afa3afa02c6d45a8223319c273f88, type: 2}
+  - {fileID: 11400000, guid: f58a49648ab511840954a44aefc6e74b, type: 2}
+  - {fileID: 11400000, guid: f09bd71cd77549b42bbfccb2fec5bfcd, type: 2}
+  background: {fileID: 21300000, guid: eb28538be70f4ce43a93e0a5920753fa, type: 3}

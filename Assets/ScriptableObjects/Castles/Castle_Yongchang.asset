@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e34e706c787ed74f9c0a1504c3e6cfc, type: 3}
+  m_Name: Castle_Yongchang
+  m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.CastleData
+  id: Yongchang
+  displayName: "\uC601\uCC3D"
+  hanja: "\u6C38\u660C"
+  region: 9
+  terrain: 4
+  size: 0
+  hasWater: 0
+  mapPosition: {x: 0.05, y: 0.79}
+  neighbors:
+  - {fileID: 11400000, guid: 0d1df233829e5714d94a33ee5a361717, type: 2}
+  - {fileID: 11400000, guid: e13d42f7a17e24145889196dac335c36, type: 2}
+  background: {fileID: 21300000, guid: d78414c3221b1ef4db065507239aa2c5, type: 3}

@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e34e706c787ed74f9c0a1504c3e6cfc, type: 3}
+  m_Name: Castle_Xinye
+  m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.CastleData
+  id: Xinye
+  displayName: "\uC2E0\uC57C"
+  hanja: "\u65B0\u91CE"
+  region: 10
+  terrain: 0
+  size: 0
+  hasWater: 0
+  mapPosition: {x: 0.44, y: 0.47}
+  neighbors:
+  - {fileID: 11400000, guid: 003809668faa1a74eb729cedc49c9930, type: 2}
+  - {fileID: 11400000, guid: b02021c6cd02a9d4bb5e7dd9fd9c776c, type: 2}
+  - {fileID: 11400000, guid: 1cfbcf80d0bbfa24b99e4b267a40108d, type: 2}
+  background: {fileID: 21300000, guid: 7d3405ac282a8404ea5e2957911f49e6, type: 3}

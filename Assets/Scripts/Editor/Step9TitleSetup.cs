@@ -58,12 +58,8 @@ namespace Samkuk.EditorTools
 
         static void RegisterBuildScenes()
         {
-            // 타이틀이 0번, 게임이 1번
-            EditorBuildSettings.scenes = new[]
-            {
-                new EditorBuildSettingsScene(TitleScenePath, true),
-                new EditorBuildSettingsScene(GameScenePath, true)
-            };
+            // 타이틀 0번, 게임 1번, (있으면) 내정 2번
+            Step12StrategySetup.RegisterBuildScenes();
         }
 
         static void SetPlayFromTitle(bool on)
@@ -155,11 +151,12 @@ namespace Samkuk.EditorTools
             gold.rectTransform.sizeDelta = new Vector2(600f, 60f);
             gold.rectTransform.anchoredPosition = new Vector2(-40f, -30f);
 
-            var start = NewButton("StartButton", main, font, "시작", 0.52f, new Vector2(480f, 88f), new Color(0.55f, 0.2f, 0.18f));
-            var shopBtn = NewButton("ShopButton", main, font, "영구 강화", 0.42f, new Vector2(480f, 80f));
-            var recordsBtn = NewButton("RecordsButton", main, font, "기록", 0.33f, new Vector2(480f, 80f));
-            var resetBtn = NewButton("ResetButton", main, font, "저장 초기화", 0.24f, new Vector2(480f, 66f), new Color(0.3f, 0.22f, 0.22f));
-            var quitBtn = NewButton("QuitButton", main, font, "종료", 0.16f, new Vector2(480f, 66f));
+            var start = NewButton("StartButton", main, font, "시작", 0.54f, new Vector2(480f, 88f), new Color(0.55f, 0.2f, 0.18f));
+            var strategyBtn = NewButton("StrategyButton", main, font, "내정", 0.455f, new Vector2(480f, 80f));
+            var shopBtn = NewButton("ShopButton", main, font, "영구 강화", 0.37f, new Vector2(480f, 80f));
+            var recordsBtn = NewButton("RecordsButton", main, font, "기록", 0.285f, new Vector2(480f, 80f));
+            var resetBtn = NewButton("ResetButton", main, font, "저장 초기화", 0.205f, new Vector2(480f, 66f), new Color(0.3f, 0.22f, 0.22f));
+            var quitBtn = NewButton("QuitButton", main, font, "종료", 0.13f, new Vector2(480f, 66f));
             // 효과음 볼륨 버튼 (왼쪽 위): 누를 때마다 끔 → 작게 → 보통 → 크게
             var soundBtn = NewButton("SoundButton", main, font, "효과음: 보통", 1f, new Vector2(360f, 70f), new Color(0.22f, 0.28f, 0.4f));
             var soundRt = (RectTransform)soundBtn.transform;
@@ -177,6 +174,23 @@ namespace Samkuk.EditorTools
             shakeRt.anchoredPosition = new Vector2(40f, -110f);
             var shakeLabel = shakeBtn.GetComponentInChildren<Text>();
             shakeLabel.fontSize = 30;
+
+            // 해상도 / 창 모드 버튼 (화면 흔들림 버튼 아래)
+            var resolutionBtn = NewButton("ResolutionButton", main, font, "해상도: 자동", 1f, new Vector2(360f, 70f), new Color(0.22f, 0.28f, 0.4f));
+            var resRt = (RectTransform)resolutionBtn.transform;
+            resRt.anchorMin = resRt.anchorMax = new Vector2(0f, 1f);
+            resRt.pivot = new Vector2(0f, 1f);
+            resRt.anchoredPosition = new Vector2(40f, -190f);
+            var resolutionLabel = resolutionBtn.GetComponentInChildren<Text>();
+            resolutionLabel.fontSize = 30;
+
+            var windowModeBtn = NewButton("WindowModeButton", main, font, "화면: 전체화면", 1f, new Vector2(360f, 70f), new Color(0.22f, 0.28f, 0.4f));
+            var modeRt = (RectTransform)windowModeBtn.transform;
+            modeRt.anchorMin = modeRt.anchorMax = new Vector2(0f, 1f);
+            modeRt.pivot = new Vector2(0f, 1f);
+            modeRt.anchoredPosition = new Vector2(40f, -270f);
+            var windowModeLabel = windowModeBtn.GetComponentInChildren<Text>();
+            windowModeLabel.fontSize = 30;
             var resetLabel = resetBtn.GetComponentInChildren<Text>();
             resetLabel.fontSize = 28;
             quitBtn.GetComponentInChildren<Text>().fontSize = 28;
@@ -250,6 +264,7 @@ namespace Samkuk.EditorTools
             so.FindProperty("shopPanel").objectReferenceValue = shopPanel.gameObject;
             so.FindProperty("recordsPanel").objectReferenceValue = recordsPanel.gameObject;
             so.FindProperty("startButton").objectReferenceValue = start;
+            so.FindProperty("strategyButton").objectReferenceValue = strategyBtn;
             so.FindProperty("shopButton").objectReferenceValue = shopBtn;
             so.FindProperty("recordsButton").objectReferenceValue = recordsBtn;
             so.FindProperty("resetButton").objectReferenceValue = resetBtn;
@@ -264,6 +279,10 @@ namespace Samkuk.EditorTools
             so.FindProperty("soundLabel").objectReferenceValue = soundLabel;
             so.FindProperty("shakeButton").objectReferenceValue = shakeBtn;
             so.FindProperty("shakeLabel").objectReferenceValue = shakeLabel;
+            so.FindProperty("resolutionButton").objectReferenceValue = resolutionBtn;
+            so.FindProperty("resolutionLabel").objectReferenceValue = resolutionLabel;
+            so.FindProperty("windowModeButton").objectReferenceValue = windowModeBtn;
+            so.FindProperty("windowModeLabel").objectReferenceValue = windowModeLabel;
             so.FindProperty("catalog").objectReferenceValue = catalog;
             so.ApplyModifiedPropertiesWithoutUndo();
 

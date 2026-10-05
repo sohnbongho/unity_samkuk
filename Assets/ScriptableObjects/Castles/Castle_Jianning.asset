@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e34e706c787ed74f9c0a1504c3e6cfc, type: 3}
+  m_Name: Castle_Jianning
+  m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.CastleData
+  id: Jianning
+  displayName: "\uAC74\uB155"
+  hanja: "\u5EFA\u5BE7"
+  region: 9
+  terrain: 4
+  size: 1
+  hasWater: 0
+  mapPosition: {x: 0.15, y: 0.76}
+  neighbors:
+  - {fileID: 11400000, guid: d89565bedffd41b499352ece5a6e89c1, type: 2}
+  - {fileID: 11400000, guid: 0d1df233829e5714d94a33ee5a361717, type: 2}
+  - {fileID: 11400000, guid: 71194180a4506cc4bb58c2a4125131b3, type: 2}
+  - {fileID: 11400000, guid: 1e43319c6490c9e48811bb518b2ed687, type: 2}
+  background: {fileID: 21300000, guid: efd176005575fec4aa2dd6159d1c0692, type: 3}

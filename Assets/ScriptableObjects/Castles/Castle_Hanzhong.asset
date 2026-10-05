@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e34e706c787ed74f9c0a1504c3e6cfc, type: 3}
+  m_Name: Castle_Hanzhong
+  m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.CastleData
+  id: Hanzhong
+  displayName: "\uD55C\uC911"
+  hanja: "\u6F22\u4E2D"
+  region: 9
+  terrain: 2
+  size: 2
+  hasWater: 0
+  mapPosition: {x: 0.27, y: 0.42}
+  neighbors:
+  - {fileID: 11400000, guid: c9fa50d3c4790e944aec283893f5cd30, type: 2}
+  - {fileID: 11400000, guid: bca16f73ddb53a041982d99a7a6ac3f6, type: 2}
+  - {fileID: 11400000, guid: 3e27e0c141e3e76459d9c5da9b59a869, type: 2}
+  - {fileID: 11400000, guid: d37264f33ec747c4d959319d5ba2e5d0, type: 2}
+  background: {fileID: 21300000, guid: be28373f4fb77004381d2f89de7caf85, type: 3}

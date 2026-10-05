@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e34e706c787ed74f9c0a1504c3e6cfc, type: 3}
+  m_Name: Castle_Xiangyang
+  m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.CastleData
+  id: Xiangyang
+  displayName: "\uC591\uC591"
+  hanja: "\u8944\u967D"
+  region: 10
+  terrain: 3
+  size: 2
+  hasWater: 1
+  mapPosition: {x: 0.5, y: 0.51}
+  neighbors:
+  - {fileID: 11400000, guid: 3e27e0c141e3e76459d9c5da9b59a869, type: 2}
+  - {fileID: 11400000, guid: b7b39de49d691784090f8a0a99662d48, type: 2}
+  - {fileID: 11400000, guid: 4f6a708acc4b53a44b12b69237919676, type: 2}
+  - {fileID: 11400000, guid: 4f078c4f999c177459ebed47a2f2661e, type: 2}
+  background: {fileID: 21300000, guid: 92dedfdfc3ecf89498ebe9103c585440, type: 3}

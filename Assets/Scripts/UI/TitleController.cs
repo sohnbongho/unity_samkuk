@@ -24,12 +24,15 @@ namespace Samkuk.UI
 
         [Header("메인 버튼")]
         [SerializeField] Button startButton;
+        [SerializeField, Tooltip("내정(전략 지도) 화면으로. 없어도 동작(Step 9-2 를 다시 실행하면 생김)")] Button strategyButton;
         [SerializeField] Button shopButton;
         [SerializeField] Button recordsButton;
         [SerializeField] Button resetButton;
         [SerializeField] Button quitButton;
         [SerializeField] Button soundButton;
         [SerializeField] Button shakeButton;
+        [SerializeField, Tooltip("화면 해상도 순환 (없어도 동작: Step 9-2 를 다시 실행하면 생김)")] Button resolutionButton;
+        [SerializeField, Tooltip("창 모드/전체화면 순환 (없어도 동작)")] Button windowModeButton;
 
         [Header("하위 화면")]
         [SerializeField] Button shopCloseButton;
@@ -42,6 +45,8 @@ namespace Samkuk.UI
         [SerializeField] Text resetLabel;
         [SerializeField] Text soundLabel;
         [SerializeField] Text shakeLabel;
+        [SerializeField] Text resolutionLabel;
+        [SerializeField] Text windowModeLabel;
         [SerializeField] MetaCatalog catalog;
         [SerializeField, Tooltip("저장 초기화 확인 대기 시간(초)")] float resetConfirmSeconds = 3f;
 
@@ -69,12 +74,15 @@ namespace Samkuk.UI
             UiFont.Apply(gameObject);
 
             Bind(startButton, StartGame);
+            Bind(strategyButton, OpenStrategy);
             Bind(shopButton, OpenShop);
             Bind(recordsButton, OpenRecords);
             Bind(resetButton, OnResetClicked);
             Bind(quitButton, Quit);
             Bind(soundButton, CycleSfxVolume);
             Bind(shakeButton, ToggleScreenShake);
+            Bind(resolutionButton, CycleResolution);
+            Bind(windowModeButton, CycleWindowMode);
             Bind(shopCloseButton, ShowMain);
             Bind(recordsCloseButton, ShowMain);
 
@@ -85,9 +93,11 @@ namespace Samkuk.UI
 
         void Start()
         {
+            DisplaySettings.ApplyOnce(SaveSystem.Current); // 저장된 해상도/창 모드를 실행 후 처음 한 번만 적용
             ShowMain();
             RefreshSoundLabel();
             RefreshShakeLabel();
+            RefreshDisplayLabels();
         }
 
         void OnDestroy()
@@ -159,6 +169,9 @@ namespace Samkuk.UI
 
         public void StartGame() => SceneLoader?.Invoke(GameManager.GameSceneName);
 
+        /// <summary>내정 모드(전략 지도)로 간다.</summary>
+        public void OpenStrategy() => SceneLoader?.Invoke(GameManager.StrategySceneName);
+
         public void Quit() => QuitAction?.Invoke();
 
         /// <summary>첫 클릭은 확인 대기, 대기 시간 안의 두 번째 클릭이 실제로 저장을 지운다.</summary>
@@ -179,6 +192,8 @@ namespace Samkuk.UI
             RefreshGold();
             RefreshSoundLabel();
             RefreshShakeLabel();
+            DisplaySettings.Apply(SaveSystem.Current); // 저장 초기화 = 화면 설정도 기본값으로
+            RefreshDisplayLabels();
         }
 
         void DisarmReset()
@@ -208,6 +223,42 @@ namespace Samkuk.UI
             save.screenShake = !save.screenShake;
             SaveSystem.SaveCurrent();
             RefreshShakeLabel();
+        }
+
+        /// <summary>모니터(바탕화면) 크기 (테스트에서 대체 가능). 이보다 큰 해상도는 고를 수 없다.</summary>
+        public Func<Vector2Int> DesktopSize { get; set; } = () => new Vector2Int(Screen.currentResolution.width, Screen.currentResolution.height);
+
+        /// <summary>해상도를 다음 프리셋으로 바꾸고 저장/적용한다 (테두리 없는 전체화면에서는 의미가 없어 무시).</summary>
+        public void CycleResolution()
+        {
+            var save = SaveSystem.Current;
+            if (!DisplaySettings.CanChooseResolution(save)) return;
+
+            var desktop = DesktopSize();
+            var next = DisplaySettings.NextResolution(save, desktop.x, desktop.y);
+            save.displayWidth = next.x;
+            save.displayHeight = next.y;
+            SaveSystem.SaveCurrent();
+            DisplaySettings.Apply(save);
+            RefreshDisplayLabels();
+        }
+
+        /// <summary>창 모드 / 전체화면 / 전용 전체화면 순환.</summary>
+        public void CycleWindowMode()
+        {
+            var save = SaveSystem.Current;
+            save.windowMode = DisplaySettings.NextMode(save.windowMode);
+            SaveSystem.SaveCurrent();
+            DisplaySettings.Apply(save);
+            RefreshDisplayLabels();
+        }
+
+        void RefreshDisplayLabels()
+        {
+            var save = SaveSystem.Current;
+            if (resolutionLabel != null) resolutionLabel.text = DisplaySettings.ResolutionLabel(save);
+            if (resolutionButton != null) resolutionButton.interactable = DisplaySettings.CanChooseResolution(save);
+            if (windowModeLabel != null) windowModeLabel.text = $"화면: {DisplaySettings.ModeName(save.windowMode)}";
         }
 
         void RefreshShakeLabel()

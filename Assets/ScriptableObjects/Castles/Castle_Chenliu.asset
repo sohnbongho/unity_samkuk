@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e34e706c787ed74f9c0a1504c3e6cfc, type: 3}
+  m_Name: Castle_Chenliu
+  m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.CastleData
+  id: Chenliu
+  displayName: "\uC9C4\uB958"
+  hanja: "\u9673\u7559"
+  region: 4
+  terrain: 0
+  size: 1
+  hasWater: 0
+  mapPosition: {x: 0.63, y: 0.34}
+  neighbors:
+  - {fileID: 11400000, guid: 40f7a84b0d0caf8489c4b677645f9a79, type: 2}
+  - {fileID: 11400000, guid: 7919a9579e0f1284387a8e820e2fcd9d, type: 2}
+  - {fileID: 11400000, guid: b093c5410666ef541a1429b272818455, type: 2}
+  - {fileID: 11400000, guid: 1463527a67b16db4485a191763de8544, type: 2}
+  background: {fileID: 21300000, guid: 9e25f288e085461409a8c23069efd444, type: 3}

@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e34e706c787ed74f9c0a1504c3e6cfc, type: 3}
+  m_Name: Castle_Chengdu
+  m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.CastleData
+  id: Chengdu
+  displayName: "\uC131\uB3C4"
+  hanja: "\u6210\u90FD"
+  region: 9
+  terrain: 0
+  size: 2
+  hasWater: 0
+  mapPosition: {x: 0.16, y: 0.52}
+  neighbors:
+  - {fileID: 11400000, guid: d89565bedffd41b499352ece5a6e89c1, type: 2}
+  - {fileID: 11400000, guid: d37264f33ec747c4d959319d5ba2e5d0, type: 2}
+  - {fileID: 11400000, guid: 71194180a4506cc4bb58c2a4125131b3, type: 2}
+  - {fileID: 11400000, guid: e13d42f7a17e24145889196dac335c36, type: 2}
+  background: {fileID: 21300000, guid: 6a2d7e283bbf9a849bfd6a7a276f0b32, type: 3}

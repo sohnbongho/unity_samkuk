@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e34e706c787ed74f9c0a1504c3e6cfc, type: 3}
+  m_Name: Castle_Yongan
+  m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.CastleData
+  id: Yongan
+  displayName: "\uC601\uC548"
+  hanja: "\u6C38\u5B89"
+  region: 9
+  terrain: 2
+  size: 0
+  hasWater: 1
+  mapPosition: {x: 0.38, y: 0.52}
+  neighbors:
+  - {fileID: 11400000, guid: b02021c6cd02a9d4bb5e7dd9fd9c776c, type: 2}
+  - {fileID: 11400000, guid: d89565bedffd41b499352ece5a6e89c1, type: 2}
+  background: {fileID: 21300000, guid: 1b0b1a162d8386e4e8cb66fbd3e29135, type: 3}

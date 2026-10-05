@@ -12,7 +12,7 @@
 
 ## 진행 상황
 
-마지막 갱신: 2026-10-04 (10-8 아군(동행 장수) 완료. 타격감/연출 작업 중이라 Step 11 빌드는 보류)
+마지막 갱신: 2026-10-05 (12-1 성/배경, 12-2 전략 지도+성 화면, 12-3 해상도 완료. 타격감/연출 작업 중이라 Step 11 빌드는 보류)
 
 | Step | 내용 | 상태 | 커밋 |
 |---|---|---|---|
@@ -36,6 +36,9 @@
 | 10-6 | 게임 안 장수 4방향 걷기 애니메이션: `HeroData.walkSheet`, `HeroSpriteSet`(4x4 시트를 실행 중 슬라이스), `PlayerAnimator`, 메뉴 `Step 10-6`, 규격 `docs/HERO_WALK_SHEETS.md` (임시 그림 5장은 코드로 생성) | 완료 | 69c35a0 |
 | 10-7 | 적 10종 4방향 걷기 애니메이션: `EnemyData.walkSheet`, `Enemy.TickAnimation`(EnemyManager 이동 루프에서 호출, 플레이어를 바라봄), 메뉴 `Step 10-7`, 기병/보스는 말 + 기수 (임시 그림은 코드로 생성) | 완료 | 15be588 |
 | 10-8 | 아군(동행 장수): 장수 선택 뒤 나머지 중 2명을 골라 데려감. 주인공을 따라다니며 시작 무기로 자동 공격, 적에게 공격받아 쓰러지면 15초 뒤 부활. `AllyController/AllyManager/AllyConfig`, `IEnemyTarget`(적 목표 확장), `IWeaponStats`/`WeaponFactory`(무기 소유자 일반화), `AllySelectUI`, 메뉴 `Step 10-8`, 설명 `docs/ALLIES.md` | 완료 | 38e097b |
+| 12-1 | 내정(삼국지3식) 시작: 성 46곳 `CastleData`/`CastleCatalog`(이름, 한자, 주, 지형, 크기, 전략 지도 위치, 인접 성), 성 배경 그림 46장(코드 생성 `tools/castle_art`, 지형·크기·강·시간대별), 셋업 `Step12CastleSetup`(메뉴 `Step 12-1`), 설명 `docs/CASTLES.md`. 내정 수치/화면은 아직 없음 | 완료 | - |
+| 12-2 | 내정 화면 1번(지도 + 성 화면): 새 씬 `StrategyScene`(빌드 2번), 전략 지도 그림(주별 색 영역, 해안·강·산, 코드 생성 `StrategyMap.png`), 성 마커 46개 + 인접 길, 성 선택 → 정보 상자 → 성 화면(배경 + 인접 성 이동), ESC = 성 → 지도 → 타이틀. `StrategyModel`(규칙) / `StrategyUI`(화면을 코드로 생성), 타이틀 [내정] 버튼, 메뉴 `Step 12-2`. 내정 수치/명령은 아직 없음 | 완료 | - |
+| 12-3 | 해상도 상향: 성 배경 1920x1080 / 전략 지도 2560x1440(그림 재생성), 내정 UI 기준 해상도 2560x1440(`StrategyUI.ReferenceResolution`, 지도 영역 1960x1102), 타이틀 해상도/창 모드 버튼(`DisplaySettings`, `SaveData.displayWidth/displayHeight/windowMode`) | 완료 | - |
 | 11 | PC 빌드 | 대기(보류) | - |
 
 ## 남은 작업
@@ -46,12 +49,15 @@
    - (선택) BGM: 현재는 효과음만 있음. `AudioManager`에 BGM 슬롯/볼륨을 추가하는 작업이 남아 있음
 2. **10-4 이후 체감 조정**: 직접 플레이해 보고 "너무 쉬움/어려움" 구간을 알려주면 `BalanceModel` 보고서(메뉴 `Samkuk > Balance Report`)를 보며 수치를 조정한다.
 3. **Step 11 빌드**: 빌드 설정(타이틀→게임 순서는 9-2에서 등록됨), 최적화(GC/풀링 점검), 실행 파일 출력, 필요 시 모바일 터치.
-4. **미결정(PLAN.md 8번)**: 모바일 포함 여부, 실제 아트 에셋 사용 여부, 장수/무기 최종 목록.
+4. **내정(Step 12) 이어서**: 12-1/12-2(성, 지도, 성 화면) 다음 — 성별 내정 수치(농업/상업/인구/방어 등)와 명령(개발/징병 등)을 성 화면의 명령 자리(`CastlePanel` 아래 띠 `Note`)에 붙이기, 내정과 서바이버 전투의 연결 등. 사용자 방향을 확인한 뒤 진행.
+5. **미결정(PLAN.md 8번)**: 모바일 포함 여부, 실제 아트 에셋 사용 여부, 장수/무기 최종 목록.
 
 ## 알려진 이슈 / 메모
 
 - 스프라이트(번개, 불길, 궁병, 기병 등)는 코드로 만든 **플레이스홀더**. Step 10에서 교체/다듬기.
 - 장수 걷기 시트: `Assets/Sprites/HeroWalk/<장수 에셋 이름>_Walk.png`(4열 x 4행: 열=프레임 0~3, 행=아래/위/왼쪽/오른쪽, 칸 96x96, 배경 투명). 현재 5장은 **코드로 그린 임시 그림**(`tools/hero_art/HeroSprites.cs`, `generate.ps1 -Only walk`). 시트가 있는 장수는 `PlayerController`가 좌우 반전을 하지 않고 `PlayerAnimator`가 방향/프레임을 정하며, 장수 색(`tint`)도 입히지 않는다(`HeroSelectController.Apply`). 시트가 없으면 예전 동작(원 스프라이트 + tint + 반전). Player 프리팹에 `PlayerAnimator`를 붙이는 것은 `Step 10-6`이므로 셋업을 돌려야 한다.
+- 내정 화면: 씬 `StrategyScene`(타이틀 0, 게임 1, 내정 2 순서로 `Step12StrategySetup.RegisterBuildScenes` 가 등록)에는 카메라/이벤트 시스템/캔버스(+`StrategyUI`)만 있고, **화면 전체는 `StrategyUI` 가 실행 중에 코드로 만든다**(성이 바뀌어도 씬 재구성 불필요). 규칙은 `StrategyModel`(선택/입장/인접 이동, 마지막 성은 `StrategySession` 에 기억). 지도 그림 `Assets/Sprites/Strategy/StrategyMap.png`(2560x1440)는 코드로 만든 **임시 그림**(`tools/castle_art/MapArt.cs`, `generate.ps1 -Only Map`)이며 성 마커는 `mapPosition`(0~1)을 지도 영역(1960x1102)에 곱해 놓는다. 타이틀의 [내정] 버튼은 Step 9-2 를 **다시 실행해야** 생기고(없어도 동작), 버튼 배치가 바뀌었다. 런타임 UI라 스킨은 `UiSkin.StyleX` 를 직접 호출한다.
+- 내정 성: 기준표는 `tools/castle_art/castles.json` 한 곳(46곳, `links` 는 `"A-B"` 양방향)이고 그림 생성기와 `Step12CastleSetup` 이 같이 읽는다. 성 목록은 삼국지3의 도시 수(46)에 맞춘 **후한 말 지리 기준 근사**이며 원작 목록과 다를 수 있다. 배경(`Assets/Sprites/Castles/Castle_<id>.png`, 1920x1080 16:9)은 코드로 만든 **임시 그림**이고, 직접 그린 그림으로 덮어쓰면 그 성은 `generate.ps1 -Only`에서 피한다. 셋업은 멱등(기존 성 값은 덮어쓰지 않고 빠진 배경/연결만 채움)이라 값을 바꿀 땐 에셋을 직접 고친다. `CastleData` 가 Sprite 를 직접 참조해 카탈로그 로드 시 46장이 함께 로드된다(압축 후 약 50MB) — 내정 화면에서 부담이 되면 지연 로드로 바꿀 것. 규칙/방법은 `docs/CASTLES.md`.
 - 아군: 수치는 `AllyConfig` 한 곳(정원 2, 체력 70, 공격력 x0.6, 받는 피해 x0.7, 부활 15초, 주인공 레벨 3당 무기 +1). 적은 `EnemyManager`가 주인공과 살아 있는 아군 중 **가장 가까운 쪽**을 목표로 고르고(`IEnemyTarget`), 접촉/궁병 화살도 그 대상에 적용된다. 무기는 `Weapon.Owner`가 `Transform`+`IWeaponStats`라 아군도 같은 무기를 쓴다(이펙트/투사체 풀은 주인공의 `WeaponController`를 공유). 아군은 스킬을 쓰지 않는다. `HeroSelectController`는 아군 UI/매니저를 실행 중에 찾으므로 Step 8을 다시 돌려도 연결이 유지된다. 규칙/흐름은 `docs/ALLIES.md`.
 - 적 걷기 시트: `Assets/Sprites/EnemyWalk/<적 에셋 이름>_Walk.png`(장수와 같은 4x4 규격, `HeroSpriteSet` 재사용). 시트가 있는 적은 그림 색 그대로(`Enemy.BaseColor`가 흰색)이고 `SetFacing` 좌우 반전 대신 `TickAnimation`으로 플레이어를 바라본다. 시트가 없으면 예전 동작(단색 스프라이트 + tint + 반전). 크기는 `walkPixelsPerUnit` x `scale`. 임시 그림은 `tools/hero_art/EnemySprites.cs`, `generate.ps1 -Only enemy`. 규격/목록은 `docs/HERO_WALK_SHEETS.md`.
 - 장수 초상화: 현재 5장은 **코드로 그린 임시 그림**(`tools/hero_art/HeroArt.cs`, `generate.ps1`로 재생성, 직접 그린 그림으로 덮어쓰면 생성 스크립트는 쓰지 않는다). 교체용 그림은 사용자가 준비해 `Assets/Sprites/Heroes/<장수 에셋 이름>.png`(512x640, 세로 4:5, 투명 배경)에 넣고 메뉴 `Step 10-5`로 연결한다. 가져오기 설정은 `HeroPortraitImporter`가 자동으로 맞춘다. 그림이 없는 장수는 기존 실루엣 + `tint`로 보이고(`HeroSelectUI.ShowPortrait`), 이미 연결된 초상화는 셋업이 덮어쓰지 않는다. 카드 레이아웃을 키웠으므로(높이 640→700) 적용하려면 `Step 8`(또는 Run All)을 다시 실행해야 한다.
@@ -72,11 +78,11 @@
 
 ## 프로젝트 구조
 
-- 코드: `Assets/Scripts/<영역>/` — Core, Player, Enemy, Weapon, Skill, Hero, Stage, Pickup, Upgrade, Meta, Audio, Feedback, Balance, UI, Data, Editor
+- 코드: `Assets/Scripts/<영역>/` — Core, Player, Enemy, Weapon, Skill, Hero, Stage, Pickup, Upgrade, Meta, Audio, Feedback, Balance, Strategy, UI, Data, Editor
   - 네임스페이스는 `Samkuk.*` (예: `Samkuk.Weapons`, `Samkuk.Enemies`, `Samkuk.Meta`, `Samkuk.UI`)
   - 런타임은 `Samkuk.Runtime.asmdef`, 에디터 스크립트는 `Editor/` 폴더
-- 데이터: `Assets/ScriptableObjects/<종류>/` — Weapons, Enemies, Passives, Heroes, Skills, Evolutions, Meta, Stage, 그리고 `UpgradeCatalog`, `HeroCatalog`, `MetaCatalog`
-- 씬: `Assets/Scenes/TitleScene.unity`(빌드 0번) → `SampleScene.unity`(게임, 1번)
+- 데이터: `Assets/ScriptableObjects/<종류>/` — Weapons, Enemies, Passives, Heroes, Skills, Evolutions, Meta, Stage, Castles, 그리고 `UpgradeCatalog`, `HeroCatalog`, `MetaCatalog`, `CastleCatalog`
+- 씬: `Assets/Scenes/TitleScene.unity`(빌드 0번) → `SampleScene.unity`(게임, 1번) → `StrategyScene.unity`(내정, 2번)
 - 테스트: `Assets/Tests/PlayMode/*.cs` (PlayMode, `Samkuk.Tests.PlayMode.asmdef`)
 - 저장: `Application.persistentDataPath/save.json` (`SaveSystem`)
 
@@ -100,7 +106,7 @@ F2 무기 레벨업, F3 경험치 지급, F4 스테이지 15초 건너뛰기, ES
 ## 작업 규칙
 
 ### 셋업 / 에셋
-- 씬 배치와 프리팹/SO 생성은 에디터 스크립트로 자동화한다. 메뉴 `Samkuk > Run All Setup (Step 2-9 + 타이틀)`(10 효과음 + 타격감 + 10-3 테마 + 10-4 밸런스 포함) 한 번이면 전체 구성. 새 Step을 만들면 `SetupAll.cs`에도 추가한다.
+- 씬 배치와 프리팹/SO 생성은 에디터 스크립트로 자동화한다. 메뉴 `Samkuk > Run All Setup (Step 2-9 + 타이틀)`(10 효과음 + 타격감 + 10-3 테마 + 10-4 밸런스, 12-1 내정 성 포함) 한 번이면 전체 구성. 새 Step을 만들면 `SetupAll.cs`에도 추가한다.
 - 셋업은 **멱등**이어야 한다: 이미 있는 에셋은 덮어쓰지 않아 사용자가 조정한 수치를 보존하고, 카탈로그는 **누적 방식**(없는 항목만 추가)으로 채운다.
 - 셋업에서 `EditorSceneManager.OpenScene/NewScene` **이후에** 에셋을 로드한다 (씬 전환이 로드된 에셋 참조를 무효화할 수 있음).
 - 진화 셋업(`Step8EvolutionSetup`)은 장수 시작 무기가 만들어진 **뒤**(Step 8 이후)에 실행해야 한다 (Run All 순서 참고).

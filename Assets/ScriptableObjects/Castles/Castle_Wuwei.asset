@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e34e706c787ed74f9c0a1504c3e6cfc, type: 3}
+  m_Name: Castle_Wuwei
+  m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.CastleData
+  id: Wuwei
+  displayName: "\uBB34\uC704"
+  hanja: "\u6B66\u5A01"
+  region: 8
+  terrain: 1
+  size: 1
+  hasWater: 0
+  mapPosition: {x: 0.1, y: 0.18}
+  neighbors:
+  - {fileID: 11400000, guid: bca16f73ddb53a041982d99a7a6ac3f6, type: 2}
+  - {fileID: 11400000, guid: f94143abebd0a9542b33189870e3ee3f, type: 2}
+  background: {fileID: 21300000, guid: 92024cada6e90ef4f834f6b293d9405a, type: 3}
