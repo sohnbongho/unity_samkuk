@@ -12,7 +12,7 @@
 
 ## 진행 상황
 
-마지막 갱신: 2026-10-05 (12-5 정복 완료. 타격감/연출 작업 중이라 Step 11 빌드는 보류)
+마지막 갱신: 2026-10-05 (11 친구 공유용 Windows 빌드 환경 완료. 타격감/연출 작업은 병행)
 
 | Step | 내용 | 상태 | 커밋 |
 |---|---|---|---|
@@ -41,7 +41,7 @@
 | 12-3 | 해상도 상향: 성 배경 1920x1080 / 전략 지도 2560x1440(그림 재생성), 내정 UI 기준 해상도 2560x1440(`StrategyUI.ReferenceResolution`, 지도 영역 1960x1102), 타이틀 해상도/창 모드 버튼(`DisplaySettings`, `SaveData.displayWidth/displayHeight/windowMode`) | 완료 | 247b504 |
 | 12-4 | 시작 성 선택과 출진: 내정을 열면 시작 성을 골라 "내 성"으로 저장(`SaveData.homeCastleId`, ★ 표시, [이 성에서 시작]/[시작 성 변경]), 내 성의 성 화면에서 [출진] → 전투(`GameSession.SortieCastle`, 성 지형 색 `BattleTerrain`), 결과 화면 [내정으로 (M)]. 타이틀 [시작]은 성 없이 시작. 전투 결과의 성 반영은 아직 없음 | 완료 | 13db09a |
 | 12-5 | 정복: 내 영토(시작 성+정복한 성)의 성 화면에서 [출진] → 이웃한 적 성 중 공격 대상을 고르는 선택창 → 전투(대상 성 지형) → 승리하면 그 성을 영토로(`Territory`, `SaveData.ownedCastleIds`). 지도에 영토/공격 가능 성 테두리 색과 "보유 성 n / 46", 천하 통일 문구. 결과 화면에 정복/퇴각 문구. 난이도·적 반격·보상은 아직 없음 | 완료 | e449b70 |
-| 11 | PC 빌드 | 대기(보류) | - |
+| 11 | PC 빌드(친구 공유용 Windows 빌드 환경): 메뉴 `Samkuk > Build`(릴리스/개발용) 또는 `tools/build_windows.ps1` → `Builds/` 에 실행 폴더 + 공유용 zip(README.txt 포함), 릴리스는 DebugOverlay/F1~F4 치트 꺼짐, 타이틀에 버전 표시(`BuildTool`, `docs/BUILD.md`). 최적화(GC/풀링)·아이콘·설치 파일은 아직 | 완료 | - |
 
 ## 남은 작업
 
@@ -50,7 +50,7 @@
    - 10-4 밸런싱: 1분 스테이지 기준 난이도 곡선, 무기/진화/영구 강화 수치 점검
    - (선택) BGM: 현재는 효과음만 있음. `AudioManager`에 BGM 슬롯/볼륨을 추가하는 작업이 남아 있음
 2. **10-4 이후 체감 조정**: 직접 플레이해 보고 "너무 쉬움/어려움" 구간을 알려주면 `BalanceModel` 보고서(메뉴 `Samkuk > Balance Report`)를 보며 수치를 조정한다.
-3. **Step 11 빌드**: 빌드 설정(타이틀→게임 순서는 9-2에서 등록됨), 최적화(GC/풀링 점검), 실행 파일 출력, 필요 시 모바일 터치.
+3. **Step 11 나머지**: 친구 테스트에서 나온 문제 반영, 최적화(GC/풀링 점검), 앱 아이콘/회사명(저장 경로가 바뀌므로 주의), 필요 시 모바일 터치. 빌드 방법/주의는 `docs/BUILD.md`.
 4. **내정(Step 12) 이어서**: 12-1~12-5(성, 지도, 성 화면, 시작 성, 출진/정복) 다음 — 성별 내정 수치(농업/상업/인구/방어 등)와 명령(개발/징병 등)을 성 화면의 명령 자리(`CastlePanel` 아래 띠 `Note`)에 붙이기, 성 규모/지형에 따른 전투 난이도, 정복 보상, 적 반격/세력 등. 사용자 방향을 확인한 뒤 진행.
 5. **미결정(PLAN.md 8번)**: 모바일 포함 여부, 실제 아트 에셋 사용 여부, 장수/무기 최종 목록.
 
@@ -58,6 +58,7 @@
 
 - 스프라이트(번개, 불길, 궁병, 기병 등)는 코드로 만든 **플레이스홀더**. Step 10에서 교체/다듬기.
 - 장수 걷기 시트: `Assets/Sprites/HeroWalk/<장수 에셋 이름>_Walk.png`(4열 x 4행: 열=프레임 0~3, 행=아래/위/왼쪽/오른쪽, 칸 96x96, 배경 투명). 현재 5장은 **코드로 그린 임시 그림**(`tools/hero_art/HeroSprites.cs`, `generate.ps1 -Only walk`). 시트가 있는 장수는 `PlayerController`가 좌우 반전을 하지 않고 `PlayerAnimator`가 방향/프레임을 정하며, 장수 색(`tint`)도 입히지 않는다(`HeroSelectController.Apply`). 시트가 없으면 예전 동작(원 스프라이트 + tint + 반전). Player 프리팹에 `PlayerAnimator`를 붙이는 것은 `Step 10-6`이므로 셋업을 돌려야 한다.
+- 빌드: `BuildTool`(메뉴 `Samkuk > Build`, 명령줄 `tools/build_windows.ps1`)이 빌드 설정(타이틀 0, 전투 1, 내정 2) 확인 → 빌드 → README.txt → zip 까지 한다. 결과는 `Builds/`(git 제외). **릴리스 빌드는 `DebugOverlay`(FPS, F1~F4 치트)가 꺼지고**(`Debug.isDebugBuild` 로 구분), 개발용(Development Build)만 켜진다. 에디터가 프로젝트를 열고 있으면 명령줄 빌드는 실행되지 않는다. 저장 경로는 Company/Product Name(`DefaultCompany/Samkuk`)에서 나오므로 이름을 바꾸면 저장 위치가 바뀐다. 이 환경(Claude)에서는 유니티를 실행하지 못해 **빌드는 사용자가 직접 확인**한다. 자세한 사용법은 `docs/BUILD.md`.
 - 내정 시작/출진: 내정을 처음 열면 시작 성을 골라 내 성(`SaveData.homeCastleId`)으로 저장하고, 영토(`ownedCastleIds`)의 성 화면에서 [출진] → 이웃한 적 성 선택창에서 공격 대상을 고른다. 대상 성(`GameSession.SortieCastle`, 출발 성은 `SortieOrigin`)이 전투로 전달돼 `InfiniteBackground` 가 성 지형 색(`BattleTerrain`)을 배경 위에 한 겹 덮고, 결과 화면에 [내정으로] 가 생긴다. 승리하면 `ResultController` 가 대상 성을 `Territory.Conquer` 로 영토에 넣는다(정복은 결과 정산 때만 저장, 패배/재도전은 영토 불변, 영토가 늘면 시작 성 변경 불가)(Step 9 셋업이 만드는 버튼이라 **Step 9/Run All 재실행 필요**). 타이틀 [시작] 은 `SortieCastle` 을 비우는 "성 없이 시작"이다. 규칙은 `docs/CASTLES.md`.
 - 씬 이름: 유니티 템플릿 기본 이름이던 `SampleScene` 을 역할에 맞게 `BattleScene`(서바이버 전투 한 판)으로 바꿨다. `.meta` 와 함께 옮겨 GUID 는 그대로이며, 코드 상수는 `GameManager.BattleSceneName`, 에디터 셋업은 `Step9TitleSetup.BattleScenePath`. 이전 이름이 남은 곳은 초기 기획 `PLAN.md` 뿐(당시 상태를 적은 문서라 그대로 둠).
 - 내정 화면: 씬 `StrategyScene`(타이틀 0, 게임 1, 내정 2 순서로 `Step12StrategySetup.RegisterBuildScenes` 가 등록)에는 카메라/이벤트 시스템/캔버스(+`StrategyUI`)만 있고, **화면 전체는 `StrategyUI` 가 실행 중에 코드로 만든다**(성이 바뀌어도 씬 재구성 불필요). 규칙은 `StrategyModel`(선택/입장/인접 이동, 마지막 성은 `StrategySession` 에 기억). 지도 그림 `Assets/Sprites/Strategy/StrategyMap.png`(2560x1440)는 코드로 만든 **임시 그림**(`tools/castle_art/MapArt.cs`, `generate.ps1 -Only Map`)이며 성 마커는 `mapPosition`(0~1)을 지도 영역(1960x1102)에 곱해 놓는다. 타이틀의 [내정] 버튼은 Step 9-2 를 **다시 실행해야** 생기고(없어도 동작), 버튼 배치가 바뀌었다. 런타임 UI라 스킨은 `UiSkin.StyleX` 를 직접 호출한다.

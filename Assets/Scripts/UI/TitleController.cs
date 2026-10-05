@@ -98,12 +98,38 @@ namespace Samkuk.UI
             RefreshSoundLabel();
             RefreshShakeLabel();
             RefreshDisplayLabels();
+            CreateVersionLabel();
         }
 
         void OnDestroy()
         {
             if (shop != null) shop.Changed -= RefreshGold;
         }
+
+        /// <summary>화면 오른쪽 아래에 버전을 작게 보여 준다 (친구가 "어느 빌드"인지 알려 줄 수 있게). 씬을 다시 만들 필요 없이 코드로 만든다.</summary>
+        void CreateVersionLabel()
+        {
+            if (transform.Find("VersionLabel") != null) return;
+
+            var go = new GameObject("VersionLabel", typeof(RectTransform), typeof(Text));
+            go.transform.SetParent(transform, false);
+            var rt = (RectTransform)go.transform;
+            rt.anchorMin = rt.anchorMax = new Vector2(1f, 0f);
+            rt.pivot = new Vector2(1f, 0f);
+            rt.anchoredPosition = new Vector2(-30f, 20f);
+            rt.sizeDelta = new Vector2(500f, 44f);
+
+            var label = go.GetComponent<Text>();
+            label.font = UiFont.Get();
+            label.fontSize = 26;
+            label.alignment = TextAnchor.LowerRight;
+            label.color = new Color(1f, 1f, 1f, 0.55f);
+            label.raycastTarget = false;
+            label.text = VersionText();
+        }
+
+        /// <summary>"v1.0" 처럼 버전 문구. 개발용 빌드(Development Build)면 (dev) 를 붙인다.</summary>
+        public static string VersionText() => $"v{Application.version}" + (Debug.isDebugBuild && !Application.isEditor ? " (dev)" : "");
 
         /// <summary>버튼에 동작을 연결한다. 누를 때마다 클릭음이 난다.</summary>
         static void Bind(Button button, UnityEngine.Events.UnityAction action)

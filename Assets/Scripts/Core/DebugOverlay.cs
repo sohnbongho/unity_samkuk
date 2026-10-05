@@ -23,6 +23,12 @@ namespace Samkuk.Core
         public EnemySpawner Spawner { get => spawner; set => spawner = value; }
         public EnemyManager Manager { get => manager; set => manager = value; }
 
+        void Awake()
+        {
+            // 개발용: 에디터와 Development Build 에서만 켠다. 친구에게 나눠 주는 릴리스 빌드에서는 FPS 표시와 F1~F4 치트를 끈다.
+            if (!Application.isEditor && !Debug.isDebugBuild) enabled = false;
+        }
+
         void Update()
         {
             smoothedDelta = Mathf.Lerp(smoothedDelta, Time.unscaledDeltaTime, 0.05f);
