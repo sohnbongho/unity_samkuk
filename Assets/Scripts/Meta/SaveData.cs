@@ -33,6 +33,8 @@ namespace Samkuk.Meta
 
         // 내정: 시작할 때 고른 "내 성" (CastleData.id, 비어 있으면 아직 고르지 않음)
         public string homeCastleId;
+        // 내정: 지금까지 차지한 성들 (CastleData.id). 시작 성(내 성)도 포함한다. 비어 있으면 아직 시작하지 않음
+        public List<string> ownedCastleIds = new List<string>();
 
         // 화면 (기본값은 프로젝트의 기본 설정과 같다: 1920x1080, 테두리 없는 전체화면)
         public int displayWidth = 1920;

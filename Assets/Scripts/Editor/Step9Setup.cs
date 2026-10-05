@@ -222,7 +222,7 @@ namespace Samkuk.EditorTools
             var box = NewRect("Box", panel);
             box.anchorMin = box.anchorMax = new Vector2(0.5f, 0.5f);
             box.pivot = new Vector2(0.5f, 0.5f);
-            box.sizeDelta = new Vector2(760f, 780f); // 아래에 [내정으로] 줄이 하나 더 있다
+            box.sizeDelta = new Vector2(760f, 840f); // 아래에 [내정으로] 줄, 위에 정복 결과 줄이 더 있다
             box.gameObject.AddComponent<Image>().color = new Color(0.1f, 0.12f, 0.18f, 0.98f);
 
             title = NewText("Title", box, font, 64, TextAnchor.MiddleCenter, "결과");

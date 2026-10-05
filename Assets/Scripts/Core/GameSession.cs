@@ -10,8 +10,11 @@ namespace Samkuk.Core
 
         public static HeroData SelectedHero { get; set; }
 
-        /// <summary>내정에서 출진한 성 (비어 있으면 타이틀의 [시작]처럼 성 없이 시작한 판). 전투 지형과 결과 화면의 "내정으로"에 쓴다.</summary>
+        /// <summary>내정에서 공격하러 간 성 = 전투가 벌어지는 성 (비어 있으면 타이틀의 [시작]처럼 성 없이 시작한 판). 전투 지형과 승리 시 정복 대상에 쓴다.</summary>
         public static CastleData SortieCastle { get; set; }
+
+        /// <summary>출진한 성 (공격 대상이 아니라 떠나온 쪽). 결과 화면과 내정 복귀 위치에 쓴다.</summary>
+        public static CastleData SortieOrigin { get; set; }
 
         /// <summary>마지막으로 고른 아군 장수들 (다시 시작할 때 미리 선택된 상태로 보여 준다).</summary>
         public static IReadOnlyList<HeroData> SelectedAllies => allies;

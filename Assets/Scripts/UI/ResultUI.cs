@@ -41,7 +41,7 @@ namespace Samkuk.UI
         {
             if (titleLabel != null)
             {
-                titleLabel.text = r.cleared ? "스테이지 클리어!" : "게임 오버";
+                titleLabel.text = r.conquered ? "정복 성공!" : (r.cleared ? "스테이지 클리어!" : "게임 오버");
                 titleLabel.color = r.cleared ? new Color(1f, 0.85f, 0.3f) : new Color(1f, 0.45f, 0.4f);
             }
             if (detailsLabel != null) detailsLabel.text = Format(r);
@@ -78,7 +78,13 @@ namespace Samkuk.UI
             int sec = Mathf.FloorToInt(r.seconds);
             string time = $"{sec / 60:00}:{sec % 60:00}";
             string hero = string.IsNullOrEmpty(r.heroName) ? "" : $"장수      {r.heroName}\n";
-            string castle = string.IsNullOrEmpty(r.castleName) ? "" : $"출진 성   {r.castleName}\n";
+            string castle = "";
+            if (!string.IsNullOrEmpty(r.castleName))
+            {
+                castle = $"공격 성   {r.castleName}\n";
+                if (r.conquered) castle += $"★ {r.castleName} 정복!   (보유 성 {r.ownedCount})\n";
+                else if (!r.cleared) castle += "퇴각했습니다 (성은 그대로)\n";
+            }
 
             return castle + hero +
                    $"생존 시간   {time}{(r.newBestTime ? "   ★ 최고 기록!" : "")}\n" +

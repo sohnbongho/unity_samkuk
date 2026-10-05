@@ -40,6 +40,8 @@ namespace Samkuk.Strategy
         public int MarkerCount => markers.Count;
         public bool IsMapVisible => mapPanel != null && mapPanel.activeSelf;
         public bool IsCastleVisible => castlePanel != null && castlePanel.activeSelf;
+        public bool IsTargetPanelVisible => targetPanel != null && targetPanel.activeSelf;
+        public string TargetPanelTitle => targetTitle != null ? targetTitle.text : "";
 
         class Marker
         {
@@ -47,6 +49,7 @@ namespace Samkuk.Strategy
             public Button button;
             public GameObject ring;
             public GameObject homeMark;
+            public Image rim;
         }
 
         class Link
@@ -62,6 +65,10 @@ namespace Samkuk.Strategy
         GameObject mapPanel, castlePanel;
         Text infoTitle, infoSub, infoNeighbors, castleTitle, castleSub;
         Text hintLabel, enterLabel, castleNote;
+        Text progressLabel, targetTitle;
+        GameObject targetPanel;
+        RectTransform targetRows;
+        readonly List<Button> targetButtons = new List<Button>();
         Button changeHomeButton, sortieButton;
         Image infoPreview, castleBackground;
         Button enterButton;
@@ -118,7 +125,8 @@ namespace Samkuk.Strategy
         {
             var kb = Keyboard.current;
             if (kb == null || !kb.escapeKey.wasPressedThisFrame || Model == null) return;
-            if (!Model.Leave()) BackToTitle();
+            if (IsTargetPanelVisible) CloseTargetPanel();   // 공격 대상 선택창부터 닫는다
+            else if (!Model.Leave()) BackToTitle();
         }
 
         public void BackToTitle() => SceneLoader?.Invoke(GameManager.TitleSceneName);
@@ -143,15 +151,19 @@ namespace Samkuk.Strategy
             castlePanel.SetActive(Model.InCastle);
 
             // 지도: 선택 표시와 선택한 성에 이어진 길 강조
+            var theme = UiTheme.Get();
             foreach (var m in markers)
             {
                 m.ring.SetActive(m.castle == sel);
                 m.homeMark.SetActive(Model.IsHome(m.castle));
+                // 테두리 색: 내 성은 금색, 공격할 수 있는 이웃 적 성은 붉은색, 나머지는 기본
+                m.rim.color = Model.IsOwned(m.castle) ? theme.gold : (Model.IsAttackable(m.castle) ? AttackableRim : DefaultRim);
             }
+            progressLabel.text = Model.IsUnified ? "천하 통일!" : (Model.HasHome ? $"보유 성 {Model.OwnedCount} / {Model.TotalCount}" : "");
+            targetPanel.SetActive(false); // 상태가 바뀌면 공격 대상 선택창은 닫는다
             hintLabel.text = Model.HasHome ? HintNormal : HintPickHome;
-            changeHomeButton.gameObject.SetActive(Model.HasHome);
+            changeHomeButton.gameObject.SetActive(Model.HasHome && Model.OwnedCount <= 1); // 다른 성을 차지했다면 시작 성을 바꿀 수 없다
             enterLabel.text = Model.HasHome ? "성에 들어가기" : "이 성에서 시작";
-            var theme = UiTheme.Get();
             foreach (var l in links)
             {
                 bool hot = sel != null && (l.a == sel || l.b == sel);
@@ -186,11 +198,21 @@ namespace Samkuk.Strategy
                 castleTitle.text = $"{sel.displayName}  {sel.hanja}";
                 castleSub.text = sel.Summary + (Model.IsHome(sel) ? "  ★ 내 성" : "");
                 sortieButton.gameObject.SetActive(Model.CanSortie);
-                castleNote.text = Model.IsHome(sel)
-                    ? "내 성입니다. [출진]으로 이 성에서 전투를 시작합니다 (내정 명령은 다음 단계에서 추가됩니다)"
-                    : "내 성이 아닙니다. 출진은 내 성에서만 할 수 있습니다";
+                castleNote.text = Model.IsOwned(sel)
+                    ? "우리 성입니다. [출진]으로 이웃한 적 성을 공격합니다 (내정 명령은 다음 단계에서 추가됩니다)"
+                    : (Model.IsAttackable(sel) ? "적의 성입니다. 이웃한 우리 성에서 출진해 공격할 수 있습니다" : "적의 성입니다. 우리 영토와 이어져 있지 않아 아직 공격할 수 없습니다");
                 RebuildNeighborButtons(sel);
             }
+        }
+
+        static readonly Color DefaultRim = new Color(0.96f, 0.92f, 0.82f);
+        static readonly Color AttackableRim = new Color(0.9f, 0.3f, 0.25f);
+
+        string OwnerText(CastleData castle)
+        {
+            if (Model.IsHome(castle)) return "★ 내 성 (시작 성)";
+            if (Model.IsOwned(castle)) return "● 우리 성";
+            return Model.IsAttackable(castle) ? "▶ 적의 성 (공격 가능)" : "적의 성";
         }
 
         static string NeighborNames(CastleData castle)
@@ -244,6 +266,9 @@ namespace Samkuk.Strategy
             var title = NewText("Title", panel, 72, TextAnchor.MiddleLeft, "전략 지도");
             UiSkin.StyleTitle(title);
             TopLeft(title.rectTransform, new Vector2(60f, -30f), new Vector2(900f, 100f));
+            progressLabel = NewText("Progress", panel, 50, TextAnchor.MiddleLeft, "");
+            progressLabel.color = theme.gold;
+            TopLeft(progressLabel.rectTransform, new Vector2(960f, -34f), new Vector2(900f, 100f));
             hintLabel = NewText("Hint", panel, 32, TextAnchor.MiddleLeft, HintNormal);
             hintLabel.color = new Color(0.85f, 0.78f, 0.7f);
             TopLeft(hintLabel.rectTransform, new Vector2(60f, -1292f), new Vector2(2440f, 56f));
@@ -379,7 +404,7 @@ namespace Samkuk.Strategy
 
                 var target = castle;
                 Bind(btn, () => OnMarkerClicked(target));
-                markers.Add(new Marker { castle = castle, button = btn, ring = ring.gameObject, homeMark = homeMark.gameObject });
+                markers.Add(new Marker { castle = castle, button = btn, ring = ring.gameObject, homeMark = homeMark.gameObject, rim = rim });
             }
         }
 
@@ -499,17 +524,92 @@ namespace Samkuk.Strategy
             TopLeft(castleNote.rectTransform, new Vector2(70f, -184f), new Vector2(1600f, 44f));
 
             // 출진: 내 성 안에서만 보인다 (전투 씬으로 이동)
-            sortieButton = NewButton("SortieButton", bottom, "출진  [전투 시작]", new Vector2(560f, 110f), 50);
+            sortieButton = NewButton("SortieButton", bottom, "출진", new Vector2(560f, 110f), 56);
             var sortieRt = sortieButton.GetComponent<RectTransform>();
             sortieRt.anchorMin = sortieRt.anchorMax = new Vector2(1f, 0f);
             sortieRt.pivot = new Vector2(1f, 0f);
             sortieRt.anchoredPosition = new Vector2(-60f, 60f);
             sortieButton.targetGraphic.color = theme.primaryButton;
             UiSkin.StyleButton(sortieButton, false);
-            Bind(sortieButton, () => Model.Sortie());
+            Bind(sortieButton, OpenTargetPanel);
             sortieButton.gameObject.SetActive(false);
 
+            BuildTargetPanel(panel, theme);
+
             panel.gameObject.SetActive(false);
+        }
+
+        /// <summary>[출진] 을 누르면 뜨는 공격 대상 선택창 (이 성과 이웃한 적 성 목록)을 만든다.</summary>
+        void BuildTargetPanel(RectTransform castlePanelRoot, UiTheme theme)
+        {
+            var root = NewRect("TargetPanel", castlePanelRoot);
+            Stretch(root);
+            var dim = root.gameObject.AddComponent<Image>();
+            dim.color = new Color(0f, 0f, 0f, 0.72f); // 뒤의 버튼이 눌리지 않게 클릭도 막는다
+
+            var box = NewRect("Box", root);
+            box.anchorMin = box.anchorMax = new Vector2(0.5f, 0.5f);
+            box.pivot = new Vector2(0.5f, 0.5f);
+            box.sizeDelta = new Vector2(1100f, 860f);
+            UiSkin.StylePanel(box.gameObject.AddComponent<Image>());
+
+            targetTitle = NewText("Title", box, 52, TextAnchor.MiddleCenter, "");
+            UiSkin.StyleTitle(targetTitle);
+            TopLeft(targetTitle.rectTransform, new Vector2(30f, -34f), new Vector2(1040f, 90f));
+
+            targetRows = NewRect("Rows", box);
+            TopLeft(targetRows, new Vector2(60f, -160f), new Vector2(980f, 540f));
+            var layout = targetRows.gameObject.AddComponent<VerticalLayoutGroup>();
+            layout.spacing = 14f;
+            layout.childAlignment = TextAnchor.UpperCenter;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = true;
+            layout.childForceExpandHeight = false;
+
+            var cancel = NewButton("TargetCancelButton", box, "취소  [ESC]", new Vector2(360f, 84f), 38);
+            var cancelRt = cancel.GetComponent<RectTransform>();
+            cancelRt.anchorMin = cancelRt.anchorMax = new Vector2(0.5f, 0f);
+            cancelRt.pivot = new Vector2(0.5f, 0f);
+            cancelRt.anchoredPosition = new Vector2(0f, 36f);
+            Bind(cancel, CloseTargetPanel);
+
+            targetPanel = root.gameObject;
+            targetPanel.SetActive(false);
+        }
+
+        /// <summary>공격 대상 선택창을 연다: 선택한 성과 이웃한 적 성마다 버튼 하나. 없으면 안내만 보인다.</summary>
+        public void OpenTargetPanel()
+        {
+            if (Model == null || !Model.CanSortie) return;
+
+            foreach (var b in targetButtons)
+                if (b != null) Destroy(b.gameObject);
+            targetButtons.Clear();
+
+            var targets = Model.AttackTargets();
+            targetTitle.text = targets.Count > 0
+                ? $"{Model.Selected.displayName}에서 어느 성을 공격하시겠습니까?"
+                : "공격할 수 있는 성이 없습니다 (이웃한 성이 모두 우리 성입니다)";
+
+            foreach (var t in targets)
+            {
+                var target = t;
+                string label = $"{t.displayName}   {t.hanja}    {CastleData.SizeLabel(t.size)} · {CastleData.TerrainLabel(t.terrain)}";
+                var btn = NewButton($"Target_{t.id}", targetRows, label, new Vector2(980f, 96f), 42);
+                var le = btn.GetComponent<LayoutElement>();
+                le.preferredHeight = 96f;
+                le.minHeight = 96f;
+                Bind(btn, () => Model.Sortie(target));
+                UiFont.Apply(btn.gameObject);
+                targetButtons.Add(btn);
+            }
+            targetPanel.SetActive(true);
+        }
+
+        public void CloseTargetPanel()
+        {
+            if (targetPanel != null) targetPanel.SetActive(false);
         }
 
         // ───────────────────────── 색 / 스프라이트 ─────────────────────────

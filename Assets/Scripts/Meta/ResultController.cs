@@ -1,6 +1,7 @@
 using System;
 using Samkuk.Core;
 using Samkuk.Heroes;
+using Samkuk.Strategy;
 using Samkuk.UI;
 using UnityEngine;
 
@@ -18,8 +19,12 @@ namespace Samkuk.Meta
         public bool newBestTime;
         public bool newBestKills;
         public string heroName;
-        /// <summary>내정에서 출진한 성의 이름 (타이틀의 [시작]으로 시작한 판은 비어 있음).</summary>
+        /// <summary>내정에서 공격한 성의 이름 (타이틀의 [시작]으로 시작한 판은 비어 있음).</summary>
         public string castleName;
+        /// <summary>이 판의 승리로 그 성을 새로 차지했는가.</summary>
+        public bool conquered;
+        /// <summary>정산 뒤 내가 차지한 성의 수 (내정에서 출진한 판에서만 의미가 있다).</summary>
+        public int ownedCount;
     }
 
     /// <summary>
@@ -105,6 +110,18 @@ namespace Samkuk.Meta
             if (result.newBestTime) save.bestSeconds = seconds;
             if (result.newBestKills) save.bestKills = kills;
             if (!string.IsNullOrEmpty(result.heroName)) save.lastHero = result.heroName;
+
+            // 내정에서 공격한 성을 이겼으면 영토로 만든다 (이미 내 성이면 아무 일도 없다 = 다시 하기)
+            var target = GameSession.SortieCastle;
+            if (target != null)
+            {
+                if (cleared && Territory.Conquer(save, target.id))
+                {
+                    result.conquered = true;
+                    StrategySession.LastCastleId = target.id; // 내정으로 돌아가면 차지한 성이 선택되어 있게
+                }
+                result.ownedCount = Territory.Count(save);
+            }
 
             SaveSystem.Save(save);
             result.totalGold = save.gold;

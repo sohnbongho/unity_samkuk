@@ -552,6 +552,105 @@ namespace Samkuk.Tests
             Assert.AreEqual(1, SaveSystem.Load().clears);
         }
 
+        // ───────────────────────── 정복 (내정에서 출진한 판) ─────────────────────────
+
+        CastleData MakeTargetCastle(string id)
+        {
+            var c = ScriptableObject.CreateInstance<CastleData>();
+            c.id = id; c.displayName = "성" + id;
+            toDestroy.Add(c);
+            return c;
+        }
+
+        /// <summary>한 판을 끝까지 돌려 결과를 얻는다 (cleared: 스테이지 클리어, 아니면 사망).</summary>
+        RunResult FinishRun(bool cleared)
+        {
+            var sys = new GameObject("TestSys");
+            toDestroy.Add(sys);
+            var stage = sys.AddComponent<StageController>();
+            var data = ScriptableObject.CreateInstance<StageData>();
+            data.duration = 60f; toDestroy.Add(data);
+            stage.Stage = data;
+            var run = sys.AddComponent<RunStats>();
+            run.Stage = stage; run.Experience = exp;
+
+            var gm = MakeGameManager(stage);
+            var view = new FakeResultView();
+            MakeResultController(gm, run, view);
+
+            if (cleared) stage.Tick(61f);
+            else health.TakeDamage(1000f);
+            return view.Last;
+        }
+
+        [Test]
+        public void Result_ClearAfterSortie_ConquersTargetCastle_AndSelectsItOnMap()
+        {
+            Samkuk.Strategy.StrategySession.LastCastleId = null;
+            var target = MakeTargetCastle("T1");
+            Samkuk.Core.GameSession.SortieCastle = target;
+            try
+            {
+                var r = FinishRun(cleared: true);
+
+                Assert.IsTrue(r.cleared);
+                Assert.IsTrue(r.conquered);
+                Assert.AreEqual(target.displayName, r.castleName);
+                Assert.AreEqual(1, r.ownedCount);
+                Assert.AreEqual("T1", Samkuk.Strategy.StrategySession.LastCastleId, "내정으로 돌아가면 차지한 성이 선택된다");
+
+                SaveSystem.ResetCache();
+                CollectionAssert.Contains(SaveSystem.Load().ownedCastleIds, "T1", "파일에 저장됨");
+            }
+            finally
+            {
+                Samkuk.Core.GameSession.SortieCastle = null;
+                Samkuk.Strategy.StrategySession.LastCastleId = null;
+            }
+        }
+
+        [Test]
+        public void Result_DefeatAfterSortie_DoesNotConquer()
+        {
+            var target = MakeTargetCastle("T2");
+            Samkuk.Core.GameSession.SortieCastle = target;
+            try
+            {
+                var r = FinishRun(cleared: false);
+
+                Assert.IsFalse(r.conquered);
+                Assert.AreEqual(target.displayName, r.castleName);
+                Assert.IsEmpty(SaveSystem.Current.ownedCastleIds, "패배하면 성은 그대로");
+            }
+            finally { Samkuk.Core.GameSession.SortieCastle = null; }
+        }
+
+        [Test]
+        public void Result_ClearWithoutSortie_ConquersNothing()
+        {
+            Samkuk.Core.GameSession.SortieCastle = null;
+            var r = FinishRun(cleared: true);
+
+            Assert.IsFalse(r.conquered);
+            Assert.IsTrue(string.IsNullOrEmpty(r.castleName));
+            Assert.IsEmpty(SaveSystem.Current.ownedCastleIds, "타이틀의 [시작]은 영토와 무관하다");
+        }
+
+        [Test]
+        public void Result_ClearOnAlreadyOwnedCastle_IsNotConqueredAgain()
+        {
+            var target = MakeTargetCastle("T3");
+            SaveSystem.Current.ownedCastleIds.Add("T3"); // 이미 차지한 성을 다시 하기로 이긴 경우
+            Samkuk.Core.GameSession.SortieCastle = target;
+            try
+            {
+                var r = FinishRun(cleared: true);
+                Assert.IsFalse(r.conquered, "새로 차지한 것이 아니다");
+                Assert.AreEqual(1, SaveSystem.Current.ownedCastleIds.Count, "중복 기록 없음");
+            }
+            finally { Samkuk.Core.GameSession.SortieCastle = null; }
+        }
+
         [Test]
         public void Result_AccumulatesAcrossRuns_AndOnlyFlagsActualRecords()
         {

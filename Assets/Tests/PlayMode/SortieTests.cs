@@ -18,12 +18,17 @@ namespace Samkuk.Tests
         readonly List<Object> toDestroy = new List<Object>();
 
         [SetUp]
-        public void SetUp() => GameSession.SortieCastle = null;
+        public void SetUp()
+        {
+            GameSession.SortieCastle = null;
+            GameSession.SortieOrigin = null;
+        }
 
         [TearDown]
         public void TearDown()
         {
             GameSession.SortieCastle = null;
+            GameSession.SortieOrigin = null;
             Audio.AudioManager.DestroyInstance();
             foreach (var o in toDestroy) if (o != null) Object.Destroy(o);
             toDestroy.Clear();
@@ -105,11 +110,28 @@ namespace Samkuk.Tests
         public void ResultUI_Format_ShowsCastleOnlyWhenSortied()
         {
             string plain = ResultUI.Format(new RunResult { seconds = 5f });
-            StringAssert.DoesNotContain("출진 성", plain);
+            StringAssert.DoesNotContain("공격 성", plain);
 
             string sortied = ResultUI.Format(new RunResult { seconds = 5f, castleName = "낙양" });
-            StringAssert.Contains("출진 성", sortied);
+            StringAssert.Contains("공격 성", sortied);
             StringAssert.Contains("낙양", sortied);
+        }
+
+        [Test]
+        public void ResultUI_Format_ShowsConquestOrRetreat()
+        {
+            string won = ResultUI.Format(new RunResult { cleared = true, castleName = "낙양", conquered = true, ownedCount = 3 });
+            StringAssert.Contains("낙양 정복", won);
+            StringAssert.Contains("보유 성 3", won);
+            StringAssert.DoesNotContain("퇴각", won);
+
+            string lost = ResultUI.Format(new RunResult { cleared = false, castleName = "낙양" });
+            StringAssert.Contains("퇴각", lost);
+            StringAssert.DoesNotContain("정복", lost);
+
+            string replay = ResultUI.Format(new RunResult { cleared = true, castleName = "낙양", conquered = false });
+            StringAssert.DoesNotContain("정복", replay, "이미 차지한 성을 다시 이겨도 정복 문구는 없다");
+            StringAssert.DoesNotContain("퇴각", replay);
         }
 
         [Test]
@@ -157,6 +179,7 @@ namespace Samkuk.Tests
         public void Title_Start_ClearsSortieCastle()
         {
             GameSession.SortieCastle = MakeCastle(CastleTerrain.Plain);
+            GameSession.SortieOrigin = MakeCastle(CastleTerrain.Plain, "출발");
             var go = new GameObject("TitleStartTest");
             go.SetActive(false);
             toDestroy.Add(go);
@@ -166,6 +189,7 @@ namespace Samkuk.Tests
 
             title.StartGame();
             Assert.IsNull(GameSession.SortieCastle, "타이틀의 [시작]은 성 없이 시작하는 판");
+            Assert.IsNull(GameSession.SortieOrigin);
             Assert.AreEqual(GameManager.BattleSceneName, loaded);
         }
     }

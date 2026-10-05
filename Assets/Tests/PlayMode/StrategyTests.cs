@@ -38,6 +38,7 @@ namespace Samkuk.Tests
         {
             StrategySession.LastCastleId = null;
             GameSession.SortieCastle = null;
+            GameSession.SortieOrigin = null;
             SaveSystem.Delete();
             SaveSystem.PathOverride = null;
             SaveSystem.ResetCache();
@@ -245,32 +246,154 @@ namespace Samkuk.Tests
             Assert.IsTrue(string.IsNullOrEmpty(SaveSystem.Current.homeCastleId));
         }
 
+        // ───────────────────────── 영토 / 공격 (모델) ─────────────────────────
+
         [Test]
-        public void Model_Sortie_OnlyFromHomeCastle_SetsSessionAndNotifies()
+        public void Model_StartHere_AddsHomeToTerritory()
         {
             var catalog = MakeCatalog(out var a, out var b, out _, out _);
             var model = new StrategyModel(catalog);
-            CastleData sortied = null;
-            model.SortieStarted += c => sortied = c;
+            Assert.AreEqual(0, model.OwnedCount);
 
             model.Select(a);
-            model.StartHere(); // A 가 내 성, 성 안
+            model.StartHere();
+            Assert.IsTrue(model.IsOwned(a));
+            Assert.IsFalse(model.IsOwned(b));
+            Assert.AreEqual(1, model.OwnedCount);
+            Assert.AreEqual(4, model.TotalCount);
+            Assert.IsFalse(model.IsUnified);
+        }
+
+        [Test]
+        public void Model_AttackTargets_AreEnemyNeighborsOfSelectedOwnedCastle()
+        {
+            var catalog = MakeCatalog(out var a, out var b, out var c, out var d);
+            var model = new StrategyModel(catalog);
+            model.Select(a);
+            model.StartHere(); // A 소유. 이웃은 B 뿐
+
+            CollectionAssert.AreEqual(new[] { b }, model.AttackTargets());
+            Assert.IsTrue(model.IsAttackable(b));
+            Assert.IsFalse(model.IsAttackable(c), "우리 영토와 이어지지 않은 성은 공격할 수 없다");
+            Assert.IsFalse(model.IsAttackable(d));
+            Assert.IsFalse(model.IsAttackable(a), "내 성은 공격 대상이 아니다");
+
+            model.Select(b); // 적 성을 보고 있을 때는 목록이 비어 있다
+            CollectionAssert.IsEmpty(model.AttackTargets());
+        }
+
+        [Test]
+        public void Model_Sortie_NeedsOwnedCastle_AndAdjacentEnemyTarget()
+        {
+            var catalog = MakeCatalog(out var a, out var b, out var c, out _);
+            var model = new StrategyModel(catalog);
+            CastleData sortied = null;
+            model.SortieStarted += t => sortied = t;
+
+            model.Select(a);
+            model.StartHere(); // A 소유, 성 안
             Assert.IsTrue(model.CanSortie);
 
-            model.MoveTo(b); // 다른 성으로 옮겨 가면 출진할 수 없다
-            Assert.IsFalse(model.CanSortie);
-            Assert.IsFalse(model.Sortie());
+            Assert.IsFalse(model.Sortie(null));
+            Assert.IsFalse(model.Sortie(a), "내 성은 공격할 수 없다");
+            Assert.IsFalse(model.Sortie(c), "이웃하지 않은 성");
             Assert.IsNull(GameSession.SortieCastle);
-            Assert.IsNull(sortied);
 
-            model.MoveTo(a);
             model.Leave();
             Assert.IsFalse(model.CanSortie, "지도에서는 출진할 수 없다");
+            Assert.IsFalse(model.Sortie(b));
 
             model.Enter();
-            Assert.IsTrue(model.Sortie());
-            Assert.AreSame(a, GameSession.SortieCastle);
-            Assert.AreSame(a, sortied);
+            Assert.IsTrue(model.Sortie(b));
+            Assert.AreSame(b, GameSession.SortieCastle, "전투가 벌어지는 성은 공격 대상");
+            Assert.AreSame(a, GameSession.SortieOrigin, "출발한 성");
+            Assert.AreSame(b, sortied);
+        }
+
+        [Test]
+        public void Model_CannotSortieFromEnemyCastle()
+        {
+            var catalog = MakeCatalog(out var a, out var b, out _, out _);
+            var model = new StrategyModel(catalog);
+            model.Select(a);
+            model.StartHere();
+            model.MoveTo(b); // 적 성 안을 구경 중
+
+            Assert.IsFalse(model.CanSortie);
+            Assert.IsFalse(model.Sortie(a));
+        }
+
+        [Test]
+        public void Model_AfterConquest_NewCastleBecomesSortiePoint()
+        {
+            var catalog = MakeCatalog(out var a, out var b, out var c, out _);
+            var model = new StrategyModel(catalog);
+            model.Select(a);
+            model.StartHere();
+
+            // 전투에서 이겨 B 를 차지했다고 보면 (정산은 ResultController 가 저장)
+            Territory.Conquer(SaveSystem.Current, "B");
+            SaveSystem.SaveCurrent();
+
+            Assert.IsTrue(model.IsOwned(b));
+            Assert.AreEqual(2, model.OwnedCount);
+            Assert.IsTrue(model.IsAttackable(c), "B 와 이웃한 C 가 공격 대상이 된다");
+
+            model.MoveTo(b);
+            Assert.IsTrue(model.CanSortie, "차지한 성에서도 출진한다");
+            CollectionAssert.AreEqual(new[] { c }, model.AttackTargets(), "이미 우리 성인 A 는 대상이 아니다");
+        }
+
+        [Test]
+        public void Model_ClearHome_BlockedOnceAnotherCastleIsConquered()
+        {
+            var catalog = MakeCatalog(out var a, out _, out _, out _);
+            var model = new StrategyModel(catalog);
+            model.Select(a);
+            model.StartHere();
+            Territory.Conquer(SaveSystem.Current, "B");
+
+            Assert.IsFalse(model.ClearHome(), "정복한 영토가 사라지므로 시작 성을 바꿀 수 없다");
+            Assert.IsTrue(model.HasHome);
+            Assert.AreEqual(2, model.OwnedCount);
+        }
+
+        [Test]
+        public void Model_Unified_WhenEveryCastleIsOwned()
+        {
+            var catalog = MakeCatalog(out var a, out _, out _, out _);
+            var model = new StrategyModel(catalog);
+            model.Select(a);
+            model.StartHere();
+            foreach (var id in new[] { "B", "C", "D" }) Territory.Conquer(SaveSystem.Current, id);
+
+            Assert.IsTrue(model.IsUnified);
+        }
+
+        [Test]
+        public void Model_LegacySaveWithHomeButNoTerritory_CountsHomeAsOwned()
+        {
+            var catalog = MakeCatalog(out var a, out _, out _, out _);
+            SaveSystem.Current.homeCastleId = "A"; // 영토 기능 이전의 저장
+            SaveSystem.Current.ownedCastleIds.Clear();
+
+            var model = new StrategyModel(catalog);
+            Assert.AreSame(a, model.Home);
+            Assert.IsTrue(model.IsOwned(a));
+            Assert.AreEqual(1, model.OwnedCount);
+        }
+
+        [Test]
+        public void Territory_Conquer_IsIdempotent_AndReleaseRemoves()
+        {
+            var save = new SaveData();
+            Assert.IsTrue(Territory.Conquer(save, "X"));
+            Assert.IsFalse(Territory.Conquer(save, "X"), "이미 내 성");
+            Assert.IsFalse(Territory.Conquer(save, ""), "빈 아이디는 무시");
+            Assert.AreEqual(1, Territory.Count(save));
+            Assert.IsTrue(Territory.IsOwned(save, "X"));
+            Assert.IsTrue(Territory.Release(save, "X"));
+            Assert.IsFalse(Territory.IsOwned(save, "X"));
         }
 
         // ───────────────────────── 화면 ─────────────────────────
@@ -413,7 +536,22 @@ namespace Samkuk.Tests
         }
 
         [UnityTest]
-        public IEnumerator Ui_SortieButton_OnlyInHomeCastle_AndLoadsBattleScene()
+        public IEnumerator Ui_SortieButton_OnlyInOwnedCastle()
+        {
+            var catalog = MakeCatalog(out var a, out var b, out _, out _);
+            var ui = MakeUi(catalog);
+            yield return null;
+
+            ui.Model.Select(a);
+            ui.Model.StartHere();
+            Assert.IsTrue(Find(ui, "SortieButton").gameObject.activeSelf, "우리 성에서는 [출진]이 보인다");
+
+            ui.Model.MoveTo(b);
+            Assert.IsFalse(Find(ui, "SortieButton").gameObject.activeSelf, "적 성에서는 숨김");
+        }
+
+        [UnityTest]
+        public IEnumerator Ui_Sortie_OpensTargetPanel_AndPickingTargetLoadsBattle()
         {
             var catalog = MakeCatalog(out var a, out var b, out _, out _);
             var ui = MakeUi(catalog);
@@ -423,15 +561,85 @@ namespace Samkuk.Tests
 
             ui.Model.Select(a);
             ui.Model.StartHere();
-            Assert.IsTrue(Find(ui, "SortieButton").gameObject.activeSelf, "내 성에서는 [출진]이 보인다");
+            Assert.IsFalse(ui.IsTargetPanelVisible);
 
-            ui.Model.MoveTo(b);
-            Assert.IsFalse(Find(ui, "SortieButton").gameObject.activeSelf, "내 성이 아니면 숨김");
-
-            ui.Model.MoveTo(a);
             Find(ui, "SortieButton").onClick.Invoke();
+            Assert.IsTrue(ui.IsTargetPanelVisible, "[출진]은 공격 대상 선택창을 연다");
+            Assert.IsNull(loaded, "대상을 고르기 전에는 전투로 가지 않는다");
+            Assert.IsNotNull(Find(ui, "Target_B"), "이웃한 적 성 B 가 목록에 있다");
+
+            Find(ui, "Target_B").onClick.Invoke();
             Assert.AreEqual(GameManager.BattleSceneName, loaded);
-            Assert.AreSame(a, GameSession.SortieCastle);
+            Assert.AreSame(b, GameSession.SortieCastle);
+            Assert.AreSame(a, GameSession.SortieOrigin);
+        }
+
+        [UnityTest]
+        public IEnumerator Ui_TargetPanel_ListsOnlyEnemyNeighbors_AndCancelCloses()
+        {
+            var catalog = MakeCatalog(out _, out var b, out _, out _);
+            var ui = MakeUi(catalog);
+            yield return null;
+
+            ui.Model.Select(b);
+            ui.Model.StartHere(); // B 소유: 이웃은 A, C
+            Territory.Conquer(SaveSystem.Current, "A"); // A 는 이미 우리 성
+
+            Find(ui, "SortieButton").onClick.Invoke();
+            Assert.IsNull(Find(ui, "Target_A"), "이미 우리 성은 대상이 아니다");
+            Assert.IsNotNull(Find(ui, "Target_C"));
+
+            Find(ui, "TargetCancelButton").onClick.Invoke();
+            Assert.IsFalse(ui.IsTargetPanelVisible);
+            Assert.IsTrue(ui.IsCastleVisible, "취소하면 성 화면으로 돌아온다");
+        }
+
+        [UnityTest]
+        public IEnumerator Ui_TargetPanel_ShowsMessage_WhenNoTargets()
+        {
+            var catalog = MakeCatalog(out _, out _, out _, out var d);
+            var ui = MakeUi(catalog);
+            yield return null;
+
+            ui.Model.Select(d);
+            ui.Model.StartHere(); // D 는 이웃이 없다
+            Find(ui, "SortieButton").onClick.Invoke();
+
+            Assert.IsTrue(ui.IsTargetPanelVisible);
+            StringAssert.Contains("공격할 수 없습니다", ui.TargetPanelTitle);
+        }
+
+        [UnityTest]
+        public IEnumerator Ui_ChangingState_ClosesTargetPanel()
+        {
+            var catalog = MakeCatalog(out var a, out _, out _, out _);
+            var ui = MakeUi(catalog);
+            yield return null;
+
+            ui.Model.Select(a);
+            ui.Model.StartHere();
+            Find(ui, "SortieButton").onClick.Invoke();
+            Assert.IsTrue(ui.IsTargetPanelVisible);
+
+            ui.Model.Leave();
+            Assert.IsFalse(ui.IsTargetPanelVisible, "성 화면을 나가면 선택창도 닫힌다");
+        }
+
+        [UnityTest]
+        public IEnumerator Ui_ChangeHomeButton_HiddenAfterConquest()
+        {
+            var catalog = MakeCatalog(out var a, out _, out _, out _);
+            var ui = MakeUi(catalog);
+            yield return null;
+
+            ui.Model.Select(a);
+            ui.Model.StartHere();
+            ui.Model.Leave();
+            Assert.IsTrue(Find(ui, "ChangeHomeButton").gameObject.activeSelf);
+
+            Territory.Conquer(SaveSystem.Current, "B");
+            ui.Model.Select(a); // 화면을 다시 그리게
+            Assert.IsFalse(Find(ui, "ChangeHomeButton").gameObject.activeSelf, "다른 성을 차지했으면 시작 성을 바꿀 수 없다");
         }
 
         [UnityTest]
