@@ -14,7 +14,7 @@ namespace Samkuk.EditorTools
     /// </summary>
     public static class Step8EnemiesSetup
     {
-        const string ScenePath = "Assets/Scenes/SampleScene.unity";
+        const string ScenePath = "Assets/Scenes/BattleScene.unity";
         const string SpriteDir = "Assets/Sprites";
         const string EnemyDir = "Assets/ScriptableObjects/Enemies";
         const string StagePath = "Assets/ScriptableObjects/Stage/Stage_YellowTurban.asset";

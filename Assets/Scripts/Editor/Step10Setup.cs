@@ -21,13 +21,13 @@ namespace Samkuk.EditorTools
     /// </summary>
     public static class Step10Setup
     {
-        const string GameScenePath = "Assets/Scenes/SampleScene.unity";
+        const string BattleScenePath = "Assets/Scenes/BattleScene.unity";
 
         [MenuItem("Samkuk/Step 10 - Setup Sound & Feedback")]
         public static void Run()
         {
             // 주의: OpenScene(Single) 이후에 컴포넌트를 찾는다.
-            var scene = EditorSceneManager.OpenScene(GameScenePath, OpenSceneMode.Single);
+            var scene = EditorSceneManager.OpenScene(BattleScenePath, OpenSceneMode.Single);
 
             var player = GameObject.Find("Player");
             var systems = GameObject.Find("GameSystems");

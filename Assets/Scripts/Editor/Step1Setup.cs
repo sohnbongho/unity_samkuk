@@ -10,7 +10,7 @@ namespace Samkuk.EditorTools
     public static class Step1Setup
     {
         const string SpriteDir = "Assets/Sprites";
-        const string ScenePath = "Assets/Scenes/SampleScene.unity";
+        const string ScenePath = "Assets/Scenes/BattleScene.unity";
         const int PPU = 64;
 
         [MenuItem("Samkuk/Step 1 - Setup Project")]

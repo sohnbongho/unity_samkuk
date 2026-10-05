@@ -18,7 +18,7 @@ namespace Samkuk.EditorTools
     /// <summary>Step 6: 경험치 보석, 패시브/카탈로그, 레벨업 UI, 경험치 바를 구성한다.</summary>
     public static class Step6Setup
     {
-        const string ScenePath = "Assets/Scenes/SampleScene.unity";
+        const string ScenePath = "Assets/Scenes/BattleScene.unity";
         const string PlayerPrefabPath = "Assets/Prefabs/Player.prefab";
         const string GemPrefabPath = "Assets/Prefabs/ExpGem.prefab";
         const string GemSpritePath = "Assets/Sprites/ExpGem.png";

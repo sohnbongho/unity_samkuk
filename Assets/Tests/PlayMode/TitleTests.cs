@@ -17,7 +17,7 @@ namespace Samkuk.Tests
     public class TitleTests
     {
         const string TitleScenePath = "Assets/Scenes/TitleScene.unity";
-        const string GameScenePath = "Assets/Scenes/SampleScene.unity";
+        const string BattleScenePath = "Assets/Scenes/BattleScene.unity";
 
         string savePath;
         readonly List<UnityEngine.Object> toDestroy = new List<UnityEngine.Object>();
@@ -416,8 +416,8 @@ namespace Samkuk.Tests
             yield return null;
 
             p.start.onClick.Invoke();
-            Assert.AreEqual(GameManager.GameSceneName, loaded);
-            Assert.AreEqual("SampleScene", loaded);
+            Assert.AreEqual(GameManager.BattleSceneName, loaded);
+            Assert.AreEqual("BattleScene", loaded);
 
             p.quit.onClick.Invoke();
             Assert.AreEqual(1, quits);
@@ -558,7 +558,7 @@ namespace Samkuk.Tests
             Assert.GreaterOrEqual(scenes.Length, 2, "Samkuk > Step 9-2 를 먼저 실행하세요 (빌드 설정에 씬 등록)");
 
             Assert.AreEqual(TitleScenePath, scenes[0].path, "타이틀 씬이 0번");
-            Assert.AreEqual(GameScenePath, scenes[1].path, "게임 씬이 1번");
+            Assert.AreEqual(BattleScenePath, scenes[1].path, "게임 씬이 1번");
             Assert.IsTrue(scenes[0].enabled);
             Assert.IsTrue(scenes[1].enabled);
         }
@@ -568,7 +568,7 @@ namespace Samkuk.Tests
         {
             Assert.AreEqual("TitleScene", GameManager.TitleSceneName);
             Assert.AreEqual(Path.GetFileNameWithoutExtension(TitleScenePath), GameManager.TitleSceneName);
-            Assert.AreEqual(Path.GetFileNameWithoutExtension(GameScenePath), GameManager.GameSceneName);
+            Assert.AreEqual(Path.GetFileNameWithoutExtension(BattleScenePath), GameManager.BattleSceneName);
             Assert.IsTrue(File.Exists(TitleScenePath), "TitleScene.unity 가 없습니다. Step 9-2 를 실행하세요.");
         }
     }

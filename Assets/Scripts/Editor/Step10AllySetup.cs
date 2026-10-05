@@ -19,7 +19,7 @@ namespace Samkuk.EditorTools
     /// </summary>
     public static class Step10AllySetup
     {
-        const string ScenePath = "Assets/Scenes/SampleScene.unity";
+        const string ScenePath = "Assets/Scenes/BattleScene.unity";
         const int CardCount = 4; // 고른 장수를 뺀 나머지 (장수 5명 기준)
 
         [MenuItem("Samkuk/Step 10-8 - Setup Allies (Mercenary Heroes)")]

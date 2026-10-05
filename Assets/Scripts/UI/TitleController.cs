@@ -167,7 +167,7 @@ namespace Samkuk.UI
 
         // ───────────────────────── 동작 ─────────────────────────
 
-        public void StartGame() => SceneLoader?.Invoke(GameManager.GameSceneName);
+        public void StartGame() => SceneLoader?.Invoke(GameManager.BattleSceneName);
 
         /// <summary>내정 모드(전략 지도)로 간다.</summary>
         public void OpenStrategy() => SceneLoader?.Invoke(GameManager.StrategySceneName);

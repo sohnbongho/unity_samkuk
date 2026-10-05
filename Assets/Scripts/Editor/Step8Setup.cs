@@ -15,7 +15,7 @@ namespace Samkuk.EditorTools
     /// <summary>Step 8-1: 장수 5명(능력치/시작 무기/고유 스킬), 장수 선택 화면, 스킬 HUD를 구성한다.</summary>
     public static class Step8Setup
     {
-        const string ScenePath = "Assets/Scenes/SampleScene.unity";
+        const string ScenePath = "Assets/Scenes/BattleScene.unity";
         const string PlayerPrefabPath = "Assets/Prefabs/Player.prefab";
         const string SpriteDir = "Assets/Sprites";
         const string WeaponDir = "Assets/ScriptableObjects/Weapons";

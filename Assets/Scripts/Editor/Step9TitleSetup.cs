@@ -17,16 +17,16 @@ namespace Samkuk.EditorTools
     public static class Step9TitleSetup
     {
         public const string TitleScenePath = "Assets/Scenes/TitleScene.unity";
-        public const string GameScenePath = "Assets/Scenes/SampleScene.unity";
+        public const string BattleScenePath = "Assets/Scenes/BattleScene.unity";
         const string MetaCatalogPath = "Assets/ScriptableObjects/MetaCatalog.asset";
         const string PlayFromTitleMenu = "Samkuk/Play From Title Scene";
 
         [MenuItem("Samkuk/Step 9-2 - Setup Title Scene")]
         public static void Run()
         {
-            if (!System.IO.File.Exists(GameScenePath))
+            if (!System.IO.File.Exists(BattleScenePath))
             {
-                Debug.LogError("[Samkuk] 게임 씬(SampleScene)이 없습니다.");
+                Debug.LogError("[Samkuk] 전투 씬(BattleScene)이 없습니다.");
                 return;
             }
 

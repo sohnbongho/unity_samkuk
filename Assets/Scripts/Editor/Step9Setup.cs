@@ -20,7 +20,7 @@ namespace Samkuk.EditorTools
     /// </summary>
     public static class Step9Setup
     {
-        const string ScenePath = "Assets/Scenes/SampleScene.unity";
+        const string ScenePath = "Assets/Scenes/BattleScene.unity";
         const string MetaDir = "Assets/ScriptableObjects/Meta";
         public const string MetaCatalogPath = "Assets/ScriptableObjects/MetaCatalog.asset";
 

@@ -14,7 +14,7 @@ namespace Samkuk.EditorTools
     /// <summary>Step 7: 적 종류 추가, 스테이지(웨이브/엘리트/보스) 데이터와 HUD(타이머, 배너, 보스바, 클리어 화면)를 구성한다.</summary>
     public static class Step7Setup
     {
-        const string ScenePath = "Assets/Scenes/SampleScene.unity";
+        const string ScenePath = "Assets/Scenes/BattleScene.unity";
         const string EnemyDir = "Assets/ScriptableObjects/Enemies";
         const string StageDir = "Assets/ScriptableObjects/Stage";
         const string StagePath = StageDir + "/Stage_YellowTurban.asset";

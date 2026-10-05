@@ -15,7 +15,7 @@ namespace Samkuk.Core
     {
         public const string TitleSceneName = "TitleScene";
         public const string StrategySceneName = "StrategyScene";
-        public const string GameSceneName = "SampleScene";
+        public const string BattleSceneName = "BattleScene";
 
         [SerializeField] PlayerHealth playerHealth;
         [SerializeField] GameObject gameOverPanel;

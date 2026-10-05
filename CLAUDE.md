@@ -56,6 +56,7 @@
 
 - 스프라이트(번개, 불길, 궁병, 기병 등)는 코드로 만든 **플레이스홀더**. Step 10에서 교체/다듬기.
 - 장수 걷기 시트: `Assets/Sprites/HeroWalk/<장수 에셋 이름>_Walk.png`(4열 x 4행: 열=프레임 0~3, 행=아래/위/왼쪽/오른쪽, 칸 96x96, 배경 투명). 현재 5장은 **코드로 그린 임시 그림**(`tools/hero_art/HeroSprites.cs`, `generate.ps1 -Only walk`). 시트가 있는 장수는 `PlayerController`가 좌우 반전을 하지 않고 `PlayerAnimator`가 방향/프레임을 정하며, 장수 색(`tint`)도 입히지 않는다(`HeroSelectController.Apply`). 시트가 없으면 예전 동작(원 스프라이트 + tint + 반전). Player 프리팹에 `PlayerAnimator`를 붙이는 것은 `Step 10-6`이므로 셋업을 돌려야 한다.
+- 씬 이름: 유니티 템플릿 기본 이름이던 `SampleScene` 을 역할에 맞게 `BattleScene`(서바이버 전투 한 판)으로 바꿨다. `.meta` 와 함께 옮겨 GUID 는 그대로이며, 코드 상수는 `GameManager.BattleSceneName`, 에디터 셋업은 `Step9TitleSetup.BattleScenePath`. 이전 이름이 남은 곳은 초기 기획 `PLAN.md` 뿐(당시 상태를 적은 문서라 그대로 둠).
 - 내정 화면: 씬 `StrategyScene`(타이틀 0, 게임 1, 내정 2 순서로 `Step12StrategySetup.RegisterBuildScenes` 가 등록)에는 카메라/이벤트 시스템/캔버스(+`StrategyUI`)만 있고, **화면 전체는 `StrategyUI` 가 실행 중에 코드로 만든다**(성이 바뀌어도 씬 재구성 불필요). 규칙은 `StrategyModel`(선택/입장/인접 이동, 마지막 성은 `StrategySession` 에 기억). 지도 그림 `Assets/Sprites/Strategy/StrategyMap.png`(2560x1440)는 코드로 만든 **임시 그림**(`tools/castle_art/MapArt.cs`, `generate.ps1 -Only Map`)이며 성 마커는 `mapPosition`(0~1)을 지도 영역(1960x1102)에 곱해 놓는다. 타이틀의 [내정] 버튼은 Step 9-2 를 **다시 실행해야** 생기고(없어도 동작), 버튼 배치가 바뀌었다. 런타임 UI라 스킨은 `UiSkin.StyleX` 를 직접 호출한다.
 - 내정 성: 기준표는 `tools/castle_art/castles.json` 한 곳(46곳, `links` 는 `"A-B"` 양방향)이고 그림 생성기와 `Step12CastleSetup` 이 같이 읽는다. 성 목록은 삼국지3의 도시 수(46)에 맞춘 **후한 말 지리 기준 근사**이며 원작 목록과 다를 수 있다. 배경(`Assets/Sprites/Castles/Castle_<id>.png`, 1920x1080 16:9)은 코드로 만든 **임시 그림**이고, 직접 그린 그림으로 덮어쓰면 그 성은 `generate.ps1 -Only`에서 피한다. 셋업은 멱등(기존 성 값은 덮어쓰지 않고 빠진 배경/연결만 채움)이라 값을 바꿀 땐 에셋을 직접 고친다. `CastleData` 가 Sprite 를 직접 참조해 카탈로그 로드 시 46장이 함께 로드된다(압축 후 약 50MB) — 내정 화면에서 부담이 되면 지연 로드로 바꿀 것. 규칙/방법은 `docs/CASTLES.md`.
 - 아군: 수치는 `AllyConfig` 한 곳(정원 2, 체력 70, 공격력 x0.6, 받는 피해 x0.7, 부활 15초, 주인공 레벨 3당 무기 +1). 적은 `EnemyManager`가 주인공과 살아 있는 아군 중 **가장 가까운 쪽**을 목표로 고르고(`IEnemyTarget`), 접촉/궁병 화살도 그 대상에 적용된다. 무기는 `Weapon.Owner`가 `Transform`+`IWeaponStats`라 아군도 같은 무기를 쓴다(이펙트/투사체 풀은 주인공의 `WeaponController`를 공유). 아군은 스킬을 쓰지 않는다. `HeroSelectController`는 아군 UI/매니저를 실행 중에 찾으므로 Step 8을 다시 돌려도 연결이 유지된다. 규칙/흐름은 `docs/ALLIES.md`.
@@ -82,7 +83,7 @@
   - 네임스페이스는 `Samkuk.*` (예: `Samkuk.Weapons`, `Samkuk.Enemies`, `Samkuk.Meta`, `Samkuk.UI`)
   - 런타임은 `Samkuk.Runtime.asmdef`, 에디터 스크립트는 `Editor/` 폴더
 - 데이터: `Assets/ScriptableObjects/<종류>/` — Weapons, Enemies, Passives, Heroes, Skills, Evolutions, Meta, Stage, Castles, 그리고 `UpgradeCatalog`, `HeroCatalog`, `MetaCatalog`, `CastleCatalog`
-- 씬: `Assets/Scenes/TitleScene.unity`(빌드 0번) → `SampleScene.unity`(게임, 1번) → `StrategyScene.unity`(내정, 2번)
+- 씬: `Assets/Scenes/TitleScene.unity`(빌드 0번) → `BattleScene.unity`(전투, 1번) → `StrategyScene.unity`(내정, 2번)
 - 테스트: `Assets/Tests/PlayMode/*.cs` (PlayMode, `Samkuk.Tests.PlayMode.asmdef`)
 - 저장: `Application.persistentDataPath/save.json` (`SaveSystem`)
 

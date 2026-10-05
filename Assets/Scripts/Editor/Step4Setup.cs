@@ -11,7 +11,7 @@ namespace Samkuk.EditorTools
     /// <summary>Step 4: 플레이어 체력, 데미지 숫자, HP 바, 게임오버를 구성한다.</summary>
     public static class Step4Setup
     {
-        const string ScenePath = "Assets/Scenes/SampleScene.unity";
+        const string ScenePath = "Assets/Scenes/BattleScene.unity";
         const string PlayerPrefabPath = "Assets/Prefabs/Player.prefab";
 
         [MenuItem("Samkuk/Step 4 - Setup Combat Core")]

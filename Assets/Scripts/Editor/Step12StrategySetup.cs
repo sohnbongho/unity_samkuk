@@ -61,7 +61,7 @@ namespace Samkuk.EditorTools
         public static void RegisterBuildScenes()
         {
             var scenes = new List<EditorBuildSettingsScene>();
-            foreach (string path in new[] { Step9TitleSetup.TitleScenePath, Step9TitleSetup.GameScenePath, ScenePath })
+            foreach (string path in new[] { Step9TitleSetup.TitleScenePath, Step9TitleSetup.BattleScenePath, ScenePath })
                 if (File.Exists(path)) scenes.Add(new EditorBuildSettingsScene(path, true));
             EditorBuildSettings.scenes = scenes.ToArray();
         }

@@ -11,7 +11,7 @@ namespace Samkuk.EditorTools
     /// <summary>Step 3: 적 데이터/프리팹 생성, 씬에 EnemyManager·EnemySpawner·DebugOverlay 구성.</summary>
     public static class Step3Setup
     {
-        const string ScenePath = "Assets/Scenes/SampleScene.unity";
+        const string ScenePath = "Assets/Scenes/BattleScene.unity";
         const string DataDir = "Assets/ScriptableObjects/Enemies";
         const string EnemyPrefabPath = "Assets/Prefabs/Enemy.prefab";
         const string EnemySpritePath = "Assets/Sprites/Enemy.png";

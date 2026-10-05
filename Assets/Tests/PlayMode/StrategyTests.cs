@@ -289,7 +289,7 @@ namespace Samkuk.Tests
             foreach (var s in EditorBuildSettings.scenes) paths.Add(s.path);
             CollectionAssert.Contains(paths, path);
             Assert.AreEqual("Assets/Scenes/TitleScene.unity", paths[0], "타이틀이 0번");
-            Assert.AreEqual("Assets/Scenes/SampleScene.unity", paths[1], "게임이 1번");
+            Assert.AreEqual("Assets/Scenes/BattleScene.unity", paths[1], "전투가 1번");
         }
     }
 }

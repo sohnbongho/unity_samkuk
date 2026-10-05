@@ -7,10 +7,10 @@ using UnityEngine;
 
 namespace Samkuk.EditorTools
 {
-    /// <summary>Step 2: Player 프리팹, 무한 배경, 카메라 추적을 SampleScene에 구성한다.</summary>
+    /// <summary>Step 2: Player 프리팹, 무한 배경, 카메라 추적을 BattleScene에 구성한다.</summary>
     public static class Step2Setup
     {
-        const string ScenePath = "Assets/Scenes/SampleScene.unity";
+        const string ScenePath = "Assets/Scenes/BattleScene.unity";
         const string PrefabDir = "Assets/Prefabs";
         public const string PlayerPrefabPath = PrefabDir + "/Player.prefab";
         const string PlayerSpritePath = "Assets/Sprites/Player.png";
