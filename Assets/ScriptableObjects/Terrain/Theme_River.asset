@@ -24,6 +24,11 @@ MonoBehaviour:
     blockRadius: 0
     slowRadius: 0
     slowFactor: 1
+    lightColor: {r: 1, g: 1, b: 1, a: 0}
+    lightRadius: 0
+    lightIntensity: 1
+    lightFlicker: 0
+    lightHeight: 0
   - name: Prop_River_Willow
     sprite: {fileID: 21300000, guid: cbd4004a2c9a22844a84e95a8a8d305b, type: 3}
     weight: 1.8
@@ -32,6 +37,11 @@ MonoBehaviour:
     blockRadius: 0.32
     slowRadius: 0
     slowFactor: 1
+    lightColor: {r: 1, g: 1, b: 1, a: 0}
+    lightRadius: 0
+    lightIntensity: 1
+    lightFlicker: 0
+    lightHeight: 0
   - name: Prop_River_Rock
     sprite: {fileID: 21300000, guid: 912c6eeca0b1da348ad83b4cb424d634, type: 3}
     weight: 1.5
@@ -40,6 +50,11 @@ MonoBehaviour:
     blockRadius: 0.42
     slowRadius: 0
     slowFactor: 1
+    lightColor: {r: 1, g: 1, b: 1, a: 0}
+    lightRadius: 0
+    lightIntensity: 1
+    lightFlicker: 0
+    lightHeight: 0
   - name: Prop_River_Boat
     sprite: {fileID: 21300000, guid: 815ef0625dc11f54f8c183c246517ea9, type: 3}
     weight: 0.5
@@ -48,6 +63,11 @@ MonoBehaviour:
     blockRadius: 0.8
     slowRadius: 0
     slowFactor: 1
+    lightColor: {r: 1, g: 1, b: 1, a: 0}
+    lightRadius: 0
+    lightIntensity: 1
+    lightFlicker: 0
+    lightHeight: 0
   - name: Prop_River_Grass
     sprite: {fileID: 21300000, guid: 072b62bab9e48fe4f9dfcad1915e96e1, type: 3}
     weight: 4
@@ -56,6 +76,11 @@ MonoBehaviour:
     blockRadius: 0
     slowRadius: 0
     slowFactor: 1
+    lightColor: {r: 1, g: 1, b: 1, a: 0}
+    lightRadius: 0
+    lightIntensity: 1
+    lightFlicker: 0
+    lightHeight: 0
   riverWater: {fileID: 21300000, guid: c14fee2b226765e48baa4d8ece2835c1, type: 3}
   riverBank: {fileID: 21300000, guid: f0b3e7d794a93604185f1f0703a0c326, type: 3}
   riverWidth: 5

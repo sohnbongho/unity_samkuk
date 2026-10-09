@@ -7,7 +7,7 @@ using UnityEngine.InputSystem;
 
 namespace Samkuk.Core
 {
-    /// <summary>개발용 오버레이: FPS, 활성 적 수, F1 적 +100, F2 전체 무기 레벨업, F3 경험치 +10, F4 시간 +10초.</summary>
+    /// <summary>개발용 오버레이: FPS, 활성 적 수, F1 적 +100, F2 전체 무기 레벨업, F3 경험치 +10, F4 시간 +10초, F5 HD-2D 조명 켜고 끄기.</summary>
     public class DebugOverlay : MonoBehaviour
     {
         [SerializeField] EnemySpawner spawner;
@@ -19,6 +19,7 @@ namespace Samkuk.Core
         WeaponController weapons;
         PlayerExperience experience;
         StageController stage;
+        InfiniteBackground background;
 
         public EnemySpawner Spawner { get => spawner; set => spawner = value; }
         public EnemyManager Manager { get => manager; set => manager = value; }
@@ -56,6 +57,14 @@ namespace Samkuk.Core
                 if (stage == null) stage = FindAnyObjectByType<StageController>();
                 if (stage != null) stage.Tick(10f);
             }
+
+            // HD-2D 조명 전후 비교: 저장 설정은 건드리지 않고 이 판에서만 뒤집는다
+            if (kb.f5Key.wasPressedThisFrame)
+            {
+                Hd2dSettings.LightingOverride = !Hd2dSettings.Lighting;
+                if (background == null) background = FindAnyObjectByType<InfiniteBackground>();
+                if (background != null) background.SetLightingEnabled(Hd2dSettings.Lighting);
+            }
         }
 
         void OnGUI()
@@ -69,7 +78,7 @@ namespace Samkuk.Core
             int count = manager != null ? manager.Count : 0;
             float fps = smoothedDelta > 0f ? 1f / smoothedDelta : 0f;
             GUI.Label(new Rect(10, 8, 500, 26), $"FPS {fps:0}   Enemies {count}", style);
-            GUI.Label(new Rect(10, 30, 800, 26), $"F1: +{burstCount} enemies   F2: weapons level up   F3: +10 exp   F4: +10 sec", style);
+            GUI.Label(new Rect(10, 30, 1000, 26), $"F1: +{burstCount} enemies   F2: weapons level up   F3: +10 exp   F4: +10 sec   F5: lighting {(Hd2dSettings.Lighting ? "on" : "off")}", style);
         }
     }
 }

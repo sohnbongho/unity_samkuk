@@ -24,6 +24,11 @@ MonoBehaviour:
     blockRadius: 0
     slowRadius: 0
     slowFactor: 1
+    lightColor: {r: 1, g: 1, b: 1, a: 0}
+    lightRadius: 0
+    lightIntensity: 1
+    lightFlicker: 0
+    lightHeight: 0
   - name: Prop_Steppe_Rock
     sprite: {fileID: 21300000, guid: 21d5a069545b16e49a99cc70e91da44a, type: 3}
     weight: 2
@@ -32,6 +37,11 @@ MonoBehaviour:
     blockRadius: 0.42
     slowRadius: 0
     slowFactor: 1
+    lightColor: {r: 1, g: 1, b: 1, a: 0}
+    lightRadius: 0
+    lightIntensity: 1
+    lightFlicker: 0
+    lightHeight: 0
   - name: Prop_Steppe_DeadTree
     sprite: {fileID: 21300000, guid: 6883b49290214454c89de9b457f5ae1b, type: 3}
     weight: 1.2
@@ -40,6 +50,11 @@ MonoBehaviour:
     blockRadius: 0.26
     slowRadius: 0
     slowFactor: 1
+    lightColor: {r: 1, g: 1, b: 1, a: 0}
+    lightRadius: 0
+    lightIntensity: 1
+    lightFlicker: 0
+    lightHeight: 0
   - name: Prop_Steppe_Yurt
     sprite: {fileID: 21300000, guid: 420e8b011d92ba04ebf96c8701bfc4ad, type: 3}
     weight: 0.6
@@ -48,6 +63,11 @@ MonoBehaviour:
     blockRadius: 0.95
     slowRadius: 0
     slowFactor: 1
+    lightColor: {r: 1, g: 0.78, b: 0.5, a: 1}
+    lightRadius: 2
+    lightIntensity: 0.5
+    lightFlicker: 0.15
+    lightHeight: 0.5
   - name: Prop_Steppe_Shrub
     sprite: {fileID: 21300000, guid: 67f0b8691ba224b4ba9556cf4634180b, type: 3}
     weight: 2
@@ -56,6 +76,11 @@ MonoBehaviour:
     blockRadius: 0
     slowRadius: 0
     slowFactor: 1
+    lightColor: {r: 1, g: 1, b: 1, a: 0}
+    lightRadius: 0
+    lightIntensity: 1
+    lightFlicker: 0
+    lightHeight: 0
   riverWater: {fileID: 21300000, guid: 0c64bdb11c765da41935da2efe149e9b, type: 3}
   riverBank: {fileID: 21300000, guid: a16da71847363ba4186e5a5397e7a8b4, type: 3}
   riverWidth: 2.8

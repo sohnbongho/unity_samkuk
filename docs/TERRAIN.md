@@ -66,6 +66,16 @@
 - **종류별 기본값**: `TerrainPropKinds`(코드). 셋업(`Step 12-6`)은 **이동 값이 하나도 없는 테마(지형 이동 전에 만든 에셋)만** 이 기본값으로 채우고, 하나라도 있으면 사용자가 조정한 것으로 보고 건드리지 않습니다. 새로 추가된 소품은 항상 기본값을 받습니다.
 - **동작 방식**: `TerrainCollision`(`Assets/Scripts/World/`)이 칸 배치에서 막는 원/느려지는 원을 뽑아 4x4 유닛 셀에 넣어 두고, `PlayerController`/`EnemyManager`/`AllyController` 가 매 틱 `SpeedFactor`(배율)와 `Resolve`(미끄러짐·밀어내기)를 부릅니다. 유니티 물리 콜라이더는 쓰지 않습니다(적 수백 마리를 이미 코드로 처리하고 있고, 테스트할 수 있어서). 테스트는 `Assets/Tests/PlayMode/TerrainCollisionTests.cs`.
 
+## 조명 (Step 14-1, HD-2D)
+
+전투 맵에는 세 가지 빛이 있습니다. 모두 `Hd2dSettings.Lighting`(타이틀 [조명 연출] 버튼, 저장 `hd2dLighting`)으로 한꺼번에 켜고 끄며, 게임 안에서는 **F5** 로 저장을 건드리지 않고 전후를 비교할 수 있습니다(에디터/개발 빌드). 맵 편집기 화면에는 조명을 붙이지 않습니다(`InfiniteBackground.LightingAllowed = false`, 편집 화면은 밝고 일정하게. 전투 테스트에서 봅니다).
+
+- **시간대 색조**: 씬의 전역 Light2D 에 지형 색조 x 시간대 색조를 곱합니다(`LightingPreset`). 시간대는 성 배경 그림의 하늘(낮/해질녘/새벽)과 같습니다 — 생성기와 같은 해시·난수로 성 아이디에서 뽑습니다(`CastleMood`). 성 없이 시작한 판은 낮. 어떤 조합도 채널이 0.45 밑으로 내려가지 않아 적이 안 보이는 일은 없습니다(테스트가 지킴).
+- **소품 점광원**: 빛 값이 있는 소품(`TerrainProp.lightColor/lightRadius/lightIntensity/lightFlicker/lightHeight`)은 `TerrainPropSpawner` 가 소품과 함께 Light2D(Point)를 만들고 함께 풀로 돌려보냅니다. 기본값(`TerrainPropKinds.ApplyLightDefaults`)은 **깃대 = 횃불**(따뜻한 색, 일렁임 0.35, 깃대 위 1.6유닛), **유르트 = 창의 불빛**, **연못 = 희미한 푸른 빛**이고 나머지는 빛이 없습니다. 일렁임은 펄린 노이즈라 깜빡이지 않습니다.
+- **플레이어 빛**: 주인공 주변 반지름 3.2 의 약한 빛(`BattleLighting`). 어두운 시간대에도 주인공 주변은 또렷합니다.
+
+수치는 소품별로 `Theme_*.asset`/`TerrainThemeCatalog.asset` 의 빛 값을, 전역광은 `LightingPreset`(코드)을 고칩니다. 셋업(`Step 12-6`)은 이동 값과 같은 규칙으로 **빛 값이 하나도 없는 테마만** 기본값으로 채웁니다(Step 14-1 이후 한 번 재실행 필요).
+
 ## 지형 오브젝트는
 
 - 배경 정렬 레이어에 그려져 **적, 플레이어, 투사체, 경험치 보석 뒤에** 깔립니다. 소품끼리는 아래쪽(y가 작은)이 위에 그려집니다.

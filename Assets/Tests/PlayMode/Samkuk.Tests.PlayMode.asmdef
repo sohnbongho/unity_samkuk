@@ -5,6 +5,7 @@
         "Samkuk.Runtime",
         "Unity.InputSystem",
         "Unity.InputSystem.TestFramework",
+        "Unity.RenderPipelines.Universal.2D.Runtime",
         "UnityEngine.UI",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"

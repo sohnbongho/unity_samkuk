@@ -26,6 +26,34 @@ namespace Samkuk.Data
             prop.slowFactor = kind == "pond" ? WaterSlowFactor : 1f;
         }
 
+        /// <summary>
+        /// 종류별 점광원 기본값(HD-2D 조명, Step 14-1). 깃대는 꼭대기의 횃불(따뜻하고 일렁임), 유르트는 창의 불빛,
+        /// 연못은 물에 비친 희미한 푸른 빛. 그 밖의 소품은 빛이 없다. 셋업(Step 12-6)은 테마에 빛 값이 하나도 없을 때만 채운다.
+        /// </summary>
+        public static void ApplyLightDefaults(TerrainProp prop, string kind)
+        {
+            if (prop == null) return;
+            switch (kind)
+            {
+                case "banner":
+                    prop.lightColor = new Color(1f, 0.72f, 0.42f, 1f);
+                    prop.lightRadius = 2.8f; prop.lightIntensity = 0.9f; prop.lightFlicker = 0.35f; prop.lightHeight = 1.6f;
+                    break;
+                case "yurt":
+                    prop.lightColor = new Color(1f, 0.78f, 0.5f, 1f);
+                    prop.lightRadius = 2f; prop.lightIntensity = 0.5f; prop.lightFlicker = 0.15f; prop.lightHeight = 0.5f;
+                    break;
+                case "pond":
+                    prop.lightColor = new Color(0.55f, 0.8f, 1f, 1f);
+                    prop.lightRadius = 2.4f; prop.lightIntensity = 0.35f; prop.lightFlicker = 0.08f; prop.lightHeight = 0f;
+                    break;
+                default:
+                    prop.lightColor = new Color(1f, 1f, 1f, 0f);
+                    prop.lightRadius = 0f; prop.lightIntensity = 1f; prop.lightFlicker = 0f; prop.lightHeight = 0f;
+                    break;
+            }
+        }
+
         /// <summary>종류별 막는 반지름 (0 = 통과). 그림 폭에 맞춘 어림값: 나무는 밑동만, 바위는 몸체 대부분.</summary>
         public static float BlockRadius(string kind)
         {

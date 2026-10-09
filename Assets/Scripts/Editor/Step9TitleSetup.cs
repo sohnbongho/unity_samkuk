@@ -221,6 +221,15 @@ namespace Samkuk.EditorTools
             modeRt.anchoredPosition = new Vector2(40f, -270f);
             var windowModeLabel = windowModeBtn.GetComponentInChildren<Text>();
             windowModeLabel.fontSize = 30;
+
+            // HD-2D 조명 켜기/끄기 버튼 (창 모드 버튼 아래)
+            var lightingBtn = NewButton("LightingButton", main, font, "조명 연출: 켬", 1f, new Vector2(360f, 70f), new Color(0.22f, 0.28f, 0.4f));
+            var lightRt = (RectTransform)lightingBtn.transform;
+            lightRt.anchorMin = lightRt.anchorMax = new Vector2(0f, 1f);
+            lightRt.pivot = new Vector2(0f, 1f);
+            lightRt.anchoredPosition = new Vector2(40f, -350f);
+            var lightingLabel = lightingBtn.GetComponentInChildren<Text>();
+            lightingLabel.fontSize = 30;
             var resetLabel = resetBtn.GetComponentInChildren<Text>();
             resetLabel.fontSize = 28;
             quitBtn.GetComponentInChildren<Text>().fontSize = 28;
@@ -313,6 +322,8 @@ namespace Samkuk.EditorTools
             so.FindProperty("resolutionLabel").objectReferenceValue = resolutionLabel;
             so.FindProperty("windowModeButton").objectReferenceValue = windowModeBtn;
             so.FindProperty("windowModeLabel").objectReferenceValue = windowModeLabel;
+            so.FindProperty("lightingButton").objectReferenceValue = lightingBtn;
+            so.FindProperty("lightingLabel").objectReferenceValue = lightingLabel;
             so.FindProperty("catalog").objectReferenceValue = catalog;
             so.ApplyModifiedPropertiesWithoutUndo();
 

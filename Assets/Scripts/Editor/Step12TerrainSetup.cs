@@ -12,7 +12,7 @@ namespace Samkuk.EditorTools
     /// <c>Assets/ScriptableObjects/Terrain/Theme_&lt;지형&gt;.asset</c> 6개와 <c>Assets/Resources/TerrainThemeCatalog.asset</c> 을 채우고,
     /// <c>Assets/Sprites/Terrain/</c> 의 바닥 타일과 소품 그림을 연결한다.
     /// 멱등: 이미 있는 테마의 값(밀도, 소품 비중 등)은 덮어쓰지 않고, 빠진 소품/그림만 채운다.
-    /// 소품의 이동 효과(막는 반지름, 느려짐)는 테마에 그 값이 하나도 없을 때(예전 에셋)만 종류별 기본값(<see cref="TerrainPropKinds"/>)으로 채운다.
+    /// 소품의 이동 효과(막는 반지름, 느려짐)와 빛(점광원)은 테마에 그 값이 하나도 없을 때(예전 에셋)만 종류별 기본값(<see cref="TerrainPropKinds"/>)으로 채운다.
     /// 그림은 <c>tools/terrain_art/generate.ps1</c> 로 만든다. 규칙은 docs/TERRAIN.md.
     /// </summary>
     public static class Step12TerrainSetup
@@ -79,7 +79,7 @@ namespace Samkuk.EditorTools
             }
 
             var missing = new StringBuilder();
-            int created = 0, linked = 0, movement = 0;
+            int created = 0, linked = 0, movement = 0, lights = 0;
 
             foreach (var row in table.themes)
             {
@@ -103,6 +103,8 @@ namespace Samkuk.EditorTools
 
                 // 이동 효과가 하나도 없는 테마(지형 이동 전에 만든 에셋)는 종류별 기본값으로 채운다. 하나라도 있으면 사용자가 조정한 값으로 보고 그대로 둔다
                 bool fillMovement = theme.props.TrueForAll(x => !x.Blocks && !x.Slows);
+                // 빛도 같은 규칙: 하나라도 빛이 있으면 사용자가 조정한 것으로 보고 그대로 둔다 (HD-2D 조명, Step 14-1)
+                bool fillLights = theme.props.TrueForAll(x => !x.HasLight);
                 foreach (var p in row.props)
                 {
                     var prop = theme.props.Find(x => x.name == p.file);
@@ -116,6 +118,11 @@ namespace Samkuk.EditorTools
                     {
                         TerrainPropKinds.ApplyDefaults(prop, p.kind);
                         movement++;
+                    }
+                    if (isNew || fillLights)
+                    {
+                        TerrainPropKinds.ApplyLightDefaults(prop, p.kind);
+                        if (prop.HasLight) lights++;
                     }
                     if (prop.sprite == null)
                     {
@@ -138,6 +145,7 @@ namespace Samkuk.EditorTools
                 EditorUtility.SetDirty(theme);
             }
 
+            bool fillSharedLights = !catalog.pond.HasLight && !catalog.banner.HasLight;   // 둘 다 비어 있을 때만 (하나를 채운 뒤에도 다른 하나를 채우게 반복 전에 판단)
             foreach (var s in table.shared)
             {
                 var target = s.file == "Prop_Pond" ? catalog.pond : (s.file == "Prop_Banner" ? catalog.banner : null);
@@ -146,6 +154,11 @@ namespace Samkuk.EditorTools
                 {
                     TerrainPropKinds.ApplyDefaults(target, s.kind);   // 연못은 느려지고 깃대는 막는다
                     movement++;
+                }
+                if (fillSharedLights)
+                {
+                    TerrainPropKinds.ApplyLightDefaults(target, s.kind);   // 깃대는 횃불, 연못은 푸른 빛
+                    if (target.HasLight) lights++;
                 }
                 if (target.sprite == null)
                 {
@@ -159,7 +172,7 @@ namespace Samkuk.EditorTools
 
             EditorUtility.SetDirty(catalog);
             AssetDatabase.SaveAssets();
-            Debug.Log($"[Samkuk] Step 12-6 완료: 지형 테마 {catalog.themes.Count}개(새로 {created}개), 그림 연결 {linked}개, 이동 효과 기본값 {movement}개" +
+            Debug.Log($"[Samkuk] Step 12-6 완료: 지형 테마 {catalog.themes.Count}개(새로 {created}개), 그림 연결 {linked}개, 이동 효과 기본값 {movement}개, 빛 기본값 {lights}개" +
                       (missing.Length > 0 ? $"\n그림 없음 (tools/terrain_art/generate.ps1 실행 필요):{missing}" : ""));
         }
 

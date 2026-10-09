@@ -30,6 +30,8 @@ namespace Samkuk.Meta
         // 설정
         public float sfxVolume = 0.7f;
         public bool screenShake = true;
+        // HD-2D 연출(Step 14): 조명(전역광 색조, 소품 점광원, 플레이어 빛)
+        public bool hd2dLighting = true;
 
         // 내정: 시작할 때 고른 "내 성" (CastleData.id, 비어 있으면 아직 고르지 않음)
         public string homeCastleId;

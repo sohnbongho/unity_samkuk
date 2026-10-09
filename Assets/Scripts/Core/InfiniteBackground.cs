@@ -29,6 +29,7 @@ namespace Samkuk.Core
         TerrainPropSpawner spawner;
         TerrainCollision collision;
         WaterRippleFx ripples;
+        BattleLighting lighting;
 
         public Transform FollowTarget
         {
@@ -48,6 +49,19 @@ namespace Samkuk.Core
 
         /// <summary>물에 들어간 것의 발밑 물결 (지형 맵이 적용된 경우에만 있다).</summary>
         public WaterRippleFx Ripples => ripples;
+
+        /// <summary>전역광 색조와 플레이어 빛 (지형 맵이 적용된 경우에만 있다).</summary>
+        public BattleLighting Lighting => lighting;
+
+        /// <summary>HD-2D 조명을 붙일 수 있는 배경인가. 맵 편집기는 끈다(편집 화면은 밝고 일정하게, 조명은 전투 테스트로 확인). 맵을 적용하기 전에 정한다.</summary>
+        public bool LightingAllowed { get; set; } = true;
+
+        /// <summary>HD-2D 조명을 켜거나 끈다 (디버그 키 F5): 전역광 색조, 플레이어 빛, 소품 점광원을 한꺼번에.</summary>
+        public void SetLightingEnabled(bool enabled)
+        {
+            if (lighting != null) lighting.Apply(enabled);
+            if (spawner != null) spawner.SetLightsEnabled(enabled);
+        }
 
         void Awake()
         {
@@ -110,7 +124,7 @@ namespace Samkuk.Core
             // 소품은 배경과 따로 둔다 (배경은 카메라를 따라 움직이므로 자식으로 두면 소품도 함께 끌려온다)
             propsRoot = new GameObject("TerrainProps");
             spawner = propsRoot.AddComponent<TerrainPropSpawner>();
-            spawner.Initialize(map, followTarget, sr);
+            spawner.Initialize(map, followTarget, sr, LightingAllowed);
 
             // 보이는 것과 같은 배치에서 막는 소품/느려지는 물을 뽑아 플레이어·적·아군의 이동이 참조하게 한다
             collision = new TerrainCollision(map);
@@ -119,6 +133,13 @@ namespace Samkuk.Core
             // 물에 들어가면 발밑에 물결: 느려지는 자리가 눈에 보이게 (소품 루트와 함께 사라진다)
             ripples = propsRoot.AddComponent<WaterRippleFx>();
             ripples.Initialize(collision, sr.sharedMaterial);
+
+            // HD-2D 조명: 성 그림과 같은 시간대의 색조를 전역광에 입힌다 (소품 루트와 함께 사라지며 전역광을 되돌린다)
+            if (LightingAllowed)
+            {
+                lighting = propsRoot.AddComponent<BattleLighting>();
+                lighting.Initialize(map.Terrain, CastleMood.Of(map.Castle));
+            }
         }
 
         /// <summary>이 배경이 만든 지형 충돌을 내린다 (다른 것이 올려 둔 것은 건드리지 않는다).</summary>
@@ -135,7 +156,7 @@ namespace Samkuk.Core
             if (defaultSprite == null) { defaultSprite = sr.sprite; defaultColor = sr.color; }
 
             ApplyTerrainOverlay(null);
-            if (propsRoot != null) { Destroy(propsRoot); propsRoot = null; spawner = null; ripples = null; }
+            if (propsRoot != null) { Destroy(propsRoot); propsRoot = null; spawner = null; ripples = null; lighting = null; }
             ReleaseCollision();
             sr.sprite = defaultSprite;
             sr.color = defaultColor;

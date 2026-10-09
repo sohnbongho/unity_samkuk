@@ -28,6 +28,11 @@ MonoBehaviour:
     blockRadius: 0
     slowRadius: 1.4
     slowFactor: 0.5
+    lightColor: {r: 0.55, g: 0.8, b: 1, a: 1}
+    lightRadius: 2.4
+    lightIntensity: 0.35
+    lightFlicker: 0.08
+    lightHeight: 0
   banner:
     name: Prop_Banner
     sprite: {fileID: 21300000, guid: f678e0eb0eaca854d924a1b87b075c53, type: 3}
@@ -37,3 +42,8 @@ MonoBehaviour:
     blockRadius: 0.15
     slowRadius: 0
     slowFactor: 1
+    lightColor: {r: 1, g: 0.72, b: 0.42, a: 1}
+    lightRadius: 2.8
+    lightIntensity: 0.9
+    lightFlicker: 0.35
+    lightHeight: 1.6

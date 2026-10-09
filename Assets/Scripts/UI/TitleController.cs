@@ -33,6 +33,7 @@ namespace Samkuk.UI
         [SerializeField] Button shakeButton;
         [SerializeField, Tooltip("화면 해상도 순환 (없어도 동작: Step 9-2 를 다시 실행하면 생김)")] Button resolutionButton;
         [SerializeField, Tooltip("창 모드/전체화면 순환 (없어도 동작)")] Button windowModeButton;
+        [SerializeField, Tooltip("HD-2D 조명 켜기/끄기 (없어도 동작: Step 9-2 를 다시 실행하면 생김)")] Button lightingButton;
 
         [Header("하위 화면")]
         [SerializeField] Button shopCloseButton;
@@ -47,6 +48,7 @@ namespace Samkuk.UI
         [SerializeField] Text shakeLabel;
         [SerializeField] Text resolutionLabel;
         [SerializeField] Text windowModeLabel;
+        [SerializeField] Text lightingLabel;
         [SerializeField] MetaCatalog catalog;
         [SerializeField, Tooltip("저장 초기화 확인 대기 시간(초)")] float resetConfirmSeconds = 3f;
 
@@ -83,6 +85,7 @@ namespace Samkuk.UI
             Bind(shakeButton, ToggleScreenShake);
             Bind(resolutionButton, CycleResolution);
             Bind(windowModeButton, CycleWindowMode);
+            Bind(lightingButton, ToggleLighting);
             Bind(shopCloseButton, ShowMain);
             Bind(recordsCloseButton, ShowMain);
 
@@ -98,6 +101,7 @@ namespace Samkuk.UI
             RefreshSoundLabel();
             RefreshShakeLabel();
             RefreshDisplayLabels();
+            RefreshLightingLabel();
             CreateVersionLabel();
         }
 
@@ -255,6 +259,20 @@ namespace Samkuk.UI
             save.screenShake = !save.screenShake;
             SaveSystem.SaveCurrent();
             RefreshShakeLabel();
+        }
+
+        /// <summary>HD-2D 조명(전역광 색조, 소품 점광원, 플레이어 빛)을 켜고 끈다. 저장된다.</summary>
+        public void ToggleLighting()
+        {
+            var save = SaveSystem.Current;
+            save.hd2dLighting = !save.hd2dLighting;
+            SaveSystem.SaveCurrent();
+            RefreshLightingLabel();
+        }
+
+        void RefreshLightingLabel()
+        {
+            if (lightingLabel != null) lightingLabel.text = $"조명 연출: {(SaveSystem.Current.hd2dLighting ? "켬" : "끔")}";
         }
 
         /// <summary>모니터(바탕화면) 크기 (테스트에서 대체 가능). 이보다 큰 해상도는 고를 수 없다.</summary>

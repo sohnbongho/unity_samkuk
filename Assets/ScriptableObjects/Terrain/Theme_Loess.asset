@@ -24,6 +24,11 @@ MonoBehaviour:
     blockRadius: 0.32
     slowRadius: 0
     slowFactor: 1
+    lightColor: {r: 1, g: 1, b: 1, a: 0}
+    lightRadius: 0
+    lightIntensity: 1
+    lightFlicker: 0
+    lightHeight: 0
   - name: Prop_Loess_Mound
     sprite: {fileID: 21300000, guid: cfd8fb93bf6d877448a417750c9cf50b, type: 3}
     weight: 2.5
@@ -32,6 +37,11 @@ MonoBehaviour:
     blockRadius: 0.9
     slowRadius: 0
     slowFactor: 1
+    lightColor: {r: 1, g: 1, b: 1, a: 0}
+    lightRadius: 0
+    lightIntensity: 1
+    lightFlicker: 0
+    lightHeight: 0
   - name: Prop_Loess_Terrace
     sprite: {fileID: 21300000, guid: 1a742011c19c76b4683dee2c073092b2, type: 3}
     weight: 1
@@ -40,6 +50,11 @@ MonoBehaviour:
     blockRadius: 1.1
     slowRadius: 0
     slowFactor: 1
+    lightColor: {r: 1, g: 1, b: 1, a: 0}
+    lightRadius: 0
+    lightIntensity: 1
+    lightFlicker: 0
+    lightHeight: 0
   - name: Prop_Loess_Shrub
     sprite: {fileID: 21300000, guid: e0b57d1fb2dc65f4c82e067a46f644d3, type: 3}
     weight: 2.5
@@ -48,6 +63,11 @@ MonoBehaviour:
     blockRadius: 0
     slowRadius: 0
     slowFactor: 1
+    lightColor: {r: 1, g: 1, b: 1, a: 0}
+    lightRadius: 0
+    lightIntensity: 1
+    lightFlicker: 0
+    lightHeight: 0
   - name: Prop_Loess_Rock
     sprite: {fileID: 21300000, guid: 4adf2b5f0c9a22946acca51c36c4327c, type: 3}
     weight: 2
@@ -56,6 +76,11 @@ MonoBehaviour:
     blockRadius: 0.42
     slowRadius: 0
     slowFactor: 1
+    lightColor: {r: 1, g: 1, b: 1, a: 0}
+    lightRadius: 0
+    lightIntensity: 1
+    lightFlicker: 0
+    lightHeight: 0
   riverWater: {fileID: 21300000, guid: f49dbffa80d1313489c207817c810f66, type: 3}
   riverBank: {fileID: 21300000, guid: cc3a04ae184d259449b17acdff32f18f, type: 3}
   riverWidth: 4.4

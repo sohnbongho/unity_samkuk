@@ -19,8 +19,17 @@ namespace Samkuk.Data
         [Tooltip("느려지는 범위의 반지름(유닛, 배율을 곱한다). 0 이면 없음. 연못처럼 밟으면 느려지는 것에 쓴다")] public float slowRadius;
         [Tooltip("느려지는 범위 안에서의 속도 배율 (0.5 = 절반)")] public float slowFactor = 1f;
 
+        [Header("빛 (HD-2D 조명)")]
+        [Tooltip("소품에 붙는 점광원 색. 알파 0 이면 빛 없음. 깃발(횃불)은 따뜻한 색, 연못은 푸른색")] public Color lightColor = new Color(1f, 1f, 1f, 0f);
+        [Tooltip("점광원 바깥 반지름(유닛, 소품 크기 배율을 곱한다). 0 이면 빛 없음")] public float lightRadius;
+        [Tooltip("점광원 세기")] public float lightIntensity = 1f;
+        [Tooltip("흔들림 정도 (0 = 일정, 1 = 세기가 0~100% 사이로 일렁임). 횃불은 0.3 안팎")] [Range(0f, 1f)] public float lightFlicker;
+        [Tooltip("바닥에 닿는 점에서 빛의 중심까지 높이(유닛, 배율을 곱한다). 깃대의 횃불처럼 위에 달린 빛에 쓴다")] public float lightHeight;
+
         /// <summary>이 소품이 이동을 막는가.</summary>
         public bool Blocks => blockRadius > 0f;
+        /// <summary>이 소품에 점광원이 붙는가.</summary>
+        public bool HasLight => lightRadius > 0f && lightIntensity > 0f && lightColor.a > 0f;
         /// <summary>이 소품 위에서 느려지는가 (배율이 1 미만일 때만).</summary>
         public bool Slows => slowRadius > 0f && slowFactor > 0f && slowFactor < 1f;
     }

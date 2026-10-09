@@ -164,6 +164,7 @@ namespace Samkuk.World
             sr.sortingLayerName = GameLayers.Sorting.Background;
             background = go.AddComponent<InfiniteBackground>();
             background.FollowTarget = cam.transform;
+            background.LightingAllowed = false;   // 편집 화면은 밝고 일정하게. 조명은 전투 테스트에서 본다
             go.SetActive(true);
         }
 
