@@ -62,13 +62,36 @@ namespace Samkuk.EditorTools
             Step12StrategySetup.RegisterBuildScenes();
         }
 
+        // 에디터를 다시 열거나 다른 셋업이 시작 씬을 바꿔도 Play 는 늘 타이틀에서 시작하게 한다.
+        // (그렇지 않으면 마지막으로 열어 둔 씬, 예를 들어 내정 씬에서 곧장 시작해 마지막 성 화면이 뜬다.)
+        // 메뉴에서 끄면 그 선택을 프로젝트별로 기억한다.
+        const string PlayFromTitleOffKey = "samkuk.playFromTitle.off";
+
+        static bool PlayFromTitleOptedOut => EditorUserSettings.GetConfigValue(PlayFromTitleOffKey) == "1";
+
+        [InitializeOnLoadMethod]
+        static void EnsurePlayFromTitle()
+        {
+            EditorApplication.delayCall += () =>
+            {
+                if (PlayFromTitleOptedOut || EditorApplication.isPlayingOrWillChangePlaymode) return;
+                var title = AssetDatabase.LoadAssetAtPath<SceneAsset>(TitleScenePath);
+                if (title != null && EditorSceneManager.playModeStartScene != title) EditorSceneManager.playModeStartScene = title;
+            };
+        }
+
         static void SetPlayFromTitle(bool on)
         {
             EditorSceneManager.playModeStartScene = on ? AssetDatabase.LoadAssetAtPath<SceneAsset>(TitleScenePath) : null;
         }
 
         [MenuItem(PlayFromTitleMenu)]
-        static void TogglePlayFromTitle() => SetPlayFromTitle(EditorSceneManager.playModeStartScene == null);
+        static void TogglePlayFromTitle()
+        {
+            bool turnOn = EditorSceneManager.playModeStartScene == null;
+            SetPlayFromTitle(turnOn);
+            EditorUserSettings.SetConfigValue(PlayFromTitleOffKey, turnOn ? "0" : "1");
+        }
 
         [MenuItem(PlayFromTitleMenu, true)]
         static bool TogglePlayFromTitleValidate()
