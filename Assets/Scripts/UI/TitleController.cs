@@ -37,6 +37,7 @@ namespace Samkuk.UI
         [SerializeField, Tooltip("HD-2D 후처리 켜기/끄기 (없어도 동작)")] Button postFxButton;
         [SerializeField, Tooltip("도트 격자 맞춤 켜기/끄기 (없어도 동작)")] Button pixelButton;
         [SerializeField, Tooltip("드리운 그림자 켜기/끄기 (없어도 동작)")] Button shadowButton;
+        [SerializeField, Tooltip("틸트 시프트(미니어처 흐림) 켜기/끄기 (없어도 동작)")] Button tiltShiftButton;
 
         [Header("하위 화면")]
         [SerializeField] Button shopCloseButton;
@@ -55,6 +56,7 @@ namespace Samkuk.UI
         [SerializeField] Text postFxLabel;
         [SerializeField] Text pixelLabel;
         [SerializeField] Text shadowLabel;
+        [SerializeField] Text tiltShiftLabel;
         [SerializeField] MetaCatalog catalog;
         [SerializeField, Tooltip("저장 초기화 확인 대기 시간(초)")] float resetConfirmSeconds = 3f;
 
@@ -95,6 +97,7 @@ namespace Samkuk.UI
             Bind(postFxButton, TogglePostFx);
             Bind(pixelButton, TogglePixelPerfect);
             Bind(shadowButton, ToggleShadows);
+            Bind(tiltShiftButton, ToggleTiltShift);
             Bind(shopCloseButton, ShowMain);
             Bind(recordsCloseButton, ShowMain);
 
@@ -280,6 +283,7 @@ namespace Samkuk.UI
             RefreshPostFxLabel();
             RefreshPixelLabel();
             RefreshShadowLabel();
+            RefreshTiltShiftLabel();
         }
 
         void RefreshLightingLabel()
@@ -327,6 +331,20 @@ namespace Samkuk.UI
         void RefreshShadowLabel()
         {
             if (shadowLabel != null) shadowLabel.text = $"그림자: {(SaveSystem.Current.hd2dShadows ? "켬" : "끔")}";
+        }
+
+        /// <summary>틸트 시프트(화면 위아래 띠 흐림)를 켜고 끈다. 저장된다.</summary>
+        public void ToggleTiltShift()
+        {
+            var save = SaveSystem.Current;
+            save.hd2dTiltShift = !save.hd2dTiltShift;
+            SaveSystem.SaveCurrent();
+            RefreshTiltShiftLabel();
+        }
+
+        void RefreshTiltShiftLabel()
+        {
+            if (tiltShiftLabel != null) tiltShiftLabel.text = $"미니어처 흐림: {(SaveSystem.Current.hd2dTiltShift ? "켬" : "끔")}";
         }
 
         /// <summary>모니터(바탕화면) 크기 (테스트에서 대체 가능). 이보다 큰 해상도는 고를 수 없다.</summary>

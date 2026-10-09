@@ -7,7 +7,7 @@ using UnityEngine.InputSystem;
 
 namespace Samkuk.Core
 {
-    /// <summary>개발용 오버레이: FPS, 활성 적 수, F1 적 +100, F2 전체 무기 레벨업, F3 경험치 +10, F4 시간 +10초, F5 HD-2D 조명 켜고 끄기, F6 후처리 켜고 끄기, F7 도트 격자 맞춤 켜고 끄기, F8 그림자 켜고 끄기.</summary>
+    /// <summary>개발용 오버레이: FPS, 활성 적 수, F1 적 +100, F2 전체 무기 레벨업, F3 경험치 +10, F4 시간 +10초, F5 HD-2D 조명 켜고 끄기, F6 후처리 켜고 끄기, F7 도트 격자 맞춤 켜고 끄기, F8 그림자 켜고 끄기, F9 틸트 시프트 켜고 끄기.</summary>
     public class DebugOverlay : MonoBehaviour
     {
         [SerializeField] EnemySpawner spawner;
@@ -22,6 +22,7 @@ namespace Samkuk.Core
         InfiniteBackground background;
         Samkuk.World.BattlePostFx postFx;
         Samkuk.World.BattlePixelCamera pixelCam;
+        Samkuk.World.BattleTiltShift tiltShift;
 
         public EnemySpawner Spawner { get => spawner; set => spawner = value; }
         public EnemyManager Manager { get => manager; set => manager = value; }
@@ -84,6 +85,13 @@ namespace Samkuk.Core
 
             if (kb.f8Key.wasPressedThisFrame)
                 Hd2dSettings.ShadowsOverride = !Hd2dSettings.Shadows;   // 그림자는 매 프레임 설정을 읽으므로 바로 반영된다
+
+            if (kb.f9Key.wasPressedThisFrame)
+            {
+                Hd2dSettings.TiltShiftOverride = !Hd2dSettings.TiltShift;
+                if (tiltShift == null) tiltShift = FindAnyObjectByType<Samkuk.World.BattleTiltShift>();
+                if (tiltShift != null) tiltShift.Apply(Hd2dSettings.TiltShift);
+            }
         }
 
         void OnGUI()
@@ -97,7 +105,7 @@ namespace Samkuk.Core
             int count = manager != null ? manager.Count : 0;
             float fps = smoothedDelta > 0f ? 1f / smoothedDelta : 0f;
             GUI.Label(new Rect(10, 8, 500, 26), $"FPS {fps:0}   Enemies {count}", style);
-            GUI.Label(new Rect(10, 30, 1000, 26), $"F1: +{burstCount} enemies   F2: weapons level up   F3: +10 exp   F4: +10 sec   F5: lighting {(Hd2dSettings.Lighting ? "on" : "off")}   F6: post fx {(Hd2dSettings.PostFx ? "on" : "off")}   F7: pixel {(Hd2dSettings.PixelPerfect ? "on" : "off")}   F8: shadows {(Hd2dSettings.Shadows ? "on" : "off")}", style);
+            GUI.Label(new Rect(10, 30, 1000, 26), $"F1: +{burstCount} enemies   F2: weapons level up   F3: +10 exp   F4: +10 sec   F5: lighting {(Hd2dSettings.Lighting ? "on" : "off")}   F6: post fx {(Hd2dSettings.PostFx ? "on" : "off")}   F7: pixel {(Hd2dSettings.PixelPerfect ? "on" : "off")}   F8: shadows {(Hd2dSettings.Shadows ? "on" : "off")}   F9: tilt-shift {(Hd2dSettings.TiltShift ? "on" : "off")}", style);
         }
     }
 }

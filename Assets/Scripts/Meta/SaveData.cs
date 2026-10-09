@@ -38,6 +38,8 @@ namespace Samkuk.Meta
         public bool hd2dPixelPerfect = true;
         // HD-2D 연출(Step 14): 드리운 그림자
         public bool hd2dShadows = true;
+        // HD-2D 연출(Step 14): 틸트 시프트(화면 위아래 띠 흐림, 미니어처 느낌)
+        public bool hd2dTiltShift = true;
 
         // 내정: 시작할 때 고른 "내 성" (CastleData.id, 비어 있으면 아직 고르지 않음)
         public string homeCastleId;

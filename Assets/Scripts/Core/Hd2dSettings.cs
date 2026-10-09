@@ -32,6 +32,12 @@ namespace Samkuk.Core
         /// <summary>드리운 그림자(캐릭터, 서 있는 소품)를 그리는가.</summary>
         public static bool Shadows => ShadowsOverride ?? SaveSystem.Current.hd2dShadows;
 
+        /// <summary>null 이면 저장 설정을 따른다.</summary>
+        public static bool? TiltShiftOverride { get; set; }
+
+        /// <summary>틸트 시프트(화면 위아래 띠 흐림)를 쓰는가.</summary>
+        public static bool TiltShift => TiltShiftOverride ?? SaveSystem.Current.hd2dTiltShift;
+
         /// <summary>테스트/디버그가 바꾼 값을 모두 지운다.</summary>
         public static void ResetOverrides()
         {
@@ -39,6 +45,7 @@ namespace Samkuk.Core
             PostFxOverride = null;
             PixelPerfectOverride = null;
             ShadowsOverride = null;
+            TiltShiftOverride = null;
         }
     }
 }
