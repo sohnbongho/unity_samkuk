@@ -196,6 +196,7 @@ namespace Samkuk.Audio
                 case SfxId.Thunder: return 0.1f;
                 case SfxId.Explosion: return 0.1f;
                 case SfxId.Fire: return 0.15f;
+                case SfxId.Splash: return 0.25f;   // 아군 셋이 함께 강에 들어가도 한 번처럼 들리게
                 default: return DefaultMinInterval;
             }
         }

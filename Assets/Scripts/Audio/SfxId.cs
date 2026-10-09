@@ -24,7 +24,8 @@ namespace Samkuk.Audio
         Click,      // UI 선택
         Buy,        // 영구 강화 구매
         Victory,    // 스테이지 클리어
-        Defeat      // 게임 오버
+        Defeat,     // 게임 오버
+        Splash      // 물(강, 연못)에 들어감
     }
 
     public static class SfxMap

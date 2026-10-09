@@ -57,6 +57,8 @@ namespace Samkuk.Audio
                 Arpeggio(Wave.Triangle, 0.12f, 0.3f, 0.5f, C5, E5, G5, C6, E6),
                 new[] { T(Wave.Triangle, C6, C6, 0.6f, 0.3f, 0.6f), T(Wave.Triangle, E6, E6, 0.6f, 0.3f, 0.6f), T(Wave.Triangle, G6, G6, 0.6f, 0.3f, 0.6f) }) },
             { SfxId.Defeat, new[] { T(Wave.Square, 330f, 110f, 0.6f, 0.4f, 0f, 0.3f), T(Wave.Triangle, 165f, 55f, 0.6f, 0.4f) } },
+            // 첨벙: 둔탁한 잡음 + 아래로 떨어지는 음, 뒤에 짧고 맑은 물방울
+            { SfxId.Splash, new[] { T(Wave.Noise, 0, 0, 0.18f, 0.45f, 0f, 0.3f), T(Wave.Sine, 420f, 160f, 0.14f, 0.35f), T(Wave.Sine, 1200f, 1700f, 0.05f, 0.2f, 0.12f) } },
         };
 
         /// <summary>같은 파형의 음들을 step 간격으로 이어 붙인 아르페지오.</summary>

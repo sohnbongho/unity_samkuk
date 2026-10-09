@@ -12,7 +12,7 @@
 
 ## 진행 상황
 
-마지막 갱신: 2026-10-09 (Step 12-7 지형 이동 — 나무/바위 막힘, 강/연못 느려짐 — 완료. Step 13 맵 편집기 완료, 12-6 성마다 다른 전투 맵 완료. 타격감/연출 작업은 병행)
+마지막 갱신: 2026-10-09 (Step 12-7 지형 이동 완료, 12-7b 물결 연출 완료. Step 13 맵 편집기 완료, 12-6 성마다 다른 전투 맵 완료. 타격감/연출 작업은 병행)
 
 | Step | 내용 | 상태 | 커밋 |
 |---|---|---|---|
@@ -44,6 +44,7 @@
 | 12-6 | 성마다 다른 전투 맵: 지형별 바닥 타일 6종 + 지형 소품 30종 + 공용(연못, 깃발) 그림(코드 생성 `tools/terrain_art`), `TerrainTheme`/`TerrainThemeCatalog`(`Resources`), 성 아이디 시드로 밀도·소품 비율·바닥 색조가 달라지는 `TerrainMap`, 화면 주변 칸만 만드는 `TerrainPropSpawner`, `InfiniteBackground.ApplyCastle`, 메뉴 `Step 12-6`, 설명 `docs/TERRAIN.md`. 소품과 강은 충돌 없는 장식, 지형 효과/막는 지형은 아직 없음. **카탈로그 스크립트 연결 복구**: `TerrainThemeCatalog` 를 자기 파일로 분리해 `Resources/TerrainThemeCatalog.asset` 의 끊긴 스크립트 연결을 되살림(이게 '완' 맵이 텅 비었던 진짜 원인). **덜 휑하게**: 소품 흩뿌림 x1.4 + 같은 소품 무리 + 코드로 만든 바닥 얼룩(`TerrainDecals`, `TerrainMap.LayoutPatches`, 그리기 순서 `OrderPatch`). **강**: 강이 있는 성/강변 지형/성 없이 시작한 판(평야+강)에 구불구불 흐르는 강(`River_*` 토막 12장, `TerrainMap` 강 계산) | 완료 | 5aebcbd |
 | 13 | 맵 편집기(맵툴): 성마다 전투 맵을 직접 고치는 새 씬 `MapEditorScene`(빌드 3번). 자동 생성 맵 위에서 소품/연못/깃발/바닥 얼룩/강 놓기·이동·회전·크기·반전·복제·삭제·지우개, 바닥 지형 바꾸기, 실행 취소/다시, 격자/맞춤, 전투 테스트(결과 저장 안 함, M 으로 복귀). 칸(12x12) 단위로 직접 고친 칸이 자동 생성을 덮어쓰고 JSON 으로 저장(`MapStore`: persistentDataPath/maps + 에디터에선 Assets/Resources/Maps), 전투가 같은 맵을 씀(`TerrainMap.CreateForBattle`). `MapEditModel`(규칙)/`MapEditorController`(화면을 코드로 생성)/`MapLayoutData`/`MapStore`, 메뉴 `Step 13`·`Play Map Editor`, 타이틀 [맵 편집기] 버튼(에디터/개발 빌드), 설명 `docs/MAP_EDITOR.md` | 완료 | |
 | 12-7 | 지형 이동: 모든 곳을 똑같이 걸을 수 있어 심심하던 맵에 이동 규칙을 붙임. 나무/바위/언덕/유르트/배/깃대는 **막고**(밑동 원, 비스듬히 부딪히면 미끄러짐, 적은 정면으로 막히면 목표 쪽 접선으로 돌아감), 강물/연못은 **속도 절반**(건널 수 있음), 풀/덤불/꽃/갈대/얼룩은 통과. 순수 로직 `TerrainCollision`(칸 배치 → 막는 원/느려지는 원을 4x4 셀에 캐시, `Active` 로 전투에 공개) + `TerrainProp.blockRadius/slowRadius/slowFactor`, `TerrainTheme.riverSlowFactor`, 종류별 기본값 `TerrainPropKinds`(셋업 12-6 이 이동 값이 전혀 없는 테마만 채움). `PlayerController`(`BodyRadius`, `TerrainSpeedFactor`)/`EnemyManager`(`Enemy.SteerSide`)/`AllyController`/`EnemySpawner.RandomRingPosition`(나무 속 스폰 방지) 연결, 맵 편집기 칸 고치면 `Invalidate`. 테스트 `TerrainCollisionTests`. 설명 `docs/TERRAIN.md` "지형 이동" | 완료 | |
+| 12-7b | 물결 연출: 물(강, 연못)에 들어가면 발밑에 물결. `WaterRippleFx`(소품 루트에 붙음, 코드로 만든 둥근 테 스프라이트, 풀 160개): 플레이어·아군은 들어가는 순간 큰 물결+물방울(`BurstFx`)+첨벙 소리(`SfxId.Splash` 레시피/최소 간격 0.25초), 물 안에서 걸으면 작은 물결 연속, 적은 소리 없이 확률로(프레임당 상한). 테스트 `WaterRippleTests` | 완료 | |
 | 11 | PC 빌드(친구 공유용 Windows 빌드 환경): 메뉴 `Samkuk > Build`(릴리스/개발용) 또는 `tools/build_windows.ps1` → `Builds/` 에 실행 폴더 + 공유용 zip(README.txt 포함), 릴리스는 DebugOverlay/F1~F4 치트 꺼짐, 타이틀에 버전 표시(`BuildTool`, `docs/BUILD.md`). 최적화(GC/풀링)·아이콘·설치 파일은 아직 | 완료 | 15e5ad2 |
 
 ## 남은 작업
@@ -55,7 +56,7 @@
 2. **10-4 이후 체감 조정**: 직접 플레이해 보고 "너무 쉬움/어려움" 구간을 알려주면 `BalanceModel` 보고서(메뉴 `Samkuk > Balance Report`)를 보며 수치를 조정한다.
 3. **Step 11 나머지**: 친구 테스트에서 나온 문제 반영, 최적화(GC/풀링 점검), 앱 아이콘/회사명(저장 경로가 바뀌므로 주의), 필요 시 모바일 터치. 빌드 방법/주의는 `docs/BUILD.md`.
 4. **내정(Step 12) 이어서**: 12-1~12-7(성, 지도, 성 화면, 시작 성, 출진/정복, 전투 맵, 지형 이동) 다음 — 성별 내정 수치(농업/상업/인구/방어 등)와 명령(개발/징병 등)을 성 화면의 명령 자리(`CastlePanel` 아래 띠 `Note`)에 붙이기, 성 규모/지형에 따른 전투 난이도, 정복 보상, 적 반격/세력 등. 사용자 방향을 확인한 뒤 진행.
-   - **12-7 지형 이동 후속(사용자 체감 뒤)**: 물에 들어간 연출(물결, `PlayerController.TerrainSpeedFactor`), 맵 편집기에 막는 범위(원) 표시, 지형별 바닥 효과(산악 전체 느려짐 등), 느려지는 배율/막는 반지름 조정(`Theme_*.asset`), 막힌 적이 머뭇거리면 길 찾기 보강.
+   - **12-7 지형 이동 후속(사용자 체감 뒤)**: 맵 편집기에 막는 범위(원) 표시, 지형별 바닥 효과(산악 전체 느려짐 등), 느려지는 배율/막는 반지름 조정(`Theme_*.asset`), 막힌 적이 머뭇거리면 길 찾기 보강.
 5. **미결정(PLAN.md 8번)**: 모바일 포함 여부, 실제 아트 에셋 사용 여부, 장수/무기 최종 목록.
 
 ## 알려진 이슈 / 메모

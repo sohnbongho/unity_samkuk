@@ -1,4 +1,5 @@
 using Samkuk.Data;
+using Samkuk.Feedback;
 using Samkuk.World;
 using UnityEngine;
 
@@ -27,6 +28,7 @@ namespace Samkuk.Core
         GameObject propsRoot;
         TerrainPropSpawner spawner;
         TerrainCollision collision;
+        WaterRippleFx ripples;
 
         public Transform FollowTarget
         {
@@ -43,6 +45,9 @@ namespace Samkuk.Core
 
         /// <summary>지형이 이동에 주는 효과(막는 소품, 느려지는 물). 맵이 적용된 동안 <see cref="TerrainCollision.Active"/> 로도 찾을 수 있다.</summary>
         public TerrainCollision Collision => collision;
+
+        /// <summary>물에 들어간 것의 발밑 물결 (지형 맵이 적용된 경우에만 있다).</summary>
+        public WaterRippleFx Ripples => ripples;
 
         void Awake()
         {
@@ -110,6 +115,10 @@ namespace Samkuk.Core
             // 보이는 것과 같은 배치에서 막는 소품/느려지는 물을 뽑아 플레이어·적·아군의 이동이 참조하게 한다
             collision = new TerrainCollision(map);
             TerrainCollision.Active = collision;
+
+            // 물에 들어가면 발밑에 물결: 느려지는 자리가 눈에 보이게 (소품 루트와 함께 사라진다)
+            ripples = propsRoot.AddComponent<WaterRippleFx>();
+            ripples.Initialize(collision, sr.sharedMaterial);
         }
 
         /// <summary>이 배경이 만든 지형 충돌을 내린다 (다른 것이 올려 둔 것은 건드리지 않는다).</summary>
@@ -126,7 +135,7 @@ namespace Samkuk.Core
             if (defaultSprite == null) { defaultSprite = sr.sprite; defaultColor = sr.color; }
 
             ApplyTerrainOverlay(null);
-            if (propsRoot != null) { Destroy(propsRoot); propsRoot = null; spawner = null; }
+            if (propsRoot != null) { Destroy(propsRoot); propsRoot = null; spawner = null; ripples = null; }
             ReleaseCollision();
             sr.sprite = defaultSprite;
             sr.color = defaultColor;

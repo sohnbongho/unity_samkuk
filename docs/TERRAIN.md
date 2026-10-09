@@ -57,6 +57,7 @@
 - **스폰과 자리**: 적은 나무 속에 스폰되지 않고(가까운 빈 자리로), 아군의 따라다니는 자리에 나무가 있으면 그 곁에 섭니다. 플레이어 시작 위치 주변(반경 2.5)은 원래 비어 있습니다.
 - **맵 편집기로 고친 칸**도 같은 규칙입니다. 직접 그린 강은 폭(세로 배율)에서 느려지는 범위를 거꾸로 구합니다.
 - 지형 그림이 없어 예전 색 덮개 방식으로 동작하는 판에는 지형 효과도 없습니다(`TerrainCollision.Active` 가 null).
+- **물결 연출**(`WaterRippleFx`, 소품 루트에 함께 붙음): 플레이어·아군이 물에 들어가는 순간 큰 물결 두 겹 + 물방울 + 첨벙 소리(`SfxId.Splash`), 물 안에서 걸으면 발밑에 작은 물결이 0.17초마다, 서 있으면 0.75초마다 생깁니다. 적은 소리 없이 물결만 내며(마리당 평균 초당 2개, 프레임당 6개 상한) 전체 물결은 160개까지 풀로 돌려 씁니다. 그림은 코드로 만든 둥근 테를 납작하게 눌러 배경 레이어(강물 위, 캐릭터 아래)에 그립니다. 쓰러진 아군은 물결을 내지 않습니다.
 
 ### 수치 바꾸기
 
@@ -81,10 +82,11 @@
 | 데이터 | `Assets/ScriptableObjects/Terrain/Theme_<지형>.asset` 6개 (`TerrainTheme`), `Assets/Resources/TerrainThemeCatalog.asset` (`TerrainThemeCatalog`) |
 | 맵 계산(순수 로직) | `Assets/Scripts/World/TerrainMap.cs` |
 | 지형 이동(막힘/느려짐, 순수 로직) | `Assets/Scripts/World/TerrainCollision.cs`, 종류별 기본값 `Assets/Scripts/Data/TerrainPropKinds.cs` |
+| 물결 연출 | `Assets/Scripts/Feedback/WaterRippleFx.cs` (첨벙 소리는 `SfxSynth` 의 `Splash` 레시피) |
 | 소품 생성/풀링 | `Assets/Scripts/World/TerrainPropSpawner.cs` |
 | 배경에 적용 | `InfiniteBackground.ApplyCastle` (바닥 타일 교체 + 소품 루트 `TerrainProps` 생성) |
 | 셋업 | 메뉴 `Samkuk > Step 12-6 - Terrain Themes` (Run All 에도 포함) |
-| 테스트 | `Assets/Tests/PlayMode/TerrainTests.cs`, `TerrainCollisionTests.cs` |
+| 테스트 | `Assets/Tests/PlayMode/TerrainTests.cs`, `TerrainCollisionTests.cs`, `WaterRippleTests.cs` |
 
 전투 씬은 따로 연결할 것이 없습니다. 카탈로그를 `Resources` 에서 직접 불러 쓰므로 **씬을 다시 만들지 않아도** 되고, 카탈로그가 없거나 그림이 비어 있으면 이전의 **색 덮개 방식**으로 대신 동작합니다(`BattleTerrain`).
 
@@ -112,7 +114,7 @@ powershell -File tools\terrain_art\generate.ps1 -Only Jungle    # 한 지형만 
 
 ## 아직 없는 것 (다음 후보)
 
-- **물에 들어간 표시**: 느려질 뿐 물결/물보라 같은 연출이 없습니다(`PlayerController.TerrainSpeedFactor` 로 알 수 있으니 연출만 붙이면 된다). 맵 편집기에 막는 범위(원)를 그려 주는 것도 아직입니다.
+- **맵 편집기에 막는 범위(원) 표시**: 어디가 막히는지는 전투 테스트로만 볼 수 있습니다.
 - **지형별 바닥 효과**: 산악 전체가 느려진다, 황토는 먼지가 난다 같은 바닥 자체의 규칙은 없습니다(소품/물만).
 - **길 찾기**: 적은 나무를 그 자리에서 비켜 갈 뿐이라 빽빽한 바위 더미 사이 막다른 곳에서는 잠깐 머뭇거릴 수 있습니다.
 - **성마다 고유한 랜드마크**: 성별 시드로 배치만 달라질 뿐 특정 성의 고유 오브젝트(예: 낙양의 폐허)는 없습니다.
