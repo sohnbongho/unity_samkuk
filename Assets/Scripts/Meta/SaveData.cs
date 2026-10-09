@@ -32,6 +32,8 @@ namespace Samkuk.Meta
         public bool screenShake = true;
         // HD-2D 연출(Step 14): 조명(전역광 색조, 소품 점광원, 플레이어 빛)
         public bool hd2dLighting = true;
+        // HD-2D 연출(Step 14): 후처리(블룸, 비네트, 색 보정, 색온도)
+        public bool hd2dPostFx = true;
 
         // 내정: 시작할 때 고른 "내 성" (CastleData.id, 비어 있으면 아직 고르지 않음)
         public string homeCastleId;

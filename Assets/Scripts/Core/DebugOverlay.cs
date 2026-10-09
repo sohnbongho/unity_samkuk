@@ -7,7 +7,7 @@ using UnityEngine.InputSystem;
 
 namespace Samkuk.Core
 {
-    /// <summary>개발용 오버레이: FPS, 활성 적 수, F1 적 +100, F2 전체 무기 레벨업, F3 경험치 +10, F4 시간 +10초, F5 HD-2D 조명 켜고 끄기.</summary>
+    /// <summary>개발용 오버레이: FPS, 활성 적 수, F1 적 +100, F2 전체 무기 레벨업, F3 경험치 +10, F4 시간 +10초, F5 HD-2D 조명 켜고 끄기, F6 후처리 켜고 끄기.</summary>
     public class DebugOverlay : MonoBehaviour
     {
         [SerializeField] EnemySpawner spawner;
@@ -20,6 +20,7 @@ namespace Samkuk.Core
         PlayerExperience experience;
         StageController stage;
         InfiniteBackground background;
+        Samkuk.World.BattlePostFx postFx;
 
         public EnemySpawner Spawner { get => spawner; set => spawner = value; }
         public EnemyManager Manager { get => manager; set => manager = value; }
@@ -65,6 +66,13 @@ namespace Samkuk.Core
                 if (background == null) background = FindAnyObjectByType<InfiniteBackground>();
                 if (background != null) background.SetLightingEnabled(Hd2dSettings.Lighting);
             }
+
+            if (kb.f6Key.wasPressedThisFrame)
+            {
+                Hd2dSettings.PostFxOverride = !Hd2dSettings.PostFx;
+                if (postFx == null) postFx = FindAnyObjectByType<Samkuk.World.BattlePostFx>();
+                if (postFx != null) postFx.Apply(Hd2dSettings.PostFx);
+            }
         }
 
         void OnGUI()
@@ -78,7 +86,7 @@ namespace Samkuk.Core
             int count = manager != null ? manager.Count : 0;
             float fps = smoothedDelta > 0f ? 1f / smoothedDelta : 0f;
             GUI.Label(new Rect(10, 8, 500, 26), $"FPS {fps:0}   Enemies {count}", style);
-            GUI.Label(new Rect(10, 30, 1000, 26), $"F1: +{burstCount} enemies   F2: weapons level up   F3: +10 exp   F4: +10 sec   F5: lighting {(Hd2dSettings.Lighting ? "on" : "off")}", style);
+            GUI.Label(new Rect(10, 30, 1000, 26), $"F1: +{burstCount} enemies   F2: weapons level up   F3: +10 exp   F4: +10 sec   F5: lighting {(Hd2dSettings.Lighting ? "on" : "off")}   F6: post fx {(Hd2dSettings.PostFx ? "on" : "off")}", style);
         }
     }
 }

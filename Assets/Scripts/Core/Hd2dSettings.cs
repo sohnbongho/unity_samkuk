@@ -14,7 +14,17 @@ namespace Samkuk.Core
         /// <summary>조명(전역광 색조, 소품 점광원, 플레이어 빛)을 쓰는가.</summary>
         public static bool Lighting => LightingOverride ?? SaveSystem.Current.hd2dLighting;
 
+        /// <summary>null 이면 저장 설정을 따른다.</summary>
+        public static bool? PostFxOverride { get; set; }
+
+        /// <summary>후처리(블룸, 비네트, 색 보정, 색온도)를 쓰는가.</summary>
+        public static bool PostFx => PostFxOverride ?? SaveSystem.Current.hd2dPostFx;
+
         /// <summary>테스트/디버그가 바꾼 값을 모두 지운다.</summary>
-        public static void ResetOverrides() => LightingOverride = null;
+        public static void ResetOverrides()
+        {
+            LightingOverride = null;
+            PostFxOverride = null;
+        }
     }
 }

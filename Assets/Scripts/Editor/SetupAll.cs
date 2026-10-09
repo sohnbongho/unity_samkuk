@@ -32,6 +32,7 @@ namespace Samkuk.EditorTools
             Step12TerrainSetup.Run();   // 전투 맵 지형 테마 (그림은 tools/terrain_art/generate.ps1)
             Step12StrategySetup.Run();  // 내정 화면 씬 (성 에셋과 Step 9-2 의 빌드 설정 뒤)
             Step13MapEditorSetup.Run(); // 맵 편집기 씬 (성 에셋과 지형 테마 뒤)
+            Step14PostFxSetup.Run();    // 전투 카메라 후처리 (HD-2D)
             Debug.Log("[Samkuk] 전체 셋업(Step 2-9 + 타이틀) 완료");
         }
     }

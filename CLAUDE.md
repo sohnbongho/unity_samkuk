@@ -12,7 +12,7 @@
 
 ## 진행 상황
 
-마지막 갱신: 2026-10-09 (Step 14 HD-2D 전환 시작: 14-1 조명 완료, 다음 14-2 후처리. 계획/결정은 `docs/HD2D.md`, 용어 `CONTEXT.md`, ADR `docs/adr/`)
+마지막 갱신: 2026-10-09 (Step 14 HD-2D 전환 진행 중: 14-1 조명 완료, 14-2 후처리 완료, 14-3 픽셀 파이프라인 진행 중. 계획/결정은 `docs/HD2D.md`, 용어 `CONTEXT.md`, ADR `docs/adr/`)
 
 | Step | 내용 | 상태 | 커밋 |
 |---|---|---|---|
@@ -46,6 +46,7 @@
 | 12-7 | 지형 이동: 모든 곳을 똑같이 걸을 수 있어 심심하던 맵에 이동 규칙을 붙임. 나무/바위/언덕/유르트/배/깃대는 **막고**(밑동 원, 비스듬히 부딪히면 미끄러짐, 적은 정면으로 막히면 목표 쪽 접선으로 돌아감), 강물/연못은 **속도 절반**(건널 수 있음), 풀/덤불/꽃/갈대/얼룩은 통과. 순수 로직 `TerrainCollision`(칸 배치 → 막는 원/느려지는 원을 4x4 셀에 캐시, `Active` 로 전투에 공개) + `TerrainProp.blockRadius/slowRadius/slowFactor`, `TerrainTheme.riverSlowFactor`, 종류별 기본값 `TerrainPropKinds`(셋업 12-6 이 이동 값이 전혀 없는 테마만 채움). `PlayerController`(`BodyRadius`, `TerrainSpeedFactor`)/`EnemyManager`(`Enemy.SteerSide`)/`AllyController`/`EnemySpawner.RandomRingPosition`(나무 속 스폰 방지) 연결, 맵 편집기 칸 고치면 `Invalidate`. 테스트 `TerrainCollisionTests`. 설명 `docs/TERRAIN.md` "지형 이동" | 완료 | |
 | 12-7b | 물결 연출: 물(강, 연못)에 들어가면 발밑에 물결. `WaterRippleFx`(소품 루트에 붙음, 코드로 만든 둥근 테 스프라이트, 풀 160개): 플레이어·아군은 들어가는 순간 큰 물결+물방울(`BurstFx`)+첨벙 소리(`SfxId.Splash` 레시피/최소 간격 0.25초), 물 안에서 걸으면 작은 물결 연속, 적은 소리 없이 확률로(프레임당 상한). 테스트 `WaterRippleTests` | 완료 | |
 | 14-1 | HD-2D 조명: 성 시간대(낮/해질녘/새벽, 성 그림과 같은 해시 `CastleMood`)·지형별 전역광 색조(`LightingPreset`, `BattleLighting` 이 소품 루트에 붙어 전역 Light2D 를 입히고 사라질 때 되돌림), 소품 점광원(`TerrainProp.light*`, 깃대 횃불/유르트/연못 기본값 `TerrainPropKinds.ApplyLightDefaults`, `TerrainPropSpawner` 가 소품과 함께 풀링, 펄린 일렁임), 플레이어 주변 빛. 스위치 `SaveData.hd2dLighting`(타이틀 [조명 연출])/`Hd2dSettings`(F5 는 저장 안 건드림). 런타임 asmdef 에 URP 2D 참조 추가. 테스트 `Hd2dLightingTests`. 계획 `docs/HD2D.md` | 완료 | |
+| 14-2 | HD-2D 후처리: 전투 카메라에 `BattlePostFx`(셋업 `Step 14-2`, Run All 포함)가 코드로 만든 전역 Volume 프로필(`PostFxPreset`: 블룸 문턱 1(빛만 번짐)·비네트·대비/채도·시간대 색온도)을 붙이고 카메라 포스트 프로세싱을 켠다. 스위치 `SaveData.hd2dPostFx`(타이틀 [화면 효과], Step 9-2 재실행)/F6(저장 안 건드림, 끄면 카메라 후처리 자체를 꺼 비용 0). 에셋 없음(프로필은 실행 중 생성). asmdef 에 URP Runtime/Core Runtime 참조 추가. 테스트 `Hd2dPostFxTests` | 완료 | |
 | 11 | PC 빌드(친구 공유용 Windows 빌드 환경): 메뉴 `Samkuk > Build`(릴리스/개발용) 또는 `tools/build_windows.ps1` → `Builds/` 에 실행 폴더 + 공유용 zip(README.txt 포함), 릴리스는 DebugOverlay/F1~F4 치트 꺼짐, 타이틀에 버전 표시(`BuildTool`, `docs/BUILD.md`). 최적화(GC/풀링)·아이콘·설치 파일은 아직 | 완료 | 15e5ad2 |
 
 ## 남은 작업
@@ -64,6 +65,7 @@
 ## 알려진 이슈 / 메모
 
 - HD-2D 조명(14-1): 전역광은 씬의 `Global Light 2D`(전투 씬에 이미 있음)를 `BattleLighting` 이 실행 중에 입히므로 씬 재구성은 필요 없다. 다만 **타이틀 [조명 연출] 버튼은 Step 9-2 재실행, 소품 빛 기본값은 Step 12-6 재실행**이 필요하다(둘 다 없어도 동작: 버튼이 없으면 항상 켬, 빛 값이 없으면 점광원만 없음). 맵 편집기는 `InfiniteBackground.LightingAllowed = false` 로 조명을 붙이지 않는다. 시간대는 `CastleData` 에 저장하지 않고 성 아이디 해시로 계산한다(성 그림 생성기와 같은 `new Random(seed).Next(3)`; 테스트 `CastleMood_MatchesCastleArtGenerator` 가 어긋나면 유니티의 `System.Random` 수열이 다른 것이므로 그때는 `CastleData` 에 값을 저장하는 쪽으로 바꾼다). 런타임 코드가 `UnityEngine.Rendering.Universal.Light2D` 를 쓰므로 `Samkuk.Runtime.asmdef`/테스트 asmdef 가 `Unity.RenderPipelines.Universal.2D.Runtime` 을 참조한다.
+- HD-2D 후처리(14-2): `BattlePostFx` 는 전투 씬 Main Camera 의 컴포넌트라 **Step 14-2(또는 Run All) 재실행이 필요**하다. Volume/프로필은 에셋 없이 실행 중 코드로 만들므로 값은 `PostFxPreset`(코드)에서 고친다. 블룸은 문턱 1 이라 HDR(URP 에셋 HDR 켜짐)로 1 을 넘는 빛(횃불, 플레이어 빛 겹침)만 번지고 스프라이트는 번지지 않는다. 틸트 시프트(흐림)는 URP 기본 피사계 심도가 깊이를 쓰는데 2D 스프라이트는 깊이를 안 써 쓸 수 없으므로 14-5 커스텀 패스로 따로 한다. 맵 편집기 씬 카메라에는 붙이지 않는다(전투 테스트는 전투 씬이라 붙는다). UI(Overlay 캔버스)는 후처리 뒤에 그려져 영향 없음.
 - 스프라이트(번개, 불길, 궁병, 기병 등)는 코드로 만든 **플레이스홀더**. Step 10에서 교체/다듬기.
 - 장수 걷기 시트: `Assets/Sprites/HeroWalk/<장수 에셋 이름>_Walk.png`(4열 x 4행: 열=프레임 0~3, 행=아래/위/왼쪽/오른쪽, 칸 96x96, 배경 투명). 현재 5장은 **코드로 그린 임시 그림**(`tools/hero_art/HeroSprites.cs`, `generate.ps1 -Only walk`). 시트가 있는 장수는 `PlayerController`가 좌우 반전을 하지 않고 `PlayerAnimator`가 방향/프레임을 정하며, 장수 색(`tint`)도 입히지 않는다(`HeroSelectController.Apply`). 시트가 없으면 예전 동작(원 스프라이트 + tint + 반전). Player 프리팹에 `PlayerAnimator`를 붙이는 것은 `Step 10-6`이므로 셋업을 돌려야 한다.
 - 지형 이동(12-7): `InfiniteBackground.BuildMap` 이 소품을 만들 때 같은 맵으로 `TerrainCollision` 을 만들어 `TerrainCollision.Active` 에 올리고(`ResetToDefault`/`OnDestroy` 에서 내림), 플레이어·적·아군이 매 틱 `SpeedFactor`(물 배율)와 `Resolve`(막는 원 쪽 속도 성분 제거 + 겹침 밀어내기)를 부른다. **유니티 물리 콜라이더를 쓰지 않는다**(적 수백 마리를 이미 코드로 처리, 순수 로직이라 테스트 가능). `Active` 가 null 이면(지형 그림 없음, 테스트) 예전처럼 어디든 걷는다. 막는/느려지는 값은 소품 데이터(`TerrainProp.blockRadius/slowRadius/slowFactor`, 테마 `riverSlowFactor`)이고 셋업은 **이동 값이 하나도 없는 테마만** `TerrainPropKinds` 기본값으로 채우므로(**Step 12-6 재실행 필요**), 이후 조정은 `Theme_*.asset` 을 직접 고친다. 물에서는 스스로 가는 속도만 느려지고(겹침 밀림/넉백은 그대로) 나무/바위는 넉백도 막는다. 적은 길 찾기 없이 그 자리에서 접선으로 비켜 간다. 화살/투사체/보석은 영향 없음. 설명은 `docs/TERRAIN.md` "지형 이동".
@@ -116,14 +118,14 @@
 - UI는 uGUI 레거시 `Text` + `UiFont`(한글 폰트). 뷰는 인터페이스(`ILevelUpView`, `IResultView`, `IPauseView`...)로 분리해 테스트에서 가짜 뷰를 쓴다.
 
 ### 디버그 키 (게임 씬)
-F2 무기 레벨업, F3 경험치 지급, F4 스테이지 15초 건너뛰기, F5 HD-2D 조명 켜고 끄기(저장 안 됨), ESC 일시정지, R 재시작, T 타이틀(결과 화면).
+F2 무기 레벨업, F3 경험치 지급, F4 스테이지 15초 건너뛰기, F5 HD-2D 조명 켜고 끄기, F6 후처리 켜고 끄기(둘 다 저장 안 됨), ESC 일시정지, R 재시작, T 타이틀(결과 화면).
 
 ---
 
 ## 작업 규칙
 
 ### 셋업 / 에셋
-- 씬 배치와 프리팹/SO 생성은 에디터 스크립트로 자동화한다. 메뉴 `Samkuk > Run All Setup (Step 2-9 + 타이틀)`(10 효과음 + 타격감 + 10-3 테마 + 10-4 밸런스, 12-1 내정 성 포함) 한 번이면 전체 구성. 새 Step을 만들면 `SetupAll.cs`에도 추가한다.
+- 씬 배치와 프리팹/SO 생성은 에디터 스크립트로 자동화한다. 메뉴 `Samkuk > Run All Setup (Step 2-9 + 타이틀)`(10 효과음 + 타격감 + 10-3 테마 + 10-4 밸런스, 12-1 내정 성, 12-6 지형, 13 맵 편집기, 14-2 후처리 포함) 한 번이면 전체 구성. 새 Step을 만들면 `SetupAll.cs`에도 추가한다.
 - 셋업은 **멱등**이어야 한다: 이미 있는 에셋은 덮어쓰지 않아 사용자가 조정한 수치를 보존하고, 카탈로그는 **누적 방식**(없는 항목만 추가)으로 채운다.
 - 셋업에서 `EditorSceneManager.OpenScene/NewScene` **이후에** 에셋을 로드한다 (씬 전환이 로드된 에셋 참조를 무효화할 수 있음).
 - 진화 셋업(`Step8EvolutionSetup`)은 장수 시작 무기가 만들어진 **뒤**(Step 8 이후)에 실행해야 한다 (Run All 순서 참고).

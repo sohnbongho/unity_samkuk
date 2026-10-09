@@ -230,6 +230,15 @@ namespace Samkuk.EditorTools
             lightRt.anchoredPosition = new Vector2(40f, -350f);
             var lightingLabel = lightingBtn.GetComponentInChildren<Text>();
             lightingLabel.fontSize = 30;
+
+            // HD-2D 후처리 켜기/끄기 버튼 (조명 버튼 아래)
+            var postFxBtn = NewButton("PostFxButton", main, font, "화면 효과: 켬", 1f, new Vector2(360f, 70f), new Color(0.22f, 0.28f, 0.4f));
+            var postRt = (RectTransform)postFxBtn.transform;
+            postRt.anchorMin = postRt.anchorMax = new Vector2(0f, 1f);
+            postRt.pivot = new Vector2(0f, 1f);
+            postRt.anchoredPosition = new Vector2(40f, -430f);
+            var postFxLabel = postFxBtn.GetComponentInChildren<Text>();
+            postFxLabel.fontSize = 30;
             var resetLabel = resetBtn.GetComponentInChildren<Text>();
             resetLabel.fontSize = 28;
             quitBtn.GetComponentInChildren<Text>().fontSize = 28;
@@ -324,6 +333,8 @@ namespace Samkuk.EditorTools
             so.FindProperty("windowModeLabel").objectReferenceValue = windowModeLabel;
             so.FindProperty("lightingButton").objectReferenceValue = lightingBtn;
             so.FindProperty("lightingLabel").objectReferenceValue = lightingLabel;
+            so.FindProperty("postFxButton").objectReferenceValue = postFxBtn;
+            so.FindProperty("postFxLabel").objectReferenceValue = postFxLabel;
             so.FindProperty("catalog").objectReferenceValue = catalog;
             so.ApplyModifiedPropertiesWithoutUndo();
 
