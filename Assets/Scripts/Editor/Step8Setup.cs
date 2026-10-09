@@ -116,10 +116,11 @@ namespace Samkuk.EditorTools
             });
             CreateWeapon("Weapon_SerpentSpear", w =>
             {
-                w.displayName = "장팔사모"; w.type = WeaponType.Arrow; w.sprite = LoadSprite("Arrow");
-                w.description = "적을 여럿 꿰뚫는 창을 던진다.";
-                w.tint = new Color(0.75f, 0.75f, 0.9f); w.damage = 14f; w.cooldown = 1.1f; w.range = 9f; w.count = 1;
-                w.projectileSpeed = 14f; w.pierce = 4; w.duration = 1.2f; w.size = 0.35f;
+                // 찌르기형 (Step 10-9 에서 화살형에서 바꿈. 값은 Step10SwingSetup 의 이전 값과 같다)
+                w.displayName = "장팔사모"; w.type = WeaponType.Thrust;
+                w.description = "장팔사모를 길게 내질러 일직선의 적을 꿰뚫고, 뾰족한 검기가 멀리 날아간다.";
+                w.tint = new Color(0.75f, 0.75f, 0.9f); w.damage = 10f; w.cooldown = 1.1f; w.range = 3.6f; w.count = 1;
+                w.size = 0.35f; w.knockback = 3f; w.duration = 0.15f;
             });
             CreateWeapon("Weapon_YitianSword", w =>
             {

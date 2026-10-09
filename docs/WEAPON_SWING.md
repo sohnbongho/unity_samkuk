@@ -1,48 +1,65 @@
-# 무기 휘두르기 (Step 10-9)
+# 무기 휘두르기·찌르기 (Step 10-9)
 
-베기 계열 무기가 "데미지 영역 표시"가 아니라 **무기를 휘두르는 동작**으로 보이게 하는 연출. 용어는 `CONTEXT.md` "전투"(휘두르기, 호 잔상).
+베기·찌르기 계열 무기가 "데미지 영역 표시"가 아니라 **무기를 휘두르고 내지르는 동작**으로 보이게 하는 연출. 용어는 `CONTEXT.md` "전투"(휘두르기, 찌르기, 검기).
 
 ## 무엇이 바뀌었나
 
 | 항목 | 전 | 후 |
 |---|---|---|
-| 방향 | 좌/우를 번갈아 | **범위 안 가장 가까운 적 쪽**. 적이 없으면 좌/우 번갈아 |
+| 방향 | 좌/우를 번갈아 | **사거리 안 가장 가까운 적 쪽** |
+| 발동 | 적이 없어도 쿨다운마다 | **사거리(range) 안에 적이 있을 때만**. 없으면 쿨다운을 소모하지 않고 기다렸다가 들어오는 순간 휘두른다(화살과 같은 규칙) |
 | 보이는 것 | 원판 한 장을 범위 크기로 늘려 0.18초 | 무기 그림이 손 축(발에서 0.55유닛 위)을 중심으로 호를 그리며 돌고, 피해 원 자리에서 **반원 검기**가 앞으로 날아가며 사라진다(`SlashArcSprite`, 코드로 만든 그림) |
 | 몸 방향 | 이동 방향만 | 휘두르는 동안 **휘두르는 쪽을 본다**(`ILookOverride`: 주인공 `PlayerAnimator`, 아군 `AllyController`). 달아나면서 등 뒤로 베는 어색함 방지 |
 | 피해 시점 | 쿨다운이 차는 순간 | 호의 **40% 지점**(`SwingMotion.HitFraction`). 들어 올리는 동작이 보인 뒤 맞는다 |
 | 판정 | 원(중심 range×0.5, 반지름 range×0.6) | 같음. 중심이 휘두르는 방향으로 옮겨졌을 뿐 |
 | count ≥ 2 | 반대편도 동시에 | 같음(최대 2번, `SlashWeapon.MaxSwings`) |
 
-해당 무기: 검 베기, 쌍고검, 청룡언월도, 참마도, 쌍룡자웅검, 청룡참월도(`WeaponType.Slash` 전부). 아군(동행 장수)도 같은 클래스라 자동으로 적용된다. 찌르기(`ThrustWeapon`)는 다음 Step.
+해당 무기: 검 베기, 쌍고검, 청룡언월도, 참마도, 쌍룡자웅검, 청룡참월도(`WeaponType.Slash` 전부). 아군(동행 장수)도 같은 클래스라 자동으로 적용된다.
+
+## 찌르기 (창 계열)
+
+| 항목 | 전 | 후 |
+|---|---|---|
+| 보이는 것 | 화살 그림을 창 길이로 늘려 0.15초 | 창 그림이 손 축에서 **살짝 당겨졌다가 내지르고 거둔다**(`ThrustMotion`: 당김 25% → 내지름 55% → 거둠), 창 끝에서 **뾰족한 검기**가 앞으로 날아간다 |
+| 피해 시점 | 쿨다운이 차는 순간 | 내지르는 중간(40% 지점). 판정(직선, 길이 range·폭 size)은 같다 |
+| 몸 방향 | 이동 방향만 | 찌르는 쪽을 본다(베기와 같은 `ILookOverride`) |
+| 대상 없음 | 기다림 | 같음 |
+
+해당 무기: 창 찌르기, 용담창, **장팔사모**(`WeaponType.Thrust`). count 가 늘면 360도를 나눠 동시에 찌르며 그림/검기는 4개까지(`ThrustWeapon.MaxThrusts`).
+
+**장팔사모(장비)는 화살형에서 찌르기형으로 바꿨다**(사용자 요청: 처음부터 "화살"을 쏘는 게 아니라 창으로 찌르고 뾰족한 검기가 나가야 한다). `Step 10-9` 가 에셋의 종류가 아직 화살형이면 한 번만 바꾼다: 피해 10·쿨다운 1.1·사거리 3.6·폭 0.35·넉백 3(밸런스 모델에서 다른 시작 무기와 비슷한 화력), 검기 6유닛·1.2배·피해 50%(무기). 진화형 비룡사모는 "날아가는 창"이라 화살형 그대로다. 새 프로젝트는 Step 8 이 처음부터 찌르기형으로 만든다.
 
 ## 구조
 
 - `SwingMotion`(순수 규칙): 시작 각도·호 각도·시간을 받아 `Angle`(지금 무기가 가리키는 각도), `Advance(dt)`(타격 시점을 지나면 한 번 true), `FacesLeft`(왼쪽이면 그림 반전)를 준다. 느리게 시작해 빠르게 지나 느리게 끝나는 완화를 쓴다. 오른쪽을 향하든 왼쪽을 향하든 **위에서 아래로** 내려친다.
-- `SlashWeapon`: 쿨다운이 차면 `EnemyManager.FindNearest` 로 방향을 정해 휘두르기를 시작하고, 매 틱 `SwingMotion` 을 밀어 타격 틱에 `Strike`(원 판정 + 넉백 + 잔상). 무기 그림은 `Held0/1` 자식 `SpriteRenderer`(Effect 정렬 레이어, 잔상보다 앞)이며 손 위치에서 `Angle - 90` 도로 돈다(그림은 날이 위를 향하므로). 그림이 없어도 타이밍/잔상은 같다. 오브젝트가 꺼지면(아군 쓰러짐) 동작을 끊고 숨긴다.
-- `WeaponData`: `heldSprite`(들고 휘두르는 그림), `swingArcDegrees`(0 이면 120), `swingDuration`(0 이면 0.25). 0 이면 기본값이므로 기존 에셋도 그대로 동작한다. `duration` 은 검기가 보이는 시간(최소 0.22초).
+- `SlashWeapon`: 쿨다운이 차고 사거리 안에 적이 있으면 `EnemyManager.FindNearest` 로 방향을 정해 휘두르기를 시작하고(없으면 준비 상태로 대기), 매 틱 `SwingMotion` 을 밀어 타격 틱에 `Strike`(원 판정 + 넉백 + 잔상). 무기 그림은 `Held0/1` 자식 `SpriteRenderer`(Effect 정렬 레이어, 잔상보다 앞)이며 손 위치에서 `Angle - 90` 도로 돈다(그림은 날이 위를 향하므로). 그림이 없어도 타이밍/잔상은 같다. 오브젝트가 꺼지면(아군 쓰러짐) 동작을 끊고 숨긴다.
+- `ThrustMotion`(순수 규칙): 손 축에서 창 손잡이가 나간 거리 `Offset`(당기면 음수, 내지르면 reach = range×0.45). `ThrustWeapon` 이 매 틱 밀어 타격 틱에 직선 판정, 창 끝에서 뾰족한 검기(`WaveSprites.Point`).
+- `WeaponTrail`(검기 하나): 베기·찌르기가 함께 쓴다. 자리/투명도만 움직이고 피해는 `Weapon.TrailStrike` 가 준다. 그림은 `WaveSprites.Arc`(반원) / `Point`(화살촉).
+- `WeaponData`: `heldSprite`(들고 휘두르는 그림), `swingArcDegrees`(0 이면 120, 찌르기는 안 씀), `swingDuration`(0 이면 베기 0.25 / 찌르기 0.22). 0 이면 기본값이므로 기존 에셋도 그대로 동작한다. `duration` 은 검기가 보이는 시간(최소 0.22초).
 - 검기(`SlashArcSprite`): 64x64 반원 띠(가운데 두껍고 끝이 얇음, 바깥 가장자리 밝음)를 실행 중에 한 번 만들어 공유한다. 반지름을 피해 원 반지름에 맞추고, 손 높이의 피해 원 자리에서 앞으로 range×0.35 만큼 나가며(빠르게 나가다 느려짐) 사라진다. 휘두르기마다 자기 검기 렌더러가 있어 반대편 베기도 따로 보인다. `WeaponData.sprite`(예전 원판)는 베기에서 더 쓰지 않는다.
+- **검기가 무기인 베기**(유비의 쌍고검, 쌍룡자웅검): `WeaponData.trailTravel`(비거리 유닛), `trailScale`(크기 배율), `trailDamageRatio`(지나치는 적에게 주는 피해 비율, 적마다 한 번). 값이 있으면 검기가 `SlashWeapon.TrailSpeed`(10유닛/초)로 멀리 날아가며 자기 반지름의 70% 원 안 적을 다치게 하고 살짝 민다. 셋업이 쌍고검 7유닛·0.7배·50%, 쌍룡자웅검 9유닛·0.9배·70% 로 채운다(0 인 에셋만). 다른 베기는 값이 0 이라 장식용 짧은 검기(사거리의 35%, 피해 없음)다.
 - 바라보기(`ILookOverride.Look(방향, 초)`): 휘두르기 시작에 첫 번째(적 쪽) 휘두르기 방향으로 요청한다. 주인공은 이동 입력보다 우선하되 걷기 프레임은 계속 돌고(뒤로 걸으면서 적 쪽을 보는 모양), 휘두른 뒤 `SlashWeapon.LookHoldSeconds`(0.15초) 더 보다가 이동 방향으로 돌아간다. 걷기 시트가 없는 장수(기본 스프라이트 + 좌우 반전)는 영향 없음.
 
 ## 그림 규격
 
 - 파일: `Assets/Sprites/Weapons/<무기 에셋 이름>_Held.png` (예: `Weapon_Sword_Held.png`).
 - 도트 규격 PPU 32, 투명 배경, **손잡이가 아래·날이 위**, 피벗은 손잡이 끝(아래 가운데). 임포터(`HeldWeaponImporter`)가 자동으로 맞춘다(Sprite/Single, Point 필터, 압축 없음).
-- 크기 기준: 검 12x26(약 0.8유닛), 쌍고검 12x24, 언월도 16x40(약 1.25유닛), 참마도 16x44, 쌍룡자웅검 12x26, 청룡참월도 18x44.
-- 현재 6장은 **코드로 그린 임시 그림**(`tools/hero_art/WeaponSprites.cs`, `powershell -File tools\hero_art\generate.ps1 -Only weapon`, 미리보기 `%TEMP%\weapon_held_preview.png`). 직접 그린 그림으로 덮어쓰면 `-Only weapon` 을 실행하지 않는다.
+- 크기 기준: 검 12x26(약 0.8유닛), 쌍고검 12x24, 언월도 16x40(약 1.25유닛), 참마도 16x44, 쌍룡자웅검 12x26, 청룡참월도 18x44, 창 찌르기 10x44, 장팔사모 12x48(구불거리는 촉), 용담창 12x48(붉은 술·금 테).
+- 현재 9장은 **코드로 그린 임시 그림**(`tools/hero_art/WeaponSprites.cs`, `powershell -File tools\hero_art\generate.ps1 -Only weapon`, 미리보기 `%TEMP%\weapon_held_preview.png`). 직접 그린 그림으로 덮어쓰면 `-Only weapon` 을 실행하지 않는다.
 
 ## 에디터에서 할 일
 
-1. 메뉴 `Samkuk > Step 10-9 - Link Held Weapon Sprites`(Run All 에 포함): 베기 무기의 빈 `heldSprite` 에 그림을 연결하고, 휘두르기 각도/시간이 0 인 무기에 무기별 값을 채운다(검 120°/0.25초, 쌍고검 100°/0.18초, 청룡언월도 150°/0.32초, 참마도 160°/0.35초, 쌍룡자웅검 110°/0.20초, 청룡참월도 170°/0.32초). 이미 값이 있으면 덮어쓰지 않는다.
+1. 메뉴 `Samkuk > Step 10-9 - Link Held Weapon Sprites`(Run All 에 포함): 장팔사모가 화살형이면 찌르기형으로 바꾸고, 베기·찌르기 무기의 빈 `heldSprite` 에 그림을 연결하고, 휘두르기 각도/시간이 0 인 무기에 무기별 값을 채운다(검 120°/0.25초, 쌍고검 100°/0.18초, 청룡언월도 150°/0.32초, 참마도 160°/0.35초, 쌍룡자웅검 110°/0.20초, 청룡참월도 170°/0.32초). 이미 값이 있으면 덮어쓰지 않는다.
 2. Play: 유비/관우로 시작해 무기가 손에서 호를 그리며 돌고, 적이 위/아래에 있어도 그쪽으로 휘두르는지, 잔상이 피해 자리에 뜨는지.
 3. Test Runner: `WeaponSwingTests`, `CombatTests`, `WeaponExpansionTests`, `AllyTests`, `BalanceTests`.
 
 ## 조정
 
-- 느낌: `Weapon_*.asset` 의 `swingArcDegrees`/`swingDuration`(휘두름), `duration`(검기 시간). 타격 지점 비율은 `SwingMotion.HitFraction`, 손 높이 `SlashWeapon.HandHeight`, 검기 비거리 `SlashWeapon.TrailTravel`, 검기 모양은 `SlashArcSprite` 상수(두께 7px, 반각 75도).
+- 느낌: `Weapon_*.asset` 의 `swingArcDegrees`/`swingDuration`(휘두름), `duration`(검기 시간), `trailTravel/trailScale/trailDamageRatio`(날아가는 검기). 타격 지점 비율은 `SwingMotion.HitFraction`, 손 높이 `SlashWeapon.HandHeight`, 검기 비거리 `SlashWeapon.TrailTravel`, 검기 모양은 `SlashArcSprite` 상수(두께 7px, 반각 75도).
+- 밸런스: 유비의 검기 피해(무기 피해의 50%, 적마다 한 번, 7유닛)는 `BalanceModel` 에 없다. 유비가 너무 세면 `trailDamageRatio` 를 내린다.
 - 밸런스: 판정이 적 쪽을 향해 실제 명중이 조금 늘 수 있다. `BalanceModel` 의 베기 가정(동시 2명)은 그대로이며 `BalanceTests` 가 범위를 벗어나면 베기 피해를 약간 내린다.
 
 ## 후속 후보
 
-- 찌르기(`ThrustWeapon`) 같은 규격으로.
 - 위로 벨 때 무기를 몸 뒤로(월드 정렬) 보내기, 쉬는 동안 무기를 들고 있는 자세.
 - 장수별 공격 동작 시트(진짜 그림 교체 때).

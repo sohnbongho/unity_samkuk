@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Samkuk.Core;
 using Samkuk.Data;
 using Samkuk.Enemies;
 using Samkuk.Player;
@@ -78,6 +79,50 @@ namespace Samkuk.Weapons
 
         /// <summary>공격이 발동할 때 무기 종류에 맞는 효과음을 낸다.</summary>
         protected void PlayAttackSound() => Audio.AudioManager.PlayWeapon(Data.type);
+
+        /// <summary>월드 각도(도)를 단위 벡터로.</summary>
+        protected static Vector2 DirectionOf(float angleDegrees) =>
+            new Vector2(Mathf.Cos(angleDegrees * Mathf.Deg2Rad), Mathf.Sin(angleDegrees * Mathf.Deg2Rad));
+
+        /// <summary>무기 자식으로 숨겨진 이펙트 렌더러(Effect 정렬 레이어)를 만든다. 휘두르는 무기 그림/검기에 쓴다.</summary>
+        protected SpriteRenderer MakeEffectRenderer(string name, Sprite sprite, int sortingOrder)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(transform, false);
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = sprite;
+            sr.sortingLayerName = GameLayers.Sorting.Effect;
+            sr.sortingOrder = sortingOrder;
+            sr.enabled = false;
+            return sr;
+        }
+
+        readonly List<Enemy> trailHits = new List<Enemy>(32);
+
+        /// <summary>
+        /// 검기를 한 틱 밀고, 무기의 검기 피해 비율이 있으면 지나치는 적에게 피해(무기 피해 x 비율, 적마다 한 번)와 살짝 넉백.
+        /// 검기는 손 높이에서 날지만 적 위치는 발 높이이므로 손 높이만큼 내려서 본다.
+        /// </summary>
+        protected void TickTrail(WeaponTrail trail)
+        {
+            if (trail == null || !trail.Active) return;
+            trail.Tick(Time.deltaTime, Data.tint);
+            if (Data.trailDamageRatio <= 0f || Enemies == null) return;
+
+            Vector2 center = trail.Position - new Vector2(0f, SlashWeapon.HandHeight);
+            trailHits.Clear();
+            Enemies.OverlapCircle(center, trail.HitRadius, trailHits);
+            float dmg = Damage * Data.trailDamageRatio;
+            var already = trail.AlreadyHit;
+            for (int k = 0; k < trailHits.Count; k++)
+            {
+                var e = trailHits[k];
+                if (already.Contains(e)) continue;
+                already.Add(e);
+                e.TakeDamage(dmg);
+                Knock(e, center - trail.Direction);
+            }
+        }
 
         /// <summary>무기 데이터의 넉백 값이 있으면 origin 반대 방향으로 적을 민다 (살아있는 적만).</summary>
         protected void Knock(Enemy enemy, Vector2 origin)

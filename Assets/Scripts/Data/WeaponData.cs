@@ -55,6 +55,12 @@ namespace Samkuk.Data
         public float swingArcDegrees = 0f;
         [Tooltip("휘두르는 데 걸리는 시간(초). 타격은 이 시간의 40% 지점. 0 이면 기본값 0.25")]
         public float swingDuration = 0f;
+        [Tooltip("검기(반원)가 날아가는 거리(유닛). 0 이면 기본값(사거리의 35%, 장식용 짧은 잔상)")]
+        public float trailTravel = 0f;
+        [Tooltip("검기 크기 배율(피해 원 반지름 기준). 0 이면 1")]
+        public float trailScale = 0f;
+        [Tooltip("날아가는 검기가 지나치는 적에게 주는 피해 비율(무기 피해 기준, 적마다 한 번). 0 이면 피해 없음(장식)")]
+        public float trailDamageRatio = 0f;
 
         [Header("레벨 성장")]
         public int maxLevel = 8;

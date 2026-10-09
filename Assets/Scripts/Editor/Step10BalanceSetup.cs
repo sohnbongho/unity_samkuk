@@ -44,8 +44,6 @@ namespace Samkuk.EditorTools
             // 아군 화살(Arrow 계열)은 빠르게 (속도 12~18). 한때 줄였다가 원래 값으로 복원 — 느린 쪽은 적 궁병 화살이다
             ("Weapons/Weapon_Bow", "projectileSpeed", 12f),
             ("Weapons/Weapon_Bow", "duration", 1.5f),
-            ("Weapons/Weapon_SerpentSpear", "projectileSpeed", 14f),
-            ("Weapons/Weapon_SerpentSpear", "duration", 1.2f),
             ("Weapons/Weapon_YitianSword", "projectileSpeed", 12f),
             ("Weapons/Weapon_YitianSword", "duration", 1.5f),
             ("Weapons/Weapon_Crossbow", "projectileSpeed", 18f),

@@ -16,6 +16,7 @@ public static partial class HeroArt
     {
         "Weapon_Sword", "Weapon_TwinSwords", "Weapon_GreenDragon",
         "Weapon_Evo_Zanmato", "Weapon_Evo_TwinDragons", "Weapon_Evo_MoonDragon",
+        "Weapon_Thrust", "Weapon_SerpentSpear", "Weapon_Evo_DragonSpear",
     };
 
     static readonly Color Wood = Color.FromArgb(255, 92, 60, 36);
@@ -66,6 +67,9 @@ public static partial class HeroArt
             case "Weapon_Evo_Zanmato": w = 16; h = 44; draw = DrawBroadBlade(); break;
             case "Weapon_Evo_TwinDragons": w = 12; h = 26; draw = DrawTwoToneSword(); break;
             case "Weapon_Evo_MoonDragon": w = 18; h = 44; draw = DrawGlaive(Cyan, CyanDark, Gold, true); break;
+            case "Weapon_Thrust": w = 10; h = 44; draw = DrawSpear(SteelLight, SteelDark, Steel, false, false); break;
+            case "Weapon_SerpentSpear": w = 12; h = 48; draw = DrawSpear(SteelLight, SteelDark, Gold, true, false); break;
+            case "Weapon_Evo_DragonSpear": w = 12; h = 48; draw = DrawSpear(Cyan, CyanDark, Gold, false, true); break;
             default: w = 12; h = 26; draw = DrawSword(SteelLight, SteelDark, Gold, Wood); break; // Weapon_Sword
         }
 
@@ -150,6 +154,75 @@ public static partial class HeroArt
             FillPoly(g, bladeDark,
                 cx - 0.6f, bladeH, cx + 1.0f, bladeH, cx + 1.8f, bladeH * 0.6f, cx + 1.6f, bladeH * 0.25f, cx + 0.3f, 0.5f, cx - 0.6f, bladeH * 0.15f);
             if (ornate) FillPoly(g, trim, cx - 0.6f, bladeH * 0.15f, cx - 2.4f, bladeH * 0.22f, cx - 0.6f, bladeH * 0.3f); // 뒤쪽 갈고리
+        };
+    }
+
+    /// <summary>창: 긴 자루 + 위쪽 잎 모양 촉. serpent 면 장팔사모의 뱀처럼 구불거리는 촉, ornate 면 용담창의 장식(붉은 술, 금 테).</summary>
+    static Action<Graphics, int, int> DrawSpear(Color blade, Color bladeDark, Color trim, bool serpent, bool ornate)
+    {
+        return delegate(Graphics g, int w, int h)
+        {
+            float cx = w * 0.5f;
+            float headH = serpent ? h * 0.36f : h * 0.28f;           // 촉이 차지하는 높이
+            FillRect(g, Wood, cx - 1.0f, headH - 0.5f, 2.0f, h - headH + 0.5f);         // 자루
+            FillRect(g, WoodDark, cx - 1.0f, headH - 0.5f, 0.7f, h - headH + 0.5f);     // 자루 그늘
+            FillRect(g, trim, cx - 1.4f, h - 1.6f, 2.8f, 1.6f);                           // 물미
+            FillRect(g, trim, cx - 1.6f, headH - 0.8f, 3.2f, 1.6f);                       // 촉 받침
+            if (ornate)
+            {
+                FillRect(g, Crimson, cx - 1.6f, headH + 1.5f, 3.2f, 2.6f);               // 붉은 술
+                FillRect(g, trim, cx - 1.2f, h * 0.62f, 2.4f, 1.2f);                      // 자루 금 테
+            }
+
+            if (serpent)
+            {
+                // 뱀처럼 좌우로 구불거리는 촉: 가운데 선을 따라 폭이 변하는 다각형
+                var pts = new List<float>();
+                int steps = 7;
+                for (int i = 0; i <= steps; i++)
+                {
+                    float t = (float)i / steps;                                           // 0 = 촉 끝, 1 = 촉 밑
+                    float y = 0.5f + t * (headH - 1f);
+                    float wave = (float)Math.Sin(t * Math.PI * 2.2) * 1.3f * (1f - t * 0.3f);
+                    float half = 0.4f + 1.5f * (float)Math.Sin(t * Math.PI);            // 가운데가 넓고 양 끝이 좁다
+                    pts.Add(cx + wave - half); pts.Add(y);
+                }
+                for (int i = steps; i >= 0; i--)
+                {
+                    float t = (float)i / steps;
+                    float y = 0.5f + t * (headH - 1f);
+                    float wave = (float)Math.Sin(t * Math.PI * 2.2) * 1.3f * (1f - t * 0.3f);
+                    float half = 0.4f + 1.5f * (float)Math.Sin(t * Math.PI);
+                    pts.Add(cx + wave + half); pts.Add(y);
+                }
+                FillPoly(g, blade, pts.ToArray());
+                // 왼쪽 절반을 어둡게: 같은 다각형을 가운데 선 기준으로 반만
+                var dark = new List<float>();
+                for (int i = 0; i <= steps; i++)
+                {
+                    float t = (float)i / steps;
+                    float y = 0.5f + t * (headH - 1f);
+                    float wave = (float)Math.Sin(t * Math.PI * 2.2) * 1.3f * (1f - t * 0.3f);
+                    float half = 0.4f + 1.5f * (float)Math.Sin(t * Math.PI);
+                    dark.Add(cx + wave - half); dark.Add(y);
+                }
+                for (int i = steps; i >= 0; i--)
+                {
+                    float t = (float)i / steps;
+                    float y = 0.5f + t * (headH - 1f);
+                    float wave = (float)Math.Sin(t * Math.PI * 2.2) * 1.3f * (1f - t * 0.3f);
+                    dark.Add(cx + wave); dark.Add(y);
+                }
+                FillPoly(g, bladeDark, dark.ToArray());
+            }
+            else
+            {
+                // 잎 모양 촉: 밑에서 넓어졌다가 끝으로 뾰족
+                float bottom = headH - 0.8f, mid = headH * 0.45f;
+                FillPoly(g, blade, cx - 0.6f, bottom, cx, bottom, cx, 0.5f, cx - 2.2f, mid);
+                FillPoly(g, bladeDark, cx, bottom, cx + 0.6f, bottom, cx + 2.2f, mid, cx, 0.5f);
+                FillRect(g, Shade(blade, 1.1f), cx - 0.3f, 2f, 0.6f, bottom - 3f);     // 가운데 능선
+            }
         };
     }
 

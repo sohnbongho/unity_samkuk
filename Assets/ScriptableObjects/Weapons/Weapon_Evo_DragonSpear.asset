@@ -29,6 +29,12 @@ MonoBehaviour:
   rotateSpeed: 180
   tickInterval: 0.3
   knockback: 8
+  heldSprite: {fileID: 21300000, guid: 4a993938f4e80d745943d704e3d9daa9, type: 3}
+  swingArcDegrees: 1
+  swingDuration: 0.26
+  trailTravel: 0
+  trailScale: 0
+  trailDamageRatio: 0
   maxLevel: 8
   damagePerLevel: 0.2
   cooldownReductionPerLevel: 0.05
