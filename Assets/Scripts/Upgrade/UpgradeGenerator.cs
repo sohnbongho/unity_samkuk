@@ -23,9 +23,12 @@ namespace Samkuk.Upgrades
         /// (보유 무기 강화(최대 레벨 제외) / 새 무기(보유 한도 미만, 이미 진화한 무기 제외) / 패시브(최대 레벨 제외)).
         /// 가중치는 UpgradeCatalog 의 값을 쓴다: 보유 무기 강화를 자주 보여 줘서 한 무기를 집중해 키우면 진화에 닿을 수 있다.
         /// 후보가 count보다 적으면 체력 회복 선택지를 채워 넣는다.
+        /// allowedWeapons 는 장수의 무기 목록: 새 무기는 이 목록 안에서만 나온다(null/빈 목록이면 공용 무기 전부).
+        /// 이미 가진 무기의 강화와 진화는 목록과 무관하다(전용 무기는 목록에 없지만 들고 시작하므로).
         /// </summary>
         public static List<UpgradeOption> Generate(UpgradeCatalog catalog, WeaponController weapons,
-            PlayerStats stats, PlayerHealth health, int count = 3, int maxWeapons = 4)
+            PlayerStats stats, PlayerHealth health, int count = 3, int maxWeapons = 4,
+            IReadOnlyList<WeaponData> allowedWeapons = null)
         {
             float levelUpWeight = catalog != null ? catalog.weaponLevelUpWeight : 1f;
             float passiveWeight = catalog != null ? catalog.passiveWeight : 1f;
@@ -62,6 +65,7 @@ namespace Samkuk.Upgrades
                 foreach (var data in catalog.weapons)
                 {
                     if (data == null || weapons.Owns(data) || weapons.HasEvolved(data)) continue;
+                    if (!AllowsWeapon(allowedWeapons, data)) continue;
                     var wd = data;
                     candidates.Add(new Weighted
                     {
@@ -119,6 +123,18 @@ namespace Samkuk.Upgrades
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// 장수의 무기 목록이 이 공용 무기를 허용하는가. 목록이 null 이거나 비어 있으면 제한 없음
+        /// (목록을 아직 채우지 않은 장수, 테스트, 예전 저장과의 호환).
+        /// </summary>
+        public static bool AllowsWeapon(IReadOnlyList<WeaponData> allowedWeapons, WeaponData weapon)
+        {
+            if (allowedWeapons == null || allowedWeapons.Count == 0) return true;
+            for (int i = 0; i < allowedWeapons.Count; i++)
+                if (allowedWeapons[i] == weapon) return true;
+            return false;
         }
 
         /// <summary>현재 상태에서 진화할 수 있는 조합 (무기 레벨 + 필요 패시브를 모두 만족).</summary>

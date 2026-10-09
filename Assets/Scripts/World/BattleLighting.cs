@@ -109,7 +109,7 @@ namespace Samkuk.World
         /// <summary>씬의 전역 Light2D (없으면 null).</summary>
         public static Light2D FindGlobalLight()
         {
-            foreach (var l in FindObjectsByType<Light2D>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+            foreach (var l in FindObjectsByType<Light2D>(FindObjectsInactive.Exclude))
                 if (l.lightType == Light2D.LightType.Global) return l;
             return null;
         }

@@ -12,7 +12,7 @@
 
 ## 진행 상황
 
-마지막 갱신: 2026-10-09 (Step 14 HD-2D 전환 진행 중: 14-1 조명 완료, 14-2 후처리 완료, 14-3 도트 규격 완료, 14-4 월드 정렬·그림자 완료, 14-5 틸트 시프트 완료, 후속 14-6 겹친 소품 반투명 완료. 나머지 후속은 `docs/HD2D.md` 후속 목록. 계획/결정은 `docs/HD2D.md`, 용어 `CONTEXT.md`, ADR `docs/adr/`)
+마지막 갱신: 2026-10-09 (Step 8-5 장수별 무기 목록 완료. Step 14 HD-2D 전환 진행 중: 14-1 조명 완료, 14-2 후처리 완료, 14-3 도트 규격 완료, 14-4 월드 정렬·그림자 완료, 14-5 틸트 시프트 완료, 후속 14-6 겹친 소품 반투명 완료. 나머지 후속은 `docs/HD2D.md` 후속 목록. 계획/결정은 `docs/HD2D.md`, 용어 `CONTEXT.md`, ADR `docs/adr/`)
 
 | Step | 내용 | 상태 | 커밋 |
 |---|---|---|---|
@@ -26,6 +26,7 @@
 | 8-2 | 무기 10종(+넉백, WeaponFx 풀) | 완료 | b762832 |
 | 8-3 | 적 병과(궁병 3종, 적 투사체), 선택 카드 반응형 | 완료 | 0b6c605 |
 | 8-4 | 진화 무기 7종/진화 시스템 | 완료 | 78b978e |
+| 8-5 | 장수별 무기 목록(장수 개성): `HeroData.weapons`(공용 무기 목록, 장수당 5개)로 레벨업의 **새 무기** 선택지를 그 장수의 목록 안으로 제한(`UpgradeGenerator.AllowsWeapon`, `LevelUpController.AllowedWeapons` → 기본은 `GameSession.SelectedHero`). 목록이 비면 예전처럼 전부. 전용 무기(시작 무기)는 목록에 넣지 않고 강화/진화는 목록과 무관. 장수 카드에 "전용 무기 / 공용 무기" 표시. Step 8 셋업이 **빈 목록만** 채움. 용어는 `CONTEXT.md` "전투". 테스트 `HeroWeaponListTests` | 완료 | |
 | 9-1 | 저장, 영구 강화 로직, 결과 화면, 일시정지 | 완료 | ea433f4 |
 | 9-2 | 타이틀 씬, 영구 강화 상점, 기록, 저장 초기화, 씬 흐름 | 완료 | 082e8d4 |
 | 10-2 | 효과음(코드 합성 `SfxSynth`, `AudioManager`, `SfxHooks`, 타이틀 효과음 볼륨 버튼) | 완료 | ce823ba |
@@ -87,6 +88,7 @@
 - 아군: 수치는 `AllyConfig` 한 곳(정원 2, 체력 70, 공격력 x0.6, 받는 피해 x0.7, 부활 15초, 주인공 레벨 3당 무기 +1). 적은 `EnemyManager`가 주인공과 살아 있는 아군 중 **가장 가까운 쪽**을 목표로 고르고(`IEnemyTarget`), 접촉/궁병 화살도 그 대상에 적용된다. 무기는 `Weapon.Owner`가 `Transform`+`IWeaponStats`라 아군도 같은 무기를 쓴다(이펙트/투사체 풀은 주인공의 `WeaponController`를 공유). 아군은 스킬을 쓰지 않는다. `HeroSelectController`는 아군 UI/매니저를 실행 중에 찾으므로 Step 8을 다시 돌려도 연결이 유지된다. 규칙/흐름은 `docs/ALLIES.md`.
 - 적 걷기 시트: `Assets/Sprites/EnemyWalk/<적 에셋 이름>_Walk.png`(장수와 같은 4x4 규격, `HeroSpriteSet` 재사용). 시트가 있는 적은 그림 색 그대로(`Enemy.BaseColor`가 흰색)이고 `SetFacing` 좌우 반전 대신 `TickAnimation`으로 플레이어를 바라본다. 시트가 없으면 예전 동작(단색 스프라이트 + tint + 반전). 크기는 `walkPixelsPerUnit` x `scale`. 임시 그림은 `tools/hero_art/EnemySprites.cs`, `generate.ps1 -Only enemy`. 규격/목록은 `docs/HERO_WALK_SHEETS.md`.
 - 장수 초상화: 현재 5장은 **코드로 그린 임시 그림**(`tools/hero_art/HeroArt.cs`, `generate.ps1`로 재생성, 직접 그린 그림으로 덮어쓰면 생성 스크립트는 쓰지 않는다). 교체용 그림은 사용자가 준비해 `Assets/Sprites/Heroes/<장수 에셋 이름>.png`(512x640, 세로 4:5, 투명 배경)에 넣고 메뉴 `Step 10-5`로 연결한다. 가져오기 설정은 `HeroPortraitImporter`가 자동으로 맞춘다. 그림이 없는 장수는 기존 실루엣 + `tint`로 보이고(`HeroSelectUI.ShowPortrait`), 이미 연결된 초상화는 셋업이 덮어쓰지 않는다. 카드 레이아웃을 키웠으므로(높이 640→700) 적용하려면 `Step 8`(또는 Run All)을 다시 실행해야 한다.
+- 장수별 무기 목록(8-5): 공용 무기 목록은 `Hero_*.asset` 의 `weapons`(전용 무기가 보유 한도 4 중 한 자리를 차지하므로 공용은 4개 이상, 기본 5개 → "5개 중 3개" 조합). 초안: 유비 활·화살비·전고·창 찌르기·검 베기 / 관우 검 베기·창 찌르기·뇌격·전고·회전 도끼 / 장비 창 찌르기·회전 도끼·전고·비도·검 베기 / 조조 쇠뇌·화계·화살비·비도·뇌격 / 여포 활·창 찌르기·회전 도끼·비도·검 베기. **Step 8(또는 Run All) 재실행 필요**(기존 장수 에셋의 빈 목록을 채움, 8-2 공용 무기가 먼저 있어야 함). 이후 조정은 에셋 직접 수정(셋업은 빈 목록만 채움). 목록 밖 무기의 진화는 자연히 못 하고, 패시브는 제한 없음. 아군은 그대로 전용 무기 1개. `BalanceTests` 의 무작위 빌드 시뮬레이션은 목록을 안 넘겨 공용 전부 기준이다(장수별 진화 도달률은 체감 뒤 필요하면 보강). 선택지 가중치(4:2:1)는 그대로이며 새 무기 후보가 10→5 로 줄어 덜 보이면 `newWeaponWeight` 를 올린다.
 - 장수 전용 시작 무기(쌍고검, 청룡언월도 등)는 진화 대상이 아니다. 필요하면 `EvolutionData` 추가.
 - 게임 씬은 한 판 1분 스테이지 기준이라 진화 필요 레벨을 5로 낮춰 둠(`Evo_*.asset`의 Required Level).
 - **밸런스 수치는 어림 모델 기준**: `BalanceModel`은 처치율/무기별 동시 타격 수/평균 빌드를 가정한 근사라서 "방향"과 "의도한 범위 이탈 여부"만 알려 준다. 최종 체감은 직접 플레이로 확인(특히 마지막 웨이브 난이도, 진화 도달 시점).
@@ -115,7 +117,7 @@
 ### 핵심 구조 요약
 - 무기: `WeaponData`(type 별로 `Weapon` 서브클래스) → `WeaponController.AddWeapon`이 type으로 클래스를 고른다. 새 `WeaponType`을 추가하면 **AddWeapon의 switch와 테스트의 기대 매핑**도 추가.
 - 적: `EnemyManager`가 이동/접촉 피해/궁병 사격을 일괄 처리, 공간 그리드로 범위 질의(`OverlapCircle`, `FindNearest`). 그리드가 낡으면 전수 검색으로 대체(신규 스폰 누락 방지).
-- 레벨업: `UpgradeGenerator`가 선택지 생성(진화 카드 최우선). 진화는 `WeaponController.Evolve`.
+- 레벨업: `UpgradeGenerator`가 선택지 생성(진화 카드 최우선). 새 무기는 고른 장수의 무기 목록(`HeroData.weapons`) 안에서만(비면 전부). 진화는 `WeaponController.Evolve`.
 - 밸런스: `Samkuk.Balance.BalanceModel`(순수 계산) → `BalanceTests`가 범위를 고정한다. 수치를 바꾸면 이 테스트가 "의도한 흐름에서 벗어났는가"를 알려 준다. 기존 에셋은 셋업이 덮어쓰지 않으므로 값을 바꿀 때는 **셋업의 기본값 + `Step10BalanceSetup.Overrides` 표**를 함께 고친다(웨이브는 Step 7 셋업이 매번 다시 쓴다). 진화 필요 레벨은 `BalanceModel.EvolutionRequiredLevel` 한 곳.
 - 능력치: `PlayerStats` 계층 = 패시브 × 장수 × 영구 강화(`ApplyMeta`) × 버프.
 - 한 판의 끝: `GameManager.Finished` → `ResultController`가 골드 계산/저장 → 결과 화면. 일시정지는 `PauseController`(ESC).

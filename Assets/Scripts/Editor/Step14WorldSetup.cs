@@ -100,7 +100,7 @@ namespace Samkuk.EditorTools
             var ids = new int[SortingLayer.layers.Length];
             for (int i = 0; i < ids.Length; i++) ids[i] = SortingLayer.layers[i].id;
             int count = 0;
-            foreach (var light in Object.FindObjectsByType<Light2D>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (var light in Object.FindObjectsByType<Light2D>(FindObjectsInactive.Include))
             {
                 light.targetSortingLayers = ids;
                 EditorUtility.SetDirty(light);

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Samkuk.Core;
 using Samkuk.Data;
 using Samkuk.Player;
 using Samkuk.UI;
@@ -25,6 +26,7 @@ namespace Samkuk.Upgrades
 
         ILevelUpView view;
         List<UpgradeOption> currentOptions;
+        IReadOnlyList<WeaponData> allowedWeapons;
 
         public PlayerExperience Experience { get => experience; set => SetExperience(value); }
         public WeaponController Weapons { get => weapons; set => weapons = value; }
@@ -32,6 +34,11 @@ namespace Samkuk.Upgrades
         public PlayerHealth Health { get => health; set => health = value; }
         public UpgradeCatalog Catalog { get => catalog; set => catalog = value; }
         public ILevelUpView View { get => view; set => view = value; }
+        /// <summary>
+        /// 새 무기 선택지를 제한하는 무기 목록. 비워 두면(null) 고른 장수(GameSession)의 목록을 쓰고,
+        /// 장수가 없거나 목록이 비면 공용 무기 전부가 나온다.
+        /// </summary>
+        public IReadOnlyList<WeaponData> AllowedWeapons { get => allowedWeapons; set => allowedWeapons = value; }
 
         /// <summary>선택을 기다리는 레벨업 횟수 (표시 중인 것 포함).</summary>
         public int PendingCount { get; private set; }
@@ -76,7 +83,8 @@ namespace Samkuk.Upgrades
                 return;
             }
 
-            currentOptions = UpgradeGenerator.Generate(catalog, weapons, stats, health, choiceCount, maxWeapons);
+            var allowed = allowedWeapons ?? GameSession.SelectedHero?.weapons;
+            currentOptions = UpgradeGenerator.Generate(catalog, weapons, stats, health, choiceCount, maxWeapons, allowed);
             if (currentOptions.Count == 0)
             {
                 // 선택지가 전혀 없으면 건너뜀

@@ -12,12 +12,12 @@ GameObject:
   - component: {fileID: 6006744706619435004}
   - component: {fileID: 1389092277544383540}
   - component: {fileID: 2438707987808270782}
-  - component: {fileID: 6736091588391330384}
-  - component: {fileID: 4672805459673059480}
-  - component: {fileID: 73193905499683165}
-  - component: {fileID: 3041466162249130910}
-  - component: {fileID: 8741367483314078786}
-  - component: {fileID: 957400311296230346}
+  - component: {fileID: 5368902614790870795}
+  - component: {fileID: 3746725754925041923}
+  - component: {fileID: 3413905355441217367}
+  - component: {fileID: 23936479532787101}
+  - component: {fileID: 7738246015364799777}
+  - component: {fileID: 4770462343817101672}
   m_Layer: 8
   m_Name: Player
   m_TagString: Untagged
@@ -118,7 +118,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Player.PlayerController
   moveSpeed: 4
   body: {fileID: 4669377229966509973}
---- !u!114 &6736091588391330384
+--- !u!114 &5368902614790870795
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -132,7 +132,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Player.PlayerHealth
   maxHp: 100
   invulnerableTime: 0.5
---- !u!114 &4672805459673059480
+--- !u!114 &3746725754925041923
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -147,7 +147,7 @@ MonoBehaviour:
   projectilePrefab: {fileID: 6725090337757757273, guid: 3844b181e55bc5c4fb779c25ff01381b, type: 3}
   startingWeapons: []
   enemyManager: {fileID: 0}
---- !u!114 &73193905499683165
+--- !u!114 &3413905355441217367
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -159,7 +159,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f1036060f62dfe948a3f849dd61812b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Player.PlayerStats
---- !u!114 &3041466162249130910
+--- !u!114 &23936479532787101
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -171,7 +171,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5715161201c785446a92975a695026d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Player.PlayerExperience
---- !u!114 &8741367483314078786
+--- !u!114 &7738246015364799777
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -186,7 +186,7 @@ MonoBehaviour:
   skill: {fileID: 0}
   enemies: {fileID: 0}
   gems: {fileID: 0}
---- !u!114 &957400311296230346
+--- !u!114 &4770462343817101672
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

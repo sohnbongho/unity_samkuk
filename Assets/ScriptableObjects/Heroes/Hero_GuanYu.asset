@@ -27,3 +27,9 @@ MonoBehaviour:
   pickupRadiusMultiplier: 1
   startingWeapon: {fileID: 11400000, guid: 85026fa3534bc32458a6b93f0bb08bf8, type: 2}
   skill: {fileID: 11400000, guid: 153099d5dd4ee464aaf49ac43473bda9, type: 2}
+  weapons:
+  - {fileID: 11400000, guid: e5ae1e5de97212740bf42a7c18e1bf99, type: 2}
+  - {fileID: 11400000, guid: fd7483fdfb56a254fa03d21bdab3fece, type: 2}
+  - {fileID: 11400000, guid: b853537ccfc1eeb489a5a562d266a3c3, type: 2}
+  - {fileID: 11400000, guid: 454ed27f96b21e94a93c2f46250c45fb, type: 2}
+  - {fileID: 11400000, guid: 7150af81c0f59284983deed9b44211c4, type: 2}

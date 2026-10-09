@@ -103,7 +103,12 @@ namespace Samkuk.UI
             string stats = hero.StatSummary();
             if (!string.IsNullOrEmpty(stats)) lines.Add(stats);
 
-            if (hero.startingWeapon != null) lines.Add($"무기: {hero.startingWeapon.displayName}");
+            // 무기 목록: 전용 무기 + 공용 무기. "이 장수를 고르면 이런 무기로 싸운다"가 선택의 이유가 되도록 전부 보여 준다
+            var weaponLines = new List<string>();
+            if (hero.startingWeapon != null) weaponLines.Add($"전용 무기: {hero.startingWeapon.displayName}");
+            string common = hero.WeaponListSummary();
+            if (!string.IsNullOrEmpty(common)) weaponLines.Add($"공용 무기: {common}");
+            if (weaponLines.Count > 0) lines.Add(string.Join("\n", weaponLines));
             if (hero.skill != null) lines.Add($"스킬: {hero.skill.displayName}\n{hero.skill.description}");
             return string.Join("\n\n", lines);
         }

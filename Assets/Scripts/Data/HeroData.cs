@@ -25,8 +25,14 @@ namespace Samkuk.Data
         public float pickupRadiusMultiplier = 1f;
 
         [Header("시작 장비")]
+        [Tooltip("전용 무기: 이 장수만 쓰며 처음부터 들고 시작한다")]
         public WeaponData startingWeapon;
         public SkillData skill;
+
+        [Header("무기 목록")]
+        [Tooltip("이 장수가 한 판에서 얻을 수 있는 공용 무기. 레벨업의 새 무기 선택지는 이 목록 안에서만 나온다. " +
+                 "비어 있으면 공용 무기 전부가 나온다(예전 동작). 전용 무기는 넣지 않는다")]
+        public List<WeaponData> weapons = new List<WeaponData>();
 
         /// <summary>기본값과 다른 능력치 보정을 줄바꿈으로 나열한 문자열 (선택 카드용).</summary>
         public string StatSummary()
@@ -38,6 +44,15 @@ namespace Samkuk.Data
             AddPercent(parts, "경험치", expMultiplier);
             AddPercent(parts, "획득 범위", pickupRadiusMultiplier);
             return string.Join("   ", parts);
+        }
+
+        /// <summary>공용 무기 목록의 이름을 쉼표로 나열한 문자열 (선택 카드용). 목록이 비면 빈 문자열.</summary>
+        public string WeaponListSummary()
+        {
+            var names = new List<string>();
+            foreach (var w in weapons)
+                if (w != null) names.Add(w.displayName);
+            return string.Join(", ", names);
         }
 
         static void AddPercent(List<string> parts, string label, float multiplier)

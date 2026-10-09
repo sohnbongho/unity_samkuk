@@ -152,50 +152,66 @@ namespace Samkuk.EditorTools
 
         // ───────────────────────── 장수 ─────────────────────────
 
+        /// <summary>
+        /// 장수 5명. 마지막 인자는 공용 무기 목록(장수당 5개): 전용 무기가 보유 한도 4 중 한 자리를 차지해 공용은
+        /// 3개까지만 더 얻으므로, "5개 중 3개" 조합이 생기도록 5개씩 둔다. 공용 무기 10종이 모두 최소 한 장수에게 있다.
+        /// 이미 목록이 있는 장수는 덮어쓰지 않으므로 이후 조정은 Hero_*.asset 을 직접 고친다.
+        /// </summary>
         static void CreateHeroes()
         {
+            // 유비: 군세를 모아 싸우는 군주 (활·화살비·전고·창·검)
             CreateHero("Hero_LiuBei", h =>
             {
                 h.displayName = "유비"; h.title = "인덕의 군주";
                 h.description = "사람을 끌어모으는 덕으로 빠르게 성장한다.";
                 h.tint = new Color(0.5f, 0.95f, 0.6f);
                 h.maxHpBonus = 20f; h.expMultiplier = 1.2f; h.pickupRadiusMultiplier = 1.3f;
-            }, "Weapon_TwinSwords", "Skill_Blessing");
+            }, "Weapon_TwinSwords", "Skill_Blessing",
+            new[] { "Weapon_Bow", "Weapon_Rain", "Weapon_Nova", "Weapon_Thrust", "Weapon_Sword" });
 
+            // 관우: 무겁고 신격화된 무장 (검·창·뇌격·전고·도끼)
             CreateHero("Hero_GuanYu", h =>
             {
                 h.displayName = "관우"; h.title = "미염공";
                 h.description = "청룡언월도를 휘두르는 무신. 공격력이 높다.";
                 h.tint = new Color(0.2f, 0.6f, 0.3f);
                 h.damageMultiplier = 1.15f; h.moveSpeedMultiplier = 0.95f;
-            }, "Weapon_GreenDragon", "Skill_GreenDragon");
+            }, "Weapon_GreenDragon", "Skill_GreenDragon",
+            new[] { "Weapon_Sword", "Weapon_Thrust", "Weapon_Lightning", "Weapon_Nova", "Weapon_Axe" });
 
+            // 장비: 난전 돌격 (창·도끼·전고·비도·검)
             CreateHero("Hero_ZhangFei", h =>
             {
                 h.displayName = "장비"; h.title = "만인지적";
                 h.description = "강인한 체력으로 적진 한가운데서 버틴다.";
                 h.tint = new Color(0.4f, 0.4f, 0.6f);
                 h.maxHpBonus = 50f; h.damageMultiplier = 1.05f;
-            }, "Weapon_SerpentSpear", "Skill_Roar");
+            }, "Weapon_SerpentSpear", "Skill_Roar",
+            new[] { "Weapon_Thrust", "Weapon_Axe", "Weapon_Nova", "Weapon_Knives", "Weapon_Sword" });
 
+            // 조조: 계략·원거리 (쇠뇌·화계·화살비·비도·뇌격)
             CreateHero("Hero_CaoCao", h =>
             {
                 h.displayName = "조조"; h.title = "난세의 간웅";
                 h.description = "책략으로 전황을 뒤집는다.";
                 h.tint = new Color(0.4f, 0.55f, 1f);
                 h.expMultiplier = 1.1f; h.moveSpeedMultiplier = 1.05f;
-            }, "Weapon_YitianSword", "Skill_Scheme");
+            }, "Weapon_YitianSword", "Skill_Scheme",
+            new[] { "Weapon_Crossbow", "Weapon_FireZone", "Weapon_Rain", "Weapon_Knives", "Weapon_Lightning" });
 
+            // 여포: 기동 돌격 (활·창·도끼·비도·검)
             CreateHero("Hero_LvBu", h =>
             {
                 h.displayName = "여포"; h.title = "천하무쌍";
                 h.description = "최강의 무력을 지녔지만 몸이 약하다.";
                 h.tint = new Color(1f, 0.55f, 0.3f);
                 h.maxHpBonus = -20f; h.damageMultiplier = 1.2f; h.moveSpeedMultiplier = 1.1f;
-            }, "Weapon_SkyPiercer", "Skill_Warrior");
+            }, "Weapon_SkyPiercer", "Skill_Warrior",
+            new[] { "Weapon_Bow", "Weapon_Thrust", "Weapon_Axe", "Weapon_Knives", "Weapon_Sword" });
         }
 
-        static void CreateHero(string name, System.Action<HeroData> init, string weaponName, string skillName)
+        static void CreateHero(string name, System.Action<HeroData> init, string weaponName, string skillName,
+            string[] commonWeaponNames)
         {
             string path = $"{HeroDir}/{name}.asset";
             var hero = AssetDatabase.LoadAssetAtPath<HeroData>(path);
@@ -210,6 +226,17 @@ namespace Samkuk.EditorTools
             // 무기/스킬 참조는 항상 맞춰 둔다 (사용자가 능력치를 바꿔도 유지됨)
             hero.startingWeapon = AssetDatabase.LoadAssetAtPath<WeaponData>($"{WeaponDir}/{weaponName}.asset");
             hero.skill = AssetDatabase.LoadAssetAtPath<SkillData>($"{SkillDir}/{skillName}.asset");
+
+            // 공용 무기 목록은 비어 있을 때만 채운다 (사용자가 고친 목록 보존). 공용 무기는 8-2 가 먼저 만든다
+            if (hero.weapons.Count == 0)
+            {
+                foreach (var n in commonWeaponNames)
+                {
+                    var w = AssetDatabase.LoadAssetAtPath<WeaponData>($"{WeaponDir}/{n}.asset");
+                    if (w != null) hero.weapons.Add(w);
+                    else Debug.LogWarning($"[Samkuk] {name} 무기 목록: {n} 이 없음 (Step 8-2 를 먼저 실행)");
+                }
+            }
             EditorUtility.SetDirty(hero);
         }
 
