@@ -226,6 +226,48 @@ namespace Samkuk.Tests
         }
 
         [Test]
+        public void Layout_IsLively_ClustersAndMoreThanBareScatter()
+        {
+            var catalog = MakeCatalog();
+            var map = TerrainMap.Create(MakeCastle("Wan", CastleTerrain.Plain, CastleSize.Large), catalog);
+            var items = Gather(map, 4).Where(p => p.prop != catalog.banner).ToList();
+            float perChunk = items.Count / 81f;
+            Assert.Greater(perChunk, 8f * map.DensityMultiplier * 1.4f, "테마 밀도보다 훨씬 빽빽해 휑하지 않다");
+
+            // 무리: 같은 소품이 바짝 모여 있는 곳이 있다 (순수 흩뿌림이면 드물다)
+            int tight = 0;
+            foreach (var a in items)
+                if (items.Count(b => b.prop == a.prop && b.position != a.position && Vector2.Distance(a.position, b.position) < 2.4f) >= 3) tight++;
+            Assert.Greater(tight, items.Count / 20, "숲, 풀밭 같은 무리가 있다");
+        }
+
+        [Test]
+        public void Patches_AreSoftTintedGroundDecor_Deterministic_AndOffTheRiver()
+        {
+            var catalog = MakeCatalog();
+            var map = TerrainMap.Create(MakeCastle("Wet", CastleTerrain.Plain, water: true), catalog);
+            var a = map.LayoutPatches(2, -1);
+            var b = map.LayoutPatches(2, -1);
+            Assert.AreEqual(a.Count, b.Count);
+            for (int i = 0; i < a.Count; i++) { Assert.AreEqual(a[i].position, b[i].position); Assert.AreEqual(a[i].tint, b[i].tint); }
+
+            var all = new List<PropPlacement>();
+            for (int y = -4; y <= 4; y++)
+                for (int x = -4; x <= 4; x++) all.AddRange(map.LayoutPatches(x, y));
+            Assert.Greater(all.Count, 100, "바닥 얼룩이 화면마다 여러 개 있다");
+            foreach (var p in all)
+            {
+                Assert.IsTrue(p.tinted);
+                Assert.Less(p.tint.a, 0.3f, "은은한 색 변화일 뿐 바닥을 덮지 않는다");
+                Assert.AreEqual(TerrainMap.OrderPatch, p.order);
+                Assert.IsNotNull(p.prop.sprite);
+                Assert.GreaterOrEqual(p.position.magnitude, TerrainMap.ClearRadius);
+                Assert.GreaterOrEqual(map.RiverDistance(p.position), map.RiverWidth * 0.5f, "강물 위에 얼룩이 없다");
+            }
+            Assert.Less(TerrainMap.OrderPatch, TerrainMap.OrderBank, "얼룩은 강둑보다 아래");
+        }
+
+        [Test]
         public void Ponds_OnlyOnWaterOrRiverCastles()
         {
             var catalog = MakeCatalog();
@@ -458,6 +500,26 @@ namespace Samkuk.Tests
         }
 
         [Test]
+        public void Spawner_PatchesGetTheirTint_AndPooledSpritesAreRecolored()
+        {
+            var map = TerrainMap.Create(MakeCastle("Ye"), MakeCatalog());
+            var follow = MakeFollow(Vector3.zero);
+            var spawner = MakeSpawner(map, follow, out _);
+            var renderers = spawner.GetComponentsInChildren<SpriteRenderer>(false);
+            Assert.IsTrue(renderers.Any(r => r.color != Color.white), "얼룩은 색을 입는다");
+            Assert.IsTrue(renderers.Any(r => r.color == Color.white), "소품은 원래 색");
+
+            // 멀리 갔다가 돌아와도(풀 재사용) 소품이 얼룩 색을 물려받지 않는다
+            follow.position = new Vector3(400f, 0f, 0f);
+            spawner.Refresh();
+            follow.position = Vector3.zero;
+            spawner.Refresh();
+            foreach (var r in spawner.GetComponentsInChildren<SpriteRenderer>(false))
+                Assert.AreEqual(r.sprite == TerrainDecals.SoftBlob, r.color != Color.white, "얼룩만 색을 입는다");
+        }
+
+
+        [Test]
         public void Spawner_PropsAreDecoration_BehindEverythingElse()
         {
             var map = TerrainMap.Create(MakeCastle("Ye"), MakeCatalog());
@@ -484,7 +546,7 @@ namespace Samkuk.Tests
             follow.position = new Vector3(600f, 0f, 0f);
             spawner.Refresh();
             Assert.AreEqual(firstChunks, spawner.ActiveChunkCount, "멀리 가도 화면 주변의 칸 수는 같다");
-            Assert.LessOrEqual(spawner.transform.childCount, firstChildren + 30, "옛 소품을 풀에서 다시 써서 오브젝트가 계속 늘지 않는다");
+            Assert.LessOrEqual(spawner.transform.childCount, firstChildren * 2 + 30, "옛 소품을 풀에서 다시 써서 오브젝트가 계속 늘지 않는다");   // 새 칸을 먼저 만들고 옛 칸을 치우므로 한때 두 배까지
 
             for (int i = 1; i <= 20; i++)
             {
@@ -492,7 +554,7 @@ namespace Samkuk.Tests
                 spawner.Refresh();
             }
             Assert.LessOrEqual(spawner.ActiveChunkCount, 30, "계속 이동해도 활성 칸이 한없이 늘지 않는다");
-            Assert.LessOrEqual(spawner.transform.childCount, 450, "계속 이동해도 소품 오브젝트 수가 한없이 늘지 않는다 (풀 재사용)");
+            Assert.LessOrEqual(spawner.transform.childCount, 1000, "계속 이동해도 소품 오브젝트 수가 한없이 늘지 않는다 (풀 재사용)");
             foreach (var sr in spawner.GetComponentsInChildren<SpriteRenderer>(false))
                 Assert.That(Vector2.Distance(sr.transform.position, follow.position), Is.LessThan(60f), "화면에서 먼 소품은 치워졌다");
         }

@@ -91,10 +91,19 @@ namespace Samkuk.World
         void SpawnChunk(Vector2Int key)
         {
             var list = new List<SpriteRenderer>();
-            foreach (var p in map.Layout(key.x, key.y))
+            Place(list, map.LayoutPatches(key.x, key.y));
+            Place(list, map.Layout(key.x, key.y));
+            active[key] = list;
+            ActivePropCount += list.Count;
+        }
+
+        void Place(List<SpriteRenderer> list, List<PropPlacement> placements)
+        {
+            foreach (var p in placements)
             {
                 var sr = Acquire();
                 sr.sprite = p.prop.sprite;
+                sr.color = p.tinted ? p.tint : Color.white;   // 풀에서 꺼낸 것은 이전 색이 남아 있으므로 항상 다시 정한다
                 sr.flipX = p.flipX;
                 sr.sortingOrder = p.order;
                 sr.transform.position = new Vector3(p.position.x, p.position.y, PropZ);
@@ -102,8 +111,6 @@ namespace Samkuk.World
                 sr.transform.localScale = new Vector3(p.scale, p.scale * (p.stretchY > 0f ? p.stretchY : 1f), 1f);
                 list.Add(sr);
             }
-            active[key] = list;
-            ActivePropCount += list.Count;
         }
 
         void DespawnChunk(Vector2Int key)

@@ -12,7 +12,7 @@
 
 ## 진행 상황
 
-마지막 갱신: 2026-10-05 (12-6 성마다 다른 전투 맵(지형 타일, 소품, 강) 완료. 타격감/연출 작업은 병행)
+마지막 갱신: 2026-10-09 (12-6 성마다 다른 전투 맵 완료 + 강 없는 평야('완' 등)가 휑해서 소품 무리/바닥 얼룩/밀도 상향 완료. 타격감/연출 작업은 병행)
 
 | Step | 내용 | 상태 | 커밋 |
 |---|---|---|---|
@@ -41,7 +41,7 @@
 | 12-3 | 해상도 상향: 성 배경 1920x1080 / 전략 지도 2560x1440(그림 재생성), 내정 UI 기준 해상도 2560x1440(`StrategyUI.ReferenceResolution`, 지도 영역 1960x1102), 타이틀 해상도/창 모드 버튼(`DisplaySettings`, `SaveData.displayWidth/displayHeight/windowMode`) | 완료 | 247b504 |
 | 12-4 | 시작 성 선택과 출진: 내정을 열면 시작 성을 골라 "내 성"으로 저장(`SaveData.homeCastleId`, ★ 표시, [이 성에서 시작]/[시작 성 변경]), 내 성의 성 화면에서 [출진] → 전투(`GameSession.SortieCastle`, 성 지형 색 `BattleTerrain`), 결과 화면 [내정으로 (M)]. 타이틀 [시작]은 성 없이 시작. 전투 결과의 성 반영은 아직 없음 | 완료 | 13db09a |
 | 12-5 | 정복: 내 영토(시작 성+정복한 성)의 성 화면에서 [출진] → 이웃한 적 성 중 공격 대상을 고르는 선택창 → 전투(대상 성 지형) → 승리하면 그 성을 영토로(`Territory`, `SaveData.ownedCastleIds`). 지도에 영토/공격 가능 성 테두리 색과 "보유 성 n / 46", 천하 통일 문구. 결과 화면에 정복/퇴각 문구. 난이도·적 반격·보상은 아직 없음 | 완료 | e449b70 |
-| 12-6 | 성마다 다른 전투 맵: 지형별 바닥 타일 6종 + 지형 소품 30종 + 공용(연못, 깃발) 그림(코드 생성 `tools/terrain_art`), `TerrainTheme`/`TerrainThemeCatalog`(`Resources`), 성 아이디 시드로 밀도·소품 비율·바닥 색조가 달라지는 `TerrainMap`, 화면 주변 칸만 만드는 `TerrainPropSpawner`, `InfiniteBackground.ApplyCastle`, 메뉴 `Step 12-6`, 설명 `docs/TERRAIN.md`. 소품과 강은 충돌 없는 장식, 지형 효과/막는 지형은 아직 없음. **강**: 강이 있는 성/강변 지형/성 없이 시작한 판(평야+강)에 구불구불 흐르는 강(`River_*` 토막 12장, `TerrainMap` 강 계산) | 완료 | 5aebcbd |
+| 12-6 | 성마다 다른 전투 맵: 지형별 바닥 타일 6종 + 지형 소품 30종 + 공용(연못, 깃발) 그림(코드 생성 `tools/terrain_art`), `TerrainTheme`/`TerrainThemeCatalog`(`Resources`), 성 아이디 시드로 밀도·소품 비율·바닥 색조가 달라지는 `TerrainMap`, 화면 주변 칸만 만드는 `TerrainPropSpawner`, `InfiniteBackground.ApplyCastle`, 메뉴 `Step 12-6`, 설명 `docs/TERRAIN.md`. 소품과 강은 충돌 없는 장식, 지형 효과/막는 지형은 아직 없음. **카탈로그 스크립트 연결 복구**: `TerrainThemeCatalog` 를 자기 파일로 분리해 `Resources/TerrainThemeCatalog.asset` 의 끊긴 스크립트 연결을 되살림(이게 '완' 맵이 텅 비었던 진짜 원인). **덜 휑하게**: 소품 흩뿌림 x1.4 + 같은 소품 무리 + 코드로 만든 바닥 얼룩(`TerrainDecals`, `TerrainMap.LayoutPatches`, 그리기 순서 `OrderPatch`). **강**: 강이 있는 성/강변 지형/성 없이 시작한 판(평야+강)에 구불구불 흐르는 강(`River_*` 토막 12장, `TerrainMap` 강 계산) | 완료 | 5aebcbd |
 | 11 | PC 빌드(친구 공유용 Windows 빌드 환경): 메뉴 `Samkuk > Build`(릴리스/개발용) 또는 `tools/build_windows.ps1` → `Builds/` 에 실행 폴더 + 공유용 zip(README.txt 포함), 릴리스는 DebugOverlay/F1~F4 치트 꺼짐, 타이틀에 버전 표시(`BuildTool`, `docs/BUILD.md`). 최적화(GC/풀링)·아이콘·설치 파일은 아직 | 완료 | 15e5ad2 |
 
 ## 남은 작업
@@ -118,6 +118,7 @@ F2 무기 레벨업, F3 경험치 지급, F4 스테이지 15초 건너뛰기, ES
 - 셋업에서 `EditorSceneManager.OpenScene/NewScene` **이후에** 에셋을 로드한다 (씬 전환이 로드된 에셋 참조를 무효화할 수 있음).
 - 진화 셋업(`Step8EvolutionSetup`)은 장수 시작 무기가 만들어진 **뒤**(Step 8 이후)에 실행해야 한다 (Run All 순서 참고).
 - 셋업 순서 주의: Step 7을 단독 재실행하면 웨이브가 초기화되어 8-3의 궁병 편성이 빠진다 → 항상 `Run All`을 쓰거나 8-3을 이어서 실행.
+- **ScriptableObject/MonoBehaviour 클래스는 파일 이름과 같은 이름으로 한 파일에 하나씩** 둔다. 다른 클래스와 한 파일에 넣으면(예전 `TerrainThemeCatalog` 가 `TerrainTheme.cs` 안에 있었음) 에셋의 `m_Script` 가 `{fileID: 0}` 으로 저장돼 "referenced script is missing" 경고와 함께 `Resources.Load` 가 null 을 돌려주고, 기능이 조용히 꺼진다(그때 전투 맵 소품/강이 전부 안 나와 기존 색 덮개로 대신 동작했다). 새 클래스를 만들 때 `.meta`(guid) 도 함께 만든다.
 - 데이터 파일(`*.asset`, `*.unity`, `*.prefab`)은 Unity가 만든 것이므로 손으로 편집하지 말고 셋업 스크립트로 바꾼다.
 
 ### 코딩

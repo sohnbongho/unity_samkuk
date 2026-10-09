@@ -14,6 +14,52 @@ namespace Samkuk.World
         public float rotation;     // 도(degree). 강 토막이 흐르는 방향으로 눕는다
         public bool flipX;
         public int order;          // 배경 레이어 안에서의 그리기 순서 (아래쪽 소품이 위에 그려지게)
+        public bool tinted;        // true 면 tint 를 스프라이트에 곱한다 (바닥 얼룩). false 면 원래 색 그대로
+        public Color tint;
+    }
+
+    /// <summary>
+    /// 코드로 만드는 장식용 그림 (에셋 없음): 가장자리가 부드럽게 사라지는 둥근 얼룩.
+    /// 바닥 위에 색을 달리 입혀 "풀이 짙은 곳, 마른 흙 길" 같은 변화를 주는 데 쓴다.
+    /// </summary>
+    public static class TerrainDecals
+    {
+        static Sprite softBlob;
+        static TerrainProp patchProp;
+
+        /// <summary>흰색 둥근 얼룩 (지름 4유닛, 가운데 불투명 -> 가장자리 투명).</summary>
+        public static Sprite SoftBlob
+        {
+            get
+            {
+                if (softBlob != null) return softBlob;
+                const int size = 64;
+                var tex = new Texture2D(size, size, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave, wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+                var px = new Color32[size * size];
+                for (int y = 0; y < size; y++)
+                    for (int x = 0; x < size; x++)
+                    {
+                        float dx = (x + 0.5f) / size * 2f - 1f, dy = (y + 0.5f) / size * 2f - 1f;
+                        float t = Mathf.Clamp01(1f - Mathf.Sqrt(dx * dx + dy * dy));
+                        float a = t * t * (3f - 2f * t);   // smoothstep: 가장자리가 자연스럽게 번진다
+                        px[y * size + x] = new Color32(255, 255, 255, (byte)Mathf.RoundToInt(a * 255f));
+                    }
+                tex.SetPixels32(px);
+                tex.Apply();
+                softBlob = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size / 4f);
+                softBlob.hideFlags = HideFlags.HideAndDontSave;
+                return softBlob;
+            }
+        }
+
+        public static TerrainProp PatchProp
+        {
+            get
+            {
+                if (patchProp == null || patchProp.sprite == null) patchProp = new TerrainProp { name = "GroundPatch", sprite = SoftBlob };
+                return patchProp;
+            }
+        }
     }
 
     /// <summary>
@@ -30,8 +76,14 @@ namespace Samkuk.World
         const float PropSpacing = 1.15f;           // 소품끼리 최소 간격
         const float PondClearRadius = 4f;
 
-        // 그리기 순서: 강둑 < 강물 < 연못 < 소품 (모두 배경 바닥보다 위, 적/플레이어보다 아래)
-        public const int OrderBank = 1, OrderWater = 2, OrderPond = 3, OrderPropBase = 4;
+        // 맵을 덜 휑하게: 흩뿌리는 소품을 늘리고, 한곳에 모인 무리(숲, 풀밭, 바위 더미)와 바닥 얼룩을 더한다
+        const float ScatterBoost = 1.4f;           // 테마 밀도(propsPerChunk)에 곱하는 흩뿌림 배율
+        const float ClusterPerBaseDensity = 1.1f;  // 무리 수 = 이 값 x (밀도 / 9)
+        const float ClusterRadius = 2.3f;          // 무리가 퍼지는 반지름
+        const float PatchPerChunk = 3.5f;          // 바닥 얼룩 평균 개수 (성마다 0.7 ~ 1.3배)
+
+        // 그리기 순서: 바닥 얼룩 < 강둑 < 강물 < 연못 < 소품 (모두 배경 바닥보다 위, 적/플레이어보다 아래)
+        public const int OrderPatch = 1, OrderBank = 2, OrderWater = 3, OrderPond = 4, OrderPropBase = 5;
 
         // 강: 세계 전체에 같은 모양의 강이 60유닛 간격으로 평행하게 흐른다 (방향/굽이는 성마다 다름)
         const float RiverSpacing = 60f;
@@ -234,15 +286,69 @@ namespace Samkuk.World
                         blockers.Add(new Vector3(pos.x, pos.y, 0.1f));
                     }
 
-            // 지형 소품 (강물 위에는 서지 않는다)
+            // 무리: 같은 소품이 한곳에 모인 숲/풀밭/바위 더미. 흩뿌리기보다 먼저 놓아 자리를 잡는다
             if (totalWeight > 0f)
-                for (int i = 0, n = Count(rng, Theme.propsPerChunk * DensityMultiplier); i < n; i++)
+                for (int i = 0, n = Count(rng, Theme.propsPerChunk * DensityMultiplier * ClusterPerBaseDensity / 9f); i < n; i++)
+                {
+                    var main = Pick(rng);
+                    if (main == null || !TryPlace(rng, originX, originY, ClearRadius, blockers, PropSpacing, 4, riverHalf + 0.9f, out var center)) continue;
+                    result.Add(Place(main, center, rng, top));
+                    blockers.Add(new Vector3(center.x, center.y, 0.1f));
+                    for (int m = 3 + rng.Next(5); m > 0; m--)
+                    {
+                        var prop = rng.NextDouble() < 0.75 ? main : Pick(rng);
+                        var angle = (float)rng.NextDouble() * Mathf.PI * 2f;
+                        var pos = center + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * (1.1f + (float)rng.NextDouble() * (ClusterRadius - 1.1f));
+                        if (prop == null || !CanPlace(pos, originX, originY, ClearRadius, blockers, PropSpacing, riverHalf + 0.9f)) continue;
+                        result.Add(Place(prop, pos, rng, top));
+                        blockers.Add(new Vector3(pos.x, pos.y, 0.1f));
+                    }
+                }
+
+            // 흩뿌린 지형 소품 (강물 위에는 서지 않는다)
+            if (totalWeight > 0f)
+                for (int i = 0, n = Count(rng, Theme.propsPerChunk * DensityMultiplier * ScatterBoost); i < n; i++)
                 {
                     var prop = Pick(rng);
                     if (prop == null || !TryPlace(rng, originX, originY, ClearRadius, blockers, PropSpacing, 6, riverHalf + 0.9f, out var pos)) continue;
                     result.Add(Place(prop, pos, rng, top));
                     blockers.Add(new Vector3(pos.x, pos.y, 0.1f));
                 }
+            return result;
+        }
+
+        /// <summary>
+        /// 한 칸의 바닥 얼룩 (그늘진 곳, 볕 드는 곳, 마른 흙). 소품과 달리 서로 겹쳐도 되는 부드러운 장식이라 따로 계산한다.
+        /// 강 곁에는 놓지 않는다.
+        /// </summary>
+        public List<PropPlacement> LayoutPatches(int chunkX, int chunkY)
+        {
+            var result = new List<PropPlacement>();
+            var rng = new System.Random(unchecked((int)Mix(Mix((uint)Seed ^ 0x5bd1e995u, (uint)chunkX), (uint)chunkY)));
+            float originX = chunkX * ChunkSize, originY = chunkY * ChunkSize;
+            float riverClear = HasRiver ? RiverWidth * 0.5f * BankExtra + 1.8f : 0f;
+            float density = PatchPerChunk * (0.7f + 0.6f * Frac(30));
+
+            for (int i = 0, n = Count(rng, density); i < n; i++)
+            {
+                var p = new Vector2(originX + (float)rng.NextDouble() * ChunkSize, originY + (float)rng.NextDouble() * ChunkSize);
+                if (p.magnitude < ClearRadius) continue;
+                if (HasRiver && RiverDistance(p) < riverClear) continue;
+
+                float roll = (float)rng.NextDouble();
+                Color tint;
+                if (roll < 0.4f) tint = new Color(0f, 0f, 0f, 0.13f);                       // 그늘진 곳
+                else if (roll < 0.75f) tint = new Color(1f, 1f, 0.75f, 0.09f);              // 볕이 드는 곳
+                else if (Castle.terrain == CastleTerrain.Mountain) tint = new Color(0.62f, 0.64f, 0.66f, 0.2f);   // 드러난 돌바닥
+                else tint = new Color(0.55f, 0.42f, 0.24f, 0.24f);                          // 마른 흙
+
+                float scale = 1.3f + (float)rng.NextDouble() * 1.4f;
+                result.Add(new PropPlacement
+                {
+                    prop = TerrainDecals.PatchProp, position = p, scale = scale, stretchY = 0.5f + (float)rng.NextDouble() * 0.35f,
+                    rotation = (float)rng.NextDouble() * 180f, order = OrderPatch, tinted = true, tint = tint,
+                });
+            }
             return result;
         }
 
@@ -279,17 +385,23 @@ namespace Samkuk.World
             for (int a = 0; a < attempts; a++)
             {
                 var p = new Vector2(originX + (float)rng.NextDouble() * ChunkSize, originY + (float)rng.NextDouble() * ChunkSize);
-                if (p.magnitude < clearRadius) continue;
-                if (HasRiver && RiverDistance(p) < riverClearance) continue;
-                bool free = true;
-                foreach (var b in blockers)
-                    if (Vector2.Distance(p, new Vector2(b.x, b.y)) < Mathf.Max(spacing, b.z)) { free = false; break; }
-                if (!free) continue;
+                if (!CanPlace(p, originX, originY, clearRadius, blockers, spacing, riverClearance)) continue;
                 position = p;
                 return true;
             }
             position = default;
             return false;
+        }
+
+        /// <summary>이 칸 안이고, 시작 위치/이미 놓인 것/강에서 충분히 떨어져 있는가.</summary>
+        bool CanPlace(Vector2 p, float originX, float originY, float clearRadius, List<Vector3> blockers, float spacing, float riverClearance)
+        {
+            if (p.x < originX || p.x >= originX + ChunkSize || p.y < originY || p.y >= originY + ChunkSize) return false;
+            if (p.magnitude < clearRadius) return false;
+            if (HasRiver && RiverDistance(p) < riverClearance) return false;
+            foreach (var b in blockers)
+                if (Vector2.Distance(p, new Vector2(b.x, b.y)) < Mathf.Max(spacing, b.z)) return false;
+            return true;
         }
 
         /// <summary>평균 <paramref name="expected"/> 개: 정수 부분은 확정, 소수 부분은 확률로 하나 더.</summary>
