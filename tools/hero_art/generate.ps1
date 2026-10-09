@@ -1,17 +1,17 @@
 ﻿# 장수/적 그림을 코드로 다시 그린다. Windows PowerShell 5.1 (System.Drawing 내장)에서 실행.
 #   powershell -File tools\hero_art\generate.ps1                 # 전부 (초상화 + 장수 걷기 + 적 걷기)
-#   powershell -File tools\hero_art\generate.ps1 -Only enemy     # 적 걷기 시트만 (portrait / walk 도 가능)
+#   powershell -File tools\hero_art\generate.ps1 -Only enemy     # 적 걷기 시트만 (portrait / walk / weapon 도 가능)
 # 결과: Assets\Sprites\Heroes\Hero_*.png (초상화), Assets\Sprites\HeroWalk\Hero_*_Walk.png (장수 걷기),
-#       Assets\Sprites\EnemyWalk\*_Walk.png (적 걷기)
+#       Assets\Sprites\EnemyWalk\*_Walk.png (적 걷기), Assets\Sprites\Weapons\*_Held.png (들고 휘두르는 무기)
 # 같은 이름의 파일은 덮어쓴다. 직접 그린 그림으로 바꿨다면 해당 종류는 실행하지 말 것.
-param([ValidateSet("all", "portrait", "walk", "enemy")][string]$Only = "all")
+param([ValidateSet("all", "portrait", "walk", "enemy", "weapon")][string]$Only = "all")
 
 $root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 
 # HeroSprites.cs, EnemySprites.cs 는 HeroArt 의 partial 이라 한 소스로 이어 붙인다 (using 줄은 첫 파일에만 둔다).
 # tools\pixel\PixelTools.cs(도트 규격으로 다듬는 공통 도구)도 같이 컴파일한다.
 $pixel = Join-Path (Split-Path -Parent $PSScriptRoot) "pixel\PixelTools.cs"
-$rest = @("$PSScriptRoot\HeroSprites.cs", "$PSScriptRoot\EnemySprites.cs", $pixel) | ForEach-Object {
+$rest = @("$PSScriptRoot\HeroSprites.cs", "$PSScriptRoot\EnemySprites.cs", "$PSScriptRoot\WeaponSprites.cs", $pixel) | ForEach-Object {
     [IO.File]::ReadAllText($_) -replace '(?m)^using .*;\r?\n', ''
 }
 $src = [IO.File]::ReadAllText("$PSScriptRoot\HeroArt.cs") + "`n" + ($rest -join "`n")
@@ -34,4 +34,10 @@ if ($Only -eq "all" -or $Only -eq "enemy") {
     $preview = Join-Path $env:TEMP "enemy_walk_preview.png"
     [HeroArt]::GenerateEnemySheets($out, $preview)
     Write-Output "적 걷기 시트 완료: $out (미리보기: $preview)"
+}
+if ($Only -eq "all" -or $Only -eq "weapon") {
+    $out = Join-Path $root "Assets\Sprites\Weapons"
+    $preview = Join-Path $env:TEMP "weapon_held_preview.png"
+    [HeroArt]::GenerateHeldWeapons($out, $preview)
+    Write-Output "무기 그림 완료: $out (미리보기: $preview)"
 }

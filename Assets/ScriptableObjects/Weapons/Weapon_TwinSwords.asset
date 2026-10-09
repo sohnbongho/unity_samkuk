@@ -28,6 +28,9 @@ MonoBehaviour:
   rotateSpeed: 180
   tickInterval: 0.3
   knockback: 0
+  heldSprite: {fileID: 21300000, guid: a90a051f4c7f46b42aca3d96f889dd3e, type: 3}
+  swingArcDegrees: 100
+  swingDuration: 0.18
   maxLevel: 8
   damagePerLevel: 0.2
   cooldownReductionPerLevel: 0.05

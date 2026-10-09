@@ -12,7 +12,7 @@
 
 ## 진행 상황
 
-마지막 갱신: 2026-10-09 (Step 8-5 장수별 무기 목록 완료. Step 14 HD-2D 전환 진행 중: 14-1 조명 완료, 14-2 후처리 완료, 14-3 도트 규격 완료, 14-4 월드 정렬·그림자 완료, 14-5 틸트 시프트 완료, 후속 14-6 겹친 소품 반투명 완료. 나머지 후속은 `docs/HD2D.md` 후속 목록. 계획/결정은 `docs/HD2D.md`, 용어 `CONTEXT.md`, ADR `docs/adr/`)
+마지막 갱신: 2026-10-09 (Step 10-9 무기 휘두르기(베기) 완료, Step 8-5 장수별 무기 목록 완료. Step 14 HD-2D 전환 진행 중: 14-1 조명 완료, 14-2 후처리 완료, 14-3 도트 규격 완료, 14-4 월드 정렬·그림자 완료, 14-5 틸트 시프트 완료, 후속 14-6 겹친 소품 반투명 완료. 나머지 후속은 `docs/HD2D.md` 후속 목록. 계획/결정은 `docs/HD2D.md`, 용어 `CONTEXT.md`, ADR `docs/adr/`)
 
 | Step | 내용 | 상태 | 커밋 |
 |---|---|---|---|
@@ -52,12 +52,14 @@
 | 14-4 | 월드 정렬·서 있는 소품·드리운 그림자: 정렬 레이어 `World`(Pickup 과 Enemy 사이, 셋업 `Step 14-4` 가 TagManager 에 추가) + `Renderer2D.asset` 투명 정렬 커스텀 축 (0,1,0) + 스프라이트 정렬 기준점 피벗(`WorldSorting.Configure`: 주인공/아군/적/서 있는 소품). **캐릭터 트랜스폼 = 발 위치**(걷기 시트 피벗이 발, `HeroSpriteSet.FootPivot`, `PixelArt.WalkFootPixels` 8). `TerrainProp.standing`(= 막는 소품, Step 12-6 채움): World 정렬, 회전 무시, 그림자. `CastShadow`(원본 자식 3단 회전→배율→회전으로 전단, `ShadowPreset.Decompose`, 시간대별 모양은 `BattleLighting` 이 `CastShadow.SetSettings`, 배경 레이어 순서 200, `ShadowPreset.EnemyBlob` 으로 적만 타원). 맵 편집기: 서 있는 소품 회전 금지(`MapEditModel.CanRotate`). 스위치 `SaveData.hd2dShadows`(타이틀 [그림자])/F8. 아군 체력바 높이 0.62→1.4. 테스트 `Hd2dWorldSortTests` | 완료 | |
 | 14-5 | 틸트 시프트(미니어처 흐림): 프로젝트 첫 셰이더 `Assets/Shaders/TiltShift.shader`(URP Blit.hlsl 전체 화면, 화면 y 띠 밖을 2차 곡선으로 13탭 원판 흐림, 깊이 안 씀) + URP 내장 Full Screen Pass 렌더러 기능을 `Renderer2D.asset` 하위 에셋으로(셋업 `Step 14-5`, Run All 포함, URP 에디터의 AddComponent 와 같은 방식으로 m_RendererFeatures/m_RendererFeatureMap 채움, 머티리얼 `Assets/Settings/TiltShift.mat`) + `BattleTiltShift`(전투 카메라: 전투 동안만 기능 켬, OnDisable 에서 끔, 값은 `TiltShiftPreset` 이 화면 높이 비율로 머티리얼에 넣음). 스위치 `SaveData.hd2dTiltShift`(타이틀 [미니어처 흐림])/F9. 테스트 `Hd2dTiltShiftTests` | 완료 | |
 | 14-6 | 겹친 소품 반투명: 서 있는 소품이 플레이어 앞(발이 더 아래)에서 몸 사각형(발 기준 0.6x1.1)을 덮으면 알파 0.4 로, 아니면 1 로 초당 6 씩 부드럽게(`PropFadeRule` 순수 규칙, `TerrainPropSpawner.TickFade` 가 화면 주변 서 있는 소품만 검사, 플레이어는 0.5초마다 찾음, `FadeTarget` 으로 테스트). 맵 편집기 제외. 테스트 `Hd2dPropFadeTests` | 완료 | |
+| 10-9 | 무기 휘두르기(베기 계열 6종): 쿨다운이 차면 **가장 가까운 적 쪽**으로 무기 그림이 손 축(발+0.55)에서 호를 그리며 돌고(`SwingMotion` 순수 규칙: 각도 완화, 왼쪽이면 반전, 위→아래), 호의 **40% 지점**에서 같은 원 판정(`SlashWeapon.Strike`) + 반원 검기(`SlashArcSprite` 코드 생성, 앞으로 range×0.35 날아가며 사라짐). 휘두르는 동안 몸이 그쪽을 본다(`ILookOverride`: `PlayerAnimator`/`AllyController`). 적이 없으면 좌/우 번갈아. `WeaponData.heldSprite/swingArcDegrees/swingDuration`(0 이면 기본 120°/0.25초), 임시 그림 6장 `tools/hero_art/WeaponSprites.cs`(`generate.ps1 -Only weapon`, `Assets/Sprites/Weapons/*_Held.png`, 임포터 `HeldWeaponImporter` PPU 32·피벗 아래 가운데), 셋업 `Step 10-9`(빈 슬롯/0 값만 채움, Run All 포함). 아군 자동 적용. 설명 `docs/WEAPON_SWING.md`, 용어 `CONTEXT.md`(휘두르기, 호 잔상). 테스트 `WeaponSwingTests` | 완료 | |
 | 11 | PC 빌드(친구 공유용 Windows 빌드 환경): 메뉴 `Samkuk > Build`(릴리스/개발용) 또는 `tools/build_windows.ps1` → `Builds/` 에 실행 폴더 + 공유용 zip(README.txt 포함), 릴리스는 DebugOverlay/F1~F4 치트 꺼짐, 타이틀에 버전 표시(`BuildTool`, `docs/BUILD.md`). 최적화(GC/풀링)·아이콘·설치 파일은 아직 | 완료 | 15e5ad2 |
 
 ## 남은 작업
 
 1. **Step 10 나머지** (진행하면서 이 목록을 갱신)
    - 장수/적 스프라이트 교체 지점 정리 (10-3 UI 스킨은 완료)
+   - **10-9 후속**: 찌르기(`ThrustWeapon` 2종)에 같은 휘두르기 규격 적용, 위로 벨 때 무기를 몸 뒤로(월드 정렬), 쉬는 자세. 회전 도끼·원거리는 그대로
    - 10-4 밸런싱: 1분 스테이지 기준 난이도 곡선, 무기/진화/영구 강화 수치 점검
    - (선택) BGM: 현재는 효과음만 있음. `AudioManager`에 BGM 슬롯/볼륨을 추가하는 작업이 남아 있음
 2. **10-4 이후 체감 조정**: 직접 플레이해 보고 "너무 쉬움/어려움" 구간을 알려주면 `BalanceModel` 보고서(메뉴 `Samkuk > Balance Report`)를 보며 수치를 조정한다.
@@ -88,6 +90,7 @@
 - 아군: 수치는 `AllyConfig` 한 곳(정원 2, 체력 70, 공격력 x0.6, 받는 피해 x0.7, 부활 15초, 주인공 레벨 3당 무기 +1). 적은 `EnemyManager`가 주인공과 살아 있는 아군 중 **가장 가까운 쪽**을 목표로 고르고(`IEnemyTarget`), 접촉/궁병 화살도 그 대상에 적용된다. 무기는 `Weapon.Owner`가 `Transform`+`IWeaponStats`라 아군도 같은 무기를 쓴다(이펙트/투사체 풀은 주인공의 `WeaponController`를 공유). 아군은 스킬을 쓰지 않는다. `HeroSelectController`는 아군 UI/매니저를 실행 중에 찾으므로 Step 8을 다시 돌려도 연결이 유지된다. 규칙/흐름은 `docs/ALLIES.md`.
 - 적 걷기 시트: `Assets/Sprites/EnemyWalk/<적 에셋 이름>_Walk.png`(장수와 같은 4x4 규격, `HeroSpriteSet` 재사용). 시트가 있는 적은 그림 색 그대로(`Enemy.BaseColor`가 흰색)이고 `SetFacing` 좌우 반전 대신 `TickAnimation`으로 플레이어를 바라본다. 시트가 없으면 예전 동작(단색 스프라이트 + tint + 반전). 크기는 `walkPixelsPerUnit` x `scale`. 임시 그림은 `tools/hero_art/EnemySprites.cs`, `generate.ps1 -Only enemy`. 규격/목록은 `docs/HERO_WALK_SHEETS.md`.
 - 장수 초상화: 현재 5장은 **코드로 그린 임시 그림**(`tools/hero_art/HeroArt.cs`, `generate.ps1`로 재생성, 직접 그린 그림으로 덮어쓰면 생성 스크립트는 쓰지 않는다). 교체용 그림은 사용자가 준비해 `Assets/Sprites/Heroes/<장수 에셋 이름>.png`(512x640, 세로 4:5, 투명 배경)에 넣고 메뉴 `Step 10-5`로 연결한다. 가져오기 설정은 `HeroPortraitImporter`가 자동으로 맞춘다. 그림이 없는 장수는 기존 실루엣 + `tint`로 보이고(`HeroSelectUI.ShowPortrait`), 이미 연결된 초상화는 셋업이 덮어쓰지 않는다. 카드 레이아웃을 키웠으므로(높이 640→700) 적용하려면 `Step 8`(또는 Run All)을 다시 실행해야 한다.
+- 무기 휘두르기(10-9): 베기의 판정 원 크기는 그대로지만 **방향이 가장 가까운 적 쪽**이고 피해가 호의 40% 지점(기본 0.1초 뒤)에 들어간다. 명중이 조금 늘 수 있으니 `BalanceTests` 가 범위를 벗어나면 베기 피해를 내린다(`BalanceModel` 가정은 동시 2명 그대로). 그림이 없는 베기 무기(테스트, 직접 만든 에셋)도 타이밍/잔상은 같다. **Step 10-9(또는 Run All) 재실행 필요**(그림 연결 + 각도/시간 채움). 느낌 조정은 `Weapon_*.asset` 의 `swingArcDegrees/swingDuration`, 타격 지점 `SwingMotion.HitFraction`, 손 높이 `SlashWeapon.HandHeight`. 무기 그림은 Effect 정렬 레이어라 항상 몸 앞에 보인다(위로 벨 때 몸 뒤로 보내는 것은 후속). 셰이더/물리 없음. 사용자 피드백 반영: 원판 잔상 → **반원 검기가 앞으로 나감**, 달아나면서 등 뒤로 벨 때 **몸이 휘두르는 쪽을 봄**(걷기 시트 없는 장수는 제외). count 2 의 반대편 베기는 그대로라 그쪽은 여전히 등 뒤다(연속 베기로 바꾸는 것은 사용자 확인 뒤).
 - 장수별 무기 목록(8-5): 공용 무기 목록은 `Hero_*.asset` 의 `weapons`(전용 무기가 보유 한도 4 중 한 자리를 차지하므로 공용은 4개 이상, 기본 5개 → "5개 중 3개" 조합). 초안: 유비 활·화살비·전고·창 찌르기·검 베기 / 관우 검 베기·창 찌르기·뇌격·전고·회전 도끼 / 장비 창 찌르기·회전 도끼·전고·비도·검 베기 / 조조 쇠뇌·화계·화살비·비도·뇌격 / 여포 활·창 찌르기·회전 도끼·비도·검 베기. **Step 8(또는 Run All) 재실행 필요**(기존 장수 에셋의 빈 목록을 채움, 8-2 공용 무기가 먼저 있어야 함). 이후 조정은 에셋 직접 수정(셋업은 빈 목록만 채움). 목록 밖 무기의 진화는 자연히 못 하고, 패시브는 제한 없음. 아군은 그대로 전용 무기 1개. `BalanceTests` 의 무작위 빌드 시뮬레이션은 목록을 안 넘겨 공용 전부 기준이다(장수별 진화 도달률은 체감 뒤 필요하면 보강). 선택지 가중치(4:2:1)는 그대로이며 새 무기 후보가 10→5 로 줄어 덜 보이면 `newWeaponWeight` 를 올린다.
 - 장수 전용 시작 무기(쌍고검, 청룡언월도 등)는 진화 대상이 아니다. 필요하면 `EvolutionData` 추가.
 - 게임 씬은 한 판 1분 스테이지 기준이라 진화 필요 레벨을 5로 낮춰 둠(`Evo_*.asset`의 Required Level).
@@ -134,7 +137,7 @@ F2 무기 레벨업, F3 경험치 지급, F4 스테이지 15초 건너뛰기, F5
 ## 작업 규칙
 
 ### 셋업 / 에셋
-- 씬 배치와 프리팹/SO 생성은 에디터 스크립트로 자동화한다. 메뉴 `Samkuk > Run All Setup (Step 2-9 + 타이틀)`(10 효과음 + 타격감 + 10-3 테마 + 10-4 밸런스, 12-1 내정 성, 12-6 지형, 13 맵 편집기, 14-2 후처리, 14-3 도트 규격, 14-4 월드 정렬, 14-5 틸트 시프트 포함) 한 번이면 전체 구성. 새 Step을 만들면 `SetupAll.cs`에도 추가한다.
+- 씬 배치와 프리팹/SO 생성은 에디터 스크립트로 자동화한다. 메뉴 `Samkuk > Run All Setup (Step 2-9 + 타이틀)`(10 효과음 + 타격감 + 10-3 테마 + 10-4 밸런스, 12-1 내정 성, 12-6 지형, 13 맵 편집기, 10-9 무기 휘두르기, 14-2 후처리, 14-3 도트 규격, 14-4 월드 정렬, 14-5 틸트 시프트 포함) 한 번이면 전체 구성. 새 Step을 만들면 `SetupAll.cs`에도 추가한다.
 - 셋업은 **멱등**이어야 한다: 이미 있는 에셋은 덮어쓰지 않아 사용자가 조정한 수치를 보존하고, 카탈로그는 **누적 방식**(없는 항목만 추가)으로 채운다.
 - 셋업에서 `EditorSceneManager.OpenScene/NewScene` **이후에** 에셋을 로드한다 (씬 전환이 로드된 에셋 참조를 무효화할 수 있음).
 - 진화 셋업(`Step8EvolutionSetup`)은 장수 시작 무기가 만들어진 **뒤**(Step 8 이후)에 실행해야 한다 (Run All 순서 참고).

@@ -26,6 +26,7 @@ namespace Samkuk.EditorTools
             Step10BalanceSetup.Run();
             Step10PortraitSetup.Run(); // 장수 에셋이 만들어진 뒤
             Step10WalkSetup.Run();     // Player 프리팹이 만들어진 뒤
+            Step10SwingSetup.Run();    // 무기 휘두르기 그림/값 (베기 무기 에셋이 만들어진 뒤)
             Step10EnemyWalkSetup.Run(); // 적 에셋이 만들어진 뒤
             Step10AllySetup.Run();      // 장수 선택 컨트롤러(Step 8)가 만들어진 뒤
             Step12CastleSetup.Run();    // 내정 성 46곳 (다른 Step 과 독립)

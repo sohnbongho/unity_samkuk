@@ -9,7 +9,7 @@ namespace Samkuk.Player
     /// 시트가 없는 장수는 아무것도 하지 않아 기존 스프라이트와 좌우 반전(<see cref="PlayerController"/>)이 그대로 쓰인다.
     /// </summary>
     [DisallowMultipleComponent]
-    public class PlayerAnimator : MonoBehaviour
+    public class PlayerAnimator : MonoBehaviour, ILookOverride
     {
         /// <summary>대각선 이동에서 방향이 계속 바뀌지 않도록, 다른 축이 이 배수보다 커야 방향을 바꾼다.</summary>
         const float AxisSwitchRatio = 1.2f;
@@ -22,6 +22,8 @@ namespace Samkuk.Player
         PlayerController controller;
         HeroSpriteSet set;
         float clock;
+        Vector2 lookDir;
+        float lookLeft;
 
         /// <summary>걷기 시트를 쓰는 중인가 (false 면 기존 스프라이트 그대로).</summary>
         public bool HasSheet => set != null;
@@ -48,6 +50,21 @@ namespace Samkuk.Player
             Refresh();
         }
 
+        /// <summary>무기가 휘두르는 동안 그쪽을 본다 (<see cref="ILookOverride"/>). 이동 입력보다 우선하고, 걷기 프레임은 계속 돈다.</summary>
+        public void Look(Vector2 direction, float seconds)
+        {
+            if (direction.sqrMagnitude < 1e-6f || seconds <= 0f) return;
+            lookDir = direction;
+            lookLeft = seconds;
+        }
+
+        /// <summary>떨림 방지 없이 벡터가 가장 가까운 4방향. 가로/세로가 같으면 가로.</summary>
+        public static FacingDir DirectionOf(Vector2 v)
+        {
+            if (Mathf.Abs(v.x) >= Mathf.Abs(v.y)) return v.x >= 0f ? FacingDir.Right : FacingDir.Left;
+            return v.y >= 0f ? FacingDir.Up : FacingDir.Down;
+        }
+
         /// <summary>
         /// 이동 방향으로 바라보는 쪽을 고른다. 가로/세로 중 더 큰 축을 따르되,
         /// 지금 방향의 축에서 1.2배 넘게 다른 축이 커야 바꾼다 (대각선 떨림 방지).
@@ -71,9 +88,16 @@ namespace Samkuk.Player
             Vector2 move = controller != null ? controller.MoveInput : Vector2.zero;
             bool moving = move.sqrMagnitude > 0.0001f;
 
+            bool looking = lookLeft > 0f;
+            if (looking)
+            {
+                lookLeft -= Time.deltaTime;
+                Direction = DirectionOf(lookDir);
+            }
+
             if (moving)
             {
-                Direction = PickDirection(move, Direction);
+                if (!looking) Direction = PickDirection(move, Direction);
                 clock += Time.deltaTime * framesPerSecond * Mathf.Max(0.6f, move.magnitude);
                 // 멈춘 자세(0)에서 출발하므로 걷기는 1번 프레임부터
                 Frame = ((int)clock + 1) % HeroSpriteSet.Columns;

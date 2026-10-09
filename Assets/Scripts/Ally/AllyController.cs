@@ -14,7 +14,7 @@ namespace Samkuk.Allies
     /// 적은 플레이어와 아군 중 가까운 쪽을 노리고(<see cref="IEnemyTarget"/>), 체력이 다하면 쓰러졌다가
     /// <see cref="AllyConfig.ReviveSeconds"/> 뒤 플레이어 곁에서 되살아난다. 걷기 그림은 장수의 걷기 시트를 쓴다.
     /// </summary>
-    public class AllyController : MonoBehaviour, IEnemyTarget, IWeaponStats
+    public class AllyController : MonoBehaviour, IEnemyTarget, IWeaponStats, ILookOverride
     {
         const float ArriveDistance = 0.15f;
         const float LookInterval = 0.25f;
@@ -44,6 +44,8 @@ namespace Samkuk.Allies
         FacingDir facing = FacingDir.Down;
         float animClock;
         float lookTimer;
+        Vector2 lookDir;   // 무기가 요청한 바라볼 방향 (lookLeft 동안)
+        float lookLeft;
         readonly Enemy[] nearest = new Enemy[1];
 
         Transform barRoot;
@@ -280,8 +282,23 @@ namespace Samkuk.Allies
             return true;
         }
 
+        /// <summary>무기가 휘두르는 동안 그쪽을 본다 (<see cref="ILookOverride"/>).</summary>
+        public void Look(Vector2 direction, float seconds)
+        {
+            if (direction.sqrMagnitude < 1e-6f || seconds <= 0f) return;
+            lookDir = direction;
+            lookLeft = seconds;
+        }
+
         void UpdateFacing(float dt, bool moving, Vector2 moveDir)
         {
+            if (lookLeft > 0f)
+            {
+                lookLeft -= dt;
+                facing = PlayerAnimator.DirectionOf(lookDir);
+                return;
+            }
+
             if (moving)
             {
                 facing = PlayerAnimator.PickDirection(moveDir, facing);

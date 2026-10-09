@@ -48,6 +48,14 @@ namespace Samkuk.Data
         [Tooltip("맞은 적을 밀어내는 힘 (0이면 밀지 않음)")]
         public float knockback = 0f;
 
+        [Header("휘두르기 (베기 계열, Step 10-9)")]
+        [Tooltip("들고 휘두르는 무기 그림. 손잡이가 아래, 날이 위를 향하고 피벗은 손잡이 끝(아래 가운데). 비우면 호 잔상만 보인다")]
+        public Sprite heldSprite;
+        [Tooltip("휘두르는 호의 각도(도). 0 이면 기본값 120")]
+        public float swingArcDegrees = 0f;
+        [Tooltip("휘두르는 데 걸리는 시간(초). 타격은 이 시간의 40% 지점. 0 이면 기본값 0.25")]
+        public float swingDuration = 0f;
+
         [Header("레벨 성장")]
         public int maxLevel = 8;
         [Tooltip("레벨당 피해량 증가 비율")]
