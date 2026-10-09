@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Samkuk.Core;
+using Samkuk.Player;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 
@@ -13,6 +14,7 @@ namespace Samkuk.World
     /// (HD-2D 조명, <see cref="Hd2dSettings.Lighting"/> 이 켜져 있을 때만). 화면 주변 칸에만 소품이 있으니 빛 개수도 자연히 제한된다.
     /// 서 있는 소품(<see cref="Samkuk.Data.TerrainProp.standing"/>)은 배경이 아니라 월드 정렬(<see cref="WorldSorting"/>)에 들어가
     /// 캐릭터와 발 위치로 앞뒤가 정해지고, 회전하지 않으며, 드리운 그림자(<see cref="CastShadow"/>)가 붙는다 (Step 14-4).
+    /// 서 있는 소품이 플레이어 앞에서 몸을 덮으면 반투명해진다(<see cref="PropFadeRule"/>, Step 14-6) — 맵 편집기에서는 하지 않는다.
     /// </summary>
     public class TerrainPropSpawner : MonoBehaviour
     {
@@ -30,7 +32,12 @@ namespace Samkuk.World
         {
             public SpriteRenderer sr;
             public CastShadow shadow;
+            public bool standing;
         }
+
+        readonly List<PropView> standingViews = new List<PropView>();   // 화면 주변의 서 있는 소품 (겹침 검사 대상)
+        Transform fadeTarget;
+        float nextFadeTargetSearch;
 
         readonly Dictionary<Vector2Int, List<PropView>> active = new Dictionary<Vector2Int, List<PropView>>();
         readonly Stack<PropView> pool = new Stack<PropView>();
@@ -58,6 +65,11 @@ namespace Samkuk.World
         public int ActiveLightCount { get; private set; }
         /// <summary>소품 점광원을 만드는가 (초기화 때 <see cref="Hd2dSettings.Lighting"/> 을 읽는다).</summary>
         public bool LightsEnabled => lightsEnabled;
+
+        /// <summary>겹침 검사 대상(플레이어 발 위치). 비워 두면 씬의 <see cref="PlayerController"/> 를 찾는다. 테스트에서 지정한다.</summary>
+        public Transform FadeTarget { get => fadeTarget; set => fadeTarget = value; }
+        /// <summary>지금 반투명한 서 있는 소품 수 (테스트/디버그).</summary>
+        public int FadedCount { get; private set; }
 
         /// <summary>
         /// 맵과 따라갈 대상(보통 카메라)을 정하고 첫 칸들을 만든다. <paramref name="reference"/> 는 재질과 정렬 레이어를 빌려 올 배경 렌더러.
@@ -94,6 +106,40 @@ namespace Samkuk.World
         {
             Refresh();
             TickFlicker(Time.time);
+            TickFade(Time.deltaTime);
+        }
+
+        /// <summary>플레이어 앞에서 몸을 덮는 서 있는 소품을 반투명하게, 아니면 되돌린다. 전투에서만(맵 편집기 제외).</summary>
+        public void TickFade(float dt)
+        {
+            if (!fxAllowed || standingViews.Count == 0) return;
+            if (fadeTarget == null)
+            {
+                // 플레이어는 늦게 생길 수 있다. 없을 때 매 프레임 뒤지지 않도록 0.5초마다 찾는다
+                if (Time.unscaledTime < nextFadeTargetSearch) return;
+                nextFadeTargetSearch = Time.unscaledTime + 0.5f;
+                var pc = FindAnyObjectByType<PlayerController>();
+                if (pc == null) return;
+                fadeTarget = pc.transform;
+            }
+
+            Vector2 feet = fadeTarget.position;
+            int faded = 0;
+            foreach (var view in standingViews)
+            {
+                var sr = view.sr;
+                var b = sr.bounds;
+                bool fade = PropFadeRule.ShouldFade(sr.transform.position.y, new Rect(b.min.x, b.min.y, b.size.x, b.size.y), feet);
+                float a = PropFadeRule.Step(sr.color.a, fade, dt);
+                if (a != sr.color.a)
+                {
+                    var c = sr.color;
+                    c.a = a;
+                    sr.color = c;
+                }
+                if (a < 1f) faded++;
+            }
+            FadedCount = faded;
         }
 
         /// <summary>횃불처럼 일렁이는 빛의 세기를 갱신한다. 펄린 노이즈라 깜빡이지 않고 부드럽게 흔들린다.</summary>
@@ -197,6 +243,8 @@ namespace Samkuk.World
                     sr.transform.localRotation = Quaternion.Euler(0f, 0f, p.rotation);
                 }
                 SetShadow(view, standing && fxAllowed);
+                view.standing = standing;
+                if (standing) standingViews.Add(view);
                 list.Add(view);
 
                 if (lights != null && p.prop.HasLight) lights.Add(PlaceLight(p));
@@ -237,6 +285,7 @@ namespace Samkuk.World
             foreach (var view in list)
             {
                 view.sr.gameObject.SetActive(false);
+                if (view.standing) standingViews.Remove(view);
                 pool.Push(view);
             }
             ActivePropCount -= list.Count;

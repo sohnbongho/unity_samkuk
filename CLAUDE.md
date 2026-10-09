@@ -12,7 +12,7 @@
 
 ## 진행 상황
 
-마지막 갱신: 2026-10-09 (Step 14 HD-2D 전환 진행 중: 14-1 조명 완료, 14-2 후처리 완료, 14-3 도트 규격 완료, 14-4 월드 정렬·그림자 완료, 14-5 틸트 시프트 완료. 계획한 14-1~14-5 모두 완료, 후속은 `docs/HD2D.md` 후속 목록. 계획/결정은 `docs/HD2D.md`, 용어 `CONTEXT.md`, ADR `docs/adr/`)
+마지막 갱신: 2026-10-09 (Step 14 HD-2D 전환 진행 중: 14-1 조명 완료, 14-2 후처리 완료, 14-3 도트 규격 완료, 14-4 월드 정렬·그림자 완료, 14-5 틸트 시프트 완료, 후속 14-6 겹친 소품 반투명 완료. 나머지 후속은 `docs/HD2D.md` 후속 목록. 계획/결정은 `docs/HD2D.md`, 용어 `CONTEXT.md`, ADR `docs/adr/`)
 
 | Step | 내용 | 상태 | 커밋 |
 |---|---|---|---|
@@ -50,6 +50,7 @@
 | 14-3 | 도트 규격(픽셀 파이프라인): `PixelArt`(PPU 32, 가상 해상도 640x360, 걷기 칸 48, 바닥 128) 한 곳. 전투 카메라 `BattlePixelCamera` + URP Pixel Perfect Camera(업스케일 RT 없음, 픽셀 스냅, 켜면 반높이 5.625/끄면 6; 셋업 `Step 14-3`, Run All 포함, 시트 폭 192 인 장수/적의 `walkPixelsPerUnit` 을 32 로 이전). 임포터 Point 필터(`TerrainSpriteImporter` v3 PPU 32·발 3px, `HeroWalkImporter` v2). 그림 재생성: 공용 `tools/pixel/PixelTools.cs`(축소→알파 자르기→색 단계→1px 외곽선)를 장수/적/지형 생성기가 함께 컴파일, 걷기 시트 192x192(몸 40px, 적은 예전 PPU 비율로 칸 안 크기 `EnemyBodyPx`), 지형 절반 크기(강 토막은 가장자리 흐림 유지). 스위치 `SaveData.hd2dPixelPerfect`(타이틀 [도트 화면])/F7. 테스트 `Hd2dPixelTests` | 완료 | |
 | 14-4 | 월드 정렬·서 있는 소품·드리운 그림자: 정렬 레이어 `World`(Pickup 과 Enemy 사이, 셋업 `Step 14-4` 가 TagManager 에 추가) + `Renderer2D.asset` 투명 정렬 커스텀 축 (0,1,0) + 스프라이트 정렬 기준점 피벗(`WorldSorting.Configure`: 주인공/아군/적/서 있는 소품). **캐릭터 트랜스폼 = 발 위치**(걷기 시트 피벗이 발, `HeroSpriteSet.FootPivot`, `PixelArt.WalkFootPixels` 8). `TerrainProp.standing`(= 막는 소품, Step 12-6 채움): World 정렬, 회전 무시, 그림자. `CastShadow`(원본 자식 3단 회전→배율→회전으로 전단, `ShadowPreset.Decompose`, 시간대별 모양은 `BattleLighting` 이 `CastShadow.SetSettings`, 배경 레이어 순서 200, `ShadowPreset.EnemyBlob` 으로 적만 타원). 맵 편집기: 서 있는 소품 회전 금지(`MapEditModel.CanRotate`). 스위치 `SaveData.hd2dShadows`(타이틀 [그림자])/F8. 아군 체력바 높이 0.62→1.4. 테스트 `Hd2dWorldSortTests` | 완료 | |
 | 14-5 | 틸트 시프트(미니어처 흐림): 프로젝트 첫 셰이더 `Assets/Shaders/TiltShift.shader`(URP Blit.hlsl 전체 화면, 화면 y 띠 밖을 2차 곡선으로 13탭 원판 흐림, 깊이 안 씀) + URP 내장 Full Screen Pass 렌더러 기능을 `Renderer2D.asset` 하위 에셋으로(셋업 `Step 14-5`, Run All 포함, URP 에디터의 AddComponent 와 같은 방식으로 m_RendererFeatures/m_RendererFeatureMap 채움, 머티리얼 `Assets/Settings/TiltShift.mat`) + `BattleTiltShift`(전투 카메라: 전투 동안만 기능 켬, OnDisable 에서 끔, 값은 `TiltShiftPreset` 이 화면 높이 비율로 머티리얼에 넣음). 스위치 `SaveData.hd2dTiltShift`(타이틀 [미니어처 흐림])/F9. 테스트 `Hd2dTiltShiftTests` | 완료 | |
+| 14-6 | 겹친 소품 반투명: 서 있는 소품이 플레이어 앞(발이 더 아래)에서 몸 사각형(발 기준 0.6x1.1)을 덮으면 알파 0.4 로, 아니면 1 로 초당 6 씩 부드럽게(`PropFadeRule` 순수 규칙, `TerrainPropSpawner.TickFade` 가 화면 주변 서 있는 소품만 검사, 플레이어는 0.5초마다 찾음, `FadeTarget` 으로 테스트). 맵 편집기 제외. 테스트 `Hd2dPropFadeTests` | 완료 | |
 | 11 | PC 빌드(친구 공유용 Windows 빌드 환경): 메뉴 `Samkuk > Build`(릴리스/개발용) 또는 `tools/build_windows.ps1` → `Builds/` 에 실행 폴더 + 공유용 zip(README.txt 포함), 릴리스는 DebugOverlay/F1~F4 치트 꺼짐, 타이틀에 버전 표시(`BuildTool`, `docs/BUILD.md`). 최적화(GC/풀링)·아이콘·설치 파일은 아직 | 완료 | 15e5ad2 |
 
 ## 남은 작업
