@@ -36,6 +36,7 @@ namespace Samkuk.UI
         [SerializeField, Tooltip("HD-2D 조명 켜기/끄기 (없어도 동작: Step 9-2 를 다시 실행하면 생김)")] Button lightingButton;
         [SerializeField, Tooltip("HD-2D 후처리 켜기/끄기 (없어도 동작)")] Button postFxButton;
         [SerializeField, Tooltip("도트 격자 맞춤 켜기/끄기 (없어도 동작)")] Button pixelButton;
+        [SerializeField, Tooltip("드리운 그림자 켜기/끄기 (없어도 동작)")] Button shadowButton;
 
         [Header("하위 화면")]
         [SerializeField] Button shopCloseButton;
@@ -53,6 +54,7 @@ namespace Samkuk.UI
         [SerializeField] Text lightingLabel;
         [SerializeField] Text postFxLabel;
         [SerializeField] Text pixelLabel;
+        [SerializeField] Text shadowLabel;
         [SerializeField] MetaCatalog catalog;
         [SerializeField, Tooltip("저장 초기화 확인 대기 시간(초)")] float resetConfirmSeconds = 3f;
 
@@ -92,6 +94,7 @@ namespace Samkuk.UI
             Bind(lightingButton, ToggleLighting);
             Bind(postFxButton, TogglePostFx);
             Bind(pixelButton, TogglePixelPerfect);
+            Bind(shadowButton, ToggleShadows);
             Bind(shopCloseButton, ShowMain);
             Bind(recordsCloseButton, ShowMain);
 
@@ -276,6 +279,7 @@ namespace Samkuk.UI
             RefreshLightingLabel();
             RefreshPostFxLabel();
             RefreshPixelLabel();
+            RefreshShadowLabel();
         }
 
         void RefreshLightingLabel()
@@ -309,6 +313,20 @@ namespace Samkuk.UI
         void RefreshPixelLabel()
         {
             if (pixelLabel != null) pixelLabel.text = $"도트 화면: {(SaveSystem.Current.hd2dPixelPerfect ? "켬" : "끔")}";
+        }
+
+        /// <summary>드리운 그림자를 켜고 끈다. 저장된다.</summary>
+        public void ToggleShadows()
+        {
+            var save = SaveSystem.Current;
+            save.hd2dShadows = !save.hd2dShadows;
+            SaveSystem.SaveCurrent();
+            RefreshShadowLabel();
+        }
+
+        void RefreshShadowLabel()
+        {
+            if (shadowLabel != null) shadowLabel.text = $"그림자: {(SaveSystem.Current.hd2dShadows ? "켬" : "끔")}";
         }
 
         /// <summary>모니터(바탕화면) 크기 (테스트에서 대체 가능). 이보다 큰 해상도는 고를 수 없다.</summary>

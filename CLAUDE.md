@@ -12,7 +12,7 @@
 
 ## 진행 상황
 
-마지막 갱신: 2026-10-09 (Step 14 HD-2D 전환 진행 중: 14-1 조명 완료, 14-2 후처리 완료, 14-3 도트 규격 완료, 14-4 서 있는 소품·월드 정렬·그림자 진행 중. 계획/결정은 `docs/HD2D.md`, 용어 `CONTEXT.md`, ADR `docs/adr/`)
+마지막 갱신: 2026-10-09 (Step 14 HD-2D 전환 진행 중: 14-1 조명 완료, 14-2 후처리 완료, 14-3 도트 규격 완료, 14-4 월드 정렬·그림자 완료, 14-5 틸트 시프트 진행 중. 계획/결정은 `docs/HD2D.md`, 용어 `CONTEXT.md`, ADR `docs/adr/`)
 
 | Step | 내용 | 상태 | 커밋 |
 |---|---|---|---|
@@ -48,6 +48,7 @@
 | 14-1 | HD-2D 조명: 성 시간대(낮/해질녘/새벽, 성 그림과 같은 해시 `CastleMood`)·지형별 전역광 색조(`LightingPreset`, `BattleLighting` 이 소품 루트에 붙어 전역 Light2D 를 입히고 사라질 때 되돌림), 소품 점광원(`TerrainProp.light*`, 깃대 횃불/유르트/연못 기본값 `TerrainPropKinds.ApplyLightDefaults`, `TerrainPropSpawner` 가 소품과 함께 풀링, 펄린 일렁임), 플레이어 주변 빛. 스위치 `SaveData.hd2dLighting`(타이틀 [조명 연출])/`Hd2dSettings`(F5 는 저장 안 건드림). 런타임 asmdef 에 URP 2D 참조 추가. 테스트 `Hd2dLightingTests`. 계획 `docs/HD2D.md` | 완료 | |
 | 14-2 | HD-2D 후처리: 전투 카메라에 `BattlePostFx`(셋업 `Step 14-2`, Run All 포함)가 코드로 만든 전역 Volume 프로필(`PostFxPreset`: 블룸 문턱 1(빛만 번짐)·비네트·대비/채도·시간대 색온도)을 붙이고 카메라 포스트 프로세싱을 켠다. 스위치 `SaveData.hd2dPostFx`(타이틀 [화면 효과], Step 9-2 재실행)/F6(저장 안 건드림, 끄면 카메라 후처리 자체를 꺼 비용 0). 에셋 없음(프로필은 실행 중 생성). asmdef 에 URP Runtime/Core Runtime 참조 추가. 테스트 `Hd2dPostFxTests` | 완료 | |
 | 14-3 | 도트 규격(픽셀 파이프라인): `PixelArt`(PPU 32, 가상 해상도 640x360, 걷기 칸 48, 바닥 128) 한 곳. 전투 카메라 `BattlePixelCamera` + URP Pixel Perfect Camera(업스케일 RT 없음, 픽셀 스냅, 켜면 반높이 5.625/끄면 6; 셋업 `Step 14-3`, Run All 포함, 시트 폭 192 인 장수/적의 `walkPixelsPerUnit` 을 32 로 이전). 임포터 Point 필터(`TerrainSpriteImporter` v3 PPU 32·발 3px, `HeroWalkImporter` v2). 그림 재생성: 공용 `tools/pixel/PixelTools.cs`(축소→알파 자르기→색 단계→1px 외곽선)를 장수/적/지형 생성기가 함께 컴파일, 걷기 시트 192x192(몸 40px, 적은 예전 PPU 비율로 칸 안 크기 `EnemyBodyPx`), 지형 절반 크기(강 토막은 가장자리 흐림 유지). 스위치 `SaveData.hd2dPixelPerfect`(타이틀 [도트 화면])/F7. 테스트 `Hd2dPixelTests` | 완료 | |
+| 14-4 | 월드 정렬·서 있는 소품·드리운 그림자: 정렬 레이어 `World`(Pickup 과 Enemy 사이, 셋업 `Step 14-4` 가 TagManager 에 추가) + `Renderer2D.asset` 투명 정렬 커스텀 축 (0,1,0) + 스프라이트 정렬 기준점 피벗(`WorldSorting.Configure`: 주인공/아군/적/서 있는 소품). **캐릭터 트랜스폼 = 발 위치**(걷기 시트 피벗이 발, `HeroSpriteSet.FootPivot`, `PixelArt.WalkFootPixels` 8). `TerrainProp.standing`(= 막는 소품, Step 12-6 채움): World 정렬, 회전 무시, 그림자. `CastShadow`(원본 자식 3단 회전→배율→회전으로 전단, `ShadowPreset.Decompose`, 시간대별 모양은 `BattleLighting` 이 `CastShadow.SetSettings`, 배경 레이어 순서 200, `ShadowPreset.EnemyBlob` 으로 적만 타원). 맵 편집기: 서 있는 소품 회전 금지(`MapEditModel.CanRotate`). 스위치 `SaveData.hd2dShadows`(타이틀 [그림자])/F8. 아군 체력바 높이 0.62→1.4. 테스트 `Hd2dWorldSortTests` | 완료 | |
 | 11 | PC 빌드(친구 공유용 Windows 빌드 환경): 메뉴 `Samkuk > Build`(릴리스/개발용) 또는 `tools/build_windows.ps1` → `Builds/` 에 실행 폴더 + 공유용 zip(README.txt 포함), 릴리스는 DebugOverlay/F1~F4 치트 꺼짐, 타이틀에 버전 표시(`BuildTool`, `docs/BUILD.md`). 최적화(GC/풀링)·아이콘·설치 파일은 아직 | 완료 | 15e5ad2 |
 
 ## 남은 작업
@@ -68,6 +69,7 @@
 - HD-2D 조명(14-1): 전역광은 씬의 `Global Light 2D`(전투 씬에 이미 있음)를 `BattleLighting` 이 실행 중에 입히므로 씬 재구성은 필요 없다. 다만 **타이틀 [조명 연출] 버튼은 Step 9-2 재실행, 소품 빛 기본값은 Step 12-6 재실행**이 필요하다(둘 다 없어도 동작: 버튼이 없으면 항상 켬, 빛 값이 없으면 점광원만 없음). 맵 편집기는 `InfiniteBackground.LightingAllowed = false` 로 조명을 붙이지 않는다. 시간대는 `CastleData` 에 저장하지 않고 성 아이디 해시로 계산한다(성 그림 생성기와 같은 `new Random(seed).Next(3)`; 테스트 `CastleMood_MatchesCastleArtGenerator` 가 어긋나면 유니티의 `System.Random` 수열이 다른 것이므로 그때는 `CastleData` 에 값을 저장하는 쪽으로 바꾼다). 런타임 코드가 `UnityEngine.Rendering.Universal.Light2D` 를 쓰므로 `Samkuk.Runtime.asmdef`/테스트 asmdef 가 `Unity.RenderPipelines.Universal.2D.Runtime` 을 참조한다.
 - HD-2D 후처리(14-2): `BattlePostFx` 는 전투 씬 Main Camera 의 컴포넌트라 **Step 14-2(또는 Run All) 재실행이 필요**하다. Volume/프로필은 에셋 없이 실행 중 코드로 만들므로 값은 `PostFxPreset`(코드)에서 고친다. 블룸은 문턱 1 이라 HDR(URP 에셋 HDR 켜짐)로 1 을 넘는 빛(횃불, 플레이어 빛 겹침)만 번지고 스프라이트는 번지지 않는다. 틸트 시프트(흐림)는 URP 기본 피사계 심도가 깊이를 쓰는데 2D 스프라이트는 깊이를 안 써 쓸 수 없으므로 14-5 커스텀 패스로 따로 한다. 맵 편집기 씬 카메라에는 붙이지 않는다(전투 테스트는 전투 씬이라 붙는다). UI(Overlay 캔버스)는 후처리 뒤에 그려져 영향 없음.
 - 스프라이트(번개, 불길, 궁병, 기병 등)는 코드로 만든 **플레이스홀더**. Step 10에서 교체/다듬기.
+- 월드 정렬(14-4): **Step 14-4(또는 Run All) 재실행 필요** — `World` 정렬 레이어를 TagManager 에 넣고 `Renderer2D.asset` 의 정렬 모드를 커스텀 축으로 바꾼다(둘 다 셋업이 SerializedObject 로 고친다). 레이어가 없으면 `WorldSorting` 이 Player 레이어로 대신해 사라지지는 않지만 적/소품과의 앞뒤는 틀린다. 정렬 축이 Default 면 URP 2D 는 카메라 설정이 아니라 Orthographic(z) 으로 정렬하므로 **렌더러 에셋을 꼭 바꿔야** 발 y 정렬이 된다. 캐릭터 기준점이 몸 중심에서 **발**로 바뀌었다: 화면상 몸이 0.5유닛쯤 위로 올라가 보이고, 충돌 원/무기 범위/데미지 숫자/이펙트는 발 위치 기준이 됐다(무기 이펙트·숫자를 몸 높이로 올리는 것은 후속). 아군 체력바는 1.4 로 올렸다. 적 수백 마리의 드리운 그림자가 무거우면 `ShadowPreset.EnemyBlob = true`.
 - 도트 규격(14-3): 월드 스프라이트는 PPU 32, Point 필터. 걷기 시트는 **칸 48(192x192)**이고 PPU 32(한 칸 1.5유닛, 몸 약 1유닛), 지형은 바닥 128x128·소품 절반 크기(유닛 크기는 그대로). 생성기는 예전 좌표계로 그린 뒤 `tools/pixel/PixelTools.cs` 로 다듬으므로 그리는 코드는 그대로다. 임포터 버전을 올려 두어 에디터가 기존 PNG 도 새 설정으로 다시 가져온다. **Step 14-3(또는 Run All) 재실행 필요**(카메라 + PPU 이전). Pixel Perfect Camera 는 전투 씬 카메라에만(맵 편집기는 자유 줌). 가상 해상도 640x360 은 1080p 3배/1440p 4배 정수 배이며 창 모드로 다른 크기를 쓰면 PPC 가 가장 가까운 정수 배로 맞춘다. 무기 이펙트/투사체/보석 그림(Step 1/5/8, PPU 64 Bilinear)은 "고해상도 효과" 범주라 아직 그대로 — 후속 후보.
 - 장수 걷기 시트: `Assets/Sprites/HeroWalk/<장수 에셋 이름>_Walk.png`(4열 x 4행: 열=프레임 0~3, 행=아래/위/왼쪽/오른쪽, 칸 48x48 도트 규격, 배경 투명). 현재 5장은 **코드로 그린 임시 그림**(`tools/hero_art/HeroSprites.cs`, `generate.ps1 -Only walk`). 시트가 있는 장수는 `PlayerController`가 좌우 반전을 하지 않고 `PlayerAnimator`가 방향/프레임을 정하며, 장수 색(`tint`)도 입히지 않는다(`HeroSelectController.Apply`). 시트가 없으면 예전 동작(원 스프라이트 + tint + 반전). Player 프리팹에 `PlayerAnimator`를 붙이는 것은 `Step 10-6`이므로 셋업을 돌려야 한다.
 - 지형 이동(12-7): `InfiniteBackground.BuildMap` 이 소품을 만들 때 같은 맵으로 `TerrainCollision` 을 만들어 `TerrainCollision.Active` 에 올리고(`ResetToDefault`/`OnDestroy` 에서 내림), 플레이어·적·아군이 매 틱 `SpeedFactor`(물 배율)와 `Resolve`(막는 원 쪽 속도 성분 제거 + 겹침 밀어내기)를 부른다. **유니티 물리 콜라이더를 쓰지 않는다**(적 수백 마리를 이미 코드로 처리, 순수 로직이라 테스트 가능). `Active` 가 null 이면(지형 그림 없음, 테스트) 예전처럼 어디든 걷는다. 막는/느려지는 값은 소품 데이터(`TerrainProp.blockRadius/slowRadius/slowFactor`, 테마 `riverSlowFactor`)이고 셋업은 **이동 값이 하나도 없는 테마만** `TerrainPropKinds` 기본값으로 채우므로(**Step 12-6 재실행 필요**), 이후 조정은 `Theme_*.asset` 을 직접 고친다. 물에서는 스스로 가는 속도만 느려지고(겹침 밀림/넉백은 그대로) 나무/바위는 넉백도 막는다. 적은 길 찾기 없이 그 자리에서 접선으로 비켜 간다. 화살/투사체/보석은 영향 없음. 설명은 `docs/TERRAIN.md` "지형 이동".
@@ -120,14 +122,14 @@
 - UI는 uGUI 레거시 `Text` + `UiFont`(한글 폰트). 뷰는 인터페이스(`ILevelUpView`, `IResultView`, `IPauseView`...)로 분리해 테스트에서 가짜 뷰를 쓴다.
 
 ### 디버그 키 (게임 씬)
-F2 무기 레벨업, F3 경험치 지급, F4 스테이지 15초 건너뛰기, F5 HD-2D 조명 켜고 끄기, F6 후처리 켜고 끄기, F7 도트 격자 맞춤 켜고 끄기(셋 다 저장 안 됨), ESC 일시정지, R 재시작, T 타이틀(결과 화면).
+F2 무기 레벨업, F3 경험치 지급, F4 스테이지 15초 건너뛰기, F5 HD-2D 조명 켜고 끄기, F6 후처리 켜고 끄기, F7 도트 격자 맞춤 켜고 끄기, F8 그림자 켜고 끄기(모두 저장 안 됨), ESC 일시정지, R 재시작, T 타이틀(결과 화면).
 
 ---
 
 ## 작업 규칙
 
 ### 셋업 / 에셋
-- 씬 배치와 프리팹/SO 생성은 에디터 스크립트로 자동화한다. 메뉴 `Samkuk > Run All Setup (Step 2-9 + 타이틀)`(10 효과음 + 타격감 + 10-3 테마 + 10-4 밸런스, 12-1 내정 성, 12-6 지형, 13 맵 편집기, 14-2 후처리, 14-3 도트 규격 포함) 한 번이면 전체 구성. 새 Step을 만들면 `SetupAll.cs`에도 추가한다.
+- 씬 배치와 프리팹/SO 생성은 에디터 스크립트로 자동화한다. 메뉴 `Samkuk > Run All Setup (Step 2-9 + 타이틀)`(10 효과음 + 타격감 + 10-3 테마 + 10-4 밸런스, 12-1 내정 성, 12-6 지형, 13 맵 편집기, 14-2 후처리, 14-3 도트 규격, 14-4 월드 정렬 포함) 한 번이면 전체 구성. 새 Step을 만들면 `SetupAll.cs`에도 추가한다.
 - 셋업은 **멱등**이어야 한다: 이미 있는 에셋은 덮어쓰지 않아 사용자가 조정한 수치를 보존하고, 카탈로그는 **누적 방식**(없는 항목만 추가)으로 채운다.
 - 셋업에서 `EditorSceneManager.OpenScene/NewScene` **이후에** 에셋을 로드한다 (씬 전환이 로드된 에셋 참조를 무효화할 수 있음).
 - 진화 셋업(`Step8EvolutionSetup`)은 장수 시작 무기가 만들어진 **뒤**(Step 8 이후)에 실행해야 한다 (Run All 순서 참고).

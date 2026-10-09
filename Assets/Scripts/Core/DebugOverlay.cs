@@ -7,7 +7,7 @@ using UnityEngine.InputSystem;
 
 namespace Samkuk.Core
 {
-    /// <summary>개발용 오버레이: FPS, 활성 적 수, F1 적 +100, F2 전체 무기 레벨업, F3 경험치 +10, F4 시간 +10초, F5 HD-2D 조명 켜고 끄기, F6 후처리 켜고 끄기, F7 도트 격자 맞춤 켜고 끄기.</summary>
+    /// <summary>개발용 오버레이: FPS, 활성 적 수, F1 적 +100, F2 전체 무기 레벨업, F3 경험치 +10, F4 시간 +10초, F5 HD-2D 조명 켜고 끄기, F6 후처리 켜고 끄기, F7 도트 격자 맞춤 켜고 끄기, F8 그림자 켜고 끄기.</summary>
     public class DebugOverlay : MonoBehaviour
     {
         [SerializeField] EnemySpawner spawner;
@@ -81,6 +81,9 @@ namespace Samkuk.Core
                 if (pixelCam == null) pixelCam = FindAnyObjectByType<Samkuk.World.BattlePixelCamera>();
                 if (pixelCam != null) pixelCam.Apply(Hd2dSettings.PixelPerfect);
             }
+
+            if (kb.f8Key.wasPressedThisFrame)
+                Hd2dSettings.ShadowsOverride = !Hd2dSettings.Shadows;   // 그림자는 매 프레임 설정을 읽으므로 바로 반영된다
         }
 
         void OnGUI()
@@ -94,7 +97,7 @@ namespace Samkuk.Core
             int count = manager != null ? manager.Count : 0;
             float fps = smoothedDelta > 0f ? 1f / smoothedDelta : 0f;
             GUI.Label(new Rect(10, 8, 500, 26), $"FPS {fps:0}   Enemies {count}", style);
-            GUI.Label(new Rect(10, 30, 1000, 26), $"F1: +{burstCount} enemies   F2: weapons level up   F3: +10 exp   F4: +10 sec   F5: lighting {(Hd2dSettings.Lighting ? "on" : "off")}   F6: post fx {(Hd2dSettings.PostFx ? "on" : "off")}   F7: pixel {(Hd2dSettings.PixelPerfect ? "on" : "off")}", style);
+            GUI.Label(new Rect(10, 30, 1000, 26), $"F1: +{burstCount} enemies   F2: weapons level up   F3: +10 exp   F4: +10 sec   F5: lighting {(Hd2dSettings.Lighting ? "on" : "off")}   F6: post fx {(Hd2dSettings.PostFx ? "on" : "off")}   F7: pixel {(Hd2dSettings.PixelPerfect ? "on" : "off")}   F8: shadows {(Hd2dSettings.Shadows ? "on" : "off")}", style);
         }
     }
 }

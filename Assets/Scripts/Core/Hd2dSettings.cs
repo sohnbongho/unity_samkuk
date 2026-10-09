@@ -26,12 +26,19 @@ namespace Samkuk.Core
         /// <summary>도트 격자 맞춤(Pixel Perfect Camera)을 쓰는가.</summary>
         public static bool PixelPerfect => PixelPerfectOverride ?? SaveSystem.Current.hd2dPixelPerfect;
 
+        /// <summary>null 이면 저장 설정을 따른다.</summary>
+        public static bool? ShadowsOverride { get; set; }
+
+        /// <summary>드리운 그림자(캐릭터, 서 있는 소품)를 그리는가.</summary>
+        public static bool Shadows => ShadowsOverride ?? SaveSystem.Current.hd2dShadows;
+
         /// <summary>테스트/디버그가 바꾼 값을 모두 지운다.</summary>
         public static void ResetOverrides()
         {
             LightingOverride = null;
             PostFxOverride = null;
             PixelPerfectOverride = null;
+            ShadowsOverride = null;
         }
     }
 }

@@ -18,6 +18,8 @@ namespace Samkuk.Core
         {
             public const string Background = "Background";
             public const string Pickup = "Pickup";
+            /// <summary>월드 정렬(Step 14-4): 캐릭터와 서 있는 소품이 함께 쓰며 발 위치(y)로 앞뒤가 정해진다. Pickup 과 Enemy 사이. 셋업 Step 14-4 가 만든다.</summary>
+            public const string World = "World";
             public const string Enemy = "Enemy";
             public const string Player = "Player";
             public const string Projectile = "Projectile";

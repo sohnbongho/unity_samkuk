@@ -127,6 +127,9 @@ namespace Samkuk.World
 
         // ───────────────────────── 찾기 ─────────────────────────
 
+        /// <summary>돌릴 수 있는 물건인가. 서 있는 소품(나무, 바위 등)은 눕히면 어색하므로 돌리지 않는다 (반전·크기만).</summary>
+        public static bool CanRotate(PropPlacement p) => !(p.prop != null && p.prop.standing);
+
         public bool TryGet(ItemRef r, out PropPlacement placement)
         {
             placement = default;

@@ -25,6 +25,7 @@ MonoBehaviour:
     weight: 1
     scaleMin: 0.8
     scaleMax: 1.5
+    standing: 0
     blockRadius: 0
     slowRadius: 1.4
     slowFactor: 0.5
@@ -39,6 +40,7 @@ MonoBehaviour:
     weight: 1
     scaleMin: 0.95
     scaleMax: 1.1
+    standing: 1
     blockRadius: 0.15
     slowRadius: 0
     slowFactor: 1

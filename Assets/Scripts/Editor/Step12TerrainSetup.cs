@@ -106,6 +106,8 @@ namespace Samkuk.EditorTools
                 bool fillMovement = theme.props.TrueForAll(x => !x.Blocks && !x.Slows);
                 // 빛도 같은 규칙: 하나라도 빛이 있으면 사용자가 조정한 것으로 보고 그대로 둔다 (HD-2D 조명, Step 14-1)
                 bool fillLights = theme.props.TrueForAll(x => !x.HasLight);
+                // 서 있음도 같은 규칙 (월드 정렬, Step 14-4): 막는 소품 = 서 있는 소품
+                bool fillStanding = theme.props.TrueForAll(x => !x.standing);
                 foreach (var p in row.props)
                 {
                     var prop = theme.props.Find(x => x.name == p.file);
@@ -125,6 +127,7 @@ namespace Samkuk.EditorTools
                         TerrainPropKinds.ApplyLightDefaults(prop, p.kind);
                         if (prop.HasLight) lights++;
                     }
+                    if (isNew || fillStanding) prop.standing = TerrainPropKinds.IsStanding(p.kind);
                     if (prop.sprite == null)
                     {
                         prop.sprite = LoadSprite(p.file, missing);
@@ -161,6 +164,7 @@ namespace Samkuk.EditorTools
                     TerrainPropKinds.ApplyLightDefaults(target, s.kind);   // 깃대는 횃불, 연못은 푸른 빛
                     if (target.HasLight) lights++;
                 }
+                if (!catalog.banner.standing) target.standing = TerrainPropKinds.IsStanding(s.kind);   // 깃대만 서 있다
                 if (target.sprite == null)
                 {
                     target.name = s.file;

@@ -124,8 +124,8 @@ namespace Samkuk.Allies
             var go = new GameObject("Body");
             go.transform.SetParent(transform, false);
             body = go.AddComponent<SpriteRenderer>();
-            body.sortingLayerName = GameLayers.Sorting.Player;
-            body.sortingOrder = -1; // 주인공 뒤
+            Samkuk.World.WorldSorting.Configure(body);   // 주인공·적과 같은 월드 정렬: 발 위치로 앞뒤 (Step 14-4)
+            Samkuk.World.CastShadow.Attach(body);
         }
 
         void BuildWeapon(WeaponData data, WeaponController playerWeapons)
@@ -352,7 +352,7 @@ namespace Samkuk.Allies
         {
             var go = new GameObject("HpBar");
             go.transform.SetParent(transform, false);
-            go.transform.localPosition = new Vector3(0f, 0.62f, 0f);
+            go.transform.localPosition = new Vector3(0f, 1.4f, 0f);   // 기준점이 발이라(Step 14-4) 몸(약 1.2유닛) 위에
             barRoot = go.transform;
 
             barBack = MakeBarPart("Back", new Color(0.08f, 0.06f, 0.06f, 0.85f), 20);

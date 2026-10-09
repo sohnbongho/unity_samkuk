@@ -43,6 +43,7 @@ namespace Samkuk.World
                 originalColor = global.color;
                 originalIntensity = global.intensity;
             }
+            CastShadow.SetSettings(ShadowPreset.For(time));   // 그림자 방향·길이·농도도 같은 시간대를 따른다 (조명 스위치와 무관)
             Apply(Hd2dSettings.Lighting);
         }
 

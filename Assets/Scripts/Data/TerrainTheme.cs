@@ -14,6 +14,9 @@ namespace Samkuk.Data
         [Tooltip("크기 배율 범위")] public float scaleMin = 0.9f;
         public float scaleMax = 1.2f;
 
+        [Header("보이기 (HD-2D 월드 정렬)")]
+        [Tooltip("서 있는 소품: 옆에서 본 모습이라 캐릭터를 가릴 수 있다. World 정렬 레이어에서 발 위치로 앞뒤가 정해지고 드리운 그림자가 붙으며 회전하지 않는다. 막는 소품(나무, 바위, 유르트, 배, 깃대)이 해당")] public bool standing;
+
         [Header("이동 (지형 효과)")]
         [Tooltip("막는 반지름(유닛, 소품 크기 배율을 곱한다). 바닥에 닿는 점이 중심. 0 이면 그대로 지나간다")] public float blockRadius;
         [Tooltip("느려지는 범위의 반지름(유닛, 배율을 곱한다). 0 이면 없음. 연못처럼 밟으면 느려지는 것에 쓴다")] public float slowRadius;

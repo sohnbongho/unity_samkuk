@@ -408,7 +408,11 @@ namespace Samkuk.World
             return true;
         }
 
-        public void RotateSelected(float degrees) => ModifySelected(p => { p.rotation += degrees; return p; });
+        public void RotateSelected(float degrees) => ModifySelected(p =>
+        {
+            if (MapEditModel.CanRotate(p)) p.rotation += degrees;   // 서 있는 소품은 돌리지 않는다
+            return p;
+        });
 
         public void ScaleSelected(float factor) => ModifySelected(p => { p.scale = Mathf.Clamp(p.scale * factor, 0.25f, 5f); return p; });
 
@@ -1128,7 +1132,9 @@ namespace Samkuk.World
             if (selectionLabel != null)
             {
                 if (Model != null && Model.TryGet(Selected, out var p))
-                    selectionLabel.text = $"{TerrainMap.KeyOf(p.prop)}\n크기 {p.scale:0.00}  회전 {p.rotation:0}°";
+                    selectionLabel.text = p.prop != null && p.prop.standing
+                        ? $"{TerrainMap.KeyOf(p.prop)}\n크기 {p.scale:0.00}  서 있는 소품 (회전 없음)"
+                        : $"{TerrainMap.KeyOf(p.prop)}\n크기 {p.scale:0.00}  회전 {p.rotation:0}°";
                 else selectionLabel.text = CurrentTool == Tool.Select ? "맵의 물건을 누르면 선택됩니다" : "(선택/이동 도구에서 고르세요)";
             }
         }

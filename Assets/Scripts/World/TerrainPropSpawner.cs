@@ -11,6 +11,8 @@ namespace Samkuk.World
     /// 배경 정렬 레이어에 그려져 적/플레이어/투사체/보석 뒤에 깔린다.
     /// 빛이 있는 소품(<see cref="Samkuk.Data.TerrainProp.HasLight"/>: 깃발의 횃불, 연못)은 점광원 Light2D 를 함께 만든다
     /// (HD-2D 조명, <see cref="Hd2dSettings.Lighting"/> 이 켜져 있을 때만). 화면 주변 칸에만 소품이 있으니 빛 개수도 자연히 제한된다.
+    /// 서 있는 소품(<see cref="Samkuk.Data.TerrainProp.standing"/>)은 배경이 아니라 월드 정렬(<see cref="WorldSorting"/>)에 들어가
+    /// 캐릭터와 발 위치로 앞뒤가 정해지고, 회전하지 않으며, 드리운 그림자(<see cref="CastShadow"/>)가 붙는다 (Step 14-4).
     /// </summary>
     public class TerrainPropSpawner : MonoBehaviour
     {
@@ -23,9 +25,17 @@ namespace Samkuk.World
         Material material;
         int sortingLayerId;
 
-        readonly Dictionary<Vector2Int, List<SpriteRenderer>> active = new Dictionary<Vector2Int, List<SpriteRenderer>>();
-        readonly Stack<SpriteRenderer> pool = new Stack<SpriteRenderer>();
+        /// <summary>풀에서 돌려 쓰는 소품 하나: 렌더러 + (서 있는 소품으로 쓰였을 때 붙은) 그림자.</summary>
+        class PropView
+        {
+            public SpriteRenderer sr;
+            public CastShadow shadow;
+        }
+
+        readonly Dictionary<Vector2Int, List<PropView>> active = new Dictionary<Vector2Int, List<PropView>>();
+        readonly Stack<PropView> pool = new Stack<PropView>();
         readonly List<Vector2Int> removeBuffer = new List<Vector2Int>();
+        bool fxAllowed = true;
 
         /// <summary>소품에 붙은 점광원 하나. 일렁임은 매 프레임 세기만 바꾼다.</summary>
         class PropLight
@@ -51,10 +61,11 @@ namespace Samkuk.World
 
         /// <summary>
         /// 맵과 따라갈 대상(보통 카메라)을 정하고 첫 칸들을 만든다. <paramref name="reference"/> 는 재질과 정렬 레이어를 빌려 올 배경 렌더러.
-        /// <paramref name="allowLights"/> 가 false 면(맵 편집기) 설정과 상관없이 점광원을 만들지 않는다.
+        /// <paramref name="allowLights"/> 가 false 면(맵 편집기) 설정과 상관없이 점광원과 그림자를 만들지 않는다.
         /// </summary>
         public void Initialize(TerrainMap terrainMap, Transform followTarget, SpriteRenderer reference, bool allowLights = true)
         {
+            fxAllowed = allowLights;
             map = terrainMap;
             follow = followTarget;
             if (reference != null)
@@ -148,7 +159,7 @@ namespace Samkuk.World
 
         void SpawnChunk(Vector2Int key)
         {
-            var list = new List<SpriteRenderer>();
+            var list = new List<PropView>();
             var lights = lightsEnabled ? new List<PropLight>() : null;
             Place(list, lights, map.GetChunk(key.x, key.y));   // 직접 고친 칸이면 그 내용, 아니면 자동 생성
             active[key] = list;
@@ -160,22 +171,47 @@ namespace Samkuk.World
             }
         }
 
-        void Place(List<SpriteRenderer> list, List<PropLight> lights, List<PropPlacement> placements)
+        void Place(List<PropView> list, List<PropLight> lights, List<PropPlacement> placements)
         {
             foreach (var p in placements)
             {
-                var sr = Acquire();
+                var view = Acquire();
+                var sr = view.sr;
+                bool standing = p.prop.standing;
                 sr.sprite = p.prop.sprite;
                 sr.color = p.tinted ? p.tint : Color.white;   // 풀에서 꺼낸 것은 이전 색이 남아 있으므로 항상 다시 정한다
                 sr.flipX = p.flipX;
-                sr.sortingOrder = p.order;
                 sr.transform.position = new Vector3(p.position.x, p.position.y, PropZ);
-                sr.transform.localRotation = Quaternion.Euler(0f, 0f, p.rotation);   // 풀에서 꺼낸 것은 이전 회전이 남아 있으므로 항상 다시 정한다
                 sr.transform.localScale = new Vector3(p.scale, p.scale * (p.stretchY > 0f ? p.stretchY : 1f), 1f);
-                list.Add(sr);
+                if (standing)
+                {
+                    // 서 있는 소품: 캐릭터와 같은 월드 정렬(발 y), 눕히지 않는다 (맵 편집기에서 돌려 둔 값이 있어도 무시)
+                    WorldSorting.Configure(sr);
+                    sr.transform.localRotation = Quaternion.identity;
+                }
+                else
+                {
+                    sr.sortingLayerID = sortingLayerId;   // 풀에서 꺼낸 것은 서 있는 소품이었을 수 있으므로 항상 다시 정한다
+                    sr.sortingOrder = p.order;
+                    sr.spriteSortPoint = SpriteSortPoint.Center;
+                    sr.transform.localRotation = Quaternion.Euler(0f, 0f, p.rotation);
+                }
+                SetShadow(view, standing && fxAllowed);
+                list.Add(view);
 
                 if (lights != null && p.prop.HasLight) lights.Add(PlaceLight(p));
             }
+        }
+
+        /// <summary>서 있는 소품에만 드리운 그림자를 붙인다 (한 번 붙인 그림자는 풀과 함께 돌려 쓰고 끄기만 한다).</summary>
+        static void SetShadow(PropView view, bool on)
+        {
+            if (on)
+            {
+                if (view.shadow == null) view.shadow = CastShadow.Attach(view.sr);
+                else view.shadow.gameObject.SetActive(true);
+            }
+            else if (view.shadow != null) view.shadow.gameObject.SetActive(false);
         }
 
         PropLight PlaceLight(PropPlacement p)
@@ -198,10 +234,10 @@ namespace Samkuk.World
         void DespawnChunk(Vector2Int key)
         {
             if (!active.TryGetValue(key, out var list)) return;
-            foreach (var sr in list)
+            foreach (var view in list)
             {
-                sr.gameObject.SetActive(false);
-                pool.Push(sr);
+                view.sr.gameObject.SetActive(false);
+                pool.Push(view);
             }
             ActivePropCount -= list.Count;
             active.Remove(key);
@@ -235,23 +271,20 @@ namespace Samkuk.World
             return new PropLight { light = light };
         }
 
-        SpriteRenderer Acquire()
+        PropView Acquire()
         {
-            SpriteRenderer sr;
             if (pool.Count > 0)
             {
-                sr = pool.Pop();
-                sr.gameObject.SetActive(true);
+                var view = pool.Pop();
+                view.sr.gameObject.SetActive(true);
+                return view;
             }
-            else
-            {
-                var go = new GameObject("Prop");
-                go.transform.SetParent(transform, false);
-                sr = go.AddComponent<SpriteRenderer>();
-                if (material != null) sr.sharedMaterial = material;
-                sr.sortingLayerID = sortingLayerId;
-            }
-            return sr;
+            var go = new GameObject("Prop");
+            go.transform.SetParent(transform, false);
+            var sr = go.AddComponent<SpriteRenderer>();
+            if (material != null) sr.sharedMaterial = material;
+            sr.sortingLayerID = sortingLayerId;
+            return new PropView { sr = sr };
         }
     }
 }

@@ -15,6 +15,8 @@ namespace Samkuk.Core
         public const int WalkCell = 48;
         /// <summary>예전(도트 전) 걷기 시트 칸. 이 크기의 시트는 예전 PPU 값을 그대로 쓴다.</summary>
         public const int LegacyWalkCell = 96;
+        /// <summary>걷기 시트 칸에서 발(피벗)이 아래 가장자리에서 떨어진 픽셀 수. 도트 칸(48)과 예전 칸(96) 모두 8 — 생성기가 그렇게 그린다.</summary>
+        public const int WalkFootPixels = 8;
         /// <summary>지형 바닥 타일 한 변 (= 4유닛).</summary>
         public const int GroundTile = 128;
         /// <summary>지형 소품 그림에서 바닥에 닿는 점이 아래 가장자리에서 떨어진 픽셀 수 (생성기가 이만큼 띄워 그린다).</summary>

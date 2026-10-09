@@ -34,6 +34,7 @@ namespace Samkuk.EditorTools
             Step13MapEditorSetup.Run(); // 맵 편집기 씬 (성 에셋과 지형 테마 뒤)
             Step14PostFxSetup.Run();    // 전투 카메라 후처리 (HD-2D)
             Step14PixelSetup.Run();     // 도트 규격: Pixel Perfect Camera + 걷기 시트 PPU 이전 (시트 연결 10-6/10-7 뒤)
+            Step14WorldSetup.Run();     // 월드 정렬: World 정렬 레이어 + 정렬 축 + 프리팹 (프리팹과 씬이 만들어진 뒤)
             Debug.Log("[Samkuk] 전체 셋업(Step 2-9 + 타이틀) 완료");
         }
     }

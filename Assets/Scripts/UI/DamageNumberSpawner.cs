@@ -33,7 +33,7 @@ namespace Samkuk.UI
             var t = pool[cursor];
             cursor = (cursor + 1) % pool.Length;
 
-            Vector2 pos = enemy.Position + new Vector2(Random.Range(-0.2f, 0.2f), enemy.Radius + 0.1f);
+            Vector2 pos = enemy.Position + new Vector2(Random.Range(-0.2f, 0.2f), enemy.Radius + 0.8f);   // 기준점이 발이라(Step 14-4) 몸 위에 뜨도록
             GetStyle(amount, color, out Color tierColor, out float tierScale);
             t.Show(pos, Format(amount), tierColor, tierScale);
         }

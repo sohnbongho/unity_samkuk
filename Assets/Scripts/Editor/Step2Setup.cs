@@ -62,7 +62,7 @@ namespace Samkuk.EditorTools
             body.transform.SetParent(root.transform, false);
             var sr = body.AddComponent<SpriteRenderer>();
             sr.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(PlayerSpritePath);
-            sr.sortingLayerName = GameLayers.Sorting.Player;
+            Samkuk.World.WorldSorting.Configure(sr);   // 월드 정렬 (Step 14-4). World 레이어가 아직 없으면 Player 레이어
 
             var controller = root.AddComponent<PlayerController>();
             var so = new SerializedObject(controller);

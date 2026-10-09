@@ -83,7 +83,7 @@ namespace Samkuk.EditorTools
 
             var sr = root.AddComponent<SpriteRenderer>();
             sr.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(EnemySpritePath);
-            sr.sortingLayerName = GameLayers.Sorting.Enemy;
+            Samkuk.World.WorldSorting.Configure(sr);   // 월드 정렬 (Step 14-4). World 레이어가 아직 없으면 Player 레이어
 
             root.AddComponent<Enemy>();
 

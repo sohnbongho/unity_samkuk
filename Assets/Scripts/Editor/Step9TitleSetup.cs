@@ -248,6 +248,15 @@ namespace Samkuk.EditorTools
             pixelRt.anchoredPosition = new Vector2(40f, -510f);
             var pixelLabel = pixelBtn.GetComponentInChildren<Text>();
             pixelLabel.fontSize = 30;
+
+            // 드리운 그림자 켜기/끄기 버튼 (도트 화면 버튼 아래)
+            var shadowBtn = NewButton("ShadowButton", main, font, "그림자: 켬", 1f, new Vector2(360f, 70f), new Color(0.22f, 0.28f, 0.4f));
+            var shadowRt = (RectTransform)shadowBtn.transform;
+            shadowRt.anchorMin = shadowRt.anchorMax = new Vector2(0f, 1f);
+            shadowRt.pivot = new Vector2(0f, 1f);
+            shadowRt.anchoredPosition = new Vector2(40f, -590f);
+            var shadowLabel = shadowBtn.GetComponentInChildren<Text>();
+            shadowLabel.fontSize = 30;
             var resetLabel = resetBtn.GetComponentInChildren<Text>();
             resetLabel.fontSize = 28;
             quitBtn.GetComponentInChildren<Text>().fontSize = 28;
@@ -346,6 +355,8 @@ namespace Samkuk.EditorTools
             so.FindProperty("postFxLabel").objectReferenceValue = postFxLabel;
             so.FindProperty("pixelButton").objectReferenceValue = pixelBtn;
             so.FindProperty("pixelLabel").objectReferenceValue = pixelLabel;
+            so.FindProperty("shadowButton").objectReferenceValue = shadowBtn;
+            so.FindProperty("shadowLabel").objectReferenceValue = shadowLabel;
             so.FindProperty("catalog").objectReferenceValue = catalog;
             so.ApplyModifiedPropertiesWithoutUndo();
 

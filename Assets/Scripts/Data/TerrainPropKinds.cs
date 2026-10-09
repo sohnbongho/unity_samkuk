@@ -54,6 +54,9 @@ namespace Samkuk.Data
             }
         }
 
+        /// <summary>서 있는 소품인가(옆모습, 캐릭터를 가림, 드리운 그림자). 막는 소품과 같은 집합이다 (CONTEXT.md "서 있는 소품").</summary>
+        public static bool IsStanding(string kind) => BlockRadius(kind) > 0f;
+
         /// <summary>종류별 막는 반지름 (0 = 통과). 그림 폭에 맞춘 어림값: 나무는 밑동만, 바위는 몸체 대부분.</summary>
         public static float BlockRadius(string kind)
         {
