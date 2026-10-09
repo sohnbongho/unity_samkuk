@@ -5,13 +5,18 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 
-// 전투 맵의 바닥 타일(256x256, 이어 붙여도 이음새가 없음)과 지형 소품(나무, 바위 등, 투명 배경)을 GDI+ 로 그린다.
+// 전투 맵의 바닥 타일(이어 붙여도 이음새가 없음)과 지형 소품(나무, 바위 등, 투명 배경)을 GDI+ 로 그린다.
 // 평면 색 + 잉크 외곽선(성 그림, 장수 그림과 같은 화풍). 소품은 "바닥에 닿는 점"이 아래쪽 가운데가 되게 그린다.
+// 그리는 좌표계는 예전 크기(바닥 256, 나무 144x176 등)지만 결과는 도트 규격(PPU 32)으로 절반 크기로 축소해
+// 반투명 없이·색 단계를 줄여·1픽셀 외곽선을 입힌다(PixelTools, HD-2D Step 14-3). 유닛 크기는 그대로다(바닥 128 = 4유닛).
 // 기준표는 terrain.json (파일 이름, 그리는 방식 kind, 색). Windows PowerShell 5.1 = C# 5 문법만 사용.
 public static class TerrainArt
 {
     static readonly Color Ink = Color.FromArgb(255, 34, 26, 22);
-    const int GroundSize = 256;
+    const int GroundSize = 256;        // 그리는 좌표계
+    const int PixelScale = 2;          // 결과는 1/PixelScale (PPU 64 -> 32)
+    const int PropLevels = 7;          // 소품 채널당 색 단계
+    const int GroundLevels = 12;       // 바닥은 알갱이 질감이 남게 단계를 더 둔다
 
     // ───────────────────────── 도구 ─────────────────────────
 
@@ -470,7 +475,13 @@ public static class TerrainArt
                 case "riverbank": RiverSegment(g, w, h, c, rng, true); break;
                 default: throw new ArgumentException("알 수 없는 kind: " + kind);
             }
-            bmp.Save(outPath, ImageFormat.Png);
+            // 강물/강둑은 토막을 겹쳐 이어 붙이므로 가장자리가 흐린 채로(알파 단계만 줄임), 나머지는 반투명 없이 + 잉크 외곽선
+            bool soft = kind == "riverwater" || kind == "riverbank";
+            using (var small = PixelTools.Downscale(bmp, w / PixelScale, h / PixelScale))
+            {
+                PixelTools.Pixelize(small, PropLevels, !soft, 6, soft ? Color.FromArgb(0, 0, 0, 0) : Ink);
+                small.Save(outPath, ImageFormat.Png);
+            }
         }
     }
 
@@ -523,7 +534,12 @@ public static class TerrainArt
                 int px = rng.Next(GroundSize), py = rng.Next(GroundSize);
                 bmp.SetPixel(px, py, Color.FromArgb(255, Clamp(bas.R + rng.Next(-9, 10)), Clamp(bas.G + rng.Next(-9, 10)), Clamp(bas.B + rng.Next(-9, 10))));
             }
-            bmp.Save(outPath, ImageFormat.Png);
+            // 도트 규격: 절반으로 줄이고 색 단계만 줄인다 (타일은 가장자리가 없어 외곽선/알파 처리 없음, 이음새는 그대로 유지된다)
+            using (var small = PixelTools.Downscale(bmp, GroundSize / PixelScale, GroundSize / PixelScale))
+            {
+                PixelTools.Pixelize(small, GroundLevels, false, 1, Color.FromArgb(0, 0, 0, 0));
+                small.Save(outPath, ImageFormat.Png);
+            }
         }
     }
 
@@ -574,7 +590,8 @@ public static class TerrainArt
         using (var g = Graphics.FromImage(sheet))
         {
             g.Clear(Color.FromArgb(255, 26, 30, 40));
-            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            g.InterpolationMode = InterpolationMode.NearestNeighbor;   // 도트가 또렷하게 보이도록
+            g.PixelOffsetMode = PixelOffsetMode.Half;
             for (int r = 0; r < rows; r++)
             {
                 int y = pad + r * (cell + pad);

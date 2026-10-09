@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Samkuk.Core;
 using Samkuk.Data;
 using UnityEditor;
 using UnityEngine;
@@ -18,7 +19,8 @@ namespace Samkuk.EditorTools
         public const string SheetDir = "Assets/Sprites/EnemyWalk";
         const string EnemyDir = "Assets/ScriptableObjects/Enemies";
 
-        // 처음 연결할 때 정하는 크기. 클수록 작게 보인다 (한 칸 96픽셀 / 값 = 월드 크기, 여기에 적의 scale 이 곱해진다).
+        // 예전(96칸) 시트를 처음 연결할 때 정하는 크기. 클수록 작게 보인다 (한 칸 96픽셀 / 값 = 월드 크기, 여기에 적의 scale 이 곱해진다).
+        // 도트 규격(칸 48) 시트는 모두 PixelArt.PPU(32)이고 적의 크기 차이는 생성기가 칸 안에 그리는 크기로 낸다.
         static readonly Dictionary<string, float> PixelsPerUnit = new Dictionary<string, float>
         {
             { "Enemy_Soldier", 112f },
@@ -61,7 +63,8 @@ namespace Samkuk.EditorTools
                 if (enemy.walkSheet == null)
                 {
                     enemy.walkSheet = sheet;
-                    if (PixelsPerUnit.TryGetValue(enemy.name, out float ppu)) enemy.walkPixelsPerUnit = ppu;
+                    if (PixelArt.IsPixelWalkSheet(sheet.width)) enemy.walkPixelsPerUnit = PixelArt.PPU;
+                    else if (PixelsPerUnit.TryGetValue(enemy.name, out float ppu)) enemy.walkPixelsPerUnit = ppu;
                     EditorUtility.SetDirty(enemy);
                 }
                 ok.Append($"\n  - {enemy.displayName}: {expected}");

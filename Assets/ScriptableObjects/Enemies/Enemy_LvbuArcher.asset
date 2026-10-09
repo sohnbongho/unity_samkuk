@@ -18,7 +18,7 @@ MonoBehaviour:
   tint: {r: 1, g: 0.7, b: 0.35, a: 1}
   scale: 1.1
   walkSheet: {fileID: 2800000, guid: 6a5f9ad7ec27ce142803a970e73293ed, type: 3}
-  walkPixelsPerUnit: 112
+  walkPixelsPerUnit: 32
   moveSpeed: 1.6
   maxHp: 38
   contactDamage: 8

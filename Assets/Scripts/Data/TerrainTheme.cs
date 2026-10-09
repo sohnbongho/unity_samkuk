@@ -42,7 +42,7 @@ namespace Samkuk.Data
     public class TerrainTheme : ScriptableObject
     {
         public CastleTerrain terrain;
-        [Tooltip("이어 붙여도 이음새가 없는 바닥 타일 (256x256, PPU 64 = 4유닛). 비워 두면 기본 배경 + 색 덮개")] public Sprite groundTile;
+        [Tooltip("이어 붙여도 이음새가 없는 바닥 타일 (128x128, PPU 32 = 4유닛). 비워 두면 기본 배경 + 색 덮개")] public Sprite groundTile;
         [Tooltip("한 칸(12x12 유닛)당 소품 평균 개수")] public float propsPerChunk = 9f;
         public List<TerrainProp> props = new List<TerrainProp>();
 

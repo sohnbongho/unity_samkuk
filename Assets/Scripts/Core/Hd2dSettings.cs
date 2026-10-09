@@ -20,11 +20,18 @@ namespace Samkuk.Core
         /// <summary>후처리(블룸, 비네트, 색 보정, 색온도)를 쓰는가.</summary>
         public static bool PostFx => PostFxOverride ?? SaveSystem.Current.hd2dPostFx;
 
+        /// <summary>null 이면 저장 설정을 따른다.</summary>
+        public static bool? PixelPerfectOverride { get; set; }
+
+        /// <summary>도트 격자 맞춤(Pixel Perfect Camera)을 쓰는가.</summary>
+        public static bool PixelPerfect => PixelPerfectOverride ?? SaveSystem.Current.hd2dPixelPerfect;
+
         /// <summary>테스트/디버그가 바꾼 값을 모두 지운다.</summary>
         public static void ResetOverrides()
         {
             LightingOverride = null;
             PostFxOverride = null;
+            PixelPerfectOverride = null;
         }
     }
 }

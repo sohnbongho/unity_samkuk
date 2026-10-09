@@ -15,7 +15,7 @@ namespace Samkuk.Data
         public Sprite portrait;
         [Tooltip("게임 안 걷기 스프라이트 시트 (4열 x 4행: 열=걷기 프레임, 행=아래/위/왼쪽/오른쪽). 비어 있으면 기본 스프라이트 + 장수 색")]
         public Texture2D walkSheet;
-        [Tooltip("걷기 시트의 픽셀/유닛 (96이면 한 칸이 월드 1칸 크기)")] public float walkPixelsPerUnit = 96f;
+        [Tooltip("걷기 시트의 픽셀/유닛. 도트 규격(칸 48) 시트는 32(한 칸 1.5유닛), 예전 96칸 시트는 96")] public float walkPixelsPerUnit = 96f;
 
         [Header("능력치 보정")]
         [Tooltip("최대 체력 증감 (기본 100)")] public float maxHpBonus = 0f;

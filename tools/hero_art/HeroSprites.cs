@@ -6,13 +6,20 @@ using System.Drawing.Imaging;
 using System.IO;
 
 // 게임 안에서 쓰는 장수 걷기 스프라이트 시트.
-// 시트 배치: 열 = 걷기 프레임 4장, 행 = 방향(위에서부터 아래, 위, 왼쪽, 오른쪽). 한 칸 96x96.
+// 시트 배치: 열 = 걷기 프레임 4장, 행 = 방향(위에서부터 아래, 위, 왼쪽, 오른쪽).
+// 그리는 좌표계는 96x96 칸이지만, 결과는 도트 규격 48x48 칸(시트 192x192, PPU 32 = 한 칸 1.5유닛)으로 축소해
+// 반투명 없이·색 단계를 줄여·1픽셀 외곽선을 입힌다(PixelTools, HD-2D Step 14-3). 몸은 칸 안에서 40픽셀(약 1유닛)이고
+// 나머지 여백은 말 탄 적/보스와 외곽선 몫이다.
 // 프레임: 0 = 서 있기(정지 자세), 1 = 왼발/한쪽 앞, 2 = 서 있기(몸이 가장 높음), 3 = 반대쪽 앞.
 public static partial class HeroArt
 {
     const int CELL = 96;
     const int SS = 4;          // 슈퍼샘플링 배수
     const float LW = 1.7f;     // 외곽선 굵기 (96 기준)
+
+    public const int PCELL = 48;       // 도트 칸 크기 (docs/HERO_WALK_SHEETS.md, Samkuk.Core.PixelArt.WalkCell 과 같아야 한다)
+    public const int BODY_PX = 40;     // 96 좌표계 전체가 칸 안에서 차지하는 픽셀 (장수 기준, 몸 높이 약 32픽셀 = 1유닛)
+    const int PIXEL_LEVELS = 8;        // 채널당 색 단계
 
     public const int DOWN = 0, UP = 1, LEFT = 2, RIGHT = 3;
 
@@ -471,6 +478,15 @@ public static partial class HeroArt
     public static Bitmap RenderWalkSheet(string heroName)
     {
         var st = StyleOf(heroName);
+        return RenderPixelSheet(delegate(Graphics g, int dir, int frame) { DrawCell(g, st, dir, frame); }, BODY_PX);
+    }
+
+    /// <summary>
+    /// 96 좌표계로 그린 4x4 칸을 슈퍼샘플링한 뒤, 칸마다 bodyPx 크기로 축소해 48 칸 가운데에 놓고 도트 규격으로 다듬는다.
+    /// bodyPx 가 작을수록 작은 캐릭터(졸병)다.
+    /// </summary>
+    static Bitmap RenderPixelSheet(Action<Graphics, int, int> drawCell, int bodyPx)
+    {
         int size = CELL * 4;
         var big = new Bitmap(size * SS, size * SS, PixelFormat.Format32bppArgb);
         using (var g = Graphics.FromImage(big))
@@ -485,21 +501,23 @@ public static partial class HeroArt
                     g.ScaleTransform(SS, SS);
                     g.TranslateTransform(col * CELL, row * CELL);
                     g.SetClip(new RectangleF(0, 0, CELL, CELL));
-                    DrawCell(g, st, row, col);
+                    drawCell(g, row, col);
                     g.Restore(state);
                 }
         }
 
-        var sheet = new Bitmap(size, size, PixelFormat.Format32bppArgb);
+        var sheet = new Bitmap(PCELL * 4, PCELL * 4, PixelFormat.Format32bppArgb);
         using (var g = Graphics.FromImage(sheet))
         {
             g.Clear(Color.Transparent);
-            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-            g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-            g.CompositingQuality = CompositingQuality.HighQuality;
-            g.DrawImage(big, new Rectangle(0, 0, size, size), 0, 0, big.Width, big.Height, GraphicsUnit.Pixel);
+            float off = (PCELL - bodyPx) / 2f;
+            for (int row = 0; row < 4; row++)
+                for (int col = 0; col < 4; col++)
+                    PixelTools.DrawScaled(g, big, new Rectangle(col * CELL * SS, row * CELL * SS, CELL * SS, CELL * SS),
+                        new RectangleF(col * PCELL + off, row * PCELL + off, bodyPx, bodyPx));
         }
         big.Dispose();
+        PixelTools.Pixelize(sheet, PIXEL_LEVELS, true, 1, Ink);
         return sheet;
     }
 
@@ -507,26 +525,22 @@ public static partial class HeroArt
     {
         string[] names = { "Hero_LiuBei", "Hero_GuanYu", "Hero_ZhangFei", "Hero_CaoCao", "Hero_LvBu" };
         Directory.CreateDirectory(outDir);
-        // 미리보기: 장수마다 한 줄(방향 4개 x 프레임 0), 그 아래 줄에 걷기 프레임 4장(아래 방향)을 확대
-        float zoom = 1.6f;
-        int cw = (int)(CELL * zoom);
+        // 미리보기: 장수마다 한 줄(방향 4개 x 프레임 0), 그 아래 줄에 걷기 프레임 4장(아래 방향)을 정수 배로 또렷하게 확대
+        int zoom = 4;
+        int cw = PCELL * zoom;
         var prev = new Bitmap(cw * 8 + 20, cw * names.Length + 20, PixelFormat.Format32bppArgb);
         using (var pg = Graphics.FromImage(prev))
         {
             pg.Clear(Color.FromArgb(255, 70, 100, 70));
-            pg.InterpolationMode = InterpolationMode.HighQualityBicubic;
             for (int i = 0; i < names.Length; i++)
             {
                 using (var sheet = RenderWalkSheet(names[i]))
                 {
                     sheet.Save(Path.Combine(outDir, names[i] + "_Walk.png"), ImageFormat.Png);
                     for (int d = 0; d < 4; d++)
-                        pg.DrawImage(sheet, new Rectangle(10 + d * cw, 10 + i * cw, cw, cw),
-                            new Rectangle(0, d * CELL, CELL, CELL), GraphicsUnit.Pixel);
-                    // 오른쪽 방향 걷기 프레임 0~3
+                        PixelTools.DrawCrisp(pg, sheet, new Rectangle(0, d * PCELL, PCELL, PCELL), new Rectangle(10 + d * cw, 10 + i * cw, cw, cw));
                     for (int f = 0; f < 4; f++)
-                        pg.DrawImage(sheet, new Rectangle(10 + (4 + f) * cw, 10 + i * cw, cw, cw),
-                            new Rectangle(f * CELL, 3 * CELL, CELL, CELL), GraphicsUnit.Pixel);
+                        PixelTools.DrawCrisp(pg, sheet, new Rectangle(f * PCELL, 3 * PCELL, PCELL, PCELL), new Rectangle(10 + (4 + f) * cw, 10 + i * cw, cw, cw));
                 }
             }
         }

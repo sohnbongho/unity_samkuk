@@ -239,6 +239,15 @@ namespace Samkuk.EditorTools
             postRt.anchoredPosition = new Vector2(40f, -430f);
             var postFxLabel = postFxBtn.GetComponentInChildren<Text>();
             postFxLabel.fontSize = 30;
+
+            // 도트 격자 맞춤 켜기/끄기 버튼 (화면 효과 버튼 아래)
+            var pixelBtn = NewButton("PixelButton", main, font, "도트 화면: 켬", 1f, new Vector2(360f, 70f), new Color(0.22f, 0.28f, 0.4f));
+            var pixelRt = (RectTransform)pixelBtn.transform;
+            pixelRt.anchorMin = pixelRt.anchorMax = new Vector2(0f, 1f);
+            pixelRt.pivot = new Vector2(0f, 1f);
+            pixelRt.anchoredPosition = new Vector2(40f, -510f);
+            var pixelLabel = pixelBtn.GetComponentInChildren<Text>();
+            pixelLabel.fontSize = 30;
             var resetLabel = resetBtn.GetComponentInChildren<Text>();
             resetLabel.fontSize = 28;
             quitBtn.GetComponentInChildren<Text>().fontSize = 28;
@@ -335,6 +344,8 @@ namespace Samkuk.EditorTools
             so.FindProperty("lightingLabel").objectReferenceValue = lightingLabel;
             so.FindProperty("postFxButton").objectReferenceValue = postFxBtn;
             so.FindProperty("postFxLabel").objectReferenceValue = postFxLabel;
+            so.FindProperty("pixelButton").objectReferenceValue = pixelBtn;
+            so.FindProperty("pixelLabel").objectReferenceValue = pixelLabel;
             so.FindProperty("catalog").objectReferenceValue = catalog;
             so.ApplyModifiedPropertiesWithoutUndo();
 

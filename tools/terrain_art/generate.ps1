@@ -7,7 +7,10 @@
 param([string]$Only = "")
 
 $root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-Add-Type -TypeDefinition ([IO.File]::ReadAllText("$PSScriptRoot\TerrainArt.cs", [Text.Encoding]::UTF8)) -ReferencedAssemblies System.Drawing
+# tools\pixel\PixelTools.cs(도트 규격으로 다듬는 공통 도구)를 같이 컴파일한다 (using 줄은 첫 파일에만 둔다)
+$pixel = [IO.File]::ReadAllText((Join-Path (Split-Path -Parent $PSScriptRoot) "pixel\PixelTools.cs"), [Text.Encoding]::UTF8) -replace '(?m)^using .*;\r?\n', ''
+$src = [IO.File]::ReadAllText("$PSScriptRoot\TerrainArt.cs", [Text.Encoding]::UTF8) + "`n" + $pixel
+Add-Type -TypeDefinition $src -ReferencedAssemblies System.Drawing
 
 $json = [IO.File]::ReadAllText("$PSScriptRoot\terrain.json", [Text.Encoding]::UTF8) | ConvertFrom-Json
 $out = Join-Path $root "Assets\Sprites\Terrain"

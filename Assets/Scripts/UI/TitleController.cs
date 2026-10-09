@@ -35,6 +35,7 @@ namespace Samkuk.UI
         [SerializeField, Tooltip("창 모드/전체화면 순환 (없어도 동작)")] Button windowModeButton;
         [SerializeField, Tooltip("HD-2D 조명 켜기/끄기 (없어도 동작: Step 9-2 를 다시 실행하면 생김)")] Button lightingButton;
         [SerializeField, Tooltip("HD-2D 후처리 켜기/끄기 (없어도 동작)")] Button postFxButton;
+        [SerializeField, Tooltip("도트 격자 맞춤 켜기/끄기 (없어도 동작)")] Button pixelButton;
 
         [Header("하위 화면")]
         [SerializeField] Button shopCloseButton;
@@ -51,6 +52,7 @@ namespace Samkuk.UI
         [SerializeField] Text windowModeLabel;
         [SerializeField] Text lightingLabel;
         [SerializeField] Text postFxLabel;
+        [SerializeField] Text pixelLabel;
         [SerializeField] MetaCatalog catalog;
         [SerializeField, Tooltip("저장 초기화 확인 대기 시간(초)")] float resetConfirmSeconds = 3f;
 
@@ -89,6 +91,7 @@ namespace Samkuk.UI
             Bind(windowModeButton, CycleWindowMode);
             Bind(lightingButton, ToggleLighting);
             Bind(postFxButton, TogglePostFx);
+            Bind(pixelButton, TogglePixelPerfect);
             Bind(shopCloseButton, ShowMain);
             Bind(recordsCloseButton, ShowMain);
 
@@ -272,6 +275,7 @@ namespace Samkuk.UI
             SaveSystem.SaveCurrent();
             RefreshLightingLabel();
             RefreshPostFxLabel();
+            RefreshPixelLabel();
         }
 
         void RefreshLightingLabel()
@@ -291,6 +295,20 @@ namespace Samkuk.UI
         void RefreshPostFxLabel()
         {
             if (postFxLabel != null) postFxLabel.text = $"화면 효과: {(SaveSystem.Current.hd2dPostFx ? "켬" : "끔")}";
+        }
+
+        /// <summary>도트 격자 맞춤(Pixel Perfect Camera)을 켜고 끈다. 저장된다.</summary>
+        public void TogglePixelPerfect()
+        {
+            var save = SaveSystem.Current;
+            save.hd2dPixelPerfect = !save.hd2dPixelPerfect;
+            SaveSystem.SaveCurrent();
+            RefreshPixelLabel();
+        }
+
+        void RefreshPixelLabel()
+        {
+            if (pixelLabel != null) pixelLabel.text = $"도트 화면: {(SaveSystem.Current.hd2dPixelPerfect ? "켬" : "끔")}";
         }
 
         /// <summary>모니터(바탕화면) 크기 (테스트에서 대체 가능). 이보다 큰 해상도는 고를 수 없다.</summary>

@@ -8,9 +8,11 @@ param([ValidateSet("all", "portrait", "walk", "enemy")][string]$Only = "all")
 
 $root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 
-# HeroSprites.cs, EnemySprites.cs 는 HeroArt 의 partial 이라 한 소스로 이어 붙인다 (using 줄은 첫 파일에만 둔다)
-$rest = @("HeroSprites.cs", "EnemySprites.cs") | ForEach-Object {
-    [IO.File]::ReadAllText("$PSScriptRoot\$_") -replace '(?m)^using .*;\r?\n', ''
+# HeroSprites.cs, EnemySprites.cs 는 HeroArt 의 partial 이라 한 소스로 이어 붙인다 (using 줄은 첫 파일에만 둔다).
+# tools\pixel\PixelTools.cs(도트 규격으로 다듬는 공통 도구)도 같이 컴파일한다.
+$pixel = Join-Path (Split-Path -Parent $PSScriptRoot) "pixel\PixelTools.cs"
+$rest = @("$PSScriptRoot\HeroSprites.cs", "$PSScriptRoot\EnemySprites.cs", $pixel) | ForEach-Object {
+    [IO.File]::ReadAllText($_) -replace '(?m)^using .*;\r?\n', ''
 }
 $src = [IO.File]::ReadAllText("$PSScriptRoot\HeroArt.cs") + "`n" + ($rest -join "`n")
 Add-Type -TypeDefinition $src -ReferencedAssemblies System.Drawing

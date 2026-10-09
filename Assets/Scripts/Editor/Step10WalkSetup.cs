@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text;
+using Samkuk.Core;
 using Samkuk.Data;
 using Samkuk.Player;
 using UnityEditor;
@@ -81,6 +82,7 @@ namespace Samkuk.EditorTools
                 if (hero.walkSheet == null)
                 {
                     hero.walkSheet = sheet;
+                    if (PixelArt.IsPixelWalkSheet(sheet.width)) hero.walkPixelsPerUnit = PixelArt.PPU;   // 도트 규격(칸 48)
                     EditorUtility.SetDirty(hero);
                 }
                 ok.Append($"\n  - {hero.displayName}: {expected}");
@@ -94,10 +96,13 @@ namespace Samkuk.EditorTools
 
     /// <summary>
     /// Assets/Sprites/HeroWalk, Assets/Sprites/EnemyWalk 의 PNG를 걷기 시트용 텍스처로 가져온다.
-    /// 실행 중에 직접 자르므로 스프라이트 슬라이스는 쓰지 않고, 선명하게(밉맵/압축 없음) 투명 배경을 유지한다.
+    /// 실행 중에 직접 자르므로 스프라이트 슬라이스는 쓰지 않고, 선명하게(밉맵/압축 없음, 도트가 번지지 않게 Point 필터) 투명 배경을 유지한다.
     /// </summary>
     class HeroWalkImporter : AssetPostprocessor
     {
+        // 가져오기 설정을 바꿀 때마다 올린다 (2: 도트 규격 Point 필터)
+        public override uint GetVersion() => 2;
+
         void OnPreprocessTexture()
         {
             if (!assetPath.StartsWith(Step10WalkSetup.SheetDir + "/") && !assetPath.StartsWith(Step10EnemyWalkSetup.SheetDir + "/")) return;
@@ -107,7 +112,7 @@ namespace Samkuk.EditorTools
             importer.alphaSource = TextureImporterAlphaSource.FromInput;
             importer.alphaIsTransparency = true;
             importer.mipmapEnabled = false;
-            importer.filterMode = FilterMode.Bilinear;
+            importer.filterMode = FilterMode.Point;
             importer.wrapMode = TextureWrapMode.Clamp;
             importer.npotScale = TextureImporterNPOTScale.None;
             importer.textureCompression = TextureImporterCompression.Uncompressed;

@@ -5,10 +5,29 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 
-// 적 걷기 스프라이트 시트. 규격은 장수 시트와 같다 (4열 프레임 x 4행 방향, 칸 96x96).
+// 적 걷기 스프라이트 시트. 규격은 장수 시트와 같다 (4열 프레임 x 4행 방향, 도트 칸 48x48, PPU 32).
 // 보병/궁병은 장수와 같은 머리 큰 2등신 몸에 머리 장식과 무기만 바꾸고, 기병/보스는 말 + 기수.
+// 적의 크기는 시트의 PPU 가 아니라(모두 32) 칸 안에 그리는 크기로 정한다: 예전 PPU 표(졸병 112, 기병 100 등)의 비율을 그대로 옮겼다.
 public static partial class HeroArt
 {
+    /// <summary>예전(96칸) 규격에서 쓰던 적별 PPU. 장수(96)보다 큰 값 = 작게 보임. 도트 칸에서는 이 비율로 몸 크기를 정한다.</summary>
+    static int EnemyLegacyPpu(string name)
+    {
+        switch (name)
+        {
+            case "Enemy_YellowTurbanGeneral": return 104;
+            case "Enemy_LvbuElite": return 108;
+            case "Enemy_XiliangCavalry": return 100;
+            case "Boss_Lvbu": return 100;
+            default: return 112;
+        }
+    }
+
+    public static int EnemyBodyPx(string name)
+    {
+        return (int)Math.Round(BODY_PX * 96f / EnemyLegacyPpu(name));
+    }
+
     // ───────────────────────── 적 스타일 ─────────────────────────
 
     public static readonly string[] EnemyNames =
@@ -573,59 +592,27 @@ public static partial class HeroArt
     public static Bitmap RenderEnemySheet(string name)
     {
         var st = EnemyStyleOf(name);
-        int size = CELL * 4;
-        var big = new Bitmap(size * SS, size * SS, PixelFormat.Format32bppArgb);
-        using (var g = Graphics.FromImage(big))
-        {
-            g.SmoothingMode = SmoothingMode.AntiAlias;
-            g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-            g.Clear(Color.Transparent);
-            for (int row = 0; row < 4; row++)
-                for (int col = 0; col < 4; col++)
-                {
-                    var state = g.Save();
-                    g.ScaleTransform(SS, SS);
-                    g.TranslateTransform(col * CELL, row * CELL);
-                    g.SetClip(new RectangleF(0, 0, CELL, CELL));
-                    DrawEnemyCell(g, st, row, col);
-                    g.Restore(state);
-                }
-        }
-
-        var sheet = new Bitmap(size, size, PixelFormat.Format32bppArgb);
-        using (var g = Graphics.FromImage(sheet))
-        {
-            g.Clear(Color.Transparent);
-            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-            g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-            g.CompositingQuality = CompositingQuality.HighQuality;
-            g.DrawImage(big, new Rectangle(0, 0, size, size), 0, 0, big.Width, big.Height, GraphicsUnit.Pixel);
-        }
-        big.Dispose();
-        return sheet;
+        return RenderPixelSheet(delegate(Graphics g, int dir, int frame) { DrawEnemyCell(g, st, dir, frame); }, EnemyBodyPx(name));
     }
 
     public static void GenerateEnemySheets(string outDir, string previewPath)
     {
         Directory.CreateDirectory(outDir);
-        float zoom = 1.3f;
-        int cw = (int)(CELL * zoom);
+        int zoom = 3;
+        int cw = PCELL * zoom;
         var prev = new Bitmap(cw * 8 + 20, cw * EnemyNames.Length + 20, PixelFormat.Format32bppArgb);
         using (var pg = Graphics.FromImage(prev))
         {
             pg.Clear(Color.FromArgb(255, 80, 96, 62));
-            pg.InterpolationMode = InterpolationMode.HighQualityBicubic;
             for (int i = 0; i < EnemyNames.Length; i++)
             {
                 using (var sheet = RenderEnemySheet(EnemyNames[i]))
                 {
                     sheet.Save(Path.Combine(outDir, EnemyNames[i] + "_Walk.png"), ImageFormat.Png);
                     for (int d = 0; d < 4; d++)
-                        pg.DrawImage(sheet, new Rectangle(10 + d * cw, 10 + i * cw, cw, cw),
-                            new Rectangle(0, d * CELL, CELL, CELL), GraphicsUnit.Pixel);
+                        PixelTools.DrawCrisp(pg, sheet, new Rectangle(0, d * PCELL, PCELL, PCELL), new Rectangle(10 + d * cw, 10 + i * cw, cw, cw));
                     for (int f = 0; f < 4; f++)
-                        pg.DrawImage(sheet, new Rectangle(10 + (4 + f) * cw, 10 + i * cw, cw, cw),
-                            new Rectangle(f * CELL, 3 * CELL, CELL, CELL), GraphicsUnit.Pixel);
+                        PixelTools.DrawCrisp(pg, sheet, new Rectangle(f * PCELL, 3 * PCELL, PCELL, PCELL), new Rectangle(10 + (4 + f) * cw, 10 + i * cw, cw, cw));
                 }
             }
         }

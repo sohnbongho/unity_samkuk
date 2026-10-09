@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text;
+using Samkuk.Core;
 using Samkuk.Data;
 using UnityEditor;
 using UnityEngine;
@@ -186,18 +187,18 @@ namespace Samkuk.EditorTools
     }
 
     /// <summary>
-    /// Assets/Sprites/Terrain 의 PNG 를 맵용 스프라이트로 가져온다.
-    ///   Ground_*  : 바닥 타일 (Repeat, FullRect, 4유닛 = 256px @ PPU 64)
+    /// Assets/Sprites/Terrain 의 PNG 를 맵용 스프라이트로 가져온다 (도트 규격 <see cref="PixelArt"/>: PPU 32, Point 필터).
+    ///   Ground_*  : 바닥 타일 (Repeat, FullRect, 4유닛 = 128px)
     ///   Prop_Pond, River_* : 연못과 강 토막 (피벗 가운데)
-    ///   그 밖의 Prop_* : 소품 (피벗 = 바닥에 닿는 점, 아래에서 6px 위)
+    ///   그 밖의 Prop_* : 소품 (피벗 = 바닥에 닿는 점, 아래에서 3px 위)
     /// 그림을 넣기만 하면 되도록 가져오기 설정을 자동으로 맞춘다.
     /// </summary>
     class TerrainSpriteImporter : AssetPostprocessor
     {
-        const float FootPixels = 6f;   // 생성기가 소품 바닥을 이만큼 띄워 그린다
+        const float FootPixels = PixelArt.PropFootPixels;   // 생성기가 소품 바닥을 이만큼 띄워 그린다
 
-        // 가져오기 설정을 바꿀 때마다 올린다: 이미 가져온 그림도 새 설정으로 다시 가져오게 한다
-        public override uint GetVersion() => 2;
+        // 가져오기 설정을 바꿀 때마다 올린다: 이미 가져온 그림도 새 설정으로 다시 가져오게 한다 (3: 도트 규격 PPU 32 / Point)
+        public override uint GetVersion() => 3;
 
         void OnPreprocessTexture()
         {
@@ -209,10 +210,10 @@ namespace Samkuk.EditorTools
 
             importer.textureType = TextureImporterType.Sprite;
             importer.spriteImportMode = SpriteImportMode.Single;
-            importer.spritePixelsPerUnit = 64f;
+            importer.spritePixelsPerUnit = PixelArt.PPU;
             importer.mipmapEnabled = false;
             importer.alphaIsTransparency = true;
-            importer.filterMode = FilterMode.Bilinear;
+            importer.filterMode = FilterMode.Point;   // 도트가 번지지 않게
             importer.maxTextureSize = 1024;
             importer.textureCompression = TextureImporterCompression.Uncompressed;
             importer.wrapMode = ground ? TextureWrapMode.Repeat : TextureWrapMode.Clamp;
