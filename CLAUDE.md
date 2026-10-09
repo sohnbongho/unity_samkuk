@@ -12,7 +12,7 @@
 
 ## 진행 상황
 
-마지막 갱신: 2026-10-09 (Step 13 맵 편집기 완료, 12-6 성마다 다른 전투 맵 완료 + 강 없는 평야('완' 등)가 휑해서 소품 무리/바닥 얼룩/밀도 상향 완료. 타격감/연출 작업은 병행)
+마지막 갱신: 2026-10-09 (Step 12-7 지형 이동 — 나무/바위 막힘, 강/연못 느려짐 — 완료. Step 13 맵 편집기 완료, 12-6 성마다 다른 전투 맵 완료. 타격감/연출 작업은 병행)
 
 | Step | 내용 | 상태 | 커밋 |
 |---|---|---|---|
@@ -43,6 +43,7 @@
 | 12-5 | 정복: 내 영토(시작 성+정복한 성)의 성 화면에서 [출진] → 이웃한 적 성 중 공격 대상을 고르는 선택창 → 전투(대상 성 지형) → 승리하면 그 성을 영토로(`Territory`, `SaveData.ownedCastleIds`). 지도에 영토/공격 가능 성 테두리 색과 "보유 성 n / 46", 천하 통일 문구. 결과 화면에 정복/퇴각 문구. 난이도·적 반격·보상은 아직 없음 | 완료 | e449b70 |
 | 12-6 | 성마다 다른 전투 맵: 지형별 바닥 타일 6종 + 지형 소품 30종 + 공용(연못, 깃발) 그림(코드 생성 `tools/terrain_art`), `TerrainTheme`/`TerrainThemeCatalog`(`Resources`), 성 아이디 시드로 밀도·소품 비율·바닥 색조가 달라지는 `TerrainMap`, 화면 주변 칸만 만드는 `TerrainPropSpawner`, `InfiniteBackground.ApplyCastle`, 메뉴 `Step 12-6`, 설명 `docs/TERRAIN.md`. 소품과 강은 충돌 없는 장식, 지형 효과/막는 지형은 아직 없음. **카탈로그 스크립트 연결 복구**: `TerrainThemeCatalog` 를 자기 파일로 분리해 `Resources/TerrainThemeCatalog.asset` 의 끊긴 스크립트 연결을 되살림(이게 '완' 맵이 텅 비었던 진짜 원인). **덜 휑하게**: 소품 흩뿌림 x1.4 + 같은 소품 무리 + 코드로 만든 바닥 얼룩(`TerrainDecals`, `TerrainMap.LayoutPatches`, 그리기 순서 `OrderPatch`). **강**: 강이 있는 성/강변 지형/성 없이 시작한 판(평야+강)에 구불구불 흐르는 강(`River_*` 토막 12장, `TerrainMap` 강 계산) | 완료 | 5aebcbd |
 | 13 | 맵 편집기(맵툴): 성마다 전투 맵을 직접 고치는 새 씬 `MapEditorScene`(빌드 3번). 자동 생성 맵 위에서 소품/연못/깃발/바닥 얼룩/강 놓기·이동·회전·크기·반전·복제·삭제·지우개, 바닥 지형 바꾸기, 실행 취소/다시, 격자/맞춤, 전투 테스트(결과 저장 안 함, M 으로 복귀). 칸(12x12) 단위로 직접 고친 칸이 자동 생성을 덮어쓰고 JSON 으로 저장(`MapStore`: persistentDataPath/maps + 에디터에선 Assets/Resources/Maps), 전투가 같은 맵을 씀(`TerrainMap.CreateForBattle`). `MapEditModel`(규칙)/`MapEditorController`(화면을 코드로 생성)/`MapLayoutData`/`MapStore`, 메뉴 `Step 13`·`Play Map Editor`, 타이틀 [맵 편집기] 버튼(에디터/개발 빌드), 설명 `docs/MAP_EDITOR.md` | 완료 | |
+| 12-7 | 지형 이동: 모든 곳을 똑같이 걸을 수 있어 심심하던 맵에 이동 규칙을 붙임. 나무/바위/언덕/유르트/배/깃대는 **막고**(밑동 원, 비스듬히 부딪히면 미끄러짐, 적은 정면으로 막히면 목표 쪽 접선으로 돌아감), 강물/연못은 **속도 절반**(건널 수 있음), 풀/덤불/꽃/갈대/얼룩은 통과. 순수 로직 `TerrainCollision`(칸 배치 → 막는 원/느려지는 원을 4x4 셀에 캐시, `Active` 로 전투에 공개) + `TerrainProp.blockRadius/slowRadius/slowFactor`, `TerrainTheme.riverSlowFactor`, 종류별 기본값 `TerrainPropKinds`(셋업 12-6 이 이동 값이 전혀 없는 테마만 채움). `PlayerController`(`BodyRadius`, `TerrainSpeedFactor`)/`EnemyManager`(`Enemy.SteerSide`)/`AllyController`/`EnemySpawner.RandomRingPosition`(나무 속 스폰 방지) 연결, 맵 편집기 칸 고치면 `Invalidate`. 테스트 `TerrainCollisionTests`. 설명 `docs/TERRAIN.md` "지형 이동" | 완료 | |
 | 11 | PC 빌드(친구 공유용 Windows 빌드 환경): 메뉴 `Samkuk > Build`(릴리스/개발용) 또는 `tools/build_windows.ps1` → `Builds/` 에 실행 폴더 + 공유용 zip(README.txt 포함), 릴리스는 DebugOverlay/F1~F4 치트 꺼짐, 타이틀에 버전 표시(`BuildTool`, `docs/BUILD.md`). 최적화(GC/풀링)·아이콘·설치 파일은 아직 | 완료 | 15e5ad2 |
 
 ## 남은 작업
@@ -53,13 +54,15 @@
    - (선택) BGM: 현재는 효과음만 있음. `AudioManager`에 BGM 슬롯/볼륨을 추가하는 작업이 남아 있음
 2. **10-4 이후 체감 조정**: 직접 플레이해 보고 "너무 쉬움/어려움" 구간을 알려주면 `BalanceModel` 보고서(메뉴 `Samkuk > Balance Report`)를 보며 수치를 조정한다.
 3. **Step 11 나머지**: 친구 테스트에서 나온 문제 반영, 최적화(GC/풀링 점검), 앱 아이콘/회사명(저장 경로가 바뀌므로 주의), 필요 시 모바일 터치. 빌드 방법/주의는 `docs/BUILD.md`.
-4. **내정(Step 12) 이어서**: 12-1~12-5(성, 지도, 성 화면, 시작 성, 출진/정복) 다음 — 성별 내정 수치(농업/상업/인구/방어 등)와 명령(개발/징병 등)을 성 화면의 명령 자리(`CastlePanel` 아래 띠 `Note`)에 붙이기, 성 규모/지형에 따른 전투 난이도·지형 효과(느려짐 등), 정복 보상, 적 반격/세력 등. 사용자 방향을 확인한 뒤 진행.
+4. **내정(Step 12) 이어서**: 12-1~12-7(성, 지도, 성 화면, 시작 성, 출진/정복, 전투 맵, 지형 이동) 다음 — 성별 내정 수치(농업/상업/인구/방어 등)와 명령(개발/징병 등)을 성 화면의 명령 자리(`CastlePanel` 아래 띠 `Note`)에 붙이기, 성 규모/지형에 따른 전투 난이도, 정복 보상, 적 반격/세력 등. 사용자 방향을 확인한 뒤 진행.
+   - **12-7 지형 이동 후속(사용자 체감 뒤)**: 물에 들어간 연출(물결, `PlayerController.TerrainSpeedFactor`), 맵 편집기에 막는 범위(원) 표시, 지형별 바닥 효과(산악 전체 느려짐 등), 느려지는 배율/막는 반지름 조정(`Theme_*.asset`), 막힌 적이 머뭇거리면 길 찾기 보강.
 5. **미결정(PLAN.md 8번)**: 모바일 포함 여부, 실제 아트 에셋 사용 여부, 장수/무기 최종 목록.
 
 ## 알려진 이슈 / 메모
 
 - 스프라이트(번개, 불길, 궁병, 기병 등)는 코드로 만든 **플레이스홀더**. Step 10에서 교체/다듬기.
 - 장수 걷기 시트: `Assets/Sprites/HeroWalk/<장수 에셋 이름>_Walk.png`(4열 x 4행: 열=프레임 0~3, 행=아래/위/왼쪽/오른쪽, 칸 96x96, 배경 투명). 현재 5장은 **코드로 그린 임시 그림**(`tools/hero_art/HeroSprites.cs`, `generate.ps1 -Only walk`). 시트가 있는 장수는 `PlayerController`가 좌우 반전을 하지 않고 `PlayerAnimator`가 방향/프레임을 정하며, 장수 색(`tint`)도 입히지 않는다(`HeroSelectController.Apply`). 시트가 없으면 예전 동작(원 스프라이트 + tint + 반전). Player 프리팹에 `PlayerAnimator`를 붙이는 것은 `Step 10-6`이므로 셋업을 돌려야 한다.
+- 지형 이동(12-7): `InfiniteBackground.BuildMap` 이 소품을 만들 때 같은 맵으로 `TerrainCollision` 을 만들어 `TerrainCollision.Active` 에 올리고(`ResetToDefault`/`OnDestroy` 에서 내림), 플레이어·적·아군이 매 틱 `SpeedFactor`(물 배율)와 `Resolve`(막는 원 쪽 속도 성분 제거 + 겹침 밀어내기)를 부른다. **유니티 물리 콜라이더를 쓰지 않는다**(적 수백 마리를 이미 코드로 처리, 순수 로직이라 테스트 가능). `Active` 가 null 이면(지형 그림 없음, 테스트) 예전처럼 어디든 걷는다. 막는/느려지는 값은 소품 데이터(`TerrainProp.blockRadius/slowRadius/slowFactor`, 테마 `riverSlowFactor`)이고 셋업은 **이동 값이 하나도 없는 테마만** `TerrainPropKinds` 기본값으로 채우므로(**Step 12-6 재실행 필요**), 이후 조정은 `Theme_*.asset` 을 직접 고친다. 물에서는 스스로 가는 속도만 느려지고(겹침 밀림/넉백은 그대로) 나무/바위는 넉백도 막는다. 적은 길 찾기 없이 그 자리에서 접선으로 비켜 간다. 화살/투사체/보석은 영향 없음. 설명은 `docs/TERRAIN.md` "지형 이동".
 - 전투 맵: 출진한 성(`GameSession.SortieCastle`)의 지형으로 `InfiniteBackground.ApplyCastle` 이 바닥 타일을 바꾸고 `TerrainProps` 루트(배경의 자식이 아님: 배경은 카메라를 따라 움직임)에 소품을 흩뿌린다. 데이터는 `Resources/TerrainThemeCatalog.asset`(씬 연결 없음)이며 **없거나 그림이 비면 기존 색 덮개(`BattleTerrain`)로 대신**한다. (타이틀 [시작] 처럼 성 없이 시작한 판도 평야+강 고정 맵(`TerrainMap.CreateFreeBattle`)을 쓴다. 강은 세계에 60유닛 간격으로 평행하게 흐르는 사인 곡선이고 토막(256x128)을 1.5유닛 간격으로 겹쳐 놓으며(강둑 아래, 물 위, 순서 1/2) 칸 경계에서 중복/끊김이 없다(정수 격자). 소품이/연못은 강 위에 놓이지 않는다. 같은 성은 항상 같은 맵(성 id 시드, 12x12 칸 단위 결정적 배치)이고 성마다 밀도/소품 비율/색조가 다르다. 소품은 Background 정렬 레이어의 장식(충돌 없음, 시작 위치 반경 2.5 비움). 그림은 코드로 만든 **임시 그림**(`tools/terrain_art/generate.ps1`, 직접 그린 그림으로 덮어쓰면 해당 지형은 `-Only` 로 피해서 실행). 밀도/비중은 `Theme_*.asset` 을 직접 고친다(셋업은 기존 값을 덮어쓰지 않음). 설명은 `docs/TERRAIN.md`.
 - 맵 편집기: 씬 `MapEditorScene`(타이틀 0, 게임 1, 내정 2, 맵 편집기 3)에는 카메라/전역 조명/이벤트 시스템/`MapEditorController`(성 목록 연결)만 있고 **화면은 실행 중에 코드로 만든다**. 고친 맵은 성 아이디별 JSON(`MapStore`)이며 **고친 칸만** 들어 있어 나머지 칸은 자동 생성이다. 읽는 순서는 `persistentDataPath/maps` → `Resources/Maps`. 테스트는 `MapStore.PathOverride`/`Disabled` 로 실제 파일을 건드리지 않는다. 시험 전투는 `GameSession.MapTest`(결과 저장/정복 안 함, `MapTestReturn` 이 M 키와 안내). 타이틀 버튼은 `MapEditorLauncher` 가 씬 로드 때 코드로 붙이므로 타이틀 씬을 다시 만들 필요가 없다. 규칙/조작은 `docs/MAP_EDITOR.md`.
 - 빌드: `BuildTool`(메뉴 `Samkuk > Build`, 명령줄 `tools/build_windows.ps1`)이 빌드 설정(타이틀 0, 전투 1, 내정 2) 확인 → 빌드 → README.txt → zip 까지 한다. 결과는 `Builds/`(git 제외). **릴리스 빌드는 `DebugOverlay`(FPS, F1~F4 치트)가 꺼지고**(`Debug.isDebugBuild` 로 구분), 개발용(Development Build)만 켜진다. 에디터가 프로젝트를 열고 있으면 명령줄 빌드는 실행되지 않는다. 저장 경로는 Company/Product Name(`DefaultCompany/Samkuk`)에서 나오므로 이름을 바꾸면 저장 위치가 바뀐다. 이 환경(Claude)에서는 유니티를 실행하지 못해 **빌드는 사용자가 직접 확인**한다. 자세한 사용법은 `docs/BUILD.md`.
@@ -135,7 +138,8 @@ F2 무기 레벨업, F3 경험치 지급, F4 스테이지 15초 건너뛰기, ES
 ### 테스트 / 검증
 - 새 기능에는 PlayMode 테스트를 추가한다. 저장 관련 테스트는 `SaveSystem.PathOverride`로 임시 경로를 써서 실제 `save.json`을 건드리지 않는다.
 - 이 환경에서는 Unity를 직접 실행하지 못한다. 대신 Unity 번들 Roslyn(`csc.dll`)으로 **에디터 밖에서 컴파일 검사**를 한다
-  (런타임 / 에디터 / 테스트 어셈블리 각각, 응답 파일은 `Temp/ci/*.rsp`에 있음 — `Temp/`는 로컬 전용이라 없으면 다시 만들어야 한다).
+  (런타임 / 에디터 / 테스트 어셈블리 각각, 응답 파일은 `Temp/ci/*.rsp`에 있음 — `Temp/`는 로컬 전용이라 없으면 다시 만들어야 한다.
+  만드는 법: `Temp/ci/common.rsp` 에 `-nostdlib -noconfig` + `NetStandard/ref/2.1.0/netstandard.dll` + `NetStandard/compat/2.1.0/shims/{netstandard,netfx}/*.dll` + `Managed/UnityEngine/*.dll` + `Library/ScriptAssemblies/*.dll`(Samkuk 제외) 참조와 `UNITY_EDITOR;UNITY_INCLUDE_TESTS;ENABLE_INPUT_SYSTEM` 등 정의를 적고, `runtime/editor/tests.rsp` 가 각자 소스 목록(`find`)과 `-out` 을 적는다. `Managed/UnityEditor.dll` 은 `Managed/UnityEngine/UnityEditor.CoreModule.dll` 과 겹치므로 넣지 않는다. 컴파일러는 유니티 번들 `Editor/Data/DotNetSdk/sdk/<버전>/Roslyn/bincore/csc.dll` 을 `dotnet` 으로 실행. 경로는 Windows 식(`D:/...`)으로 적는다(Git Bash 의 `/d/...` 는 dotnet 이 못 읽음). 새 `.cs` 를 만들면 소스 목록을 다시 모은다(`Temp/ci/regen.sh`), 검사는 `Temp/ci/check.sh`).
 - 컴파일 통과 ≠ 동작 확인이다. 에디터 검증(셋업 실행, Play, Test Runner)은 **사용자가** 하고, 결과를 알려주면 이어서 진행한다. 검증하지 않은 것을 "동작한다"고 보고하지 않는다.
 
 ### 커밋 / 보고

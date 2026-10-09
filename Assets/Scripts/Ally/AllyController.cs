@@ -4,6 +4,7 @@ using Samkuk.Data;
 using Samkuk.Enemies;
 using Samkuk.Player;
 using Samkuk.Weapons;
+using Samkuk.World;
 using UnityEngine;
 
 namespace Samkuk.Allies
@@ -239,7 +240,10 @@ namespace Samkuk.Allies
         Vector2 GoalPosition()
         {
             Vector2 center = playerController != null ? (Vector2)playerController.transform.position : (Vector2)transform.position;
-            return center + AllyConfig.OffsetOf(slot);
+            Vector2 goal = center + AllyConfig.OffsetOf(slot);
+            // 자리에 나무가 서 있으면 그 곁으로 (나무 속을 목표로 삼으면 영원히 밀어대기만 한다)
+            var terrain = TerrainCollision.Active;
+            return terrain != null ? terrain.PushOut(goal, AllyConfig.BodyRadius) : goal;
         }
 
         /// <summary>플레이어 곁 자리로 이동한다. 움직였으면 true.</summary>
@@ -262,10 +266,17 @@ namespace Samkuk.Allies
 
             float speed = playerController.MoveSpeed * (playerStats != null ? playerStats.MoveSpeedMultiplier : 1f)
                           * AllyConfig.FollowSpeedMultiplier;
+            var terrain = TerrainCollision.Active;
+            if (terrain != null) speed *= terrain.SpeedFactor(pos);   // 플레이어처럼 물에서 느려진다
+
             // 자리에 가까워지면 천천히 도착해 떨리지 않게
             float step = Mathf.Min(dist, speed * dt * Mathf.Clamp(dist * 2f, 0.4f, 1f));
             moveDir = to / dist;
-            transform.position = pos + moveDir * step;
+            Vector2 velocity = moveDir * (dt > 1e-5f ? step / dt : 0f);
+            if (terrain != null) velocity = terrain.Resolve(pos, AllyConfig.BodyRadius, velocity, dt);   // 나무/바위를 따라 미끄러진다
+            if (velocity.sqrMagnitude < 1e-6f) return false;
+
+            transform.position = pos + velocity * dt;
             return true;
         }
 

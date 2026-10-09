@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Samkuk.Player;
+using Samkuk.World;
 using UnityEngine;
 
 namespace Samkuk.Enemies
@@ -9,6 +10,7 @@ namespace Samkuk.Enemies
     /// 모든 활성 적의 추적 이동, 겹침 방지, 접촉 피해를 한 곳에서 처리한다.
     /// 개별 Update 대신 FixedUpdate 한 번에 처리하고, 해시 그리드로 이웃 탐색을 O(n)에 가깝게 유지한다.
     /// 같은 그리드로 무기용 범위 질의(OverlapCircle)와 최근접 탐색(FindNearest)도 제공한다.
+    /// 전투 맵의 지형 충돌(<see cref="TerrainCollision.Active"/>)이 있으면 나무/바위를 돌아가고 강물에서 느려진다.
     /// </summary>
     public class EnemyManager : MonoBehaviour
     {
@@ -123,6 +125,7 @@ namespace Samkuk.Enemies
             float dt = Time.fixedDeltaTime;
             float tooFarSqr = tooFarDistance * tooFarDistance;
             bool canHurtPlayer = playerHealth != null && playerHealth.CanTakeContactDamage;
+            var terrain = TerrainCollision.Active;
 
             // 2) 추적 + 겹침 방지 + 접촉 피해
             for (int i = 0; i < n; i++)
@@ -194,7 +197,17 @@ namespace Samkuk.Enemies
                 Vector2 push = ComputePush(i, p, r);
                 Vector2 sep = Vector2.ClampMagnitude(push * separationStrength, maxSeparationSpeed);
 
-                e.Body.linearVelocity = desired + sep + e.TickKnockback(dt);
+                Vector2 velocity;
+                if (terrain != null)
+                {
+                    // 물에서는 스스로 가는 속도만 느려진다 (겹침 밀림/넉백은 그대로). 나무/바위는 넉백도 막는다
+                    float factor = terrain.SpeedFactor(p);
+                    if (factor < 1f) desired *= factor;
+                    velocity = terrain.Resolve(p, r, desired + sep + e.TickKnockback(dt), dt, deflect: true, side: e.SteerSide);
+                }
+                else velocity = desired + sep + e.TickKnockback(dt);
+
+                e.Body.linearVelocity = velocity;
                 if (e.HasWalkSheet)
                     e.TickAnimation(dirToTarget, desired.sqrMagnitude > 0.0025f, dt); // 목표를 바라보며 걷는다 (궁병이 물러날 때도 정면)
                 else if (desired.x > 0.05f) e.SetFacing(false);

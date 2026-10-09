@@ -12,6 +12,7 @@ namespace Samkuk.EditorTools
     /// <c>Assets/ScriptableObjects/Terrain/Theme_&lt;지형&gt;.asset</c> 6개와 <c>Assets/Resources/TerrainThemeCatalog.asset</c> 을 채우고,
     /// <c>Assets/Sprites/Terrain/</c> 의 바닥 타일과 소품 그림을 연결한다.
     /// 멱등: 이미 있는 테마의 값(밀도, 소품 비중 등)은 덮어쓰지 않고, 빠진 소품/그림만 채운다.
+    /// 소품의 이동 효과(막는 반지름, 느려짐)는 테마에 그 값이 하나도 없을 때(예전 에셋)만 종류별 기본값(<see cref="TerrainPropKinds"/>)으로 채운다.
     /// 그림은 <c>tools/terrain_art/generate.ps1</c> 로 만든다. 규칙은 docs/TERRAIN.md.
     /// </summary>
     public static class Step12TerrainSetup
@@ -78,7 +79,7 @@ namespace Samkuk.EditorTools
             }
 
             var missing = new StringBuilder();
-            int created = 0, linked = 0;
+            int created = 0, linked = 0, movement = 0;
 
             foreach (var row in table.themes)
             {
@@ -100,13 +101,21 @@ namespace Samkuk.EditorTools
                     if (theme.groundTile != null) linked++;
                 }
 
+                // 이동 효과가 하나도 없는 테마(지형 이동 전에 만든 에셋)는 종류별 기본값으로 채운다. 하나라도 있으면 사용자가 조정한 값으로 보고 그대로 둔다
+                bool fillMovement = theme.props.TrueForAll(x => !x.Blocks && !x.Slows);
                 foreach (var p in row.props)
                 {
                     var prop = theme.props.Find(x => x.name == p.file);
-                    if (prop == null)
+                    bool isNew = prop == null;
+                    if (isNew)
                     {
                         prop = new TerrainProp { name = p.file, weight = p.weight, scaleMin = p.scaleMin, scaleMax = p.scaleMax };
                         theme.props.Add(prop);
+                    }
+                    if (isNew || fillMovement)
+                    {
+                        TerrainPropKinds.ApplyDefaults(prop, p.kind);
+                        movement++;
                     }
                     if (prop.sprite == null)
                     {
@@ -114,6 +123,7 @@ namespace Samkuk.EditorTools
                         if (prop.sprite != null) linked++;
                     }
                 }
+                if (theme.riverSlowFactor <= 0f) theme.riverSlowFactor = TerrainPropKinds.WaterSlowFactor;   // 예전 에셋: 값이 비어 있으면 기본 절반
 
                 // 강: 그림이 아직 연결되지 않았을 때만 연결하고 폭도 기준표 값으로 정한다 (직접 조정한 값은 보존)
                 if (row.river != null && theme.riverWater == null)
@@ -132,6 +142,11 @@ namespace Samkuk.EditorTools
             {
                 var target = s.file == "Prop_Pond" ? catalog.pond : (s.file == "Prop_Banner" ? catalog.banner : null);
                 if (target == null) continue;
+                if (!target.Blocks && !target.Slows)
+                {
+                    TerrainPropKinds.ApplyDefaults(target, s.kind);   // 연못은 느려지고 깃대는 막는다
+                    movement++;
+                }
                 if (target.sprite == null)
                 {
                     target.name = s.file;
@@ -144,7 +159,7 @@ namespace Samkuk.EditorTools
 
             EditorUtility.SetDirty(catalog);
             AssetDatabase.SaveAssets();
-            Debug.Log($"[Samkuk] Step 12-6 완료: 지형 테마 {catalog.themes.Count}개(새로 {created}개), 그림 연결 {linked}개" +
+            Debug.Log($"[Samkuk] Step 12-6 완료: 지형 테마 {catalog.themes.Count}개(새로 {created}개), 그림 연결 {linked}개, 이동 효과 기본값 {movement}개" +
                       (missing.Length > 0 ? $"\n그림 없음 (tools/terrain_art/generate.ps1 실행 필요):{missing}" : ""));
         }
 

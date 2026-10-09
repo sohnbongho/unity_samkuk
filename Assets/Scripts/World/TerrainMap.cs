@@ -302,6 +302,12 @@ namespace Samkuk.World
         public static float RiverStretch(float riverWidth, bool bank) =>
             bank ? riverWidth * BankExtra / BankVisibleHeight : riverWidth / WaterVisibleHeight;
 
+        /// <summary>강물 토막 하나의 실제 폭(유닛). 세로 배율에서 거꾸로 구하므로 맵 편집기로 다르게 그린 강도 맞는다 (<see cref="TerrainCollision"/>).</summary>
+        public static float RiverWidthOf(PropPlacement water) => (water.stretchY > 0f ? water.stretchY : 1f) * WaterVisibleHeight;
+
+        /// <summary>강물 위에서의 속도 배율 (테마 값, 비어 있으면 기본 절반). 1 이면 느려지지 않는다.</summary>
+        public float RiverSlowFactor => Theme != null && Theme.riverSlowFactor > 0f ? Theme.riverSlowFactor : TerrainPropKinds.WaterSlowFactor;
+
         /// <summary>그리기 순서로 물건의 종류를 알아낸다 (소품이 아니면 얼룩/강/연못).</summary>
         public static MapItemKind KindOf(PropPlacement p)
         {

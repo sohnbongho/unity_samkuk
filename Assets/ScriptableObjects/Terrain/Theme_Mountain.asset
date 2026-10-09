@@ -21,26 +21,42 @@ MonoBehaviour:
     weight: 3
     scaleMin: 0.9
     scaleMax: 1.4
+    blockRadius: 0.28
+    slowRadius: 0
+    slowFactor: 1
   - name: Prop_Mountain_Boulder
     sprite: {fileID: 21300000, guid: 5ffcbf7af08c42c4e81f4a19ea4d72d4, type: 3}
     weight: 2.5
     scaleMin: 0.8
     scaleMax: 1.3
+    blockRadius: 0.7
+    slowRadius: 0
+    slowFactor: 1
   - name: Prop_Mountain_BigRock
     sprite: {fileID: 21300000, guid: c47f20936b5956b4e9e143bceefff178, type: 3}
     weight: 1
     scaleMin: 0.9
     scaleMax: 1.3
+    blockRadius: 1.1
+    slowRadius: 0
+    slowFactor: 1
   - name: Prop_Mountain_Shrub
     sprite: {fileID: 21300000, guid: 95fe70d6700e3d843835884e7fc96c45, type: 3}
     weight: 2
     scaleMin: 0.7
     scaleMax: 1.1
+    blockRadius: 0
+    slowRadius: 0
+    slowFactor: 1
   - name: Prop_Mountain_Stump
     sprite: {fileID: 21300000, guid: 7e9988e22a184df4e980d28094015d50, type: 3}
     weight: 1
     scaleMin: 0.8
     scaleMax: 1.2
+    blockRadius: 0.35
+    slowRadius: 0
+    slowFactor: 1
   riverWater: {fileID: 21300000, guid: eac55c38fc17bee45aa285bb9d49f7d7, type: 3}
   riverBank: {fileID: 21300000, guid: 260286c7004290847af55e53badd2ee7, type: 3}
   riverWidth: 2.6
+  riverSlowFactor: 0.5

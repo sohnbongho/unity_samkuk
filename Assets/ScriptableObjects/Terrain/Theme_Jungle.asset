@@ -21,26 +21,42 @@ MonoBehaviour:
     weight: 2.5
     scaleMin: 0.9
     scaleMax: 1.3
+    blockRadius: 0.28
+    slowRadius: 0
+    slowFactor: 1
   - name: Prop_Jungle_Tree
     sprite: {fileID: 21300000, guid: e148534b11f92a84fa95c5462b544a06, type: 3}
     weight: 2.5
     scaleMin: 1
     scaleMax: 1.5
+    blockRadius: 0.32
+    slowRadius: 0
+    slowFactor: 1
   - name: Prop_Jungle_Fern
     sprite: {fileID: 21300000, guid: 72e8808902cbe3f4aa80d4301d055210, type: 3}
     weight: 4
     scaleMin: 0.8
     scaleMax: 1.3
+    blockRadius: 0
+    slowRadius: 0
+    slowFactor: 1
   - name: Prop_Jungle_Bush
     sprite: {fileID: 21300000, guid: ef1b1c9501e47f14a97deed3ef31613c, type: 3}
     weight: 3
     scaleMin: 0.8
     scaleMax: 1.2
+    blockRadius: 0
+    slowRadius: 0
+    slowFactor: 1
   - name: Prop_Jungle_MossRock
     sprite: {fileID: 21300000, guid: b3e2f9851b722a848a97b3f3cad5d61a, type: 3}
     weight: 1.5
     scaleMin: 0.8
     scaleMax: 1.2
+    blockRadius: 0.6
+    slowRadius: 0
+    slowFactor: 1
   riverWater: {fileID: 21300000, guid: e06554d56f0a1bb4a8e23e42f006cf54, type: 3}
   riverBank: {fileID: 21300000, guid: 8107c6e84912a1448b50b0a8690e7a08, type: 3}
   riverWidth: 4
+  riverSlowFactor: 0.5

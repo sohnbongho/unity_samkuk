@@ -13,8 +13,8 @@ namespace Samkuk.Data
         public const string ResourceName = "TerrainThemeCatalog";
 
         public List<TerrainTheme> themes = new List<TerrainTheme>();
-        [Tooltip("강/바다가 있는 성(hasWater)과 강변 지형에 놓이는 연못")] public TerrainProp pond = new TerrainProp { name = "Pond", scaleMin = 0.8f, scaleMax = 1.5f };
-        [Tooltip("큰 성(대성, 도성)의 맵에 꽂히는 깃발")] public TerrainProp banner = new TerrainProp { name = "Banner", scaleMin = 0.95f, scaleMax = 1.1f };
+        [Tooltip("강/바다가 있는 성(hasWater)과 강변 지형에 놓이는 연못")] public TerrainProp pond = new TerrainProp { name = "Pond", scaleMin = 0.8f, scaleMax = 1.5f, slowRadius = TerrainPropKinds.PondSlowRadius, slowFactor = TerrainPropKinds.WaterSlowFactor };
+        [Tooltip("큰 성(대성, 도성)의 맵에 꽂히는 깃발")] public TerrainProp banner = new TerrainProp { name = "Banner", scaleMin = 0.95f, scaleMax = 1.1f, blockRadius = TerrainPropKinds.BannerBlockRadius };
 
         public TerrainTheme Get(CastleTerrain terrain)
         {

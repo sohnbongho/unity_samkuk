@@ -639,7 +639,11 @@ namespace Samkuk.World
         void ApplyDirtyChunks()
         {
             if (Model == null || spawner == null) return;
-            foreach (var chunk in Model.ConsumeDirtyChunks()) spawner.RebuildChunk(chunk);
+            foreach (var chunk in Model.ConsumeDirtyChunks())
+            {
+                spawner.RebuildChunk(chunk);
+                background.Collision?.Invalidate(chunk);   // 보이는 것과 막는 것이 어긋나지 않게 (전투 테스트는 어차피 새로 만든다)
+            }
         }
 
         // ───────────────────────── 화면 위 표시 ─────────────────────────

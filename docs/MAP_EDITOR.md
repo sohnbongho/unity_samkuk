@@ -61,14 +61,14 @@
 | 편집 규칙(순수 로직, 실행 취소, 선택, 지우기)과 팔레트 | `Assets/Scripts/World/MapEditModel.cs` |
 | 편집기 화면(입력, 카메라, UI 를 코드로 생성) | `Assets/Scripts/World/MapEditorController.cs` |
 | 저장 파일 모양 / 저장·불러오기 | `MapLayoutData.cs` / `MapStore.cs` (같은 폴더) |
-| 맵이 고친 칸을 쓰는 부분 | `TerrainMap` (`GetChunk`, `EnsureCustomChunk`, `ExportLayout`, `ImportLayout`, `CreateForBattle`), `TerrainPropSpawner.RebuildChunk`, `InfiniteBackground.ApplyMap` |
+| 맵이 고친 칸을 쓰는 부분 | `TerrainMap` (`GetChunk`, `EnsureCustomChunk`, `ExportLayout`, `ImportLayout`, `CreateForBattle`), `TerrainPropSpawner.RebuildChunk`, `InfiniteBackground.ApplyMap`, `TerrainCollision` (고친 칸의 나무/강도 그대로 막고 느려진다) |
 | 타이틀의 [맵 편집기] 버튼 / 전투의 M 키 안내 | `MapEditorLauncher.cs` / `MapTestReturn.cs` (둘 다 씬 로드 때 스스로 만들어진다) |
 | 씬 만들기 / 바로 실행 메뉴 | `Assets/Scripts/Editor/Step13MapEditorSetup.cs` |
 | 테스트 | `Assets/Tests/PlayMode/MapEditorTests.cs` |
 
 ## 아직 없는 것
 
-- **충돌/지형 효과**: 소품은 여전히 장식이다. 막는 지형은 전투 규칙과 함께 설계해야 한다.
+- **충돌 범위 보기**: 나무/바위는 전투에서 막고 강/연못은 느려지지만(`docs/TERRAIN.md` 의 "지형 이동"), 편집기 화면에 그 범위(원)가 그려지지는 않는다. 어디가 막히는지는 전투 테스트로 확인한다.
 - 여러 개 한꺼번에 선택(상자 선택)과 붙여넣기, 칸을 건너뛰는 큰 복사.
 - 소품 외의 배치물(적 스폰 위치, 보물 상자 같은 이벤트 지점).
 - 성 이름 검색 / 직접 고친 성 목록 보기 (지금은 ◀ ▶ 로 넘긴다).

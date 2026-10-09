@@ -73,6 +73,8 @@ namespace Samkuk.Enemies
         internal int QueryStamp;
         /// <summary>풀 반환 콜백 (스포너가 설정).</summary>
         internal Action<Enemy> DespawnHandler;
+        /// <summary>장애물에 정면으로 막혔을 때 돌아가는 쪽 (+1 왼쪽 접선 / -1 오른쪽). 무리가 한쪽으로만 몰리지 않게 마리마다 다르다.</summary>
+        internal int SteerSide = 1;
 
         void Awake()
         {
@@ -102,6 +104,7 @@ namespace Samkuk.Enemies
             animClock = 0f;
             WalkFrame = 0;
             animPhase = UnityEngine.Random.value * HeroSpriteSet.Columns; // 무리가 같은 발로 걷지 않도록
+            SteerSide = UnityEngine.Random.value < 0.5f ? 1 : -1;
             animFps = Mathf.Clamp(data.moveSpeed * 2.5f, 4f, 12f);
             sr.sprite = walkSet != null ? walkSet.Get(facing, 0) : (data.sprite != null ? data.sprite : defaultSprite);
             sr.color = BaseColor;

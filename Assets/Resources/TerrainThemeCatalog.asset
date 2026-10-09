@@ -25,9 +25,15 @@ MonoBehaviour:
     weight: 1
     scaleMin: 0.8
     scaleMax: 1.5
+    blockRadius: 0
+    slowRadius: 1.4
+    slowFactor: 0.5
   banner:
     name: Prop_Banner
     sprite: {fileID: 21300000, guid: f678e0eb0eaca854d924a1b87b075c53, type: 3}
     weight: 1
     scaleMin: 0.95
     scaleMax: 1.1
+    blockRadius: 0.15
+    slowRadius: 0
+    slowFactor: 1
