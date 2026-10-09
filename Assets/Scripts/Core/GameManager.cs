@@ -16,6 +16,7 @@ namespace Samkuk.Core
         public const string TitleSceneName = "TitleScene";
         public const string StrategySceneName = "StrategyScene";
         public const string BattleSceneName = "BattleScene";
+        public const string MapEditorSceneName = "MapEditorScene";
 
         [SerializeField] PlayerHealth playerHealth;
         [SerializeField] GameObject gameOverPanel;
@@ -77,7 +78,7 @@ namespace Samkuk.Core
             if (kb == null) return;
 
             if (kb.rKey.wasPressedThisFrame) Restart();
-            else if (kb.mKey.wasPressedThisFrame && GameSession.SortieCastle != null) GoToStrategy();
+            else if (kb.mKey.wasPressedThisFrame && (GameSession.SortieCastle != null || GameSession.MapTest)) GoToStrategy();
             else if (kb.tKey.wasPressedThisFrame) GoToTitle();
         }
 
@@ -91,8 +92,19 @@ namespace Samkuk.Core
         public void GoToStrategy()
         {
             Time.timeScale = 1f;
+            if (GameSession.MapTest) { GoToMapEditor(); return; }
             if (Application.CanStreamedLevelBeLoaded(StrategySceneName))
                 SceneManager.LoadScene(StrategySceneName);
+            else
+                GoToTitle();
+        }
+
+        /// <summary>맵 편집기로 돌아간다 (맵 시험 전투에서). 편집기 씬이 빌드에 없으면 타이틀로.</summary>
+        public void GoToMapEditor()
+        {
+            Time.timeScale = 1f;
+            if (Application.CanStreamedLevelBeLoaded(MapEditorSceneName))
+                SceneManager.LoadScene(MapEditorSceneName);
             else
                 GoToTitle();
         }
@@ -101,6 +113,7 @@ namespace Samkuk.Core
         public void GoToTitle()
         {
             Time.timeScale = 1f;
+            GameSession.MapTest = false;
             if (Application.CanStreamedLevelBeLoaded(TitleSceneName))
                 SceneManager.LoadScene(TitleSceneName);
             else

@@ -24,6 +24,7 @@ namespace Samkuk.World
     /// </summary>
     public static class TerrainDecals
     {
+        public const string SoftBlobName = "SoftBlob";
         static Sprite softBlob;
         static TerrainProp patchProp;
 
@@ -48,6 +49,7 @@ namespace Samkuk.World
                 tex.Apply();
                 softBlob = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size / 4f);
                 softBlob.hideFlags = HideFlags.HideAndDontSave;
+                softBlob.name = SoftBlobName;
                 return softBlob;
             }
         }
@@ -87,12 +89,14 @@ namespace Samkuk.World
 
         // 강: 세계 전체에 같은 모양의 강이 60유닛 간격으로 평행하게 흐른다 (방향/굽이는 성마다 다름)
         const float RiverSpacing = 60f;
-        const float RiverStep = 1.5f;              // 강 토막 사이 간격 (토막 길이 4유닛보다 짧게 해 겹쳐 이어 붙인다)
+        public const float RiverStep = 1.5f;              // 강 토막 사이 간격 (토막 길이 4유닛보다 짧게 해 겹쳐 이어 붙인다)
         const float WaterVisibleHeight = 1.6f;     // 물 토막 그림의 눈에 보이는 폭(가장자리는 흐려짐) = 스프라이트 높이 2유닛의 80%
         const float BankVisibleHeight = 1.8f;
         const float BankExtra = 1.35f;             // 강둑은 물보다 이만큼 더 넓다
 
         public CastleData Castle { get; }
+        /// <summary>이 맵의 바닥 지형. 보통 성의 지형이고, 맵 편집기에서 다르게 고른 경우만 다르다.</summary>
+        public CastleTerrain Terrain { get; }
         public TerrainTheme Theme { get; }
         public TerrainThemeCatalog Catalog { get; }
         public int Seed { get; }
@@ -118,9 +122,14 @@ namespace Samkuk.World
         readonly float riverAngle, riverOffset, riverAmp, riverWave, riverPhase;
         readonly Vector2 dirU, dirV;
 
-        TerrainMap(CastleData castle, TerrainTheme theme, TerrainThemeCatalog catalog)
+        // 맵 편집기로 직접 고친 칸: 이 칸은 자동 생성 대신 이 목록을 그대로 쓴다 (나머지 칸은 평소처럼 자동 생성)
+        readonly Dictionary<Vector2Int, List<PropPlacement>> custom = new Dictionary<Vector2Int, List<PropPlacement>>();
+        Dictionary<string, TerrainProp> library;
+
+        TerrainMap(CastleData castle, TerrainTheme theme, TerrainThemeCatalog catalog, CastleTerrain terrain)
         {
             Castle = castle;
+            Terrain = terrain;
             Theme = theme;
             Catalog = catalog;
             Seed = (int)(Fnv(castle.id ?? "") & 0x7fffffff);
@@ -128,8 +137,8 @@ namespace Samkuk.World
             DensityMultiplier = 0.8f + 0.5f * Frac(1) + (castle.size == CastleSize.Capital ? 0.1f : 0f);
             GroundTint = new Color(1f + (Frac(2) - 0.5f) * 0.14f, 1f + (Frac(3) - 0.5f) * 0.14f, 1f + (Frac(4) - 0.5f) * 0.14f, 1f);
 
-            if (castle.hasWater) PondPerChunk = castle.terrain == CastleTerrain.River ? 0.9f : 0.5f;
-            else PondPerChunk = castle.terrain == CastleTerrain.River ? 0.35f : 0f;
+            if (castle.hasWater) PondPerChunk = terrain == CastleTerrain.River ? 0.9f : 0.5f;
+            else PondPerChunk = terrain == CastleTerrain.River ? 0.35f : 0f;
             BannerPerChunk = castle.size == CastleSize.Capital ? 0.9f : (castle.size == CastleSize.Large ? 0.45f : 0f);
 
             weights = new float[theme.props.Count];
@@ -140,7 +149,7 @@ namespace Samkuk.World
                 totalWeight += weights[i];
             }
 
-            HasRiver = (castle.hasWater || castle.terrain == CastleTerrain.River) && theme.riverWater != null && theme.riverBank != null;
+            HasRiver = (castle.hasWater || terrain == CastleTerrain.River) && theme.riverWater != null && theme.riverBank != null;
             if (HasRiver)
             {
                 riverAngle = Frac(20) * Mathf.PI;
@@ -157,15 +166,57 @@ namespace Samkuk.World
             }
         }
 
-        /// <summary>성의 지형에 맞는 맵을 만든다. 성/카탈로그/테마가 없으면 null (기존 색 덮개 방식으로 대신한다).</summary>
-        public static TerrainMap Create(CastleData castle, TerrainThemeCatalog catalog)
+        /// <summary>
+        /// 성의 지형에 맞는 맵을 만든다. 성/카탈로그/테마가 없으면 null (기존 색 덮개 방식으로 대신한다).
+        /// <paramref name="terrainOverride"/> 를 주면 성의 지형 대신 그 지형의 바닥/소품/강으로 만든다(맵 편집기).
+        /// </summary>
+        public static TerrainMap Create(CastleData castle, TerrainThemeCatalog catalog, CastleTerrain? terrainOverride = null)
         {
             if (castle == null || catalog == null) return null;
-            var theme = catalog.Get(castle.terrain);
-            return theme != null ? new TerrainMap(castle, theme, catalog) : null;
+            var terrain = terrainOverride ?? castle.terrain;
+            var theme = catalog.Get(terrain);
+            return theme != null ? new TerrainMap(castle, theme, catalog, terrain) : null;
+        }
+
+        /// <summary>
+        /// 전투에서 쓰는 맵: 자동 생성 맵에 맵 편집기로 고쳐 둔 내용(<see cref="MapStore"/>)이 있으면 덮어쓴다.
+        /// 고친 칸만 바뀌고 나머지는 평소와 같다.
+        /// </summary>
+        public static TerrainMap CreateForBattle(CastleData castle, TerrainThemeCatalog catalog)
+        {
+            if (castle == null || catalog == null) return null;
+            var layout = MapStore.Load(castle.id);
+            var map = Create(castle, catalog, ParseTerrain(layout != null ? layout.terrain : null));
+            if (map != null && layout != null) map.ImportLayout(layout);
+            return map;
+        }
+
+        public static CastleTerrain? ParseTerrain(string name)
+        {
+            if (string.IsNullOrEmpty(name)) return null;
+            return System.Enum.TryParse<CastleTerrain>(name, out var t) ? t : (CastleTerrain?)null;
         }
 
         static CastleData freeBattleCastle;
+
+        /// <summary>성 없이 시작한 판을 나타내는 내부용 가짜 성 (평야 + 강). 맵 편집기에서 이 맵도 고칠 수 있다.</summary>
+        public static CastleData FreeBattleCastle
+        {
+            get
+            {
+                if (freeBattleCastle == null)
+                {
+                    freeBattleCastle = ScriptableObject.CreateInstance<CastleData>();
+                    freeBattleCastle.hideFlags = HideFlags.HideAndDontSave;
+                    freeBattleCastle.id = MapStore.FreeBattleId;
+                    freeBattleCastle.displayName = "자유 전투";
+                    freeBattleCastle.terrain = CastleTerrain.Plain;
+                    freeBattleCastle.size = CastleSize.Medium;
+                    freeBattleCastle.hasWater = true;
+                }
+                return freeBattleCastle;
+            }
+        }
 
         /// <summary>
         /// 성 없이 시작한 판(타이틀의 [시작])의 맵: 평야에 강이 흐르는 고정된 맵.
@@ -174,17 +225,7 @@ namespace Samkuk.World
         public static TerrainMap CreateFreeBattle(TerrainThemeCatalog catalog)
         {
             if (catalog == null) return null;
-            if (freeBattleCastle == null)
-            {
-                freeBattleCastle = ScriptableObject.CreateInstance<CastleData>();
-                freeBattleCastle.hideFlags = HideFlags.HideAndDontSave;
-                freeBattleCastle.id = "FreeBattle";
-                freeBattleCastle.displayName = "자유 전투";
-                freeBattleCastle.terrain = CastleTerrain.Plain;
-                freeBattleCastle.size = CastleSize.Medium;
-                freeBattleCastle.hasWater = true;
-            }
-            return Create(freeBattleCastle, catalog);
+            return CreateForBattle(FreeBattleCastle, catalog);
         }
 
         /// <summary>월드 좌표가 속한 칸 번호.</summary>
@@ -249,6 +290,174 @@ namespace Samkuk.World
                         stretchY = RiverWidth / WaterVisibleHeight,
                     });
                 }
+        }
+
+        // ───────────────────────── 직접 고친 칸 (맵 편집기) ─────────────────────────
+
+        /// <summary>소품의 그리기 순서: 아래쪽(y 가 작은) 소품이 위에 그려지게. <paramref name="chunkTop"/> 은 칸의 위쪽 y.</summary>
+        public static int PropOrder(float y, float chunkTop) =>
+            OrderPropBase + Mathf.Clamp(Mathf.RoundToInt((chunkTop - y) * 8f), 0, 100);
+
+        /// <summary>강 폭(유닛)에 맞는 강 토막(물 또는 강둑)의 세로 배율. 맵 편집기에서 강을 직접 그릴 때 쓴다.</summary>
+        public static float RiverStretch(float riverWidth, bool bank) =>
+            bank ? riverWidth * BankExtra / BankVisibleHeight : riverWidth / WaterVisibleHeight;
+
+        /// <summary>그리기 순서로 물건의 종류를 알아낸다 (소품이 아니면 얼룩/강/연못).</summary>
+        public static MapItemKind KindOf(PropPlacement p)
+        {
+            switch (p.order)
+            {
+                case OrderPatch: return MapItemKind.Patch;
+                case OrderBank: return MapItemKind.Bank;
+                case OrderWater: return MapItemKind.Water;
+                case OrderPond: return MapItemKind.Pond;
+                default: return MapItemKind.Prop;
+            }
+        }
+
+        public static int OrderOf(MapItemKind kind, float y, int chunkY)
+        {
+            switch (kind)
+            {
+                case MapItemKind.Patch: return OrderPatch;
+                case MapItemKind.Bank: return OrderBank;
+                case MapItemKind.Water: return OrderWater;
+                case MapItemKind.Pond: return OrderPond;
+                default: return PropOrder(y, (chunkY + 1) * ChunkSize);
+            }
+        }
+
+        /// <summary>직접 고친 칸이 하나라도 있는가.</summary>
+        public bool HasCustom => custom.Count > 0;
+
+        public int CustomChunkCount => custom.Count;
+
+        public IEnumerable<Vector2Int> CustomChunks => custom.Keys;
+
+        public bool IsCustom(Vector2Int chunk) => custom.ContainsKey(chunk);
+
+        /// <summary>한 칸에 실제로 보일 모든 것 (직접 고친 칸이면 그 내용, 아니면 자동 생성: 바닥 얼룩 + 소품/강/연못). 읽기 전용으로 쓴다.</summary>
+        public List<PropPlacement> GetChunk(int chunkX, int chunkY)
+        {
+            if (custom.Count > 0 && custom.TryGetValue(new Vector2Int(chunkX, chunkY), out var list)) return list;
+            return Generate(chunkX, chunkY);
+        }
+
+        /// <summary>직접 고친 내용과 상관없이 자동 생성한 칸의 내용.</summary>
+        public List<PropPlacement> Generate(int chunkX, int chunkY)
+        {
+            var list = LayoutPatches(chunkX, chunkY);
+            list.AddRange(Layout(chunkX, chunkY));
+            return list;
+        }
+
+        /// <summary>칸을 편집할 수 있게 한다: 아직 고친 적 없으면 지금 보이는 자동 생성 내용을 그대로 옮겨 와 시작점으로 삼는다.</summary>
+        public List<PropPlacement> EnsureCustomChunk(Vector2Int chunk)
+        {
+            if (!custom.TryGetValue(chunk, out var list))
+            {
+                list = Generate(chunk.x, chunk.y);
+                custom[chunk] = list;
+            }
+            return list;
+        }
+
+        public void SetCustomChunk(Vector2Int chunk, List<PropPlacement> items) => custom[chunk] = items ?? new List<PropPlacement>();
+
+        /// <summary>칸을 다시 자동 생성으로 되돌린다.</summary>
+        public bool RemoveCustomChunk(Vector2Int chunk) => custom.Remove(chunk);
+
+        public void ClearCustom() => custom.Clear();
+
+        /// <summary>직접 고친 칸 전체의 복사본 (실행 취소용).</summary>
+        public Dictionary<Vector2Int, List<PropPlacement>> SnapshotCustom()
+        {
+            var copy = new Dictionary<Vector2Int, List<PropPlacement>>(custom.Count);
+            foreach (var kv in custom) copy[kv.Key] = new List<PropPlacement>(kv.Value);
+            return copy;
+        }
+
+        public void RestoreCustom(Dictionary<Vector2Int, List<PropPlacement>> snapshot)
+        {
+            custom.Clear();
+            foreach (var kv in snapshot) custom[kv.Key] = new List<PropPlacement>(kv.Value);
+        }
+
+        /// <summary>저장 파일 속 그림 이름으로 소품 정보를 찾는다. 모든 지형 테마의 소품, 강 토막, 연못, 깃발, 얼룩을 포함한다.</summary>
+        public TerrainProp ResolveProp(string spriteName)
+        {
+            if (library == null)
+            {
+                library = new Dictionary<string, TerrainProp>();
+                foreach (var t in Catalog.themes)
+                {
+                    if (t == null) continue;
+                    foreach (var p in t.props) AddToLibrary(p);
+                    if (t.riverWater != null) AddToLibrary(new TerrainProp { name = "RiverWater", sprite = t.riverWater });
+                    if (t.riverBank != null) AddToLibrary(new TerrainProp { name = "RiverBank", sprite = t.riverBank });
+                }
+                AddToLibrary(Catalog.pond);
+                AddToLibrary(Catalog.banner);
+                AddToLibrary(TerrainDecals.PatchProp);
+            }
+            return spriteName != null && library.TryGetValue(spriteName, out var prop) ? prop : null;
+        }
+
+        void AddToLibrary(TerrainProp p)
+        {
+            if (p == null || p.sprite == null) return;
+            library[KeyOf(p)] = p;
+        }
+
+        /// <summary>저장 파일에서 소품을 가리키는 이름 (그림 파일 이름, 없으면 소품 이름).</summary>
+        public static string KeyOf(TerrainProp p) =>
+            p.sprite != null && !string.IsNullOrEmpty(p.sprite.name) ? p.sprite.name : p.name;
+
+        /// <summary>직접 고친 칸을 저장 파일 모양으로 옮긴다 (고친 칸이 없고 지형도 그대로면 chunks 가 비어 있다).</summary>
+        public MapLayoutData ExportLayout()
+        {
+            var data = new MapLayoutData { castleId = Castle.id, terrain = Terrain != Castle.terrain ? Terrain.ToString() : "" };
+            foreach (var kv in custom)
+            {
+                var chunk = new MapChunk { cx = kv.Key.x, cy = kv.Key.y };
+                foreach (var p in kv.Value)
+                {
+                    if (p.prop == null || p.prop.sprite == null) continue;
+                    chunk.items.Add(new MapItem
+                    {
+                        sprite = KeyOf(p.prop), kind = (int)KindOf(p), x = p.position.x, y = p.position.y,
+                        scale = p.scale, stretchY = p.stretchY <= 0f ? 1f : p.stretchY, rotation = p.rotation, flipX = p.flipX,
+                        tinted = p.tinted, r = p.tint.r, g = p.tint.g, b = p.tint.b, a = p.tint.a,
+                    });
+                }
+                data.chunks.Add(chunk);
+            }
+            data.chunks.Sort((a, b) => a.cy != b.cy ? a.cy.CompareTo(b.cy) : a.cx.CompareTo(b.cx));
+            return data;
+        }
+
+        /// <summary>저장 파일의 칸들을 이 맵의 직접 고친 칸으로 쓴다 (기존 것은 지운다). 그림을 찾지 못한 물건은 건너뛴다.</summary>
+        public void ImportLayout(MapLayoutData data)
+        {
+            custom.Clear();
+            if (data == null) return;
+            foreach (var chunk in data.chunks)
+            {
+                var list = new List<PropPlacement>(chunk.items.Count);
+                foreach (var item in chunk.items)
+                {
+                    var prop = ResolveProp(item.sprite);
+                    if (prop == null) continue;
+                    var kind = (MapItemKind)item.kind;
+                    list.Add(new PropPlacement
+                    {
+                        prop = prop, position = new Vector2(item.x, item.y), scale = item.scale, stretchY = item.stretchY <= 0f ? 1f : item.stretchY,
+                        rotation = item.rotation, flipX = item.flipX, order = OrderOf(kind, item.y, chunk.cy),
+                        tinted = item.tinted, tint = new Color(item.r, item.g, item.b, item.a),
+                    });
+                }
+                custom[new Vector2Int(chunk.cx, chunk.cy)] = list;
+            }
         }
 
         // ───────────────────────── 배치 ─────────────────────────
@@ -339,7 +548,7 @@ namespace Samkuk.World
                 Color tint;
                 if (roll < 0.4f) tint = new Color(0f, 0f, 0f, 0.13f);                       // 그늘진 곳
                 else if (roll < 0.75f) tint = new Color(1f, 1f, 0.75f, 0.09f);              // 볕이 드는 곳
-                else if (Castle.terrain == CastleTerrain.Mountain) tint = new Color(0.62f, 0.64f, 0.66f, 0.2f);   // 드러난 돌바닥
+                else if (Terrain == CastleTerrain.Mountain) tint = new Color(0.62f, 0.64f, 0.66f, 0.2f);   // 드러난 돌바닥
                 else tint = new Color(0.55f, 0.42f, 0.24f, 0.24f);                          // 마른 흙
 
                 float scale = 1.3f + (float)rng.NextDouble() * 1.4f;
@@ -357,10 +566,9 @@ namespace Samkuk.World
         PropPlacement Place(TerrainProp prop, Vector2 pos, System.Random rng, float chunkTop)
         {
             // 아래쪽(y 가 작은) 소품이 위에 그려지게 순서를 매긴다. 연못보다 항상 위.
-            int order = OrderPropBase + Mathf.Clamp(Mathf.RoundToInt((chunkTop - pos.y) * 8f), 0, 100);
             return new PropPlacement
             {
-                prop = prop, position = pos, order = order, stretchY = 1f,
+                prop = prop, position = pos, order = PropOrder(pos.y, chunkTop), stretchY = 1f,
                 scale = Range(rng, prop.scaleMin, prop.scaleMax), flipX = rng.Next(2) == 0,
             };
         }

@@ -19,6 +19,7 @@ namespace Samkuk.Tests
         public void SetUp()
         {
             TerrainThemeCatalog.Disabled = false;
+            MapStore.Disabled = true;   // 사용자가 맵 편집기로 고쳐 둔 실제 맵이 이 테스트에 섞이지 않게
             DestroyLeftoverProps();
             TerrainThemeCatalog.Use(null);
             GameSession.SortieCastle = null;
@@ -27,6 +28,7 @@ namespace Samkuk.Tests
         [TearDown]
         public void TearDown()
         {
+            MapStore.Disabled = false;
             TerrainThemeCatalog.Disabled = false;
             TerrainThemeCatalog.Use(null);
             GameSession.SortieCastle = null;
@@ -38,7 +40,7 @@ namespace Samkuk.Tests
         /// <summary>지연 삭제로 남은 소품 루트가 다음 테스트에 섞이지 않게 즉시 지운다.</summary>
         static void DestroyLeftoverProps()
         {
-            foreach (var s in Object.FindObjectsByType<TerrainPropSpawner>(FindObjectsSortMode.None))
+            foreach (var s in Object.FindObjectsByType<TerrainPropSpawner>())
                 Object.DestroyImmediate(s.gameObject);
         }
 
@@ -719,7 +721,7 @@ namespace Samkuk.Tests
 
             Assert.AreNotSame(spriteA, sr.sprite, "지형이 다르면 바닥 타일이 다르다");
             Assert.AreNotEqual(tintA, sr.color, "색조도 다르다");
-            Assert.AreEqual(1, GameObject.FindObjectsByType<TerrainPropSpawner>(FindObjectsSortMode.None).Length, "이전 소품은 치워진다");
+            Assert.AreEqual(1, GameObject.FindObjectsByType<TerrainPropSpawner>().Length, "이전 소품은 치워진다");
         }
 
         [UnityTest]

@@ -57,11 +57,11 @@ namespace Samkuk.EditorTools
                 Debug.Log("[Samkuk] Step 12-2 완료: StrategyScene 생성 (타이틀의 [내정] 버튼으로 진입. 타이틀 버튼은 Step 9-2 를 다시 실행해야 생깁니다)");
         }
 
-        /// <summary>타이틀(0) → 게임(1) → 내정(2) 순서로 빌드 설정에 등록한다. 없는 씬은 건너뛴다.</summary>
+        /// <summary>타이틀(0) → 게임(1) → 내정(2) → 맵 편집기(3) 순서로 빌드 설정에 등록한다. 없는 씬은 건너뛴다.</summary>
         public static void RegisterBuildScenes()
         {
             var scenes = new List<EditorBuildSettingsScene>();
-            foreach (string path in new[] { Step9TitleSetup.TitleScenePath, Step9TitleSetup.BattleScenePath, ScenePath })
+            foreach (string path in new[] { Step9TitleSetup.TitleScenePath, Step9TitleSetup.BattleScenePath, ScenePath, Step13MapEditorSetup.ScenePath })
                 if (File.Exists(path)) scenes.Add(new EditorBuildSettingsScene(path, true));
             EditorBuildSettings.scenes = scenes.ToArray();
         }

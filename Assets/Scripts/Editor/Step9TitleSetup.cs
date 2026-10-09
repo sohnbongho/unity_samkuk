@@ -69,6 +69,13 @@ namespace Samkuk.EditorTools
 
         static bool PlayFromTitleOptedOut => EditorUserSettings.GetConfigValue(PlayFromTitleOffKey) == "1";
 
+        /// <summary>시작 씬을 다시 타이틀로 맞춘다 (맵 편집기를 바로 실행했다가 돌아올 때). 메뉴에서 꺼 둔 경우는 그대로 둔다.</summary>
+        public static void RestorePlayFromTitle()
+        {
+            if (!PlayFromTitleOptedOut) SetPlayFromTitle(true);
+            else EditorSceneManager.playModeStartScene = null;
+        }
+
         [InitializeOnLoadMethod]
         static void EnsurePlayFromTitle()
         {

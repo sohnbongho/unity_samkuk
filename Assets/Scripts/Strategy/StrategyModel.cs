@@ -162,6 +162,7 @@ namespace Samkuk.Strategy
             if (!CanSortie || target == null || !Selected.IsAdjacent(target) || IsOwned(target)) return false;
             GameSession.SortieOrigin = Selected;
             GameSession.SortieCastle = target;
+            GameSession.MapTest = false;
             SortieStarted?.Invoke(target);
             return true;
         }

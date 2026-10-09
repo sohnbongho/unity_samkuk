@@ -16,6 +16,9 @@ namespace Samkuk.Core
         /// <summary>출진한 성 (공격 대상이 아니라 떠나온 쪽). 결과 화면과 내정 복귀 위치에 쓴다.</summary>
         public static CastleData SortieOrigin { get; set; }
 
+        /// <summary>맵 편집기에서 고친 맵을 시험해 보는 전투인가. 켜져 있으면 결과를 저장(골드, 기록, 정복)하지 않고, 전투 안에서 M 으로 편집기로 돌아간다.</summary>
+        public static bool MapTest { get; set; }
+
         /// <summary>마지막으로 고른 아군 장수들 (다시 시작할 때 미리 선택된 상태로 보여 준다).</summary>
         public static IReadOnlyList<HeroData> SelectedAllies => allies;
 

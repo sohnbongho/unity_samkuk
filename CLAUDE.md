@@ -12,7 +12,7 @@
 
 ## 진행 상황
 
-마지막 갱신: 2026-10-09 (12-6 성마다 다른 전투 맵 완료 + 강 없는 평야('완' 등)가 휑해서 소품 무리/바닥 얼룩/밀도 상향 완료. 타격감/연출 작업은 병행)
+마지막 갱신: 2026-10-09 (Step 13 맵 편집기 완료, 12-6 성마다 다른 전투 맵 완료 + 강 없는 평야('완' 등)가 휑해서 소품 무리/바닥 얼룩/밀도 상향 완료. 타격감/연출 작업은 병행)
 
 | Step | 내용 | 상태 | 커밋 |
 |---|---|---|---|
@@ -42,6 +42,7 @@
 | 12-4 | 시작 성 선택과 출진: 내정을 열면 시작 성을 골라 "내 성"으로 저장(`SaveData.homeCastleId`, ★ 표시, [이 성에서 시작]/[시작 성 변경]), 내 성의 성 화면에서 [출진] → 전투(`GameSession.SortieCastle`, 성 지형 색 `BattleTerrain`), 결과 화면 [내정으로 (M)]. 타이틀 [시작]은 성 없이 시작. 전투 결과의 성 반영은 아직 없음 | 완료 | 13db09a |
 | 12-5 | 정복: 내 영토(시작 성+정복한 성)의 성 화면에서 [출진] → 이웃한 적 성 중 공격 대상을 고르는 선택창 → 전투(대상 성 지형) → 승리하면 그 성을 영토로(`Territory`, `SaveData.ownedCastleIds`). 지도에 영토/공격 가능 성 테두리 색과 "보유 성 n / 46", 천하 통일 문구. 결과 화면에 정복/퇴각 문구. 난이도·적 반격·보상은 아직 없음 | 완료 | e449b70 |
 | 12-6 | 성마다 다른 전투 맵: 지형별 바닥 타일 6종 + 지형 소품 30종 + 공용(연못, 깃발) 그림(코드 생성 `tools/terrain_art`), `TerrainTheme`/`TerrainThemeCatalog`(`Resources`), 성 아이디 시드로 밀도·소품 비율·바닥 색조가 달라지는 `TerrainMap`, 화면 주변 칸만 만드는 `TerrainPropSpawner`, `InfiniteBackground.ApplyCastle`, 메뉴 `Step 12-6`, 설명 `docs/TERRAIN.md`. 소품과 강은 충돌 없는 장식, 지형 효과/막는 지형은 아직 없음. **카탈로그 스크립트 연결 복구**: `TerrainThemeCatalog` 를 자기 파일로 분리해 `Resources/TerrainThemeCatalog.asset` 의 끊긴 스크립트 연결을 되살림(이게 '완' 맵이 텅 비었던 진짜 원인). **덜 휑하게**: 소품 흩뿌림 x1.4 + 같은 소품 무리 + 코드로 만든 바닥 얼룩(`TerrainDecals`, `TerrainMap.LayoutPatches`, 그리기 순서 `OrderPatch`). **강**: 강이 있는 성/강변 지형/성 없이 시작한 판(평야+강)에 구불구불 흐르는 강(`River_*` 토막 12장, `TerrainMap` 강 계산) | 완료 | 5aebcbd |
+| 13 | 맵 편집기(맵툴): 성마다 전투 맵을 직접 고치는 새 씬 `MapEditorScene`(빌드 3번). 자동 생성 맵 위에서 소품/연못/깃발/바닥 얼룩/강 놓기·이동·회전·크기·반전·복제·삭제·지우개, 바닥 지형 바꾸기, 실행 취소/다시, 격자/맞춤, 전투 테스트(결과 저장 안 함, M 으로 복귀). 칸(12x12) 단위로 직접 고친 칸이 자동 생성을 덮어쓰고 JSON 으로 저장(`MapStore`: persistentDataPath/maps + 에디터에선 Assets/Resources/Maps), 전투가 같은 맵을 씀(`TerrainMap.CreateForBattle`). `MapEditModel`(규칙)/`MapEditorController`(화면을 코드로 생성)/`MapLayoutData`/`MapStore`, 메뉴 `Step 13`·`Play Map Editor`, 타이틀 [맵 편집기] 버튼(에디터/개발 빌드), 설명 `docs/MAP_EDITOR.md` | 완료 | |
 | 11 | PC 빌드(친구 공유용 Windows 빌드 환경): 메뉴 `Samkuk > Build`(릴리스/개발용) 또는 `tools/build_windows.ps1` → `Builds/` 에 실행 폴더 + 공유용 zip(README.txt 포함), 릴리스는 DebugOverlay/F1~F4 치트 꺼짐, 타이틀에 버전 표시(`BuildTool`, `docs/BUILD.md`). 최적화(GC/풀링)·아이콘·설치 파일은 아직 | 완료 | 15e5ad2 |
 
 ## 남은 작업
@@ -60,6 +61,7 @@
 - 스프라이트(번개, 불길, 궁병, 기병 등)는 코드로 만든 **플레이스홀더**. Step 10에서 교체/다듬기.
 - 장수 걷기 시트: `Assets/Sprites/HeroWalk/<장수 에셋 이름>_Walk.png`(4열 x 4행: 열=프레임 0~3, 행=아래/위/왼쪽/오른쪽, 칸 96x96, 배경 투명). 현재 5장은 **코드로 그린 임시 그림**(`tools/hero_art/HeroSprites.cs`, `generate.ps1 -Only walk`). 시트가 있는 장수는 `PlayerController`가 좌우 반전을 하지 않고 `PlayerAnimator`가 방향/프레임을 정하며, 장수 색(`tint`)도 입히지 않는다(`HeroSelectController.Apply`). 시트가 없으면 예전 동작(원 스프라이트 + tint + 반전). Player 프리팹에 `PlayerAnimator`를 붙이는 것은 `Step 10-6`이므로 셋업을 돌려야 한다.
 - 전투 맵: 출진한 성(`GameSession.SortieCastle`)의 지형으로 `InfiniteBackground.ApplyCastle` 이 바닥 타일을 바꾸고 `TerrainProps` 루트(배경의 자식이 아님: 배경은 카메라를 따라 움직임)에 소품을 흩뿌린다. 데이터는 `Resources/TerrainThemeCatalog.asset`(씬 연결 없음)이며 **없거나 그림이 비면 기존 색 덮개(`BattleTerrain`)로 대신**한다. (타이틀 [시작] 처럼 성 없이 시작한 판도 평야+강 고정 맵(`TerrainMap.CreateFreeBattle`)을 쓴다. 강은 세계에 60유닛 간격으로 평행하게 흐르는 사인 곡선이고 토막(256x128)을 1.5유닛 간격으로 겹쳐 놓으며(강둑 아래, 물 위, 순서 1/2) 칸 경계에서 중복/끊김이 없다(정수 격자). 소품이/연못은 강 위에 놓이지 않는다. 같은 성은 항상 같은 맵(성 id 시드, 12x12 칸 단위 결정적 배치)이고 성마다 밀도/소품 비율/색조가 다르다. 소품은 Background 정렬 레이어의 장식(충돌 없음, 시작 위치 반경 2.5 비움). 그림은 코드로 만든 **임시 그림**(`tools/terrain_art/generate.ps1`, 직접 그린 그림으로 덮어쓰면 해당 지형은 `-Only` 로 피해서 실행). 밀도/비중은 `Theme_*.asset` 을 직접 고친다(셋업은 기존 값을 덮어쓰지 않음). 설명은 `docs/TERRAIN.md`.
+- 맵 편집기: 씬 `MapEditorScene`(타이틀 0, 게임 1, 내정 2, 맵 편집기 3)에는 카메라/전역 조명/이벤트 시스템/`MapEditorController`(성 목록 연결)만 있고 **화면은 실행 중에 코드로 만든다**. 고친 맵은 성 아이디별 JSON(`MapStore`)이며 **고친 칸만** 들어 있어 나머지 칸은 자동 생성이다. 읽는 순서는 `persistentDataPath/maps` → `Resources/Maps`. 테스트는 `MapStore.PathOverride`/`Disabled` 로 실제 파일을 건드리지 않는다. 시험 전투는 `GameSession.MapTest`(결과 저장/정복 안 함, `MapTestReturn` 이 M 키와 안내). 타이틀 버튼은 `MapEditorLauncher` 가 씬 로드 때 코드로 붙이므로 타이틀 씬을 다시 만들 필요가 없다. 규칙/조작은 `docs/MAP_EDITOR.md`.
 - 빌드: `BuildTool`(메뉴 `Samkuk > Build`, 명령줄 `tools/build_windows.ps1`)이 빌드 설정(타이틀 0, 전투 1, 내정 2) 확인 → 빌드 → README.txt → zip 까지 한다. 결과는 `Builds/`(git 제외). **릴리스 빌드는 `DebugOverlay`(FPS, F1~F4 치트)가 꺼지고**(`Debug.isDebugBuild` 로 구분), 개발용(Development Build)만 켜진다. 에디터가 프로젝트를 열고 있으면 명령줄 빌드는 실행되지 않는다. 저장 경로는 Company/Product Name(`DefaultCompany/Samkuk`)에서 나오므로 이름을 바꾸면 저장 위치가 바뀐다. 이 환경(Claude)에서는 유니티를 실행하지 못해 **빌드는 사용자가 직접 확인**한다. 자세한 사용법은 `docs/BUILD.md`.
 - 내정 시작/출진: 내정을 처음 열면 시작 성을 골라 내 성(`SaveData.homeCastleId`)으로 저장하고, 영토(`ownedCastleIds`)의 성 화면에서 [출진] → 이웃한 적 성 선택창에서 공격 대상을 고른다. 대상 성(`GameSession.SortieCastle`, 출발 성은 `SortieOrigin`)이 전투로 전달돼 `InfiniteBackground` 가 성 지형 색(`BattleTerrain`)을 배경 위에 한 겹 덮고, 결과 화면에 [내정으로] 가 생긴다. 승리하면 `ResultController` 가 대상 성을 `Territory.Conquer` 로 영토에 넣는다(정복은 결과 정산 때만 저장, 패배/재도전은 영토 불변, 영토가 늘면 시작 성 변경 불가)(Step 9 셋업이 만드는 버튼이라 **Step 9/Run All 재실행 필요**). 타이틀 [시작] 은 `SortieCastle` 을 비우는 "성 없이 시작"이다. 규칙은 `docs/CASTLES.md`.
 - Play 시작 씬: 메뉴 `Samkuk > Play From Title Scene`(`EditorSceneManager.playModeStartScene`)은 에디터를 열 때마다 `Step9TitleSetup.EnsurePlayFromTitle`(`InitializeOnLoadMethod`)이 켜 둔다. 끄고 싶으면 그 메뉴로 끄면 프로젝트별로 기억한다. 예전에는 Step 9-2 셋업을 돌릴 때만 켜져서, 에디터를 다시 열면 풀려 마지막으로 열어 둔 내정 씬에서 Play 가 시작됐다(마지막 성 화면). 빌드는 원래 타이틀(0번)부터 시작한다.
@@ -90,7 +92,7 @@
   - 네임스페이스는 `Samkuk.*` (예: `Samkuk.Weapons`, `Samkuk.Enemies`, `Samkuk.Meta`, `Samkuk.UI`)
   - 런타임은 `Samkuk.Runtime.asmdef`, 에디터 스크립트는 `Editor/` 폴더
 - 데이터: `Assets/ScriptableObjects/<종류>/` — Weapons, Enemies, Passives, Heroes, Skills, Evolutions, Meta, Stage, Castles, 그리고 `UpgradeCatalog`, `HeroCatalog`, `MetaCatalog`, `CastleCatalog`
-- 씬: `Assets/Scenes/TitleScene.unity`(빌드 0번) → `BattleScene.unity`(전투, 1번) → `StrategyScene.unity`(내정, 2번)
+- 씬: `Assets/Scenes/TitleScene.unity`(빌드 0번) → `BattleScene.unity`(전투, 1번) → `StrategyScene.unity`(내정, 2번) → `MapEditorScene.unity`(맵 편집기, 3번)
 - 테스트: `Assets/Tests/PlayMode/*.cs` (PlayMode, `Samkuk.Tests.PlayMode.asmdef`)
 - 저장: `Application.persistentDataPath/save.json` (`SaveSystem`)
 

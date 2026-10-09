@@ -197,6 +197,7 @@ namespace Samkuk.UI
         {
             GameSession.SortieCastle = null; // 타이틀의 [시작]은 성 없이 시작하는 판
             GameSession.SortieOrigin = null;
+            GameSession.MapTest = false;
             SceneLoader?.Invoke(GameManager.BattleSceneName);
         }
 

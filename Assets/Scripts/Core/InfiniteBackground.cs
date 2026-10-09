@@ -69,21 +69,33 @@ namespace Samkuk.Core
         {
             ResetToDefault();
 
+            // 맵 편집기로 고쳐 둔 맵이 있으면 그 내용이 자동 생성 맵 위에 덮인다
             var catalog = TerrainThemeCatalog.Load();
-            var map = castle != null ? TerrainMap.Create(castle, catalog) : TerrainMap.CreateFreeBattle(catalog);
+            var map = castle != null ? TerrainMap.CreateForBattle(castle, catalog) : TerrainMap.CreateFreeBattle(catalog);
             if (map == null)
             {
                 if (castle != null) ApplyTerrainOverlay(BattleTerrain.Overlay(castle.terrain)); // 지형 그림이 없을 때의 대체
                 return;
             }
+            BuildMap(map);
+        }
 
+        /// <summary>이미 만든 맵을 그대로 적용한다 (맵 편집기가 편집 중인 맵을 보여 줄 때).</summary>
+        public void ApplyMap(TerrainMap map)
+        {
+            ResetToDefault();
+            if (map != null) BuildMap(map);
+        }
+
+        void BuildMap(TerrainMap map)
+        {
             if (map.Theme.groundTile != null)
             {
                 sr.sprite = map.Theme.groundTile;
                 sr.color = map.GroundTint;
                 RefreshTileSize();
             }
-            else ApplyTerrainOverlay(BattleTerrain.Overlay(map.Castle.terrain));
+            else ApplyTerrainOverlay(BattleTerrain.Overlay(map.Terrain));
 
             // 소품은 배경과 따로 둔다 (배경은 카메라를 따라 움직이므로 자식으로 두면 소품도 함께 끌려온다)
             propsRoot = new GameObject("TerrainProps");

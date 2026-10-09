@@ -76,7 +76,7 @@ namespace Samkuk.Meta
             var result = Settle(cleared);
             LastResult = result;
             // 내정에서 출진한 판이면 결과 화면에 [내정으로] 버튼을 켠다
-            if (ui != null) ui.SetStrategyReturn(GameSession.SortieCastle != null ? (Action)OnStrategy : null);
+            if (ui != null) ui.SetStrategyReturn(GameSession.SortieCastle != null && !GameSession.MapTest ? (Action)OnStrategy : null); // 맵 시험 전투는 [내정으로] 대신 M 으로 편집기로
             view?.Show(result, OnRetry, OnTitle);
         }
 
@@ -103,6 +103,16 @@ namespace Samkuk.Meta
                 heroName = hero != null && hero.Current != null ? hero.Current.displayName : "",
                 castleName = GameSession.SortieCastle != null ? GameSession.SortieCastle.displayName : ""
             };
+
+            // 맵 편집기의 시험 전투: 결과 화면은 보여 주되 골드, 기록, 정복은 저장 데이터에 반영하지 않는다
+            if (GameSession.MapTest)
+            {
+                result.goldEarned = 0;
+                result.newBestTime = false;
+                result.newBestKills = false;
+                result.totalGold = save.gold;
+                return result;
+            }
 
             save.gold += earned;
             save.totalRuns++;

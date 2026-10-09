@@ -80,6 +80,14 @@ namespace Samkuk.World
             foreach (var key in removeBuffer) DespawnChunk(key);
         }
 
+        /// <summary>한 칸의 소품을 다시 만든다 (맵 편집기에서 그 칸을 고쳤을 때). 화면 주변에 없는 칸이면 아무것도 하지 않는다.</summary>
+        public void RebuildChunk(Vector2Int key)
+        {
+            if (map == null || !active.ContainsKey(key)) return;
+            DespawnChunk(key);
+            SpawnChunk(key);
+        }
+
         /// <summary>모든 소품을 풀로 돌려보낸다.</summary>
         public void Clear()
         {
@@ -91,8 +99,7 @@ namespace Samkuk.World
         void SpawnChunk(Vector2Int key)
         {
             var list = new List<SpriteRenderer>();
-            Place(list, map.LayoutPatches(key.x, key.y));
-            Place(list, map.Layout(key.x, key.y));
+            Place(list, map.GetChunk(key.x, key.y));   // 직접 고친 칸이면 그 내용, 아니면 자동 생성
             active[key] = list;
             ActivePropCount += list.Count;
         }
