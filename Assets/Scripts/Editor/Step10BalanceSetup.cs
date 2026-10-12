@@ -32,15 +32,15 @@ namespace Samkuk.EditorTools
             ("Weapons/Weapon_Evo_DragonSpear", "damage", 20f),    // 진화 위력 5.2배 → 3.5배
             ("Weapons/Weapon_Evo_HeavenDrum", "damage", 36f),     // 진화 위력 1.7배 → 2.5배
             ("Weapons/Weapon_Evo_HeavenDrum", "cooldown", 2.6f),
-            // 스테이지: 타격감 확인용으로 적 수를 이전 값(2.1/4.2, 56/84/112/154)의 30%로 줄임 (웨이브 순서 0~3)
-            ("Stage/Stage_YellowTurban", "waves.Array.data[0].spawnPerSecond", 0.63f),
-            ("Stage/Stage_YellowTurban", "waves.Array.data[0].maxAlive", 17f),
-            ("Stage/Stage_YellowTurban", "waves.Array.data[1].spawnPerSecond", 1.26f),
-            ("Stage/Stage_YellowTurban", "waves.Array.data[1].maxAlive", 25f),
-            ("Stage/Stage_YellowTurban", "waves.Array.data[2].spawnPerSecond", 1.26f),
-            ("Stage/Stage_YellowTurban", "waves.Array.data[2].maxAlive", 34f),
-            ("Stage/Stage_YellowTurban", "waves.Array.data[3].spawnPerSecond", 1.26f),
-            ("Stage/Stage_YellowTurban", "waves.Array.data[3].maxAlive", 46f),
+            // 스테이지: 타격감 확인용 30%(0.63/1.26, 17/25/34/46)에서 2배로 = 원래 값(2.1/4.2, 56/84/112/154)의 60% (웨이브 순서 0~3)
+            ("Stage/Stage_YellowTurban", "waves.Array.data[0].spawnPerSecond", 1.26f),
+            ("Stage/Stage_YellowTurban", "waves.Array.data[0].maxAlive", 34f),
+            ("Stage/Stage_YellowTurban", "waves.Array.data[1].spawnPerSecond", 2.52f),
+            ("Stage/Stage_YellowTurban", "waves.Array.data[1].maxAlive", 50f),
+            ("Stage/Stage_YellowTurban", "waves.Array.data[2].spawnPerSecond", 2.52f),
+            ("Stage/Stage_YellowTurban", "waves.Array.data[2].maxAlive", 68f),
+            ("Stage/Stage_YellowTurban", "waves.Array.data[3].spawnPerSecond", 2.52f),
+            ("Stage/Stage_YellowTurban", "waves.Array.data[3].maxAlive", 92f),
             // 아군 화살(Arrow 계열)은 빠르게 (속도 12~18). 한때 줄였다가 원래 값으로 복원 — 느린 쪽은 적 궁병 화살이다
             ("Weapons/Weapon_Bow", "projectileSpeed", 12f),
             ("Weapons/Weapon_Bow", "duration", 1.5f),
