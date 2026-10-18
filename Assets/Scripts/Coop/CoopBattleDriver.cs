@@ -28,6 +28,7 @@ namespace Samkuk.Coop
     /// 오프라인 규칙 시스템(장수 선택, 이동, 무기, 적 이동/스폰, 젬, 레벨업, 스테이지, 일시정지, 아군)을 **끄고**, 서버 스냅샷/이벤트로
     /// 같은 프리팹·HUD·연출(걷기 시트, 무기 휘두르기 그림, 데미지 숫자, 입자, 효과음)을 움직인다. 입력은 20 Hz 로 서버에 보낸다.
     /// 규칙은 전부 서버(csharpServer/Docs/coop-design.md)에 있고 여기에는 그리는 코드만 있다. 순수 상태는 <see cref="CoopBattleModel"/>.
+    /// 레벨업 선택은 선택하는 사람만 서버에서 멈추고(무적, 금빛 표시) 세계는 계속 돈다. 쓰러지면 10초 뒤 서버가 가장 가까운 생존 아군 옆에 부활시킨다(PlayerRevived).
     /// </summary>
     public class CoopBattleDriver : MonoBehaviour
     {
@@ -302,8 +303,8 @@ namespace Samkuk.Coop
                 bool me = slot == start.MySlot;
                 bool localMoving = me && localMove.sqrMagnitude > 1e-4f;
                 var facing = localMoving ? PlayerAnimator.PickDirection(localMove, walkers[slot].Direction) : PuppetWalker.FacingOf(track.State.Facing);
-                walkers[slot]?.Tick(facing, track.Moving || localMoving, dt);
-                walkers[slot]?.SetAlpha(track.Dead ? 0.35f : 1f);
+                walkers[slot]?.Tick(facing, (track.Moving || localMoving) && !track.Dead && !track.Choosing, dt);
+                walkers[slot]?.SetLook(track.Dead, track.Choosing, track.Invulnerable);
                 swings[slot]?.Tick(dt, pos);
                 foreach (var o in orbits[slot]) o.Tick(pos, elapsed);
             }
@@ -365,17 +366,15 @@ namespace Samkuk.Coop
             }
             var stage = model.Stage;
             if (stageHud == null || stage == null) return;
-            stageHud.SetWave(stage.WaveNumber, stage.WaveName);
+            // 웨이브 줄 끝에 팀 공용 부활 횟수 (서버 상수 3, 부활마다 1 소모; 0 이면 죽는 즉시 관전)
+            stageHud.SetWave(stage.WaveNumber, $"{stage.WaveName}     부활 남음 {stage.RevivesLeft}");
             if (stage.BossId != 0 && model.Enemies.TryGetValue(stage.BossId, out var boss))
                 stageHud.ShowBoss(catalog.Enemy(boss.DataId)?.displayName ?? "보스", stage.BossHpPct / 100f);
             else stageHud.HideBoss();
 
-            if (stage.Paused && !stage.PausedBySlots.Contains(start.MySlot))
-            {
-                string who = "";
-                foreach (int s in stage.PausedBySlots) if (s >= 0 && s < names.Length) who = names[s];
-                stageHud.ShowBanner($"{who} 선택 중...", 0.5f);
-            }
+            // 쓰러져 있으면 부활 카운트다운 (서버가 10초 뒤 자동 부활). 레벨업 선택 중인 사람은 금빛으로만 표시하고 세계는 멈추지 않는다
+            if (me != null && me.Seen && me.Dead)
+                stageHud.ShowBanner(me.ReviveSeconds > 0f ? $"쓰러짐 — {Mathf.CeilToInt(me.ReviveSeconds)}초 뒤 부활" : "쓰러짐 — 부활 불가, 관전 중", 0.5f);
         }
 
         void HandleEvent(BattleEvent ev)
@@ -467,9 +466,24 @@ namespace Samkuk.Coop
                     break;
                 }
                 case BattleEvent.BodyOneofCase.PlayerDied:
-                    if (ev.PlayerDied.Slot == start.MySlot) stageHud?.ShowBanner("쓰러졌습니다 — 관전 중", 4f);
+                    if (ev.PlayerDied.Slot == start.MySlot) { stageHud?.ShowBanner("쓰러졌습니다 — 잠시 뒤 부활", 1f); AudioManager.Play(SfxId.Defeat); }
                     else if (ev.PlayerDied.Slot >= 0 && ev.PlayerDied.Slot < names.Length) stageHud?.ShowBanner($"{names[ev.PlayerDied.Slot]} 쓰러짐", 2f);
                     break;
+                case BattleEvent.BodyOneofCase.PlayerRevived:
+                {
+                    var r = ev.PlayerRevived;
+                    var pos = NetUnits.Pos(r.X, r.Y);
+                    model.RevivePlayer(r.Slot, pos);
+                    if (r.Slot >= 0 && r.Slot < playerRoots.Length && playerRoots[r.Slot] != null)
+                    {
+                        playerRoots[r.Slot].position = pos;
+                        if (r.Slot == start.MySlot && localBody != null) localBody.position = pos;
+                        feedback?.Burst?.Ring(pos, 20, GoldColor, 5f, 0.6f, 1f);
+                    }
+                    if (r.Slot == start.MySlot) { stageHud?.ShowBanner("부활!  2초 무적", 2f); AudioManager.Play(SfxId.Skill); }
+                    else if (r.Slot >= 0 && r.Slot < names.Length) stageHud?.ShowBanner($"{names[r.Slot]} 부활", 1.5f);
+                    break;
+                }
                 case BattleEvent.BodyOneofCase.WaveChanged:
                     stageHud?.SetWave(ev.WaveChanged.Number, ev.WaveChanged.Name);
                     break;

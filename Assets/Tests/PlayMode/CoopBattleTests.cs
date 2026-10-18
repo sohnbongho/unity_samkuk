@@ -130,6 +130,30 @@ namespace Samkuk.Tests
         }
 
         [Test]
+        public void CoopBattleModel_ChoosingFlag_ReviveCountdown_AndRevivedSnap()
+        {
+            var model = new CoopBattleModel(0, 10);
+            var snap = Snapshot(1, 100, (0, 0, 0, PlayerTrack.FlagDead), (1, 500, 0, PlayerTrack.FlagChoosing | PlayerTrack.FlagInvulnerable));
+            snap.Players[0].ReviveMs = 7300;
+            snap.Stage.RevivesLeft = 2;
+            model.Apply(snap, 1f, null);
+            Assert.AreEqual(2, model.Stage.RevivesLeft, "팀 공용 부활 횟수는 스테이지 상태로 온다");
+            Assert.IsTrue(model.Me.Dead);
+            Assert.AreEqual(7.3f, model.Me.ReviveSeconds, 1e-4f);
+            Assert.IsTrue(model.Players[1].Choosing);
+            Assert.IsTrue(model.Players[1].Invulnerable);
+            Assert.IsFalse(model.Players[1].Dead);
+
+            model.Apply(Snapshot(2, 200, (0, 100, 0, PlayerTrack.FlagDead)), 1.1f, null);
+            model.Advance(0.05f);
+            model.RevivePlayer(0, new Vector2(9f, 9f));
+            Assert.AreEqual(new Vector2(9f, 9f), model.Me.Motion.Current, "부활 위치로 바로 옮긴다");
+            Assert.IsFalse(model.Me.Dead);
+            Assert.AreEqual(0f, model.Me.ReviveSeconds);
+            model.RevivePlayer(9, Vector2.zero); // 범위 밖은 무시
+        }
+
+        [Test]
         public void CoopBattleDriver_BuildOptions_MapsServerKindToCards()
         {
             var noti = new LevelUpChoiceNoti { ChoiceId = 3, TimeoutMs = 15000 };

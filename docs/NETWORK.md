@@ -97,9 +97,13 @@ ExpGemManager, LevelUpController, StageController, GameManager, PauseController,
 - 무기: `WeaponFire.motion` 으로 `SwingPuppet` 이 SlashWeapon 과 같은 휘두르기 그림(들고 있는 무기 + 반원 검기, 찌르기는 뾰족 검기), `LoadoutChanged` 로 `OrbitPuppet`(회전 도끼 칼날,
   각도 = 서버와 같은 식 `경과초 × 회전속도 + i × 360/n`, 필드 없음), 투사체는 `ProjectileSpawn` 의 방향·속도로 외삽(`ProjectilePuppetPool`), `AreaFx` 는 코드로 만든 원판(`CoopSprites.Disc`)을 `WeaponFx.PlayDisc`.
 - HUD: `HudController.SetHealth/SetExp`, `StageHudView.SetTimerSeconds/SetWave/ShowBanner/ShowBoss/HideBoss` (서버 값). 카운트다운 3·2·1, 다른 사람 레벨업 선택 중 "OO 선택 중...".
-- 레벨업: `LevelUpChoiceNoti` → 기존 `LevelUpUI`(`ILevelUpView`)에 `UpgradeOption` 으로 보여 주고 고르면 `UpgradeSelectRequest{choice_id, index}`. 시간이 지나면(서버 자동 선택) 창을 닫는다. 로컬 timeScale 은 건드리지 않는다(서버가 방 전체를 멈춤).
+- 레벨업: `LevelUpChoiceNoti` → 기존 `LevelUpUI`(`ILevelUpView`)에 `UpgradeOption` 으로 보여 주고 고르면 `UpgradeSelectRequest{choice_id, index}`. 15초가 지나면(서버 자동 선택) 창을 닫는다.
+  **선택하는 사람만** 서버에서 멈추고 무적이며 적 표적에서 빠진다(`PlayerState.flags` 64, 금빛 표시); 세계와 다른 사람은 계속 돈다. 로컬 timeScale 은 건드리지 않는다(사용자 결정: 방 전체 정지 없음).
+- 사망/부활: 쓰러지면(`PlayerDied`, flags 1) 관전하며 `PlayerState.revive_ms` 로 "n초 뒤 부활" 을 보여 주고, 10초 뒤 서버가 가장 가까운 생존 아군 옆(없으면 제자리)에 최대 체력 50%·2초 무적으로 부활시킨다(`PlayerRevived{slot,x,y,hp}`: 보간 없이 그 자리로). 부활은 **팀 공용 횟수**(`StageState.revives_left`, 시작 3, 부활마다 1 소모, HUD 웨이브 줄에 "부활 남음 n")로 제한된다: 횟수가 남아 있으면 혼자여도 전원 사망이어도 부활하고,
+  횟수 0 이면 죽는 즉시 관전(`revive_ms` 0, "부활 불가, 관전 중"), 횟수 0 이고 접속 중인 전원이 죽어 있으면 전멸 `BattleEndNoti`. 죽은 동안 쌓인 레벨업은 부활 뒤 이어서 온다.
 - 끝: `BattleEndNoti` → `CoopResultPanel`(참가자별 처치/레벨/골드, 서버 계산값; 내 골드는 저장에 더함) → [방으로 돌아가기] → 타이틀로 가면 `TitleController.Start` 가 같은 방의 `RoomPanel` 을 다시 연다. 접속이 끊기면 같은 창에 "연결이 끊겼습니다".
 - 1차에서 없는 것: 지형 충돌(서버가 개활지라 나무를 통과해 보임), 장수 스킬, 아군, 일시정지(ESC 없음), 중간에 나가기, 재접속.
+- 서버 자체 검사 `GameServer --simtest`(부활/선택 정지/타임아웃/전멸 20항목)가 있어 규칙 변경은 서버 쪽에서 검증한다.
 
 ## 다음 단계 후보
 

@@ -43,11 +43,13 @@ namespace Samkuk.Coop
             Refresh();
         }
 
-        /// <summary>쓰러진/무적 표시 등으로 투명도를 바꾼다.</summary>
-        public void SetAlpha(float alpha)
+        /// <summary>쓰러짐(반투명)/레벨업 선택 중(금빛)/무적(살짝 흐림) 표시. 평소는 장수 색 그대로.</summary>
+        public void SetLook(bool dead, bool choosing, bool invulnerable)
         {
             if (body == null) return;
-            var c = baseColor; c.a = alpha;
+            var c = baseColor;
+            if (choosing) c = Color.Lerp(c, new Color(1f, 0.85f, 0.3f), 0.55f);
+            c.a = dead ? 0.35f : invulnerable ? 0.7f : 1f;
             body.color = c;
         }
 

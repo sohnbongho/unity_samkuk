@@ -32,13 +32,18 @@ namespace Samkuk.Coop
     /// <summary>플레이어 한 자리. 서버 PlayerState 를 그대로 담고 위치는 보간한다.</summary>
     public sealed class PlayerTrack
     {
-        public const int FlagDead = 1, FlagInvulnerable = 2, FlagMoving = 4, FlagSkillInvulnerable = 8;
+        public const int FlagDead = 1, FlagInvulnerable = 2, FlagMoving = 4, FlagSkillInvulnerable = 8, FlagChoosing = 64;
         public int Slot;
         public bool Seen;
         public PlayerState State = new PlayerState();
         public readonly MotionTrack Motion = new MotionTrack();
         public bool Dead => (State.Flags & FlagDead) != 0;
         public bool Moving => (State.Flags & FlagMoving) != 0;
+        public bool Invulnerable => (State.Flags & (FlagInvulnerable | FlagSkillInvulnerable)) != 0;
+        /// <summary>레벨업 선택 중: 서버에서 멈춰 있고 무적이며 적 표적에서 빠진다 (방 전체 정지는 없음).</summary>
+        public bool Choosing => (State.Flags & FlagChoosing) != 0;
+        /// <summary>사망 중이면 자동 부활까지 남은 초.</summary>
+        public float ReviveSeconds => State.ReviveMs / 1000f;
     }
 
     /// <summary>
@@ -160,6 +165,17 @@ namespace Samkuk.Coop
 
         public bool RemoveGem(int id) => Gems.Remove(id);
 
+        /// <summary>PlayerRevived: 부활 위치로 바로 옮긴다 (보간하면 시체가 날아가 보인다). 사망 플래그는 다음 스냅샷이 푼다.</summary>
+        public void RevivePlayer(int slot, Vector2 position)
+        {
+            if (slot < 0 || slot >= Players.Length) return;
+            var p = Players[slot];
+            p.Seen = true;
+            p.Motion.Snap(position);
+            p.State.Flags &= ~PlayerTrack.FlagDead;
+            p.State.ReviveMs = 0;
+        }
+
         /// <summary>보간을 dt 만큼 진행한다.</summary>
         public void Advance(float dt)
         {
@@ -200,7 +216,7 @@ namespace Samkuk.Coop
             return dir;
         }
 
-        /// <summary>서버 시뮬 경과 초: 마지막 스냅샷 값에 그 뒤 흐른 시간을 더한다(일시정지 중에는 더하지 않음).</summary>
+        /// <summary>서버 시뮬 경과 초: 마지막 스냅샷 값에 그 뒤 흐른 시간을 더한다(StageState.paused 는 이제 항상 false 지만 규칙은 남겨 둔다).</summary>
         public float ElapsedSeconds(float now)
         {
             float elapsed = ElapsedMs / 1000f;
