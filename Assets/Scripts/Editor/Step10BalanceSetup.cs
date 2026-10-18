@@ -27,8 +27,7 @@ namespace Samkuk.EditorTools
         /// </summary>
         static readonly (string asset, string field, float value)[] Overrides =
         {
-            ("Weapons/Weapon_YitianSword", "damage", 10f),        // 조조 시작 무기: 화력 16 → 20
-            ("Weapons/Weapon_SkyPiercer", "damage", 7f),          // 여포 시작 무기: 화력 36 → 28
+            // 조조 의천검·여포 방천화극은 Step 10-9 가 종류째 바꾸므로(연속 베기/극) 여기서 덮어쓰지 않는다
             ("Weapons/Weapon_Evo_DragonSpear", "damage", 20f),    // 진화 위력 5.2배 → 3.5배
             ("Weapons/Weapon_Evo_HeavenDrum", "damage", 36f),     // 진화 위력 1.7배 → 2.5배
             ("Weapons/Weapon_Evo_HeavenDrum", "cooldown", 2.6f),
@@ -44,8 +43,6 @@ namespace Samkuk.EditorTools
             // 아군 화살(Arrow 계열)은 빠르게 (속도 12~18). 한때 줄였다가 원래 값으로 복원 — 느린 쪽은 적 궁병 화살이다
             ("Weapons/Weapon_Bow", "projectileSpeed", 12f),
             ("Weapons/Weapon_Bow", "duration", 1.5f),
-            ("Weapons/Weapon_YitianSword", "projectileSpeed", 12f),
-            ("Weapons/Weapon_YitianSword", "duration", 1.5f),
             ("Weapons/Weapon_Crossbow", "projectileSpeed", 18f),
             ("Weapons/Weapon_Crossbow", "duration", 1.2f),
             ("Weapons/Weapon_Knives", "projectileSpeed", 16f),
@@ -54,8 +51,6 @@ namespace Samkuk.EditorTools
             ("Weapons/Weapon_Evo_Repeater", "duration", 1.2f),
             ("Weapons/Weapon_Evo_FlyingSpear", "projectileSpeed", 16f),
             ("Weapons/Weapon_Evo_FlyingSpear", "duration", 1.2f),
-            ("Weapons/Weapon_Evo_OverlordSword", "projectileSpeed", 14f),
-            ("Weapons/Weapon_Evo_OverlordSword", "duration", 1.5f),
             // 적 궁병 화살: 플레이어 이동 속도(4)보다 훨씬 느리게 (달리면 쉽게 피할 수 있도록).
             // 느려진 만큼 수명을 늘려 사격 거리(사거리의 1.15배)까지 닿게 한다
             ("Enemies/Enemy_YellowArcher", "projectileSpeed", 2f),

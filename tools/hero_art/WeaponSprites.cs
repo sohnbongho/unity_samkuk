@@ -5,7 +5,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 
-// 들고 휘두르는 무기 그림(Step 10-9, 베기 계열 6종). 손잡이가 아래, 날이 위(+y)를 향하며 피벗은 손잡이 끝(아래 가운데).
+// 들고 휘두르는 무기 그림(Step 10-9, 베기 6종 + 창 3종 + 의천검 2종 + 극 2종). 손잡이가 아래, 날이 위(+y)를 향하며 피벗은 손잡이 끝(아래 가운데).
 // 최종 픽셀 크기(w x h)의 좌표계에서 바로 그리되 WSS 배로 키워 그린 뒤 축소·색 단계·1픽셀 외곽선(PixelTools)을 입힌다.
 // 크기 기준: PPU 32 → 검 26px ≈ 0.8유닛, 언월도 40px ≈ 1.25유닛. 결과: Assets/Sprites/Weapons/<무기 에셋 이름>_Held.png
 public static partial class HeroArt
@@ -17,6 +17,7 @@ public static partial class HeroArt
         "Weapon_Sword", "Weapon_TwinSwords", "Weapon_GreenDragon",
         "Weapon_Evo_Zanmato", "Weapon_Evo_TwinDragons", "Weapon_Evo_MoonDragon",
         "Weapon_Thrust", "Weapon_SerpentSpear", "Weapon_Evo_DragonSpear",
+        "Weapon_YitianSword", "Weapon_Evo_OverlordSword", "Weapon_SkyPiercer", "Weapon_Evo_PeerlessHalberd",
     };
 
     static readonly Color Wood = Color.FromArgb(255, 92, 60, 36);
@@ -30,12 +31,15 @@ public static partial class HeroArt
     static readonly Color CyanDark = Color.FromArgb(255, 50, 150, 175);
     static readonly Color Crimson = Color.FromArgb(255, 200, 60, 50);
     static readonly Color Azure = Color.FromArgb(255, 70, 110, 220);
+    static readonly Color Violet = Color.FromArgb(255, 200, 170, 245);
+    static readonly Color VioletDark = Color.FromArgb(255, 120, 80, 190);
+    static readonly Color Navy = Color.FromArgb(255, 40, 50, 110);
 
     public static void GenerateHeldWeapons(string outDir, string previewPath)
     {
         Directory.CreateDirectory(outDir);
         int zoom = 4;
-        int cell = 48 * zoom;
+        int cell = 64 * zoom; // 가장 긴 그림(극 56px)이 들어가는 칸
         var prev = new Bitmap(cell * HeldWeaponNames.Length + 20, cell + 20, PixelFormat.Format32bppArgb);
         using (var pg = Graphics.FromImage(prev))
         {
@@ -70,6 +74,10 @@ public static partial class HeroArt
             case "Weapon_Thrust": w = 10; h = 44; draw = DrawSpear(SteelLight, SteelDark, Steel, false, false); break;
             case "Weapon_SerpentSpear": w = 12; h = 48; draw = DrawSpear(SteelLight, SteelDark, Gold, true, false); break;
             case "Weapon_Evo_DragonSpear": w = 12; h = 48; draw = DrawSpear(Cyan, CyanDark, Gold, false, true); break;
+            case "Weapon_YitianSword": w = 12; h = 30; draw = DrawOrnateSword(SteelLight, SteelDark, Azure, Navy); break;
+            case "Weapon_Evo_OverlordSword": w = 14; h = 34; draw = DrawOrnateSword(Violet, VioletDark, Gold, Crimson); break;
+            case "Weapon_SkyPiercer": w = 14; h = 52; draw = DrawHalberd(SteelLight, SteelDark, Gold, false); break;
+            case "Weapon_Evo_PeerlessHalberd": w = 16; h = 56; draw = DrawHalberd(Gold, Shade(Gold, 0.7f), Crimson, true); break;
             default: w = 12; h = 26; draw = DrawSword(SteelLight, SteelDark, Gold, Wood); break; // Weapon_Sword
         }
 
@@ -116,6 +124,76 @@ public static partial class HeroArt
             FillPoly(g, bladeDark, cx, bladeBottom, cx + 1.6f, bladeBottom, cx + 1.6f, tip + 3.2f, cx, tip + 2.2f);
             FillPoly(g, blade, cx - 1.6f, tip + 3.2f, cx + 1.6f, tip + 3.2f, cx, tip);       // 끝
         };
+    }
+
+    /// <summary>의천검/패왕의천검: 곧은 검에 가운데 홈 선과 칼자루 보석. line 은 홈 색, grip 은 손잡이 색.</summary>
+    static Action<Graphics, int, int> DrawOrnateSword(Color blade, Color bladeDark, Color line, Color grip)
+    {
+        var baseSword = DrawSword(blade, bladeDark, Gold, grip);
+        return delegate(Graphics g, int w, int h)
+        {
+            baseSword(g, w, h);
+            float cx = w * 0.5f;
+            float bladeBottom = h - 7f - 1.6f;
+            FillRect(g, line, cx - 0.4f, 4.5f, 0.8f, bladeBottom - 6f);                 // 홈 선
+            FillRect(g, line, cx - 0.9f, h - 1.4f, 1.8f, 1.2f);                           // 칼자루 보석
+            FillRect(g, Shade(Gold, 1.15f), cx - 3.2f, h - 7f - 1.6f, 6.4f, 0.6f);        // 코등이 윗면 빛
+        };
+    }
+
+    /// <summary>
+    /// 극(방천화극/천하무쌍극): 긴 자루 + 위쪽 창 촉 + 좌우 양쪽의 초승달 날 + 붉은 술. ornate 면 날이 더 크고 자루에 금 테가 더 들어간다(진화형).
+    /// </summary>
+    static Action<Graphics, int, int> DrawHalberd(Color blade, Color bladeDark, Color trim, bool ornate)
+    {
+        return delegate(Graphics g, int w, int h)
+        {
+            float cx = w * 0.5f;
+            float headH = h * 0.38f;                                                       // 촉과 초승달이 차지하는 높이
+            FillRect(g, Wood, cx - 1.1f, headH - 0.5f, 2.2f, h - headH + 0.5f);          // 자루
+            FillRect(g, WoodDark, cx - 1.1f, headH - 0.5f, 0.8f, h - headH + 0.5f);      // 자루 그늘
+            FillRect(g, trim, cx - 1.5f, h - 1.6f, 3.0f, 1.6f);                            // 물미
+            FillRect(g, trim, cx - 1.8f, headH - 1.0f, 3.6f, 1.6f);                        // 촉 받침
+            FillRect(g, Crimson, cx - 1.7f, headH + 1.2f, 3.4f, 2.8f);                     // 붉은 술
+            if (ornate)
+            {
+                FillRect(g, trim, cx - 1.3f, h * 0.62f, 2.6f, 1.2f);                       // 자루 금 테
+                FillRect(g, trim, cx - 1.3f, h * 0.8f, 2.6f, 1.2f);
+            }
+
+            // 창 촉: 잎 모양, 자루 위로 곧게
+            float tipBottom = headH * 0.72f, tipMid = headH * 0.32f;
+            FillPoly(g, blade, cx - 0.6f, tipBottom, cx, tipBottom, cx, 0.5f, cx - 1.9f, tipMid);
+            FillPoly(g, bladeDark, cx, tipBottom, cx + 0.6f, tipBottom, cx + 1.9f, tipMid, cx, 0.5f);
+
+            // 초승달 날 둘: 자루 양옆에서 바깥으로 불룩하게. 바깥 타원에서 안쪽(자루 쪽) 타원을 뺀다
+            float cy = headH * 0.55f;
+            float ry = headH * 0.36f * (ornate ? 1.1f : 1f);
+            float rx = (w * 0.5f - 1.2f) * 0.95f;
+            FillCrescent(g, blade, cx - 1.6f, cy, rx, ry, -1);
+            FillCrescent(g, bladeDark, cx + 1.6f, cy, rx, ry, +1);
+            // 날과 자루를 잇는 가로 쇠
+            FillRect(g, trim, cx - 2.6f, cy - 0.7f, 5.2f, 1.4f);
+        };
+    }
+
+    /// <summary>초승달: (ex, cy) 를 가운데로 side 쪽으로 rx 만큼 뻗는 타원에서, 자루 쪽으로 치우친 같은 크기 타원을 뺀 모양.</summary>
+    static void FillCrescent(Graphics g, Color c, float ex, float cy, float rx, float ry, int side)
+    {
+        float ox = ex + side * rx * 0.5f;                                      // 바깥 타원 중심
+        float ix = ex - side * rx * 0.15f;                                     // 안쪽 타원 중심(자루 쪽으로)
+        using (var outer = new GraphicsPath())
+        using (var inner = new GraphicsPath())
+        {
+            outer.AddEllipse(ox - rx * 0.5f, cy - ry, rx, ry * 2f);
+            inner.AddEllipse(ix - rx * 0.5f, cy - ry * 0.85f, rx, ry * 1.7f);
+            using (var region = new Region(outer))
+            using (var br = new SolidBrush(c))
+            {
+                region.Exclude(inner);
+                g.FillRegion(br, region);
+            }
+        }
     }
 
     /// <summary>쌍룡자웅검: 곧은 검인데 날이 푸른 쪽/붉은 쪽으로 나뉜다.</summary>

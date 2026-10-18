@@ -14,6 +14,8 @@ namespace Samkuk.EditorTools
     ///     베기(Slash)/찌르기(Thrust) 무기의 <see cref="WeaponData.heldSprite"/> 에 연결한다. 이미 지정된 그림은 덮어쓰지 않는다.
     ///  2) 휘두르기 각도/시간이 0 인 무기에 무기별 값을 채운다(쌍고검은 짧고 빠르게, 언월도는 넓고 묵직하게).
     ///  3) 장비의 장팔사모가 예전 화살(Arrow) 형이면 찌르기(Thrust) 형으로 한 번 바꾼다(사용자 요청: 던지는 화살이 아니라 찌르는 창).
+    ///  4) 조조의 의천검(화살형)·패왕의천검을 연속 베기로, 여포의 방천화극(회전형)·천하무쌍극을 극(Halberd)으로 한 번 바꾼다
+    ///     (사용자 요청: 검 이름인데 화살을 쏘고, 극 이름인데 칼날이 맴돌아 심심함). 값은 Step 8 / 8-4 의 Configure* 와 같다.
     /// 그림은 tools/hero_art/generate.ps1 -Only weapon 이 만든다(도트 규격 PPU 32, 손잡이 아래·날 위, 피벗 아래 가운데).
     /// 규칙/조작은 docs/WEAPON_SWING.md.
     /// </summary>
@@ -61,12 +63,17 @@ namespace Samkuk.EditorTools
             var missing = new StringBuilder();
             int linkedCount = 0, missingCount = 0, tuned = 0;
 
-            bool migrated = MigrateSerpentSpear();
+            var migrated = new StringBuilder();
+            if (MigrateSerpentSpear()) migrated.Append("\n장팔사모를 화살형 → 찌르기형으로 바꿈");
+            if (Migrate("Weapon_YitianSword", WeaponType.Arrow, Step8Setup.ConfigureYitianSword)) migrated.Append("\n의천검을 화살형 → 연속 베기로 바꿈");
+            if (Migrate("Weapon_Evo_OverlordSword", WeaponType.Arrow, Step8EvolutionSetup.ConfigureOverlordSword)) migrated.Append("\n패왕의천검을 화살형 → 연속 베기로 바꿈");
+            if (Migrate("Weapon_SkyPiercer", WeaponType.Orbit, Step8Setup.ConfigureSkyPiercer)) migrated.Append("\n방천화극을 회전형 → 극으로 바꿈");
+            if (Migrate("Weapon_Evo_PeerlessHalberd", WeaponType.Orbit, Step8EvolutionSetup.ConfigurePeerlessHalberd)) migrated.Append("\n천하무쌍극을 회전형 → 극으로 바꿈");
 
             foreach (string guid in AssetDatabase.FindAssets("t:WeaponData", new[] { WeaponDir }))
             {
                 var weapon = AssetDatabase.LoadAssetAtPath<WeaponData>(AssetDatabase.GUIDToAssetPath(guid));
-                if (weapon == null || (weapon.type != WeaponType.Slash && weapon.type != WeaponType.Thrust)) continue;
+                if (weapon == null || (weapon.type != WeaponType.Slash && weapon.type != WeaponType.Thrust && weapon.type != WeaponType.Halberd)) continue;
 
                 bool dirty = false;
                 string expected = $"{SpriteDir}/{weapon.name}_Held.png";
@@ -101,9 +108,23 @@ namespace Samkuk.EditorTools
 
             AssetDatabase.SaveAssets();
             Debug.Log($"[Samkuk] Step 10-9 완료: 무기 그림 연결 {linkedCount}종, 없음 {missingCount}종, 휘두르기 값 채움 {tuned}종" +
-                      (migrated ? "\n장팔사모를 화살형 → 찌르기형으로 바꿈" : "") +
+                      migrated +
                       (linkedCount > 0 ? $"\n연결됨:{linked}" : "") +
                       (missingCount > 0 ? $"\n그림 없음(호 잔상만 보임, tools/hero_art/generate.ps1 -Only weapon):{missing}" : ""));
+        }
+
+        /// <summary>
+        /// 무기 에셋이 아직 예전 종류(oldType)면 configure 로 새 값을 통째로 넣는다. 한 번 바뀌면 다시 실행해도 건드리지 않는다.
+        /// 화살/회전 전용 값(투사체 속도, 회전 속도)은 남아 있어도 새 종류가 쓰지 않으므로 그대로 둔다.
+        /// </summary>
+        static bool Migrate(string asset, WeaponType oldType, System.Action<WeaponData> configure)
+        {
+            var w = AssetDatabase.LoadAssetAtPath<WeaponData>($"{WeaponDir}/{asset}.asset");
+            if (w == null || w.type != oldType) return false;
+
+            configure(w);
+            EditorUtility.SetDirty(w);
+            return true;
         }
 
         /// <summary>

@@ -19,6 +19,7 @@ namespace Samkuk.Weapons
                 case WeaponType.Lightning: return go.AddComponent<LightningWeapon>();
                 case WeaponType.Rain: return go.AddComponent<RainWeapon>();
                 case WeaponType.Nova: return go.AddComponent<NovaWeapon>();
+                case WeaponType.Halberd: return go.AddComponent<HalberdWeapon>();
                 default: return null;
             }
         }

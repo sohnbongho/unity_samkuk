@@ -11,7 +11,8 @@ namespace Samkuk.Data
         FireZone, // 적이 있는 곳에 불길(장판)을 깔아 지속 피해
         Lightning, // 가까운 적 위에 벼락을 떨어뜨림 (범위 피해)
         Rain,   // 적 주변에 화살비를 쏟아 예고 후 폭격
-        Nova    // 플레이어를 중심으로 퍼지는 충격파 (넉백)
+        Nova,   // 플레이어를 중심으로 퍼지는 충격파 (넉백)
+        Halberd // 극: 가까운 적 쪽으로 찌르기와 넓은 휩쓸기를 번갈아 (여포 방천화극 전용)
     }
 
     /// <summary>무기 기본 능력치. 레벨당 증가량도 여기서 정의한다.</summary>
@@ -51,8 +52,10 @@ namespace Samkuk.Data
         [Header("휘두르기 (베기 계열, Step 10-9)")]
         [Tooltip("들고 휘두르는 무기 그림. 손잡이가 아래, 날이 위를 향하고 피벗은 손잡이 끝(아래 가운데). 비우면 호 잔상만 보인다")]
         public Sprite heldSprite;
-        [Tooltip("휘두르는 호의 각도(도). 0 이면 기본값 120")]
+        [Tooltip("휘두르는 호의 각도(도). 0 이면 기본값 120 (극의 휩쓸기는 200)")]
         public float swingArcDegrees = 0f;
+        [Tooltip("연속 베기(베기 계열): count 를 반대편 동시 베기가 아니라 같은 쪽으로 위·아래 번갈아 잇달아 베는 횟수로 쓴다 (조조 의천검)")]
+        public bool comboSwings = false;
         [Tooltip("휘두르는 데 걸리는 시간(초). 타격은 이 시간의 40% 지점. 0 이면 기본값 0.25")]
         public float swingDuration = 0f;
         [Tooltip("검기(반원)가 날아가는 거리(유닛). 0 이면 기본값(사거리의 35%, 장식용 짧은 잔상)")]

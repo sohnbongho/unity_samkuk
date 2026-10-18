@@ -207,7 +207,7 @@ namespace Samkuk.Tests
                 Assert.GreaterOrEqual(w.projectileSpeed * w.duration, w.range,
                     $"{w.displayName}: 도달 거리 {w.projectileSpeed * w.duration:0.#} < 탐색 거리 {w.range}");
             }
-            Assert.GreaterOrEqual(checkedCount, 6, "화살 계열 무기를 충분히 검사");
+            Assert.GreaterOrEqual(checkedCount, 5, "화살 계열 무기를 충분히 검사 (활·쇠뇌·비도·연노·비룡사모. 의천검·패왕의천검은 연속 베기로 바뀜)");
         }
 
         [Test]

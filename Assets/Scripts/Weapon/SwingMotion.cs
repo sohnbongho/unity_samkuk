@@ -30,6 +30,8 @@ namespace Samkuk.Weapons
         public float Progress => duration > 0f ? Mathf.Clamp01(elapsed / duration) : 1f;
         /// <summary>왼쪽으로 휘두르는가(그림을 좌우 반전할지 정한다). 호의 가운데가 왼쪽 반평면이면 참.</summary>
         public bool FacesLeft => Mathf.Cos(center * Mathf.Deg2Rad) < 0f;
+        /// <summary>아래에서 위로 올려치는 중인가(연속 베기의 짝수 번째). 기본은 위에서 아래로.</summary>
+        public bool Upward { get; private set; }
 
         /// <summary>
         /// 지금 무기가 가리키는 각도. 호의 한쪽 끝에서 시작해 반대쪽 끝에서 끝난다.
@@ -45,13 +47,14 @@ namespace Samkuk.Weapons
             }
         }
 
-        /// <summary>휘두르기를 시작한다. arcDegrees/duration 이 0 이하면 기본값.</summary>
-        public void Start(float centerAngleDegrees, float arcDegrees, float durationSeconds)
+        /// <summary>휘두르기를 시작한다. arcDegrees/duration 이 0 이하면 기본값. upward 면 아래에서 위로 올려친다(연속 베기의 되돌림).</summary>
+        public void Start(float centerAngleDegrees, float arcDegrees, float durationSeconds, bool upward = false)
         {
             center = centerAngleDegrees;
             arc = arcDegrees > 0f ? arcDegrees : DefaultArcDegrees;
             duration = durationSeconds > 0f ? durationSeconds : DefaultDuration;
-            sign = FacesLeft ? -1 : 1;
+            Upward = upward;
+            sign = (FacesLeft ? -1 : 1) * (upward ? -1 : 1);
             elapsed = 0f;
             hitDone = false;
             Active = true;

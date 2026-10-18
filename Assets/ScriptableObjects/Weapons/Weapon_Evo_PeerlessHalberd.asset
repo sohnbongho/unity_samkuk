@@ -14,21 +14,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.WeaponData
   displayName: "\uCC9C\uD558\uBB34\uC30D\uADF9"
   description: "\uCC9C\uD558\uC5D0 \uB458\uB3C4 \uC5C6\uB294 \uBC29\uCC9C\uD654\uADF9\uC774
-    \uB124 \uC790\uB8E8\uB85C \uBD88\uC5B4\uB098 \uAC70\uC138\uAC8C \uB9F4\uB3C8\uB2E4."
-  type: 2
-  sprite: {fileID: 21300000, guid: 69c2f8666eeb71b4eae3bebbe6df5a9b, type: 3}
-  tint: {r: 1, g: 0.55, b: 0.4, a: 1}
-  damage: 18
-  cooldown: 1
-  range: 2.4
-  count: 4
+    \uC55E\uB4A4\uB85C \uCC0C\uB974\uACE0 \uD729\uC4F8\uC5B4 \uC0AC\uBC29\uC744 \uC4F8\uC5B4\uBC84\uB9B0\uB2E4."
+  type: 8
+  sprite: {fileID: 0}
+  tint: {r: 1, g: 0.5, b: 0.35, a: 1}
+  damage: 26
+  cooldown: 0.9
+  range: 3.8
+  count: 2
   projectileSpeed: 10
   pierce: 1
-  duration: 2
-  size: 0.7
+  duration: 0.15
+  size: 0.45
   rotateSpeed: 280
   tickInterval: 0.25
-  knockback: 0
+  knockback: 5
+  heldSprite: {fileID: 21300000, guid: 620173cbf8100f74fba5b296c0e35524, type: 3}
+  swingArcDegrees: 220
+  comboSwings: 0
+  swingDuration: 0.24
+  trailTravel: 0
+  trailScale: 0
+  trailDamageRatio: 0
   maxLevel: 8
   damagePerLevel: 0.2
   cooldownReductionPerLevel: 0.05

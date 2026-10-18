@@ -13,22 +13,30 @@ MonoBehaviour:
   m_Name: Weapon_Evo_OverlordSword
   m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.WeaponData
   displayName: "\uD328\uC655\uC758\uCC9C\uAC80"
-  description: "\uAC80\uAE30\uB97C \uC0AC\uBC29\uC73C\uB85C \uC3DF\uC544\uB0B4\uB294
-    \uD328\uC655\uC758 \uAC80."
-  type: 0
-  sprite: {fileID: 21300000, guid: 1ffade8cbb8800c4190d6ab27b7bac13, type: 3}
-  tint: {r: 0.55, g: 0.75, b: 1, a: 1}
-  damage: 16
-  cooldown: 0.7
-  range: 10
-  count: 4
+  description: "\uD328\uC655\uC758 \uAC80\uC774 \uC138 \uBC88 \uC5F0\uB2EC\uC544
+    \uBC88\uB729\uC774\uACE0, \uAC80\uAE30\uAC00 \uBA40\uB9AC\uAE4C\uC9C0 \uC801\uC9C4\uC744
+    \uAC00\uB978\uB2E4."
+  type: 1
+  sprite: {fileID: 0}
+  tint: {r: 0.7, g: 0.6, b: 1, a: 1}
+  damage: 14
+  cooldown: 0.8
+  range: 2.9
+  count: 3
   projectileSpeed: 14
   pierce: 3
-  duration: 1.5
-  size: 0.35
+  duration: 0.15
+  size: 0.25
   rotateSpeed: 180
   tickInterval: 0.3
   knockback: 0
+  heldSprite: {fileID: 21300000, guid: 93a31bf6798caad4e9b5498fc27dca5d, type: 3}
+  swingArcDegrees: 120
+  comboSwings: 1
+  swingDuration: 0.15
+  trailTravel: 8
+  trailScale: 1
+  trailDamageRatio: 0.6
   maxLevel: 8
   damagePerLevel: 0.2
   cooldownReductionPerLevel: 0.05

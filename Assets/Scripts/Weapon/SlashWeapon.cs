@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Samkuk.Enemies;
 using Samkuk.Player;
 using UnityEngine;
@@ -11,11 +10,17 @@ namespace Samkuk.Weapons
     /// 호의 중간(<see cref="SwingMotion.HitFraction"/>)에서 그 방향의 원에 피해가 들어가며 반원 검기(호 잔상)가 앞으로 날아간다.
     /// 사거리(range) 안에 적이 없으면 쿨다운을 소모하지 않고 기다렸다가, 들어오는 순간 바로 휘두른다(화살과 같은 규칙).
     /// 무기 그림(<see cref="Data.heldSprite"/>)이 없어도 타이밍과 잔상은 같다.
+    /// 연속 베기(<see cref="Data.comboSwings"/>, 조조 의천검): count 만큼 같은 쪽으로 잇달아 베되 위에서 아래, 아래에서 위를 번갈아
+    /// 올려치고, 베기마다 검기가 나간다. 다음 베기는 그때의 가장 가까운 적 쪽으로 다시 겨눈다.
     /// </summary>
     public class SlashWeapon : Weapon
     {
-        /// <summary>동시에 휘두르는 최대 수. count 가 더 커도 두 번(앞/뒤)까지만 — 예전 동작과 같다.</summary>
-        public const int MaxSwings = 2;
+        /// <summary>동시에/잇달아 휘두르는 최대 수(그림·검기 개수). 반대편 동시 베기는 2 까지(<see cref="MaxOpposite"/>), 연속 베기는 4 까지.</summary>
+        public const int MaxSwings = 4;
+        /// <summary>반대편 동시 베기의 최대 수. count 가 더 커도 두 번(앞/뒤)까지만 — 예전 동작과 같다.</summary>
+        public const int MaxOpposite = 2;
+        /// <summary>연속 베기에서 다음 베기가 시작하는 시점 = 앞 베기 시간 x 이 값 (끝나기 조금 전에 이어서 끊김 없이).</summary>
+        public const float ComboGap = 0.8f;
         /// <summary>손 축: 발(트랜스폼)에서 위로 띄우는 높이. 걷기 그림의 몸(약 1유닛) 중간쯤.</summary>
         public const float HandHeight = 0.55f;
         /// <summary>검기가 피해 원의 중심에서 앞으로 더 나가는 기본 거리(range 배율). 무기의 trailTravel 이 있으면 그 값(유닛).</summary>
@@ -23,24 +28,28 @@ namespace Samkuk.Weapons
         /// <summary>휘두른 뒤에도 그쪽을 더 바라보는 시간. 휘두르는 동안만 보면 깜빡이듯 돌아가 버린다.</summary>
         public const float LookHoldSeconds = 0.15f;
 
-        readonly List<Enemy> hits = new List<Enemy>(64);
         readonly Enemy[] nearest = new Enemy[1];
         readonly SwingMotion[] swings = new SwingMotion[MaxSwings];
         readonly SpriteRenderer[] held = new SpriteRenderer[MaxSwings];
         readonly WeaponTrail[] trails = new WeaponTrail[MaxSwings];
+        /// <summary>연속 베기 대기 시간(초). 0 보다 크면 그 뒤에 i번째 베기를 시작한다.</summary>
+        readonly float[] comboDelay = new float[MaxSwings];
+        float comboAngle;
         ILookOverride look;
         float timer;
 
-        /// <summary>테스트/연출 확인용: 지금 휘두르는 중인가.</summary>
+        /// <summary>테스트/연출 확인용: 지금 휘두르는 중인가(연속 베기의 대기도 포함).</summary>
         public bool IsSwinging
         {
             get
             {
-                for (int i = 0; i < swings.Length; i++) if (swings[i].Active) return true;
+                for (int i = 0; i < swings.Length; i++) if (swings[i].Active || comboDelay[i] > 0f) return true;
                 return false;
             }
         }
 
+        /// <summary>i번째 휘두르기의 규칙(테스트용).</summary>
+        public SwingMotion Swing(int i) => i >= 0 && i < swings.Length ? swings[i] : null;
         /// <summary>i번째 휘두르기의 무기 그림 렌더러 (없으면 null).</summary>
         public SpriteRenderer HeldRenderer(int i) => i >= 0 && i < held.Length ? held[i] : null;
         /// <summary>i번째 휘두르기의 검기(호 잔상) 렌더러.</summary>
@@ -66,6 +75,7 @@ namespace Samkuk.Weapons
             {
                 swings[i]?.Stop();
                 trails[i]?.Stop();
+                comboDelay[i] = 0f;
                 if (held[i] != null) held[i].enabled = false;
             }
         }
@@ -73,6 +83,7 @@ namespace Samkuk.Weapons
         void Update()
         {
             for (int i = 0; i < trails.Length; i++) TickTrail(trails[i]);
+            TickCombo();
             TickSwings();
 
             if (Enemies == null) return;
@@ -85,22 +96,50 @@ namespace Samkuk.Weapons
             timer = 0f;
             PlayAttackSound();
 
+            float swingSeconds = Data.swingDuration > 0f ? Data.swingDuration : SwingMotion.DefaultDuration;
+            float lookSeconds = swingSeconds;
             swings[0].Start(angle, Data.swingArcDegrees, Data.swingDuration);
-            if (Count >= 2) swings[1].Start(angle + 180f, Data.swingArcDegrees, Data.swingDuration);
+            if (Data.comboSwings)
+            {
+                // 연속 베기: 나머지는 앞 베기가 끝나기 조금 전에 차례로 이어진다
+                int n = Mathf.Clamp(Count, 1, MaxSwings);
+                comboAngle = angle;
+                for (int i = 1; i < n; i++) comboDelay[i] = i * swingSeconds * ComboGap;
+                lookSeconds += (n - 1) * swingSeconds * ComboGap;
+            }
+            else if (Count >= MaxOpposite)
+            {
+                swings[1].Start(angle + 180f, Data.swingArcDegrees, Data.swingDuration);
+            }
 
             // 몸도 휘두르는 쪽을 본다 (달아나면서 등 뒤로 베는 어색함 방지). 반대편 베기는 보지 않는다
-            float swingSeconds = Data.swingDuration > 0f ? Data.swingDuration : SwingMotion.DefaultDuration;
-            look?.Look(DirectionOf(angle), swingSeconds + LookHoldSeconds);
+            look?.Look(DirectionOf(angle), lookSeconds + LookHoldSeconds);
         }
 
         /// <summary>휘두를 방향: 사거리 안 가장 가까운 적. 없으면 false(휘두르지 않음).</summary>
         bool TryPickAngle(out float angle)
         {
             angle = 0f;
-            if (Enemies.FindNearest(OwnerPosition, Data.range, nearest) == 0 || nearest[0] == null) return false;
+            if (Enemies == null || Enemies.FindNearest(OwnerPosition, Data.range, nearest) == 0 || nearest[0] == null) return false;
             Vector2 to = nearest[0].Position - OwnerPosition;
             if (to.sqrMagnitude > 1e-6f) angle = Mathf.Atan2(to.y, to.x) * Mathf.Rad2Deg;
             return true;
+        }
+
+        /// <summary>연속 베기의 대기가 끝난 베기를 시작한다. 그때의 가장 가까운 적 쪽으로 다시 겨누고(없으면 처음 방향), 홀수 번째는 올려친다.</summary>
+        void TickCombo()
+        {
+            for (int i = 1; i < comboDelay.Length; i++)
+            {
+                if (comboDelay[i] <= 0f) continue;
+                comboDelay[i] -= Time.deltaTime;
+                if (comboDelay[i] > 0f) continue;
+
+                comboDelay[i] = 0f;
+                if (TryPickAngle(out float angle)) comboAngle = angle;
+                PlayAttackSound();
+                swings[i].Start(comboAngle, Data.swingArcDegrees, Data.swingDuration, upward: (i & 1) == 1);
+            }
         }
 
         void TickSwings()
@@ -135,14 +174,7 @@ namespace Samkuk.Weapons
             Vector2 dir = DirectionOf(angleDegrees);
             Vector2 center = OwnerPosition + dir * (Data.range * 0.5f);
 
-            hits.Clear();
-            Enemies.OverlapCircle(center, radius, hits);
-            float dmg = Damage;
-            for (int i = 0; i < hits.Count; i++)
-            {
-                hits[i].TakeDamage(dmg);
-                Knock(hits[i], OwnerPosition);
-            }
+            StrikeCircle(center, radius, OwnerPosition, Damage);
 
             // 검기: 손 높이의 피해 원 자리에서 반원 띠가 앞으로 날아가며 사라진다. 반원 반지름 = 피해 원 반지름 x 배율
             float scale = Data.trailScale > 0f ? Data.trailScale : 1f;

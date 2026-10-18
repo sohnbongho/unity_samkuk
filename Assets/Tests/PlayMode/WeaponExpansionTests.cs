@@ -488,6 +488,7 @@ namespace Samkuk.Tests
                 { WeaponType.Lightning, typeof(LightningWeapon) },
                 { WeaponType.Rain, typeof(RainWeapon) },
                 { WeaponType.Nova, typeof(NovaWeapon) },
+                { WeaponType.Halberd, typeof(HalberdWeapon) },
             };
 
             foreach (WeaponType type in Enum.GetValues(typeof(WeaponType)))
@@ -525,7 +526,10 @@ namespace Samkuk.Tests
             }
 
             foreach (WeaponType t in Enum.GetValues(typeof(WeaponType)))
+            {
+                if (t == WeaponType.Halberd) continue; // 극은 여포 전용(방천화극)이라 공용 카탈로그에 없다
                 Assert.IsTrue(types.Contains(t), $"카탈로그에 {t} 타입 무기가 없음");
+            }
         }
     }
 }

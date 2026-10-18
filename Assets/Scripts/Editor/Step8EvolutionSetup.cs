@@ -132,22 +132,8 @@ namespace Samkuk.EditorTools
                 w.damage = 30f; w.cooldown = 0.8f; w.range = 10f; w.count = 2;
                 w.projectileSpeed = 16f; w.pierce = 8; w.duration = 1.2f; w.size = 0.4f; w.levelsPerExtraCount = 3;
             });
-            Create("Weapon_Evo_OverlordSword", w =>
-            {
-                w.displayName = "패왕의천검"; w.type = WeaponType.Arrow; w.sprite = Sprite("Arrow");
-                w.description = "검기를 사방으로 쏟아내는 패왕의 검.";
-                w.tint = new Color(0.55f, 0.75f, 1f);
-                w.damage = 16f; w.cooldown = 0.7f; w.range = 10f; w.count = 4;
-                w.projectileSpeed = 14f; w.pierce = 3; w.duration = 1.5f; w.size = 0.35f; w.levelsPerExtraCount = 3;
-            });
-            Create("Weapon_Evo_PeerlessHalberd", w =>
-            {
-                w.displayName = "천하무쌍극"; w.type = WeaponType.Orbit; w.sprite = Sprite("Blade");
-                w.description = "천하에 둘도 없는 방천화극이 네 자루로 불어나 거세게 맴돈다.";
-                w.tint = new Color(1f, 0.55f, 0.4f);
-                w.damage = 18f; w.range = 2.4f; w.count = 4; w.size = 0.7f; w.rotateSpeed = 280f; w.tickInterval = 0.25f;
-                w.levelsPerExtraCount = 3;
-            });
+            Create("Weapon_Evo_OverlordSword", ConfigureOverlordSword);
+            Create("Weapon_Evo_PeerlessHalberd", ConfigurePeerlessHalberd);
             Create("Weapon_Evo_HeavenDrum", w =>
             {
                 w.displayName = "천고"; w.type = WeaponType.Nova; w.sprite = Sprite("Slash");
@@ -156,6 +142,27 @@ namespace Samkuk.EditorTools
                 w.damage = 36f; w.cooldown = 2.6f; w.range = 6.5f; w.duration = 0.6f; w.knockback = 12f;
                 w.levelsPerExtraCount = 0;
             });
+        }
+
+        /// <summary>패왕의천검: 의천검의 진화. 세 번 연속 베기 + 멀리 나는 검기. 14 x 3 x 2 / 0.8 = 105 (의천검 Lv.3 의 약 2.8배).</summary>
+        public static void ConfigureOverlordSword(WeaponData w)
+        {
+            w.displayName = "패왕의천검"; w.type = WeaponType.Slash; w.sprite = null; w.comboSwings = true;
+            w.description = "패왕의 검이 세 번 연달아 번뜩이고, 검기가 멀리까지 적진을 가른다.";
+            w.tint = new Color(0.7f, 0.6f, 1f);
+            w.damage = 14f; w.cooldown = 0.8f; w.range = 2.9f; w.count = 3; w.size = 0.25f; w.knockback = 0f; w.duration = 0.15f;
+            w.levelsPerExtraCount = 3; w.swingArcDegrees = 120f; w.swingDuration = 0.15f;
+            w.trailTravel = 8f; w.trailScale = 1.0f; w.trailDamageRatio = 0.6f;
+        }
+
+        /// <summary>천하무쌍극: 방천화극의 진화. 앞뒤로 찌르고 휩쓴다. 26 x 2 x 2.25 / 0.9 = 130 (방천화극 Lv.3 의 약 3.1배).</summary>
+        public static void ConfigurePeerlessHalberd(WeaponData w)
+        {
+            w.displayName = "천하무쌍극"; w.type = WeaponType.Halberd; w.sprite = null;
+            w.description = "천하에 둘도 없는 방천화극이 앞뒤로 찌르고 휩쓸어 사방을 쓸어버린다.";
+            w.tint = new Color(1f, 0.5f, 0.35f);
+            w.damage = 26f; w.cooldown = 0.9f; w.range = 3.8f; w.count = 2; w.size = 0.45f; w.knockback = 5f; w.duration = 0.15f;
+            w.levelsPerExtraCount = 3; w.swingArcDegrees = 220f; w.swingDuration = 0.24f;
         }
 
         static void Create(string name, System.Action<WeaponData> init)

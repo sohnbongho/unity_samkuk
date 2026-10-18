@@ -122,20 +122,36 @@ namespace Samkuk.EditorTools
                 w.tint = new Color(0.75f, 0.75f, 0.9f); w.damage = 10f; w.cooldown = 1.1f; w.range = 3.6f; w.count = 1;
                 w.size = 0.35f; w.knockback = 3f; w.duration = 0.15f;
             });
-            CreateWeapon("Weapon_YitianSword", w =>
-            {
-                w.displayName = "의천검"; w.type = WeaponType.Arrow; w.sprite = LoadSprite("Arrow");
-                w.description = "검기를 두 갈래로 쏘아 보낸다.";
-                w.tint = new Color(0.5f, 0.7f, 1f); w.damage = 10f; w.cooldown = 1.0f; w.range = 9f; w.count = 2;
-                w.projectileSpeed = 12f; w.pierce = 1; w.duration = 1.5f; w.size = 0.3f;
-            });
-            CreateWeapon("Weapon_SkyPiercer", w =>
-            {
-                w.displayName = "방천화극"; w.type = WeaponType.Orbit; w.sprite = LoadSprite("Blade");
-                w.description = "주위를 맴도는 화극이 적을 벤다.";
-                w.tint = new Color(1f, 0.5f, 0.4f); w.damage = 7f; w.range = 1.9f; w.count = 2; w.size = 0.5f;
-                w.rotateSpeed = 220f; w.tickInterval = 0.25f; w.levelsPerExtraCount = 2;
-            });
+            CreateWeapon("Weapon_YitianSword", ConfigureYitianSword);
+            CreateWeapon("Weapon_SkyPiercer", ConfigureSkyPiercer);
+        }
+
+        /// <summary>
+        /// 조조 의천검: 연속 베기(한 공격에 위·아래로 두 번 잇달아 베고 베기마다 얇은 검기가 5유닛 날아가 피해 40%).
+        /// 밸런스 모델(베기 = 피해 x count x 2 / 쿨다운)에서 6 x 2 x 2 / 1.0 = 24, 다른 시작 무기(22~27)와 비슷.
+        /// 예전에는 화살 두 발이었다(사용자 피드백: 검 이름인데 화살이라 심심함). Step 10-9 가 화살형 에셋을 이 값으로 바꾼다.
+        /// </summary>
+        public static void ConfigureYitianSword(WeaponData w)
+        {
+            w.displayName = "의천검"; w.type = WeaponType.Slash; w.sprite = null; w.comboSwings = true;
+            w.description = "의천검을 번개처럼 두 번 연달아 베고, 베기마다 얇은 검기가 앞으로 날아간다.";
+            w.tint = new Color(0.6f, 0.75f, 1f); w.damage = 6f; w.cooldown = 1.0f; w.range = 2.6f; w.count = 2;
+            w.size = 0.25f; w.knockback = 0f; w.duration = 0.15f; w.levelsPerExtraCount = 3;
+            w.swingArcDegrees = 110f; w.swingDuration = 0.16f;
+            w.trailTravel = 5f; w.trailScale = 0.8f; w.trailDamageRatio = 0.4f;
+        }
+
+        /// <summary>
+        /// 여포 방천화극: 극(찌르기와 넓은 휩쓸기를 번갈아, 휩쓸기는 적을 크게 밀어냄).
+        /// 밸런스 모델(극 = 피해 x count x 2.25 / 쿨다운)에서 13 x 2.25 / 1.1 = 26.6. 예전에는 맴도는 칼날 둘이었다.
+        /// </summary>
+        public static void ConfigureSkyPiercer(WeaponData w)
+        {
+            w.displayName = "방천화극"; w.type = WeaponType.Halberd; w.sprite = null;
+            w.description = "방천화극으로 찌르기와 휩쓸기를 번갈아 퍼붓는다. 찌르면 일직선을 꿰뚫고, 휩쓸면 앞을 넓게 쓸어 적을 밀어낸다.";
+            w.tint = new Color(1f, 0.55f, 0.4f); w.damage = 13f; w.cooldown = 1.1f; w.range = 3.4f; w.count = 1;
+            w.size = 0.4f; w.knockback = 4f; w.duration = 0.15f; w.levelsPerExtraCount = 3;
+            w.swingArcDegrees = 200f; w.swingDuration = 0.26f;
         }
 
         static void CreateWeapon(string name, System.Action<WeaponData> init)

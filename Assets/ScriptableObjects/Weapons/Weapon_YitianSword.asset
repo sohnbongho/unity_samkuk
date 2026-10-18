@@ -13,22 +13,31 @@ MonoBehaviour:
   m_Name: Weapon_YitianSword
   m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.WeaponData
   displayName: "\uC758\uCC9C\uAC80"
-  description: "\uAC80\uAE30\uB97C \uB450 \uAC08\uB798\uB85C \uC3D8\uC544 \uBCF4\uB0B8\uB2E4."
-  type: 0
-  sprite: {fileID: 21300000, guid: 1ffade8cbb8800c4190d6ab27b7bac13, type: 3}
-  tint: {r: 0.5, g: 0.7, b: 1, a: 1}
-  damage: 10
+  description: "\uC758\uCC9C\uAC80\uC744 \uBC88\uAC1C\uCC98\uB7FC \uB450 \uBC88 \uC5F0\uB2EC\uC544
+    \uBCA0\uACE0, \uBCA0\uAE30\uB9C8\uB2E4 \uC587\uC740 \uAC80\uAE30\uAC00 \uC55E\uC73C\uB85C
+    \uB0A0\uC544\uAC04\uB2E4."
+  type: 1
+  sprite: {fileID: 0}
+  tint: {r: 0.6, g: 0.75, b: 1, a: 1}
+  damage: 6
   cooldown: 1
-  range: 9
+  range: 2.6
   count: 2
   projectileSpeed: 12
   pierce: 1
-  duration: 1.5
-  size: 0.3
+  duration: 0.15
+  size: 0.25
   rotateSpeed: 180
   tickInterval: 0.3
   knockback: 0
+  heldSprite: {fileID: 21300000, guid: c53e7488e28ecd74e912e0d7e0fc1f2c, type: 3}
+  swingArcDegrees: 110
+  comboSwings: 1
+  swingDuration: 0.16
+  trailTravel: 5
+  trailScale: 0.8
+  trailDamageRatio: 0.4
   maxLevel: 8
   damagePerLevel: 0.2
   cooldownReductionPerLevel: 0.05
-  levelsPerExtraCount: 2
+  levelsPerExtraCount: 3

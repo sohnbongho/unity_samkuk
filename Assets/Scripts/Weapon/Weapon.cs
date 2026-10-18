@@ -79,6 +79,8 @@ namespace Samkuk.Weapons
 
         /// <summary>공격이 발동할 때 무기 종류에 맞는 효과음을 낸다.</summary>
         protected void PlayAttackSound() => Audio.AudioManager.PlayWeapon(Data.type);
+        /// <summary>다른 종류의 소리를 낸다 (극은 찌를 때 창 소리, 휩쓸 때 베기 소리).</summary>
+        protected void PlayAttackSound(WeaponType asType) => Audio.AudioManager.PlayWeapon(asType);
 
         /// <summary>월드 각도(도)를 단위 벡터로.</summary>
         protected static Vector2 DirectionOf(float angleDegrees) =>
@@ -95,6 +97,44 @@ namespace Samkuk.Weapons
             sr.sortingOrder = sortingOrder;
             sr.enabled = false;
             return sr;
+        }
+
+        readonly List<Enemy> strikeHits = new List<Enemy>(64);
+
+        /// <summary>원 안의 적 전부에게 피해 + knockOrigin 반대쪽으로 넉백(배율). 베기와 극의 휩쓸기가 쓴다.</summary>
+        protected int StrikeCircle(Vector2 center, float radius, Vector2 knockOrigin, float damage, float knockScale = 1f)
+        {
+            strikeHits.Clear();
+            Enemies.OverlapCircle(center, radius, strikeHits);
+            for (int i = 0; i < strikeHits.Count; i++)
+            {
+                strikeHits[i].TakeDamage(damage);
+                Knock(strikeHits[i], knockOrigin, knockScale);
+            }
+            return strikeHits.Count;
+        }
+
+        /// <summary>origin 에서 dir 방향 길이 length·반폭 halfWidth 의 직선 위 적 전부에게 피해 + 넉백. 찌르기와 극의 찌르기가 쓴다.</summary>
+        protected int StrikeLine(Vector2 origin, Vector2 dir, float length, float halfWidth, float damage)
+        {
+            strikeHits.Clear();
+            Enemies.OverlapCircle(origin + dir * (length * 0.5f), length * 0.5f + halfWidth, strikeHits);
+            int hit = 0;
+            for (int i = 0; i < strikeHits.Count; i++)
+            {
+                Enemy e = strikeHits[i];
+                Vector2 rel = e.Position - origin;
+                float along = Vector2.Dot(rel, dir);
+                float side = Mathf.Abs(rel.x * dir.y - rel.y * dir.x);
+
+                if (along < -e.Radius || along > length + e.Radius) continue;
+                if (side > halfWidth + e.Radius) continue;
+
+                e.TakeDamage(damage);
+                Knock(e, origin);
+                hit++;
+            }
+            return hit;
         }
 
         readonly List<Enemy> trailHits = new List<Enemy>(32);
@@ -124,14 +164,14 @@ namespace Samkuk.Weapons
             }
         }
 
-        /// <summary>무기 데이터의 넉백 값이 있으면 origin 반대 방향으로 적을 민다 (살아있는 적만).</summary>
-        protected void Knock(Enemy enemy, Vector2 origin)
+        /// <summary>무기 데이터의 넉백 값이 있으면 origin 반대 방향으로 적을 민다 (살아있는 적만). scale 로 세기를 조절한다.</summary>
+        protected void Knock(Enemy enemy, Vector2 origin, float scale = 1f)
         {
             if (Data.knockback <= 0f || !enemy.Alive) return;
 
             Vector2 away = enemy.Position - origin;
             if (away.sqrMagnitude < 1e-6f) away = Vector2.right;
-            enemy.Knockback(away.normalized * Data.knockback);
+            enemy.Knockback(away.normalized * (Data.knockback * scale));
         }
     }
 }

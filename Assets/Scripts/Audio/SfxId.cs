@@ -42,6 +42,7 @@ namespace Samkuk.Audio
                 case WeaponType.Lightning: return SfxId.Thunder;
                 case WeaponType.Rain: return SfxId.Arrow;
                 case WeaponType.Nova: return SfxId.Explosion;
+                case WeaponType.Halberd: return SfxId.Slash; // 극은 동작마다 찌르기/베기 소리를 직접 고른다
                 default: return SfxId.None; // Orbit
             }
         }

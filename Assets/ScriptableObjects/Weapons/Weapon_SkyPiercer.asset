@@ -13,23 +13,32 @@ MonoBehaviour:
   m_Name: Weapon_SkyPiercer
   m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Data.WeaponData
   displayName: "\uBC29\uCC9C\uD654\uADF9"
-  description: "\uC8FC\uC704\uB97C \uB9F4\uB3C4\uB294 \uD654\uADF9\uC774 \uC801\uC744
-    \uBCA4\uB2E4."
-  type: 2
-  sprite: {fileID: 21300000, guid: 69c2f8666eeb71b4eae3bebbe6df5a9b, type: 3}
-  tint: {r: 1, g: 0.5, b: 0.4, a: 1}
-  damage: 7
-  cooldown: 1
-  range: 1.9
-  count: 2
+  description: "\uBC29\uCC9C\uD654\uADF9\uC73C\uB85C \uCC0C\uB974\uAE30\uC640 \uD729\uC4F8\uAE30\uB97C
+    \uBC88\uAC08\uC544 \uD37C\uBD93\uB294\uB2E4. \uCC0C\uB974\uBA74 \uC77C\uC9C1\uC120\uC744
+    \uAFF0\uB6AB\uACE0, \uD729\uC4F8\uBA74 \uC55E\uC744 \uB113\uAC8C \uC4F8\uC5B4
+    \uC801\uC744 \uBC00\uC5B4\uB0B8\uB2E4."
+  type: 8
+  sprite: {fileID: 0}
+  tint: {r: 1, g: 0.55, b: 0.4, a: 1}
+  damage: 13
+  cooldown: 1.1
+  range: 3.4
+  count: 1
   projectileSpeed: 10
   pierce: 1
-  duration: 2
-  size: 0.5
+  duration: 0.15
+  size: 0.4
   rotateSpeed: 220
   tickInterval: 0.25
-  knockback: 0
+  knockback: 4
+  heldSprite: {fileID: 21300000, guid: 63f558629e7560c48af582d1dd5b1eeb, type: 3}
+  swingArcDegrees: 200
+  comboSwings: 0
+  swingDuration: 0.26
+  trailTravel: 0
+  trailScale: 0
+  trailDamageRatio: 0
   maxLevel: 8
   damagePerLevel: 0.2
   cooldownReductionPerLevel: 0.05
-  levelsPerExtraCount: 2
+  levelsPerExtraCount: 3

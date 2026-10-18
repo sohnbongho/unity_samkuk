@@ -14,6 +14,7 @@ namespace Samkuk.Tests
     /// <summary>
     /// 무기 휘두르기(Step 10-9): 호를 그리는 각도/타격 시점의 순수 규칙(SwingMotion)과,
     /// 베기 무기가 가장 가까운 적 쪽으로 휘둘러 호의 중간에 피해를 주는지 확인한다.
+    /// 찌르기(ThrustMotion/ThrustWeapon), 연속 베기(조조 의천검), 극(여포 방천화극: 찌르기·휩쓸기 번갈아)도 여기서.
     /// </summary>
     public class WeaponSwingTests
     {
@@ -130,6 +131,23 @@ namespace Samkuk.Tests
             Assert.IsTrue(m.Active, "아직 휘두르는 중");
             Assert.IsFalse(m.Advance(1f));
             Assert.IsFalse(m.Active);
+        }
+
+        [Test]
+        public void SwingMotion_Upward_SweepsBottomToTop()
+        {
+            var m = new SwingMotion();
+            m.Start(0f, 120f, 1f, upward: true);
+
+            Assert.IsTrue(m.Upward);
+            Assert.AreEqual(-60f, m.Angle, 0.01f, "올려치기는 아래(-60)에서 시작");
+            m.Advance(1f);
+            Assert.AreEqual(60f, m.Angle, 0.01f, "위(+60)에서 끝");
+
+            m.Start(180f, 120f, 1f, upward: true);
+            Assert.AreEqual(240f, m.Angle, 0.01f, "왼쪽을 향해도 아래에서 시작");
+            m.Advance(1f);
+            Assert.AreEqual(120f, m.Angle, 0.01f);
         }
 
         [Test]
@@ -284,6 +302,174 @@ namespace Samkuk.Tests
             Assert.AreEqual(FacingDir.Left, PlayerAnimator.DirectionOf(new Vector2(-1f, -0.5f)));
             Assert.AreEqual(FacingDir.Up, PlayerAnimator.DirectionOf(new Vector2(0.2f, 1f)));
             Assert.AreEqual(FacingDir.Down, PlayerAnimator.DirectionOf(new Vector2(0.2f, -1f)));
+        }
+
+        // ───────────────────────── 연속 베기 (조조 의천검) ─────────────────────────
+
+        EnemyData Tough()
+        {
+            var tough = ScriptableObject.CreateInstance<EnemyData>();
+            tough.maxHp = 1000; tough.moveSpeed = 0f; tough.contactDamage = 0; tough.colliderRadius = 0.3f;
+            toDestroy.Add(tough);
+            return tough;
+        }
+
+        [UnityTest]
+        public IEnumerator Slash_Combo_SwingsTwiceInARow_DownThenUp_AndHitsEachTime()
+        {
+            yield return null;
+            var e = spawner.SpawnAt(Tough(), new Vector2(1.5f, 0f));
+            var data = MakeSlash(cooldown: 5f, swingDuration: 0.4f, count: 2);
+            data.comboSwings = true;                                         // 반대편 동시 베기가 아니라 같은 쪽 연속 베기
+            var slash = wc.AddWeapon(data) as SlashWeapon;
+
+            yield return null;
+            Assert.IsTrue(slash.Swing(0).Active, "첫 베기");
+            Assert.IsFalse(slash.Swing(0).Upward, "첫 베기는 내려치기");
+            Assert.IsFalse(slash.Swing(1).Active, "둘째 베기는 아직");
+            Assert.IsTrue(slash.IsSwinging);
+
+            yield return new WaitForSeconds(0.4f * SlashWeapon.ComboGap + 0.05f);   // 둘째 베기 시작(0.32초) 직후
+            Assert.IsTrue(slash.Swing(1).Active, "둘째 베기가 이어진다");
+            Assert.IsTrue(slash.Swing(1).Upward, "둘째 베기는 올려치기");
+            Assert.AreEqual(0f, Mathf.DeltaAngle(slash.Swing(1).CenterAngle, 0f), 1f, "같은 쪽(오른쪽 적)을 향한다");
+            Assert.AreEqual(980f, e.Hp, 0.001f, "첫 베기만 맞은 상태");
+
+            yield return new WaitForSeconds(0.5f);
+            Assert.AreEqual(960f, e.Hp, 0.001f, "둘째 베기도 맞음 (두 번 x 20)");
+            Assert.IsFalse(slash.IsSwinging);
+        }
+
+        [UnityTest]
+        public IEnumerator Slash_Combo_DoesNotSwingTheOppositeSide()
+        {
+            yield return null;
+            var front = spawner.SpawnAt(Tough(), new Vector2(1.5f, 0f));
+            var back = spawner.SpawnAt(Tough(), new Vector2(-1.5f, 0f));
+            var data = MakeSlash(cooldown: 5f, swingDuration: 0.2f, count: 2);
+            data.comboSwings = true;
+            wc.AddWeapon(data);
+
+            yield return new WaitForSeconds(0.6f);
+            Assert.AreEqual(960f, front.Hp, 0.001f, "앞의 적은 두 번");
+            Assert.AreEqual(1000f, back.Hp, 0.001f, "뒤의 적은 맞지 않음 (반대편 베기 없음)");
+        }
+
+        // ───────────────────────── 극 (여포 방천화극) ─────────────────────────
+
+        WeaponData MakeHalberd(float cooldown, float swingDuration = 0.2f)
+        {
+            var w = ScriptableObject.CreateInstance<WeaponData>();
+            w.type = WeaponType.Halberd; w.displayName = "방천화극";
+            w.damage = 20f; w.cooldown = cooldown; w.range = 3.4f; w.size = 0.4f; w.count = 1; w.duration = 0.15f;
+            w.knockback = 0f; w.swingDuration = swingDuration;
+            toDestroy.Add(w);
+            return w;
+        }
+
+        [UnityTest]
+        public IEnumerator Halberd_AlternatesThrustAndSweep()
+        {
+            yield return null;
+            var far = spawner.SpawnAt(Tough(), new Vector2(3.0f, 0f));        // 찌르기 직선 위, 휩쓸기 원 안
+            var side = spawner.SpawnAt(Tough(), new Vector2(1.2f, 1.2f));     // 직선 밖(옆), 휩쓸기 원 안
+            var halberd = wc.AddWeapon(MakeHalberd(cooldown: 0.6f)) as HalberdWeapon;
+            Assert.IsNotNull(halberd);
+
+            yield return null;
+            Assert.IsTrue(halberd.IsThrusting, "처음은 찌르기");
+            Assert.IsFalse(halberd.IsSweeping);
+            Assert.IsTrue(halberd.NextIsSweep, "다음은 휩쓸기");
+
+            yield return new WaitForSeconds(0.4f);
+            Assert.AreEqual(980f, far.Hp, 0.001f, "찌르기는 직선 위의 적만");
+            Assert.AreEqual(1000f, side.Hp, 0.001f, "옆의 적은 찌르기에 맞지 않음");
+            Assert.AreSame(WaveSprites.Point(), halberd.TrailRenderer(0).sprite, "찌르기 검기는 뾰족");
+
+            yield return new WaitForSeconds(0.3f);                                 // 두 번째 공격(0.6초) 시작 뒤
+            Assert.IsTrue(halberd.IsSweeping, "두 번째는 휩쓸기");
+            Assert.IsFalse(halberd.NextIsSweep);
+
+            yield return new WaitForSeconds(0.4f);
+            Assert.AreEqual(980f, side.Hp, 0.001f, "휩쓸기는 옆의 적도");
+            Assert.AreEqual(960f, far.Hp, 0.001f, "앞의 적은 휩쓸기에도");
+            Assert.AreSame(WaveSprites.Arc(), halberd.TrailRenderer(0).sprite, "휩쓸기 검기는 반원");
+        }
+
+        [UnityTest]
+        public IEnumerator Halberd_HeldSprite_LungesWhenThrusting_AndTurnsWhenSweeping()
+        {
+            yield return null;
+            spawner.SpawnAt(Tough(), new Vector2(2f, 0f));
+            var data = MakeHalberd(cooldown: 0.6f, swingDuration: 0.5f);
+            data.heldSprite = MakeSprite();
+            var halberd = wc.AddWeapon(data) as HalberdWeapon;
+
+            yield return null;
+            var held = halberd.HeldRenderer(0);
+            Assert.IsTrue(held.enabled);
+            float x0 = held.transform.position.x;
+            float rot0 = held.transform.rotation.eulerAngles.z;
+            yield return new WaitForSeconds(0.5f * ThrustMotion.LungeEnd - 0.05f);
+            Assert.Greater(held.transform.position.x, x0 + 0.4f, "찌를 때는 앞으로 나간다");
+            Assert.AreEqual(0f, Mathf.DeltaAngle(held.transform.rotation.eulerAngles.z, rot0), 1f, "찌를 때는 돌지 않는다");
+
+            yield return new WaitForSeconds(0.6f - (0.5f * ThrustMotion.LungeEnd - 0.05f) + 0.02f); // 휩쓸기 시작 직후
+            Assert.IsTrue(halberd.IsSweeping);
+            float rotA = held.transform.rotation.eulerAngles.z;
+            yield return new WaitForSeconds(0.3f);
+            Assert.Greater(Mathf.Abs(Mathf.DeltaAngle(held.transform.rotation.eulerAngles.z, rotA)), 60f, "휩쓸 때는 크게 돈다");
+            Assert.AreEqual(0f, held.transform.position.x - halberd.transform.position.x, 0.01f, "휩쓸 때는 손 축에 머문다");
+        }
+
+        [UnityTest]
+        public IEnumerator Halberd_WaitsWithoutATarget_AndLooksAtTheTarget()
+        {
+            yield return null;
+            var looker = playerGo.AddComponent<FakeLook>();
+            var halberd = wc.AddWeapon(MakeHalberd(cooldown: 0.3f)) as HalberdWeapon;
+
+            yield return new WaitForSeconds(0.5f);
+            Assert.IsFalse(halberd.IsThrusting || halberd.IsSweeping, "적이 없으면 기다린다");
+            Assert.AreEqual(0, looker.Calls);
+
+            spawner.SpawnAt(Tough(), new Vector2(0f, -2f));
+            yield return null;
+            yield return null;
+            Assert.IsTrue(halberd.IsThrusting, "들어오면 바로");
+            Assert.AreEqual(1, looker.Calls);
+            Assert.Less(looker.Direction.y, -0.9f, "아래의 적 쪽");
+        }
+
+        [Test]
+        public void Assets_YitianSword_IsAComboSlash_WithAFlyingTrail()
+        {
+            var w = AssetDatabase.LoadAssetAtPath<WeaponData>("Assets/ScriptableObjects/Weapons/Weapon_YitianSword.asset");
+            Assert.IsNotNull(w, "의천검 에셋이 없습니다. Step 8 을 먼저 실행하세요.");
+            Assert.AreEqual(WeaponType.Slash, w.type, "의천검은 베기형 (Step 10-9 를 다시 실행하세요)");
+            Assert.IsTrue(w.comboSwings, "의천검은 연속 베기");
+            Assert.GreaterOrEqual(w.count, 2, "한 공격에 두 번 이상");
+            Assert.Greater(w.trailTravel, 3f, "검기가 멀리 날아간다");
+            Assert.Greater(w.trailDamageRatio, 0f);
+
+            var evo = AssetDatabase.LoadAssetAtPath<WeaponData>("Assets/ScriptableObjects/Weapons/Weapon_Evo_OverlordSword.asset");
+            if (evo != null)
+            {
+                Assert.AreEqual(WeaponType.Slash, evo.type, "패왕의천검도 연속 베기 (Step 10-9)");
+                Assert.IsTrue(evo.comboSwings);
+            }
+        }
+
+        [Test]
+        public void Assets_SkyPiercer_IsAHalberd()
+        {
+            var w = AssetDatabase.LoadAssetAtPath<WeaponData>("Assets/ScriptableObjects/Weapons/Weapon_SkyPiercer.asset");
+            Assert.IsNotNull(w, "방천화극 에셋이 없습니다. Step 8 을 먼저 실행하세요.");
+            Assert.AreEqual(WeaponType.Halberd, w.type, "방천화극은 극 (Step 10-9 를 다시 실행하세요)");
+            Assert.Greater(w.knockback, 0f, "휩쓸기는 적을 밀어낸다");
+
+            var evo = AssetDatabase.LoadAssetAtPath<WeaponData>("Assets/ScriptableObjects/Weapons/Weapon_Evo_PeerlessHalberd.asset");
+            if (evo != null) Assert.AreEqual(WeaponType.Halberd, evo.type, "천하무쌍극도 극 (Step 10-9)");
         }
 
         [Test]

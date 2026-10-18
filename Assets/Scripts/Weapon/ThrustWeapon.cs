@@ -27,7 +27,6 @@ namespace Samkuk.Weapons
         public const float LookHoldSeconds = SlashWeapon.LookHoldSeconds;
 
         readonly Enemy[] nearest = new Enemy[1];
-        readonly List<Enemy> hits = new List<Enemy>(64);
         readonly ThrustMotion[] thrusts = new ThrustMotion[MaxThrusts];
         readonly SpriteRenderer[] held = new SpriteRenderer[MaxThrusts];
         readonly WeaponTrail[] trails = new WeaponTrail[MaxThrusts];
@@ -127,24 +126,7 @@ namespace Samkuk.Weapons
             Vector2 dir = DirectionOf(angleDegrees);
             float length = Data.range;
             float halfWidth = Data.size;
-
-            hits.Clear();
-            Enemies.OverlapCircle(origin + dir * (length * 0.5f), length * 0.5f + halfWidth, hits);
-
-            float dmg = Damage;
-            for (int i = 0; i < hits.Count; i++)
-            {
-                Enemy e = hits[i];
-                Vector2 rel = e.Position - origin;
-                float along = Vector2.Dot(rel, dir);
-                float side = Mathf.Abs(rel.x * dir.y - rel.y * dir.x);
-
-                if (along < -e.Radius || along > length + e.Radius) continue;
-                if (side > halfWidth + e.Radius) continue;
-
-                e.TakeDamage(dmg);
-                Knock(e, origin);
-            }
+            StrikeLine(origin, dir, length, halfWidth, Damage);
 
             // 검기: 창 끝(사거리 끝) 손 높이에서 뾰족한 띠가 앞으로 날아간다
             float scale = Data.trailScale > 0f ? Data.trailScale : 1f;

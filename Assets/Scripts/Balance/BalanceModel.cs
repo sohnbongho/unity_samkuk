@@ -33,6 +33,8 @@ namespace Samkuk.Balance
         const float RainTargets = 1.2f;
         const float NovaTargets = 6f;
         const float OrbitContactRatio = 0.5f;
+        /// <summary>극(방천화극): 찌르기와 휩쓸기를 번갈아 하므로 둘의 평균.</summary>
+        const float HalberdTargets = (SlashTargets + ThrustTargets) * 0.5f;
 
         // 빌드 가정: 레벨업 선택의 60%는 무기(앞의 둘은 새 무기), 40%는 패시브. 패시브 한 번은 평균 공격력 +4%, 쿨다운 -2%.
         const float WeaponPickRatio = 0.6f;
@@ -149,6 +151,7 @@ namespace Samkuk.Balance
                 case WeaponType.Lightning: return damage * count * LightningTargets / cooldown;
                 case WeaponType.Rain: return damage * count * RainTargets / cooldown;
                 case WeaponType.Nova: return damage * NovaTargets / cooldown;
+                case WeaponType.Halberd: return damage * count * HalberdTargets / cooldown;
                 default: return 0f;
             }
         }
