@@ -26,6 +26,7 @@ namespace Samkuk.Meta
         public float bestSeconds;
         public int bestKills;
         public string lastHero;
+        public string lastUserId;   // 로그인 창에 미리 채울 아이디 (비밀번호는 저장하지 않는다)
 
         // 설정
         public float sfxVolume = 0.7f;

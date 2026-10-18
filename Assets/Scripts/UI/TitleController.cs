@@ -115,6 +115,7 @@ namespace Samkuk.UI
             RefreshDisplayLabels();
             RefreshLightingLabel();
             CreateVersionLabel();
+            LoginPanel.Attach(this); // 서버 로그인 창 (접속 중이거나 오프라인을 골랐으면 안 뜸)
         }
 
         void OnDestroy()
