@@ -7,7 +7,7 @@ namespace Samkuk.Player
     /// <summary>플레이어 체력, 피격 후 무적 시간(깜빡임), 재생, 사망 처리.</summary>
     public class PlayerHealth : MonoBehaviour, IDamageable
     {
-        const float RegenTickSeconds = 0.5f;
+        public const float RegenTickSeconds = 0.5f;
 
         [SerializeField] float maxHp = 100f;
         [SerializeField, Tooltip("피격 후 무적 시간(초)")] float invulnerableTime = 0.5f;

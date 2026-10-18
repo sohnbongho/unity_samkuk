@@ -16,10 +16,11 @@ namespace Samkuk.Enemies
         const float FlashDuration = 0.1f;
         const float FlashScalePunch = 0.25f;
         static readonly Color StunTint = new Color(0.6f, 0.8f, 1f);
-        const float ShotWarningSeconds = 0.4f;
+        /// <summary>사격 예고(노란 깜빡임) 시간. 서버 시뮬이 같은 값을 쓰도록 공개(ServerDataExporter).</summary>
+        public const float ShotWarningSeconds = 0.4f;
         static readonly Color ShotWarningTint = new Color(1f, 1f, 0.45f);
-        const float KnockbackDecay = 8f;
-        const float MaxKnockbackSpeed = 14f;
+        public const float KnockbackDecay = 8f;
+        public const float MaxKnockbackSpeed = 14f;
 
         enum Phase { Chase, Windup, Charge }
 

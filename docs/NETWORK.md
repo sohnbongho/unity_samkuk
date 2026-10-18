@@ -46,8 +46,24 @@
 3. 유니티 콘솔: `Google.Protobuf.dll` 임포트 뒤 "System.Runtime.CompilerServices.Unsafe 를 찾을 수 없음" 류의 오류가 나면 NuGet 캐시(`%USERPROFILE%\.nuget\packages\system.runtime.compilerservices.unsafe\6.0.0\lib\netstandard2.0\`)의 DLL 을 `Assets/Plugins/Protobuf/` 에 추가한다(Unity 의 .NET Standard 2.1 프로필이 System.Memory/System.Buffers 는 이미 제공하므로 그 둘은 넣지 않는다).
 4. Test Runner: `NetLoginTests`(프레임, 해시, 흐름, NetClient, 로그인 창).
 
+## 서버 데이터 내보내기 (Step 15-2)
+
+협동 모드(2~4인)는 **서버가 전투 전체를 시뮬레이션**하고 유니티는 렌더러+입력 장치가 된다(설계: `csharpServer/Docs/coop-design.md`).
+그래서 서버도 같은 게임 데이터가 필요한데, **원본은 유니티 에셋**이고 서버는 유니티가 내보낸 JSON 을 읽는다.
+
+- 메뉴 **`Samkuk > Export Server Data`**(`ServerDataExporter`) → `D:\01-AgentLegion\csharpServer\GameServer\Data\` 에
+  `enemies.json`, `weapons.json`, `passives.json`, `evolutions.json`, `skills.json`, `heroes.json`, `stages.json`, `upgrade_catalog.json`, `balance.json`, `export_info.json`.
+- 규칙: id 는 **에셋 파일명**(`Enemy_Soldier`, `Weapon_Bow`...), 참조도 파일명, 열거형은 이름 문자열(`"Archer"`, `"Slash"`), 키는 camelCase, 들여쓰기 2칸, 실수는 소수 5자리.
+  색/스프라이트/시트 같은 표시용 값은 빼고, 참조가 빈 진화는 건너뛴다.
+- `balance.json` 은 전투 씬(`GameSystems` 의 EnemyManager/EnemySpawner/ExpGemManager/LevelUpController, Player 의 PlayerHealth/PlayerController)에
+  **직렬화된 현재 값**을 `SerializedObject` 로 읽는다. 전투 씬이 열려 있지 않으면 추가 모드로 잠깐 열었다가 저장 없이 닫는다(작업 중 씬 무관).
+  코드 상수(`PlayerController.BodyRadius`, `PlayerExperience.BaseRequired/RequiredStep`, `UpgradeGenerator.HealRatio`, `Enemy.KnockbackDecay/MaxKnockbackSpeed/ShotWarningSeconds`, `PlayerHealth.RegenTickSeconds`)도 함께 적는다.
+  스폰 링 반지름은 오프라인이 실제 창 비율로 계산하지만 서버는 고정값이 필요하므로 **도트 화면 기본 반높이 5.625 × 16:9** 로 계산한다(`cameraHalfHeight/cameraAspect/spawnMargin` 도 같이 적음).
+  적의 실제 충돌 반지름은 `colliderRadius × scale` 이라 `radius` 로 한 번 더 적는다(`Enemy.Radius` 와 같은 식).
+- 값을 바꿀 땐 에셋/씬을 고치고 **다시 내보낸다**(JSON 은 손으로 고치지 않는다). 서버 데이터 로더는 csharpServer 쪽.
+
 ## 다음 단계 후보
 
+- 협동 모드(Step 15-3~): 방 UI(만들기/코드 참가/준비/장수 선택/시작) → 전투 씬을 스냅샷 렌더러로. proto 는 `coop-design.md` 3절 기준으로 확정 중.
 - 로그인 응답에 닉네임, 게임 접속 응답에 저장 데이터(서버 저장) — proto 추가는 서버 쪽에 요청.
-- 전투 결과 보고(`GameOverReport`: 이미 proto 에 있음), 이동 동기화(`MoveRequest`).
 - 서버 주소를 설정 파일/타이틀 UI 로.
