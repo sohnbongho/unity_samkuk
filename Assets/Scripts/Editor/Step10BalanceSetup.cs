@@ -17,7 +17,7 @@ namespace Samkuk.EditorTools
     {
         const string EvolutionDir = "Assets/ScriptableObjects/Evolutions";
         const string StagePath = "Assets/ScriptableObjects/Stage/Stage_YellowTurban.asset";
-        const string HeroCatalogPath = "Assets/ScriptableObjects/HeroCatalog.asset";
+        const string HeroCatalogPath = "Assets/Resources/HeroCatalog.asset";
         const string UpgradeCatalogPath = "Assets/ScriptableObjects/UpgradeCatalog.asset";
         const string MetaCatalogPath = "Assets/ScriptableObjects/MetaCatalog.asset";
 

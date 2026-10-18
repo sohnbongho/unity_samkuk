@@ -20,48 +20,7 @@ namespace Samkuk.Tests
     /// </summary>
     public class NetLoginTests
     {
-        // ───────────────────────── 가짜 연결 ─────────────────────────
-
-        class FakeLink : INetLink
-        {
-            public string Host; public int Port;
-            public bool IsConnected { get; set; }
-            public bool IsClosed { get; set; }
-            public string Error { get; set; }
-            public bool Disposed;
-            public readonly Queue<MessageWrapper> Inbox = new Queue<MessageWrapper>();
-            public readonly List<MessageWrapper> Sent = new List<MessageWrapper>();
-
-            public bool TryReceive(out MessageWrapper m)
-            {
-                if (Inbox.Count > 0) { m = Inbox.Dequeue(); return true; }
-                m = null; return false;
-            }
-            public bool Send(MessageWrapper m)
-            {
-                if (!IsConnected || IsClosed) return false;
-                Sent.Add(m); return true;
-            }
-            public void Dispose() { Disposed = true; IsClosed = true; }
-
-            public void Hello(int index = 1) => Inbox.Enqueue(new MessageWrapper { ConnectedResponse = new ConnectedResponse { Index = index } });
-            public void LoginOk(string token) => Inbox.Enqueue(new MessageWrapper { LoginResponse = new LoginResponse { Success = true, ErrorCode = 0, AuthToken = token } });
-            public void LoginFail(int code) => Inbox.Enqueue(new MessageWrapper { LoginResponse = new LoginResponse { Success = false, ErrorCode = code } });
-            public void GameOk() => Inbox.Enqueue(new MessageWrapper { GameConnectResponse = new GameConnectResponse { Success = true } });
-            public void GameFail(int code) => Inbox.Enqueue(new MessageWrapper { GameConnectResponse = new GameConnectResponse { Success = false, ErrorCode = code } });
-        }
-
-        class FakeNet
-        {
-            public readonly List<FakeLink> Links = new List<FakeLink>();
-            public bool AutoConnect = true;
-            public INetLink Connect(string host, int port)
-            {
-                var link = new FakeLink { Host = host, Port = port, IsConnected = AutoConnect };
-                Links.Add(link);
-                return link;
-            }
-        }
+        // 가짜 연결(FakeLink)/연결 공장(FakeNet)은 NetFakes.cs (CoopRoomTests 와 공유)
 
         static readonly byte[] Hash = PasswordHash.Client("Test1234!");
 

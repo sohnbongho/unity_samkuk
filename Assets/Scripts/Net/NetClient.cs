@@ -1,4 +1,5 @@
 using System;
+using Messages;
 using UnityEngine;
 
 namespace Samkuk.Net
@@ -23,6 +24,10 @@ namespace Samkuk.Net
 
         /// <summary>단계가 바뀔 때(메인 스레드).</summary>
         public event Action<NetPhase> PhaseChanged;
+        /// <summary>접속 완료 뒤 받은 방/전투 메시지(메인 스레드, 로그인 흐름이 쓰지 않는 것).</summary>
+        public event Action<MessageWrapper> MessageReceived;
+        /// <summary>매 프레임 흐름을 돌린 뒤(unscaledDeltaTime). 협동 흐름의 타임아웃 등이 여기에 얹힌다.</summary>
+        public event Action<float> Ticked;
 
         public LoginFlow Flow => flow;
         public NetPhase Phase => flow != null ? flow.Phase : NetPhase.Offline;
@@ -67,6 +72,7 @@ namespace Samkuk.Net
         {
             flow?.Disconnect();
             flow = new LoginFlow(LinkFactory);
+            flow.Unhandled += m => MessageReceived?.Invoke(m);
             lastPhase = NetPhase.Offline;
             flow.Begin(userId, PasswordHash.Client(password), NetSettings.Host, NetSettings.LoginPort, NetSettings.GamePort);
             Notify();
@@ -78,11 +84,16 @@ namespace Samkuk.Net
             Notify();
         }
 
+        /// <summary>접속 완료 상태에서 메시지를 보낸다. 아니면 false.</summary>
+        public bool Send(MessageWrapper message) => flow != null && flow.Send(message);
+
         void Update()
         {
             if (flow == null) return;
-            flow.Tick(Time.unscaledDeltaTime);
+            float dt = Time.unscaledDeltaTime;
+            flow.Tick(dt);
             Notify();
+            Ticked?.Invoke(dt);
         }
 
         void Notify()

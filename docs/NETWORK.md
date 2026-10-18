@@ -62,8 +62,23 @@
   적의 실제 충돌 반지름은 `colliderRadius × scale` 이라 `radius` 로 한 번 더 적는다(`Enemy.Radius` 와 같은 식).
 - 값을 바꿀 땐 에셋/씬을 고치고 **다시 내보낸다**(JSON 은 손으로 고치지 않는다). 서버 데이터 로더는 csharpServer 쪽.
 
+## 협동 방 (Step 15-3)
+
+협동 모드는 로그인 뒤 **같은 게임 서버 연결(9101)** 로 방을 만들고 친구를 초대한다. 프로토는 확정본(`message.proto` 60~72번: Room*, BattleStartNoti).
+
+- 타이틀 오른쪽 아래 **[협동]** 버튼(`CoopButton`, 씬 로드 때 코드로 붙음, 접속돼 있을 때만 활성) → 방 창 `RoomPanel`(코드 생성, 캔버스 맨 위 덮개).
+- 흐름: 장수 고르기 → [방 만들기](`RoomCreateRequest{hero_id}`) 또는 초대 코드 6자리 + [참가](`RoomJoinRequest`) → 대기방(`RoomStateNoti` 로 구성원 4칸 갱신)
+  → 구성원은 [준비](`RoomReadyRequest`), 방장은 전원 준비되면 [시작](`RoomStartRequest`) → `BattleStartNoti`(전투 씬 연결은 15-4) → `BattleEndNoti` 뒤 같은 방의 대기 상태로.
+- 방장은 준비 없이 시작할 수 있고, 방을 만들면 서버의 스테이지가 비어 있으므로 클라가 `RoomSetStageRequest(CoopSettings.DefaultStageId)` 를 자동으로 보낸다(스테이지 선택 UI 는 아직 없음). 장수를 바꾸면 `RoomSetHeroRequest`.
+- 구조(`Assets/Scripts/Coop/`): `RoomModel`(서버 RoomInfo 를 담는 순수 상태: 내 자리/방장/시작 가능 판정, 오류 코드 문구) → `CoopFlow`(순수 상태 기계 `CoopPhase` None/Creating/Joining/InRoom/Starting/Battle, 요청·응답·타임아웃)
+  → `CoopSession`(정적, NetClient 의 `MessageReceived`/`Ticked`/`PhaseChanged` 에 붙어 Flow 하나를 씬 너머로 유지, 접속이 끊기면 방 상태를 지움) → `RoomPanel`(그리기만).
+- `LoginFlow` 는 접속 완료 뒤 자기 일이 아닌 메시지를 `Unhandled` 로 넘기고 `Send` 는 접속 완료 상태에서만 보낸다. `NetClient` 가 이를 `MessageReceived`/`Send`/`Ticked` 로 공개한다.
+- 장수 목록은 `Resources/HeroCatalog.asset`(`HeroCatalog.Load()`): 타이틀 씬에 참조가 없어 Resources 로 옮겼다(GUID 그대로라 전투 씬의 참조는 유지).
+- 서버 규칙(csharpServer): 방/전투 응답은 룸 스레드가 보내 최대 50 ms 뒤에 온다. 대기방에서는 KeepAlive 가 여전히 필요하고(LoginFlow 가 계속 보냄) 전투 중에는 어떤 메시지든 활동으로 친다. 접속이 끊기면 서버가 그 사람을 방에서 뺀다.
+- 테스트 `CoopRoomTests`(가짜 전송/가짜 연결). 실제 서버로는 혼자서도 확인할 수 있다: 방 만들기 → 코드 표시 → [시작](혼자면 바로 시작 가능) → "전투 시작!".
+
 ## 다음 단계 후보
 
-- 협동 모드(Step 15-3~): 방 UI(만들기/코드 참가/준비/장수 선택/시작) → 전투 씬을 스냅샷 렌더러로. proto 는 `coop-design.md` 3절 기준으로 확정 중.
+- 15-4 전투 씬을 스냅샷 렌더러로(`BattleInputRequest` 20 Hz, `BattleSnapshotNoti` 10 Hz 보간, 이벤트 → 연출, 서버 선택지 레벨업, `BattleEndNoti` 결과).
 - 로그인 응답에 닉네임, 게임 접속 응답에 저장 데이터(서버 저장) — proto 추가는 서버 쪽에 요청.
 - 서버 주소를 설정 파일/타이틀 UI 로.

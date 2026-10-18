@@ -21,7 +21,7 @@ namespace Samkuk.EditorTools
         const string WeaponDir = "Assets/ScriptableObjects/Weapons";
         const string SkillDir = "Assets/ScriptableObjects/Skills";
         const string HeroDir = "Assets/ScriptableObjects/Heroes";
-        const string CatalogPath = "Assets/ScriptableObjects/HeroCatalog.asset";
+        const string CatalogPath = "Assets/Resources/HeroCatalog.asset"; // 타이틀(협동 방)에서 Resources.Load 로 읽으므로 Resources 에
 
         static readonly string[] HeroNames =
             { "Hero_LiuBei", "Hero_GuanYu", "Hero_ZhangFei", "Hero_CaoCao", "Hero_LvBu" };
@@ -31,6 +31,7 @@ namespace Samkuk.EditorTools
         {
             Directory.CreateDirectory(SkillDir);
             Directory.CreateDirectory(HeroDir);
+            Directory.CreateDirectory("Assets/Resources");
             AssetDatabase.Refresh();
 
             CreateSkills();

@@ -40,6 +40,9 @@ namespace Samkuk.Net
         public float KeepAliveInterval = NetSettings.KeepAliveInterval;
         public float Timeout = NetSettings.ResponseTimeout;
 
+        /// <summary>접속 완료 뒤 로그인 흐름이 쓰지 않는 메시지(방/전투)가 오면 알린다. KeepAliveNoti 도 여기로 온다.</summary>
+        public event Action<MessageWrapper> Unhandled;
+
         public bool IsOnline => Phase == NetPhase.Online;
         public bool IsBusy => Phase == NetPhase.ConnectingLogin || Phase == NetPhase.LoggingIn
                            || Phase == NetPhase.ConnectingGame || Phase == NetPhase.Authenticating;
@@ -61,6 +64,12 @@ namespace Samkuk.Net
             KeepAlivesSent = 0;
             Enter(NetPhase.ConnectingLogin, "로그인 서버에 연결하는 중...");
             link = Open(host, loginPort);
+        }
+
+        /// <summary>접속 완료 상태에서만 보낸다. 아니면 false.</summary>
+        public bool Send(MessageWrapper message)
+        {
+            return Phase == NetPhase.Online && link != null && message != null && link.Send(message);
         }
 
         /// <summary>연결을 끊고 오프라인으로. 실패 상태도 지운다.</summary>
@@ -151,7 +160,10 @@ namespace Samkuk.Net
                     Fail($"서버 오류 (코드 {message.ErrorResponse.ErrorCode})", message.ErrorResponse.ErrorCode);
                     break;
 
-                // KeepAliveNoti 등 나머지는 지금 단계에서는 쓰지 않는다
+                default:
+                    // 방/전투 메시지는 로그인 흐름의 일이 아니다: 접속 완료 뒤라면 밖(CoopSession 등)으로 넘긴다
+                    if (Phase == NetPhase.Online) Unhandled?.Invoke(message);
+                    break;
             }
         }
 
