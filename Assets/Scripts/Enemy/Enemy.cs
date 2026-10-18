@@ -16,6 +16,7 @@ namespace Samkuk.Enemies
         const float FlashDuration = 0.1f;
         const float FlashScalePunch = 0.25f;
         static readonly Color StunTint = new Color(0.6f, 0.8f, 1f);
+        static readonly Color WindupTint = new Color(1f, 0.3f, 0.3f);
         /// <summary>사격 예고(노란 깜빡임) 시간. 서버 시뮬이 같은 값을 쓰도록 공개(ServerDataExporter).</summary>
         public const float ShotWarningSeconds = 0.4f;
         static readonly Color ShotWarningTint = new Color(1f, 1f, 0.45f);
@@ -260,7 +261,7 @@ namespace Samkuk.Enemies
                         phase = Phase.Windup;
                         phaseTimer = Data.chargeWindup;
                         chargeDir = dirToPlayer;
-                        sr.color = new Color(1f, 0.3f, 0.3f);
+                        sr.color = WindupTint;
                         return true; // 예고 시작 틱부터 멈춘다
                     }
                     return false;
@@ -318,5 +319,35 @@ namespace Samkuk.Enemies
 
         /// <summary>풀로 반환한다.</summary>
         public void Despawn() => DespawnHandler?.Invoke(this);
+
+        // ───────────── 협동(꼭두각시) 모드: 서버 상태를 겉모습에만 반영한다 (판정/이동 없음, CoopBattleDriver) ─────────────
+
+        /// <summary>서버 플래그에 맞는 색: 기절 / 돌진 예고 / 사격 예고 / 평소.</summary>
+        public void ShowPuppetFlags(bool stunned, bool windingUp, bool shotWarning)
+        {
+            if (flashTimer > 0f) return; // 피격 깜빡임 중에는 건드리지 않는다
+            var c = stunned ? StunTint : windingUp ? WindupTint : shotWarning ? ShotWarningTint : BaseColor;
+            if (sr.color != c) sr.color = c;
+        }
+
+        /// <summary>서버 Damage 이벤트: 데미지 숫자/불꽃/소리는 <see cref="Damaged"/> 구독자가, 여기서는 체력 비율과 깜빡임만. hpRatio 0 이면 죽는 타격.</summary>
+        public void ShowHit(float amount, float hpRatio)
+        {
+            if (!Alive || Data == null) return;
+            Hp = hpRatio <= 0f ? 0f : Mathf.Max(1f, Data.maxHp * hpRatio);
+            Damaged?.Invoke(this, amount);
+            if (Hp <= 0f) return;
+            flashTimer = FlashDuration;
+            enabled = true;
+        }
+
+        /// <summary>서버 EnemyDespawn(사망): 사망 연출(<see cref="Died"/> 구독자: 입자/흔들림/소리)만 내고 풀 반환은 호출자가 한다.</summary>
+        public void ShowDeath()
+        {
+            if (!Alive) return;
+            Hp = 0f;
+            Alive = false;
+            Died?.Invoke(this);
+        }
     }
 }

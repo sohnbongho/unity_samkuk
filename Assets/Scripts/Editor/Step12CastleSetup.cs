@@ -18,7 +18,7 @@ namespace Samkuk.EditorTools
     {
         public const string BackgroundDir = "Assets/Sprites/Castles";
         const string CastleDir = "Assets/ScriptableObjects/Castles";
-        const string CatalogPath = "Assets/ScriptableObjects/CastleCatalog.asset";
+        const string CatalogPath = "Assets/Resources/CastleCatalog.asset"; // 타이틀/전투에서 Resources.Load 로 읽는다
         const string TablePath = "tools/castle_art/castles.json";
 
         [Serializable]
@@ -49,6 +49,7 @@ namespace Samkuk.EditorTools
             var table = JsonUtility.FromJson<Table>(File.ReadAllText(tableFile, Encoding.UTF8));
 
             Directory.CreateDirectory(CastleDir);
+            Directory.CreateDirectory("Assets/Resources");
             AssetDatabase.Refresh(); // 새로 생긴 배경 PNG 를 스프라이트로 가져온 뒤에 연결한다
 
             var catalog = AssetDatabase.LoadAssetAtPath<CastleCatalog>(CatalogPath);

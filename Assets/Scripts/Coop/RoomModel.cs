@@ -11,6 +11,8 @@ namespace Samkuk.Coop
         public string DisplayName;
         public string HeroId;
         public bool Ready;
+        /// <summary>현재 판에 참여 중 (전투 중에 들어온 사람은 false: 다음 판부터).</summary>
+        public bool InBattle;
     }
 
     /// <summary>
@@ -24,6 +26,10 @@ namespace Samkuk.Coop
         public int HostSlot { get; private set; } = -1;
         public string StageId { get; private set; } = "";
         public string CastleId { get; private set; } = "";
+        /// <summary>맵 위치(성) id. 같은 월드로 들어온 사람끼리 한 방.</summary>
+        public string WorldId { get; private set; } = "";
+        /// <summary>이 방이 전투 진행 중인가 (뒤늦게 들어온 사람은 대기).</summary>
+        public bool InBattle { get; private set; }
         public readonly List<RoomMemberInfo> Members = new List<RoomMemberInfo>();
 
         public RoomModel(string myUserId)
@@ -46,6 +52,7 @@ namespace Samkuk.Coop
 
         public bool IsHost => InRoom && MySlot >= 0 && MySlot == HostSlot;
         public bool MyReady => TryGetMe(out var me) && me.Ready;
+        public bool MyInBattle => TryGetMe(out var me) && me.InBattle;
         public string MyHeroId => TryGetMe(out var me) ? me.HeroId : "";
 
         public bool TryGetMe(out RoomMemberInfo me)
@@ -83,6 +90,7 @@ namespace Samkuk.Coop
             get
             {
                 if (!InRoom) return "방에 있지 않습니다";
+                if (InBattle) return "전투가 진행 중입니다";
                 if (!IsHost) return "방장만 시작할 수 있습니다";
                 if (!OthersReady) return "아직 준비하지 않은 사람이 있습니다";
                 if (StageId.Length == 0) return "스테이지가 정해지지 않았습니다";
@@ -98,12 +106,14 @@ namespace Samkuk.Coop
             HostSlot = info.HostSlot;
             StageId = info.StageId ?? "";
             CastleId = info.CastleId ?? "";
+            WorldId = info.WorldId ?? "";
+            InBattle = info.InBattle;
             Members.Clear();
             foreach (var m in info.Members)
             {
                 Members.Add(new RoomMemberInfo
                 {
-                    Slot = m.Slot, UserId = m.UserId ?? "", DisplayName = m.DisplayName ?? "", HeroId = m.HeroId ?? "", Ready = m.Ready,
+                    Slot = m.Slot, UserId = m.UserId ?? "", DisplayName = m.DisplayName ?? "", HeroId = m.HeroId ?? "", Ready = m.Ready, InBattle = m.InBattle,
                 });
             }
             Members.Sort((a, b) => a.Slot.CompareTo(b.Slot));
@@ -115,6 +125,8 @@ namespace Samkuk.Coop
             HostSlot = -1;
             StageId = "";
             CastleId = "";
+            WorldId = "";
+            InBattle = false;
             Members.Clear();
         }
 
@@ -139,6 +151,19 @@ namespace Samkuk.Coop
                 case 2: return "서버 오류로 방을 만들지 못했습니다";
                 case 3: return "서버가 모르는 장수입니다 (서버 데이터를 다시 내보내세요)";
                 default: return $"방을 만들지 못했습니다 (코드 {code})";
+            }
+        }
+
+        /// <summary>RoomEnterResponse.error_code: 2 정원, 4 이미 방에 있음, 5 장수 없음, 6 서버 오류.</summary>
+        public static string EnterErrorText(int code)
+        {
+            switch (code)
+            {
+                case 2: return "그 성은 가득 찼습니다 (최대 4명). 다른 성으로 들어가세요";
+                case 4: return "이미 방에 들어가 있습니다";
+                case 5: return "서버가 모르는 장수입니다 (서버 데이터를 다시 내보내세요)";
+                case 6: return "서버 오류로 들어가지 못했습니다";
+                default: return $"들어가지 못했습니다 (코드 {code})";
             }
         }
 

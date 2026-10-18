@@ -72,17 +72,45 @@ namespace Samkuk.UI
 
         void OnWaveChanged(int waveNumber)
         {
-            if (waveLabel == null || stage == null) return;
-            waveLabel.text = waveNumber > 0 ? $"웨이브 {waveNumber}  {stage.WaveName}" : "";
+            if (stage == null) return;
+            SetWave(waveNumber, stage.WaveName);
         }
 
-        void OnEvent(StageEvent ev)
+        // ───────────── 협동 전투(서버 값)용: StageController 없이 밖에서 넣는다 ─────────────
+
+        public void SetTimerSeconds(int seconds)
         {
-            if (bannerLabel == null || string.IsNullOrEmpty(ev.message)) return;
-            bannerLabel.text = ev.message;
-            bannerLabel.gameObject.SetActive(true);
-            bannerTimer = BannerSeconds;
+            if (timerLabel != null) timerLabel.text = $"{seconds / 60:00}:{seconds % 60:00}";
         }
+
+        public void SetWave(int waveNumber, string waveName)
+        {
+            if (waveLabel != null) waveLabel.text = waveNumber > 0 ? $"웨이브 {waveNumber}  {waveName}" : "";
+        }
+
+        /// <summary>배너 문구를 seconds 동안 보여 준다 (0 이하면 기본 3초).</summary>
+        public void ShowBanner(string message, float seconds = 0f)
+        {
+            if (bannerLabel == null || string.IsNullOrEmpty(message)) return;
+            bannerLabel.text = message;
+            bannerLabel.gameObject.SetActive(true);
+            bannerTimer = seconds > 0f ? seconds : BannerSeconds;
+        }
+
+        public void ShowBoss(string name, float hpRatio)
+        {
+            boss = null; // 서버 값으로만 채운다
+            if (bossName != null) bossName.text = name ?? "";
+            if (bossFill != null) bossFill.localScale = new Vector3(Mathf.Clamp01(hpRatio), 1f, 1f);
+            if (bossBar != null && !bossBar.activeSelf) bossBar.SetActive(true);
+        }
+
+        public void HideBoss()
+        {
+            if (bossBar != null && bossBar.activeSelf) bossBar.SetActive(false);
+        }
+
+        void OnEvent(StageEvent ev) => ShowBanner(ev.message);
 
         void OnBossSpawned(Enemy e)
         {

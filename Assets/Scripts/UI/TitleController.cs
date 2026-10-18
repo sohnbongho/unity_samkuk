@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Samkuk.Audio;
+using Samkuk.Coop;
 using Samkuk.Core;
 using Samkuk.Data;
 using Samkuk.Meta;
@@ -116,6 +117,8 @@ namespace Samkuk.UI
             RefreshLightingLabel();
             CreateVersionLabel();
             LoginPanel.Attach(this); // 서버 로그인 창 (접속 중이거나 오프라인을 골랐으면 안 뜸)
+            CoopButton.Attach(transform); // [협동] 버튼 (씬 시작 훅은 처음 실행에만 돌므로 전투에서 돌아올 때를 위해 여기서도)
+            if (CoopSession.Flow != null && CoopSession.Flow.InRoom) RoomPanel.Open(transform); // 협동 전투에서 돌아오면 같은 방의 대기 화면으로
         }
 
         void OnDestroy()

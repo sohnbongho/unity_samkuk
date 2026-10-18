@@ -341,30 +341,86 @@ namespace Samkuk.Tests
 
         // ───────────────────────── RoomPanel ─────────────────────────
 
+        [Test]
+        public void CoopFlow_Enter_WorldRoom_HostSetsStageAndCastle_OrWaitsForNextRound()
+        {
+            var rec = new Recorder();
+            var flow = new CoopFlow(rec.Send, "me");
+            Assert.IsFalse(flow.Enter("", "Hero_LiuBei"));
+            Assert.AreEqual("들어갈 성을 고르세요", flow.Message);
+
+            Assert.IsTrue(flow.Enter("Castle_Luoyang", "Hero_LiuBei"));
+            Assert.AreEqual(CoopPhase.Joining, flow.Phase);
+            Assert.AreEqual(MessageWrapper.PayloadOneofCase.RoomEnterRequest, rec.Last.PayloadCase);
+            Assert.AreEqual("Castle_Luoyang", rec.Last.RoomEnterRequest.WorldId);
+
+            // 첫 입장자 = 방장. 서버가 스테이지 기본값을 넣어 주고 castle_id 는 비어 있다 → 방장이 월드를 배경 성으로 정해 둔다
+            var room = Room("ABC123", 0, "Stage_YellowTurban", ("me", 0, "Hero_LiuBei", false));
+            room.WorldId = "Castle_Luoyang";
+            flow.Handle(new MessageWrapper { RoomEnterResponse = new RoomEnterResponse { Success = true, Room = room } });
+            Assert.AreEqual(CoopPhase.InRoom, flow.Phase);
+            Assert.IsTrue(flow.Room.IsHost);
+            Assert.AreEqual("Castle_Luoyang", flow.Room.WorldId);
+            Assert.AreEqual(MessageWrapper.PayloadOneofCase.RoomSetStageRequest, rec.Last.PayloadCase);
+            Assert.AreEqual("Stage_YellowTurban", rec.Last.RoomSetStageRequest.StageId);
+            Assert.AreEqual("Castle_Luoyang", rec.Last.RoomSetStageRequest.CastleId);
+            int sent = rec.Sent.Count;
+            room.CastleId = "Castle_Luoyang";
+            flow.Handle(State(room));
+            Assert.AreEqual(sent, rec.Sent.Count, "이미 맞으면 다시 보내지 않는다");
+
+            // 거절
+            flow.Leave();
+            flow.Enter("Castle_Luoyang", "Hero_LiuBei");
+            flow.Handle(new MessageWrapper { RoomEnterResponse = new RoomEnterResponse { Success = false, ErrorCode = 2 } });
+            Assert.AreEqual(CoopPhase.None, flow.Phase);
+            StringAssert.Contains("가득", flow.Message);
+
+            // 전투 중인 월드: 대기 멤버로 들어간다
+            flow.Enter("Castle_Luoyang", "Hero_LiuBei");
+            var busyRoom = Room("ABC123", 0, "Stage_YellowTurban", ("host", 0, "Hero_GuanYu", false), ("me", 1, "Hero_LiuBei", false));
+            busyRoom.InBattle = true;
+            busyRoom.Members[0].InBattle = true;
+            flow.Handle(new MessageWrapper { RoomEnterResponse = new RoomEnterResponse { Success = true, Room = busyRoom } });
+            Assert.AreEqual(CoopPhase.InRoom, flow.Phase);
+            Assert.IsTrue(flow.Room.InBattle);
+            Assert.IsFalse(flow.Room.MyInBattle);
+            StringAssert.Contains("다음 판", flow.Message);
+            Assert.IsTrue(flow.Handle(BattleEnd(true)), "대기 중에 받은 전투 종료는 상태를 바꾸지 않는다");
+            Assert.AreEqual(CoopPhase.InRoom, flow.Phase);
+        }
+
         [UnityTest]
         public IEnumerator RoomPanel_SwitchesLobbyAndRoomViews_AndValidatesInput()
         {
             var rec = new Recorder();
             var flow = new CoopFlow(rec.Send, "me");
             var canvas = new GameObject("Canvas", typeof(RectTransform));
+            var loader = RoomPanel.SceneLoader;
+            string loaded = null;
+            RoomPanel.SceneLoader = name => loaded = name;
             try
             {
                 var panel = RoomPanel.Create(canvas.transform, flow);
                 Assert.IsFalse(panel.IsRoomViewVisible);
 
                 panel.SelectHero("Hero_LiuBei"); // 테스트에는 카탈로그가 없을 수 있어 id 로 직접 고른다
-                panel.Code = "ab";
-                panel.JoinRoom();
-                StringAssert.Contains("6자리", panel.Status);
+                panel.WorldId = "";
+                panel.EnterRoom();
+                StringAssert.Contains("성을 고르세요", panel.Status);
                 Assert.AreEqual(0, rec.Sent.Count);
 
-                panel.CreateRoom();
-                Assert.AreEqual(MessageWrapper.PayloadOneofCase.RoomCreateRequest, rec.Last.PayloadCase);
-                Assert.AreEqual("Hero_LiuBei", rec.Last.RoomCreateRequest.HeroId);
-                flow.Handle(CreateOk(Room("ABC123", 0, "Stage_YellowTurban", ("me", 0, "Hero_LiuBei", false), ("friend", 1, "Hero_GuanYu", true))));
+                panel.WorldId = "Castle_Luoyang";
+                panel.EnterRoom();
+                Assert.AreEqual(MessageWrapper.PayloadOneofCase.RoomEnterRequest, rec.Last.PayloadCase);
+                Assert.AreEqual("Hero_LiuBei", rec.Last.RoomEnterRequest.HeroId);
+                var room = Room("ABC123", 0, "Stage_YellowTurban", ("me", 0, "Hero_LiuBei", false), ("friend", 1, "Hero_GuanYu", true));
+                room.WorldId = "Castle_Luoyang";
+                room.CastleId = "Castle_Luoyang";
+                flow.Handle(new MessageWrapper { RoomEnterResponse = new RoomEnterResponse { Success = true, Room = room } });
                 yield return null;
                 Assert.IsTrue(panel.IsRoomViewVisible);
-                StringAssert.Contains("ABC123", panel.Status);
+                StringAssert.Contains("방장", panel.Status);
 
                 panel.SelectHero("Hero_ZhangFei"); // 방 안에서 고르면 서버에 바꿔 달라고 한다
                 Assert.AreEqual(MessageWrapper.PayloadOneofCase.RoomSetHeroRequest, rec.Last.PayloadCase);
@@ -374,6 +430,7 @@ namespace Samkuk.Tests
                 flow.Handle(BattleStart(0));
                 yield return null;
                 Assert.AreEqual(CoopPhase.Battle, flow.Phase);
+                Assert.AreEqual("BattleScene", loaded, "전투 시작 알림이 오면 전투 씬을 연다");
                 panel.Close();
                 yield return null;
                 Assert.IsNotNull(canvas.transform.Find(RoomPanel.RootName), "전투 시작 뒤에는 닫지 않는다");
@@ -386,6 +443,7 @@ namespace Samkuk.Tests
             }
             finally
             {
+                RoomPanel.SceneLoader = loader;
                 Object.Destroy(canvas);
             }
         }

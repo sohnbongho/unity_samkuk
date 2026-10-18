@@ -39,6 +39,10 @@ namespace Samkuk.UI
             if (playerExperience != null) playerExperience.Changed -= OnExpChanged;
         }
 
+        /// <summary>협동 전투: 서버 PlayerState 값을 그대로 (PlayerHealth 이벤트 대신).</summary>
+        public void SetHealth(float current, float max) => OnHealthChanged(current, max);
+        public void SetExp(int level, int current, int toNext) => OnExpChanged(level, current, toNext);
+
         void OnHealthChanged(float current, float max)
         {
             float ratio = max > 0f ? Mathf.Clamp01(current / max) : 0f;

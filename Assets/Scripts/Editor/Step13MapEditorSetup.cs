@@ -17,7 +17,7 @@ namespace Samkuk.EditorTools
     public static class Step13MapEditorSetup
     {
         public const string ScenePath = "Assets/Scenes/MapEditorScene.unity";
-        const string CatalogPath = "Assets/ScriptableObjects/CastleCatalog.asset";
+        const string CatalogPath = "Assets/Resources/CastleCatalog.asset"; // 타이틀/전투에서 Resources.Load 로 읽는다
         const string PlayingKey = "samkuk.mapEditor.playing";
 
         [MenuItem("Samkuk/Step 13 - Map Editor Scene (맵 편집기)")]

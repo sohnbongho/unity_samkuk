@@ -21,7 +21,7 @@ namespace Samkuk.EditorTools
         public const string ScenePath = "Assets/Scenes/StrategyScene.unity";
         public const string MapDir = "Assets/Sprites/Strategy";
         const string MapPath = MapDir + "/StrategyMap.png";
-        const string CatalogPath = "Assets/ScriptableObjects/CastleCatalog.asset";
+        const string CatalogPath = "Assets/Resources/CastleCatalog.asset"; // 타이틀/전투에서 Resources.Load 로 읽는다
 
         [MenuItem("Samkuk/Step 12-2 - Strategy Scene (전략 지도 + 성 화면)")]
         public static void Run()

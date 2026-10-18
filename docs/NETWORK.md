@@ -64,21 +64,45 @@
 
 ## 협동 방 (Step 15-3)
 
-협동 모드는 로그인 뒤 **같은 게임 서버 연결(9101)** 로 방을 만들고 친구를 초대한다. 프로토는 확정본(`message.proto` 60~72번: Room*, BattleStartNoti).
+협동 모드는 로그인 뒤 **같은 게임 서버 연결(9101)** 로 방에 모인다. 프로토는 확정본(`message.proto` 60~72번: Room*, BattleStartNoti).
+**방은 맵 위치(성) 단위의 월드**다: 같은 성으로 들어온 사람끼리 한 방(최대 4명)에 모이고, 그 성의 방이 없으면 서버가 만들며 첫 입장자가 방장이다(사용자 결정: 초대 코드 입력이 불편).
+초대 코드 방식(`RoomCreate/RoomJoin`)은 서버와 `CoopFlow` 에 남아 있지만 UI 는 쓰지 않는다.
 
 - 타이틀 오른쪽 아래 **[협동]** 버튼(`CoopButton`, 씬 로드 때 코드로 붙음, 접속돼 있을 때만 활성) → 방 창 `RoomPanel`(코드 생성, 캔버스 맨 위 덮개).
-- 흐름: 장수 고르기 → [방 만들기](`RoomCreateRequest{hero_id}`) 또는 초대 코드 6자리 + [참가](`RoomJoinRequest`) → 대기방(`RoomStateNoti` 로 구성원 4칸 갱신)
-  → 구성원은 [준비](`RoomReadyRequest`), 방장은 전원 준비되면 [시작](`RoomStartRequest`) → `BattleStartNoti`(전투 씬 연결은 15-4) → `BattleEndNoti` 뒤 같은 방의 대기 상태로.
-- 방장은 준비 없이 시작할 수 있고, 방을 만들면 서버의 스테이지가 비어 있으므로 클라가 `RoomSetStageRequest(CoopSettings.DefaultStageId)` 를 자동으로 보낸다(스테이지 선택 UI 는 아직 없음). 장수를 바꾸면 `RoomSetHeroRequest`.
+- 흐름: 장수 고르기 → 성 고르기([<] [>], 처음은 내정의 내 성) → [입장](`RoomEnterRequest{world_id = 성 에셋 이름, hero_id}`) → 대기방(`RoomStateNoti` 로 구성원 4칸 갱신)
+  → 구성원은 [준비](`RoomReadyRequest`), 방장은 전원 준비되면 [시작](`RoomStartRequest`) → `BattleStartNoti` → 전투 씬(15-4) → `BattleEndNoti` 뒤 같은 방의 대기 상태로.
+- 전투 중인 성에 들어오면 거절되지 않고 **대기 멤버**로 들어간다(`RoomInfo.in_battle`, 그 멤버의 `in_battle=false`): 스냅샷은 받지 않고 `BattleEndNoti` 와 그 뒤의 `RoomStateNoti` 를 받아 다음 판부터 참여. 창에는 "전투 진행 중, 다음 판을 기다리는 중".
+- 방장은 준비 없이 시작할 수 있다. 서버가 방을 만들 때 스테이지 기본값(stages.json 첫 항목)을 넣어 주므로 클라는 비어 있을 때만 `CoopSettings.DefaultStageId` 를 보내고, 전투 배경 성(`castle_id`)은 들어온 월드로 맞춰 둔다(`RoomSetStageRequest{stage_id, castle_id}`, 방장만, 이미 맞으면 안 보냄). 장수를 바꾸면 `RoomSetHeroRequest`.
+- 성 목록은 `Resources/CastleCatalog.asset`(`CastleCatalog.Load()/FindAsset()`): 타이틀에 참조가 없어 Resources 로 옮겼다(GUID 그대로라 내정/맵 편집기 씬의 참조는 유지). 전투 씬은 `BattleStartNoti.castle_id` 로 `GameSession.SortieCastle` 을 정해 오프라인과 같은 성 지형 배경을 쓴다(서버 1차는 개활지라 소품은 장식).
 - 구조(`Assets/Scripts/Coop/`): `RoomModel`(서버 RoomInfo 를 담는 순수 상태: 내 자리/방장/시작 가능 판정, 오류 코드 문구) → `CoopFlow`(순수 상태 기계 `CoopPhase` None/Creating/Joining/InRoom/Starting/Battle, 요청·응답·타임아웃)
   → `CoopSession`(정적, NetClient 의 `MessageReceived`/`Ticked`/`PhaseChanged` 에 붙어 Flow 하나를 씬 너머로 유지, 접속이 끊기면 방 상태를 지움) → `RoomPanel`(그리기만).
 - `LoginFlow` 는 접속 완료 뒤 자기 일이 아닌 메시지를 `Unhandled` 로 넘기고 `Send` 는 접속 완료 상태에서만 보낸다. `NetClient` 가 이를 `MessageReceived`/`Send`/`Ticked` 로 공개한다.
 - 장수 목록은 `Resources/HeroCatalog.asset`(`HeroCatalog.Load()`): 타이틀 씬에 참조가 없어 Resources 로 옮겼다(GUID 그대로라 전투 씬의 참조는 유지).
 - 서버 규칙(csharpServer): 방/전투 응답은 룸 스레드가 보내 최대 50 ms 뒤에 온다. 대기방에서는 KeepAlive 가 여전히 필요하고(LoginFlow 가 계속 보냄) 전투 중에는 어떤 메시지든 활동으로 친다. 접속이 끊기면 서버가 그 사람을 방에서 뺀다.
-- 테스트 `CoopRoomTests`(가짜 전송/가짜 연결). 실제 서버로는 혼자서도 확인할 수 있다: 방 만들기 → 코드 표시 → [시작](혼자면 바로 시작 가능) → "전투 시작!".
+- 테스트 `CoopRoomTests`(가짜 전송/가짜 연결). 실제 서버로는 혼자서도 확인할 수 있다: 성 고르고 [입장] → 방장 → [시작](혼자면 바로 시작 가능) → 전투 씬.
+
+## 협동 전투 (Step 15-4) — 꼭두각시 모드
+
+방에서 `BattleStartNoti` 가 오면 `RoomPanel` 이 전투 씬(`BattleScene`)을 열고, 씬 로드 직후 `CoopBattleDriver` 가 스스로 붙는다(`SceneManager.sceneLoaded`, `CoopSession.InBattle` 일 때만).
+드라이버는 **오프라인 규칙 컴포넌트를 끄고**(HeroSelectController, PlayerController/PlayerAnimator, WeaponController, SkillController, EnemyManager/EnemySpawner/EnemyProjectileSystem,
+ExpGemManager, LevelUpController, StageController, GameManager, PauseController, AllyManager) 서버가 보내는 상태로 같은 프리팹·HUD·연출을 움직인다.
+
+- 입력: WASD/방향키/패드 스틱 + 스페이스(스킬, 1차에선 서버가 무시) → `BattleInputRequest{seq, move, skill}` 를 서버 틱(20 Hz)마다.
+- 스냅샷(10 Hz): `CoopBattleModel`(순수)이 플레이어/적/젬의 **보간 트랙**(`MotionTrack`: 지금 자리에서 새 위치까지 스냅샷 간격 동안 직선 이동, 6유닛 넘게 튀면 즉시)과
+  `StageState` 를 담는다. 분할 조각(players 비어 있음)은 상태를 덮어쓰지 않고 이벤트만. 스냅샷에서 0.5초 빠진 적/끌려가던 젬은 숨긴다(관심 영역 밖).
+- 적: `Enemy` 프리팹 꼭두각시 풀(`EnemyPuppetPool`). `Enemy.Init` 으로 그림만 쓰고 `Teleport`/`TickAnimation`(가장 가까운 산 플레이어 쪽을 봄)/`ShowPuppetFlags`(기절·돌진 예고·사격 예고 색)/
+  `ShowHit`(Damaged 이벤트 → 데미지 숫자·불꽃·소리는 기존 구독자)/`ShowDeath`(Died 이벤트 → 입자·흔들림·소리). 종류는 `EnemySpawn.enemy_id` 로, 못 받았으면 스테이지의 가장 약한 적으로 임시.
+- 플레이어: 내 자리는 씬의 Player 오브젝트(위치를 서버 값으로, 걷기는 `PuppetWalker` 가 서버 facing/이동 플래그로; 내 입력이 있으면 그 방향을 먼저 보여 체감 지연을 줄임),
+  다른 자리는 Player 를 복제해 동작 컴포넌트를 끈 것. 쓰러지면 반투명.
+- 무기: `WeaponFire.motion` 으로 `SwingPuppet` 이 SlashWeapon 과 같은 휘두르기 그림(들고 있는 무기 + 반원 검기, 찌르기는 뾰족 검기), `LoadoutChanged` 로 `OrbitPuppet`(회전 도끼 칼날,
+  각도 = 서버와 같은 식 `경과초 × 회전속도 + i × 360/n`, 필드 없음), 투사체는 `ProjectileSpawn` 의 방향·속도로 외삽(`ProjectilePuppetPool`), `AreaFx` 는 코드로 만든 원판(`CoopSprites.Disc`)을 `WeaponFx.PlayDisc`.
+- HUD: `HudController.SetHealth/SetExp`, `StageHudView.SetTimerSeconds/SetWave/ShowBanner/ShowBoss/HideBoss` (서버 값). 카운트다운 3·2·1, 다른 사람 레벨업 선택 중 "OO 선택 중...".
+- 레벨업: `LevelUpChoiceNoti` → 기존 `LevelUpUI`(`ILevelUpView`)에 `UpgradeOption` 으로 보여 주고 고르면 `UpgradeSelectRequest{choice_id, index}`. 시간이 지나면(서버 자동 선택) 창을 닫는다. 로컬 timeScale 은 건드리지 않는다(서버가 방 전체를 멈춤).
+- 끝: `BattleEndNoti` → `CoopResultPanel`(참가자별 처치/레벨/골드, 서버 계산값; 내 골드는 저장에 더함) → [방으로 돌아가기] → 타이틀로 가면 `TitleController.Start` 가 같은 방의 `RoomPanel` 을 다시 연다. 접속이 끊기면 같은 창에 "연결이 끊겼습니다".
+- 1차에서 없는 것: 지형 충돌(서버가 개활지라 나무를 통과해 보임), 장수 스킬, 아군, 일시정지(ESC 없음), 중간에 나가기, 재접속.
 
 ## 다음 단계 후보
 
-- 15-4 전투 씬을 스냅샷 렌더러로(`BattleInputRequest` 20 Hz, `BattleSnapshotNoti` 10 Hz 보간, 이벤트 → 연출, 서버 선택지 레벨업, `BattleEndNoti` 결과).
+- 협동 2차: 중간 나가기(ESC → 방으로), 장수 스킬·아군·지형 충돌(서버), 재접속, 스테이지/성 선택 UI, 서버 저장(메타 강화 배율).
 - 로그인 응답에 닉네임, 게임 접속 응답에 저장 데이터(서버 저장) — proto 추가는 서버 쪽에 요청.
 - 서버 주소를 설정 파일/타이틀 UI 로.

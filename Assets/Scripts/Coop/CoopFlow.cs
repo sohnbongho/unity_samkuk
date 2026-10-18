@@ -7,15 +7,16 @@ namespace Samkuk.Coop
     public enum CoopPhase
     {
         None,     // 방 없음 (만들거나 참가할 수 있음)
-        Creating, // RoomCreateRequest 보내고 응답 대기
-        Joining,  // RoomJoinRequest 보내고 응답 대기
+        Creating, // RoomCreateRequest 보내고 응답 대기 (초대 코드 방식, UI 는 안 씀)
+        Joining,  // RoomJoinRequest(초대 코드) 또는 RoomEnterRequest(월드) 보내고 응답 대기
         InRoom,   // 대기방: 준비/장수 변경/시작
         Starting, // 방장이 RoomStartRequest 보내고 응답·BattleStartNoti 대기
         Battle,   // BattleStartNoti 를 받음 (전투 씬은 15-4 가 이어받는다)
     }
 
     /// <summary>
-    /// 협동 방 흐름의 순수 상태 기계: 만들기/참가 → 대기방(준비, 장수, 스테이지) → 시작 → 전투 시작 알림 → 전투 끝나면 대기방으로.
+    /// 협동 방 흐름의 순수 상태 기계: 월드(성) 입장(없으면 서버가 만들고 첫 입장자가 방장) → 대기방(준비, 장수, 스테이지) → 시작 → 전투 시작 알림 → 전투 끝나면 대기방으로.
+    /// 초대 코드 방식(Create/Join)도 남아 있지만 UI 는 월드 입장(<see cref="Enter"/>)만 쓴다.
     /// 메시지는 <c>send</c> 로 보내고 받은 것은 <see cref="Handle"/> 로 넣으며 시간은 <see cref="Tick"/> 으로 받으므로 서버 없이 테스트한다.
     /// 방 상태의 원본은 서버(RoomInfo)이고 여기서는 요청을 보낸 뒤 서버가 보내 주는 상태를 그대로 담는다.
     /// </summary>
@@ -67,6 +68,17 @@ namespace Samkuk.Coop
             if (!RoomModel.IsValidCode(code)) { Set(Phase, $"초대 코드는 영문/숫자 {CoopSettings.CodeLength}자리입니다"); return false; }
             if (!Post(new MessageWrapper { RoomJoinRequest = new RoomJoinRequest { RoomCode = code, HeroId = heroId } })) return false;
             Set(CoopPhase.Joining, $"방 {code} 에 참가하는 중...");
+            return true;
+        }
+
+        /// <summary>월드(성)로 들어간다: 그 성의 방이 없으면 서버가 만들고(내가 방장), 있으면 참가. 전투 중이면 대기 멤버로.</summary>
+        public bool Enter(string worldId, string heroId)
+        {
+            if (!CanRequest(CoopPhase.None, "이미 방에 있습니다")) return false;
+            if (string.IsNullOrEmpty(heroId)) { Set(Phase, "장수를 고르세요"); return false; }
+            if (string.IsNullOrEmpty(worldId)) { Set(Phase, "들어갈 성을 고르세요"); return false; }
+            if (!Post(new MessageWrapper { RoomEnterRequest = new RoomEnterRequest { WorldId = worldId, HeroId = heroId } })) return false;
+            Set(CoopPhase.Joining, "들어가는 중...");
             return true;
         }
 
@@ -142,8 +154,18 @@ namespace Samkuk.Coop
                     if (!r.Success) { Set(CoopPhase.None, RoomModel.CreateErrorText(r.ErrorCode)); return true; }
                     Room.Apply(r.Room);
                     Set(CoopPhase.InRoom, $"방을 만들었습니다. 초대 코드 {Room.Code}");
-                    // 서버는 스테이지를 저장만 하므로 방장이 기본 스테이지를 정해 둔다 (스테이지 선택 UI 는 아직 없음)
-                    if (Room.IsHost && Room.StageId.Length == 0 && !string.IsNullOrEmpty(DefaultStageId)) SetStage(DefaultStageId);
+                    EnsureStageAndCastle();
+                    return true;
+                }
+                case MessageWrapper.PayloadOneofCase.RoomEnterResponse:
+                {
+                    var r = message.RoomEnterResponse;
+                    if (Phase != CoopPhase.Joining) return true;
+                    if (!r.Success) { Set(CoopPhase.None, RoomModel.EnterErrorText(r.ErrorCode)); return true; }
+                    Room.Apply(r.Room);
+                    Set(CoopPhase.InRoom, Room.InBattle && !Room.MyInBattle ? "전투가 진행 중입니다. 다음 판부터 함께합니다"
+                        : Room.IsHost ? "첫 입장: 방장입니다. 사람이 모이면 [시작]" : "들어왔습니다");
+                    EnsureStageAndCastle();
                     return true;
                 }
                 case MessageWrapper.PayloadOneofCase.RoomJoinResponse:
@@ -186,6 +208,19 @@ namespace Samkuk.Coop
         }
 
         // ───────────────────────── 내부 ─────────────────────────
+
+        /// <summary>
+        /// 방장이면 스테이지(비어 있을 때만 기본값)와 전투 배경 성(= 들어온 월드)을 서버에 정해 둔다. 서버는 저장만 하고 클라가 전투 배경에 쓴다.
+        /// </summary>
+        void EnsureStageAndCastle()
+        {
+            if (!Room.IsHost) return;
+            string stage = Room.StageId.Length > 0 ? Room.StageId : DefaultStageId;
+            string castle = Room.WorldId.Length > 0 ? Room.WorldId : Room.CastleId;
+            if (string.IsNullOrEmpty(stage)) return;
+            if (Room.StageId == stage && Room.CastleId == castle) return;
+            SetStage(stage, castle);
+        }
 
         bool CanRequest(CoopPhase required, string otherwise)
         {
