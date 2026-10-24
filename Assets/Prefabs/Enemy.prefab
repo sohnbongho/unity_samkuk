@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 8300342080725272609}
   - component: {fileID: 9120155230576251601}
   - component: {fileID: 8702168051303815877}
+  - component: {fileID: 559051821178269823}
   - component: {fileID: 7292686257079920750}
   m_Layer: 9
   m_Name: Enemy
@@ -158,6 +159,22 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 1
   m_BlendShapeWeights: []
+--- !u!114 &559051821178269823
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1293840167947911218}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbc3e5845ec52951ed211a7311e25fe3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.World.StandingSprite
+  footLift: 0.25
+  toward: 0
+  translucent: 0
+  liftHeight: 0
 --- !u!114 &7292686257079920750
 MonoBehaviour:
   m_ObjectHideFlags: 0
