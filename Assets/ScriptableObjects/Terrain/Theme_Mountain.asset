@@ -63,7 +63,7 @@ MonoBehaviour:
     weight: 2
     scaleMin: 0.7
     scaleMax: 1.1
-    standing: 0
+    standing: 1
     blockRadius: 0
     slowRadius: 0
     slowFactor: 1
@@ -90,3 +90,5 @@ MonoBehaviour:
   riverBank: {fileID: 21300000, guid: 260286c7004290847af55e53badd2ee7, type: 3}
   riverWidth: 2.6
   riverSlowFactor: 0.5
+  cliffTexture: {fileID: 0}
+  pathTexture: {fileID: 0}

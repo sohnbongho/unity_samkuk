@@ -175,6 +175,7 @@ MonoBehaviour:
   toward: 0
   translucent: 0
   liftHeight: 0
+  stretchScale: 1
 --- !u!114 &7292686257079920750
 MonoBehaviour:
   m_ObjectHideFlags: 0
