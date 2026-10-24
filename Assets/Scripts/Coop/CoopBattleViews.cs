@@ -235,6 +235,7 @@ namespace Samkuk.Coop
         public SwingPuppet(Transform root, string name)
         {
             held = Make(root, name + "Held", null, 1);
+            Samkuk.World.StandingSprite.Attach(held.gameObject, 0f, Samkuk.World.TiltPreset.HeldToward);   // 2.5D 틸트면 몸과 같은 평면에 세운다
             arc = new WeaponTrail(Make(root, name + "Arc", WaveSprites.Arc(), 0));
             point = new WeaponTrail(Make(root, name + "Point", WaveSprites.Point(), 0));
         }
@@ -298,7 +299,7 @@ namespace Samkuk.Coop
             if (!swing.Active || held.sprite == null) { held.enabled = false; return; }
             held.enabled = true;
             held.flipX = swing.FacesLeft;
-            held.transform.position = ownerPosition + new Vector2(0f, SlashWeapon.HandHeight);
+            held.transform.position = (Vector3)ownerPosition + Samkuk.World.TiltView.Lift(SlashWeapon.HandHeight);
             held.transform.rotation = Quaternion.Euler(0f, 0f, swing.Angle - 90f);
         }
 

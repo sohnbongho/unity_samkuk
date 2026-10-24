@@ -38,6 +38,12 @@ namespace Samkuk.Core
         /// <summary>틸트 시프트(화면 위아래 띠 흐림)를 쓰는가.</summary>
         public static bool TiltShift => TiltShiftOverride ?? SaveSystem.Current.hd2dTiltShift;
 
+        /// <summary>null 이면 저장 설정을 따른다.</summary>
+        public static bool? TiltOverride { get; set; }
+
+        /// <summary>2.5D 틸트 시점(원근 카메라, 서 있는 그림, 3D 그림자·빛)을 쓰는가 (Step 16-1). 실제 적용 여부는 <c>TiltView.Active</c>.</summary>
+        public static bool Tilt => TiltOverride ?? SaveSystem.Current.hd2dTilt;
+
         /// <summary>테스트/디버그가 바꾼 값을 모두 지운다.</summary>
         public static void ResetOverrides()
         {
@@ -46,6 +52,7 @@ namespace Samkuk.Core
             PixelPerfectOverride = null;
             ShadowsOverride = null;
             TiltShiftOverride = null;
+            TiltOverride = null;
         }
     }
 }

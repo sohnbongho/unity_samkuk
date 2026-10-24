@@ -39,7 +39,7 @@ namespace Samkuk.Player
             animator = GetComponent<PlayerAnimator>();
             if (body == null) body = GetComponentInChildren<SpriteRenderer>();
             // HD-2D 월드 정렬: 발 위치로 앞뒤 + 드리운 그림자 (Step 14-4)
-            Samkuk.World.WorldSorting.Configure(body);
+            Samkuk.World.WorldSorting.Configure(body, Samkuk.Core.PixelArt.WalkFootUnits);
             Samkuk.World.CastShadow.Attach(body);
             BuildInput();
         }

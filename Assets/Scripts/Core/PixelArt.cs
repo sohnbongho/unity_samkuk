@@ -21,6 +21,10 @@ namespace Samkuk.Core
         public const int GroundTile = 128;
         /// <summary>지형 소품 그림에서 바닥에 닿는 점이 아래 가장자리에서 떨어진 픽셀 수 (생성기가 이만큼 띄워 그린다).</summary>
         public const int PropFootPixels = 3;
+        /// <summary>걷기 시트의 발(피벗)에서 그림 아래 끝까지(유닛). 2.5D 틸트가 그림을 세울 때 이만큼 올려 아래 끝이 땅에 닿게 한다.</summary>
+        public const float WalkFootUnits = WalkFootPixels / (float)PPU;
+        /// <summary>소품 그림의 바닥 점에서 아래 끝까지(유닛).</summary>
+        public const float PropFootUnits = PropFootPixels / (float)PPU;
         /// <summary>Pixel Perfect Camera 를 끈 상태의 전투 카메라 크기 (Step 1 셋업 값).</summary>
         public const float DefaultOrthographicSize = 6f;
 

@@ -42,7 +42,9 @@ namespace Samkuk.EditorTools
             TiltShiftPreset.Apply(material, 1080);
             EditorUtility.SetDirty(material);
 
-            var feature = EnsureFeature(material, out bool featureCreated);
+            var data = AssetDatabase.LoadAssetAtPath<ScriptableRendererData>(Renderer2DPath);
+            if (data == null) { Debug.LogWarning($"[Samkuk] {Renderer2DPath} 를 찾지 못했습니다."); return; }
+            var feature = EnsureFeature(material, data, out bool featureCreated);
             if (feature == null) return;
             AssetDatabase.SaveAssets();
 
@@ -62,12 +64,11 @@ namespace Samkuk.EditorTools
             Debug.Log($"[Samkuk] Step 14-5 완료: 머티리얼 {(materialCreated ? "생성" : "있음")}, 렌더러 기능 {(featureCreated ? "추가" : "있음")}, 카메라 컴포넌트 {(added ? "추가" : "있음")}");
         }
 
-        /// <summary>Renderer2D.asset 에 "TiltShift" Full Screen Pass 기능이 없으면 넣는다. 돌려주는 값: 기능 (실패하면 null).</summary>
-        static FullScreenPassRendererFeature EnsureFeature(Material material, out bool created)
+        /// <summary>렌더러 에셋(2D 렌더러, 또는 Step 16-1 의 3D 렌더러)에 "TiltShift" Full Screen Pass 기능이 없으면 넣는다. 돌려주는 값: 기능 (실패하면 null).</summary>
+        public static FullScreenPassRendererFeature EnsureFeature(Material material, ScriptableRendererData data, out bool created)
         {
             created = false;
-            var data = AssetDatabase.LoadAssetAtPath<ScriptableRendererData>(Renderer2DPath);
-            if (data == null) { Debug.LogWarning($"[Samkuk] {Renderer2DPath} 를 찾지 못했습니다."); return null; }
+            if (data == null) return null;
 
             FullScreenPassRendererFeature feature = null;
             foreach (var f in data.rendererFeatures)

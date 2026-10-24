@@ -15,22 +15,32 @@ namespace Samkuk.World
     {
         [SerializeField, Tooltip("Renderer2D.asset 안의 Full Screen Pass 렌더러 기능 (셋업이 연결)")] ScriptableRendererFeature feature;
         [SerializeField, Tooltip("틸트 시프트 머티리얼 (셋업이 연결)")] Material material;
+        [SerializeField, Tooltip("3D 렌더러(Renderer3D.asset)의 같은 기능 (셋업 Step 16-1 이 연결). 2.5D 틸트일 때 이쪽을 켠다")] ScriptableRendererFeature tiltFeature;
 
         int appliedHeight = -1;
 
         public ScriptableRendererFeature Feature { get => feature; set => feature = value; }
+        public ScriptableRendererFeature TiltFeature { get => tiltFeature; set => tiltFeature = value; }
         public Material Material { get => material; set => material = value; }
         public bool IsEnabled { get; private set; }
 
+        /// <summary>지금 카메라가 쓰는 렌더러의 기능: 틸트면 3D 렌더러 쪽, 아니면 2D 렌더러 쪽.</summary>
+        public ScriptableRendererFeature Current => TiltView.Active && tiltFeature != null ? tiltFeature : feature;
+
         void Awake() => Apply(Hd2dSettings.TiltShift);
 
-        /// <summary>켜면 렌더러 기능을 살리고 값을 넣는다. 끄면 기능을 꺼 패스가 돌지 않게 한다.</summary>
+        /// <summary>켜면 렌더러 기능을 살리고 값을 넣는다. 끄면 기능을 꺼 패스가 돌지 않게 한다. 쓰지 않는 쪽 렌더러의 기능은 항상 끈다.</summary>
         public void Apply(bool enabled)
         {
             IsEnabled = enabled;
-            if (feature != null && feature.isActive != enabled) feature.SetActive(enabled);
+            var current = Current;
+            var other = ReferenceEquals(current, feature) ? tiltFeature : feature;
+            if (other != null && other.isActive) other.SetActive(false);
+            if (current != null && current.isActive != enabled) current.SetActive(enabled);
             if (enabled) Refresh(Screen.height);
         }
+
+        void OnTiltChanged() => Apply(IsEnabled);
 
         /// <summary>화면 높이에 맞는 값을 머티리얼에 넣는다 (해상도가 바뀌면 다시).</summary>
         public void Refresh(int screenHeight)
@@ -46,13 +56,17 @@ namespace Samkuk.World
 
         void OnDisable()
         {
+            TiltView.Changed -= OnTiltChanged;
             // 다른 씬으로 가면 흐림이 남지 않게 (렌더러 기능은 에셋이라 모든 카메라에 적용된다)
             if (feature != null && feature.isActive) feature.SetActive(false);
+            if (tiltFeature != null && tiltFeature.isActive) tiltFeature.SetActive(false);
         }
 
         void OnEnable()
         {
-            if (IsEnabled && feature != null && !feature.isActive) feature.SetActive(true);
+            TiltView.Changed += OnTiltChanged;
+            var current = Current;
+            if (IsEnabled && current != null && !current.isActive) current.SetActive(true);
         }
     }
 }

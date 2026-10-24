@@ -85,7 +85,7 @@ namespace Samkuk.Enemies
             col = GetComponent<CircleCollider2D>();
             defaultSprite = sr.sprite;
             // HD-2D 월드 정렬: 플레이어·소품과 같은 레이어에서 발 위치로 앞뒤 + 드리운 그림자 (Step 14-4)
-            Samkuk.World.WorldSorting.Configure(sr);
+            Samkuk.World.WorldSorting.Configure(sr, Samkuk.Core.PixelArt.WalkFootUnits);
             Samkuk.World.CastShadow.Attach(sr, Samkuk.World.ShadowPreset.EnemyBlob);
             enabled = false; // Update는 피격 연출 중에만 돈다
         }

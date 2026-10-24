@@ -132,13 +132,17 @@ namespace Samkuk.Enemies
             Vector2 center = manager.Target.position;
             float halfH = cam != null ? cam.orthographicSize : 6f;
             float halfW = halfH * (cam != null ? cam.aspect : 16f / 9f);
-            float radius = Mathf.Sqrt(halfW * halfW + halfH * halfH) + spawnMargin;
+            float radius = ScreenRadius(halfW, halfH) + spawnMargin;
             float angle = UnityEngine.Random.value * Mathf.PI * 2f;
             Vector2 pos = center + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
             // 나무/바위 안에 스폰되지 않게 (안에서 태어나면 밀려 나오느라 한동안 제자리에 머문다)
             var terrain = TerrainCollision.Active;
             return terrain != null ? terrain.PushOut(pos, 0.5f) : pos;
         }
+
+        /// <summary>화면 밖까지의 거리: 2.5D 틸트면 바라보는 점 기준 사다리꼴의 가장 먼 귀퉁이, 아니면 직교 화면 대각선.</summary>
+        float ScreenRadius(float halfW, float halfH) =>
+            TiltView.Active ? TiltView.SpawnRadius(cam != null ? cam.aspect : 16f / 9f) : Mathf.Sqrt(halfW * halfW + halfH * halfH);
 
         void OnEnemyTooFar(Enemy e) => e.Teleport(RandomRingPosition());
 

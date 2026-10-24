@@ -37,6 +37,7 @@ namespace Samkuk.EditorTools
             Step14PixelSetup.Run();     // 도트 규격: Pixel Perfect Camera + 걷기 시트 PPU 이전 (시트 연결 10-6/10-7 뒤)
             Step14WorldSetup.Run();     // 월드 정렬: World 정렬 레이어 + 정렬 축 + 프리팹 (프리팹과 씬이 만들어진 뒤)
             Step14TiltShiftSetup.Run(); // 틸트 시프트: 셰이더 머티리얼 + 렌더러 기능 + 카메라 컴포넌트
+            Step16TiltSetup.Run();      // 2.5D 틸트: 3D 렌더러 에셋 + URP 등록 + 카메라 컴포넌트 (14-5 의 머티리얼 뒤)
             Debug.Log("[Samkuk] 전체 셋업(Step 2-9 + 타이틀) 완료");
         }
     }

@@ -86,8 +86,11 @@ namespace Samkuk.Weapons
         protected static Vector2 DirectionOf(float angleDegrees) =>
             new Vector2(Mathf.Cos(angleDegrees * Mathf.Deg2Rad), Mathf.Sin(angleDegrees * Mathf.Deg2Rad));
 
-        /// <summary>무기 자식으로 숨겨진 이펙트 렌더러(Effect 정렬 레이어)를 만든다. 휘두르는 무기 그림/검기에 쓴다.</summary>
-        protected SpriteRenderer MakeEffectRenderer(string name, Sprite sprite, int sortingOrder)
+        /// <summary>
+        /// 무기 자식으로 숨겨진 이펙트 렌더러(Effect 정렬 레이어)를 만든다. 휘두르는 무기 그림/검기에 쓴다.
+        /// <paramref name="held"/>(손에 든 무기 그림)면 2.5D 틸트에서 몸과 같은 평면에 서는 그림(<see cref="Samkuk.World.StandingSprite"/>)이 된다. 검기는 바닥에 눕힌 채 둔다.
+        /// </summary>
+        protected SpriteRenderer MakeEffectRenderer(string name, Sprite sprite, int sortingOrder, bool held = false)
         {
             var go = new GameObject(name);
             go.transform.SetParent(transform, false);
@@ -96,6 +99,7 @@ namespace Samkuk.Weapons
             sr.sortingLayerName = GameLayers.Sorting.Effect;
             sr.sortingOrder = sortingOrder;
             sr.enabled = false;
+            if (held) Samkuk.World.StandingSprite.Attach(go, 0f, Samkuk.World.TiltPreset.HeldToward);
             return sr;
         }
 

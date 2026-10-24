@@ -179,7 +179,7 @@ namespace Samkuk.Feedback
             var r = Acquire();
             if (r == null) return;   // 상한
             r.age = 0f; r.life = life; r.startSize = startSize; r.endSize = endSize; r.alpha = alpha;
-            r.sr.transform.position = new Vector3(pos.x, pos.y, RippleZ);
+            r.sr.transform.position = new Vector3(pos.x, pos.y, Samkuk.World.TiltView.GroundZ(RippleZ));
             r.sr.transform.localScale = new Vector3(startSize, startSize * 0.5f, 1f);
             var c = RippleColor; c.a *= alpha;
             r.sr.color = c;

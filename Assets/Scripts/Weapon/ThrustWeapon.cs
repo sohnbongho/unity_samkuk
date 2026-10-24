@@ -53,7 +53,7 @@ namespace Samkuk.Weapons
             {
                 thrusts[i] = new ThrustMotion();
                 trails[i] = new WeaponTrail(MakeEffectRenderer($"Trail{i}", WaveSprites.Point(), 0));
-                if (Data.heldSprite != null) held[i] = MakeEffectRenderer($"Held{i}", Data.heldSprite, 1);
+                if (Data.heldSprite != null) held[i] = MakeEffectRenderer($"Held{i}", Data.heldSprite, 1, held: true);
             }
         }
 
@@ -98,7 +98,7 @@ namespace Samkuk.Weapons
 
         void TickThrusts()
         {
-            Vector2 hand = OwnerPosition + new Vector2(0f, HandHeight);
+            Vector3 hand = (Vector3)OwnerPosition + Samkuk.World.TiltView.Lift(HandHeight);   // 2.5D 틸트면 손 높이는 카메라 위쪽으로
             for (int i = 0; i < thrusts.Length; i++)
             {
                 var t = thrusts[i];
@@ -116,7 +116,7 @@ namespace Samkuk.Weapons
                 // 창 그림은 손잡이가 아래, 촉이 위(+y): 각도 - 90 만큼 돌리고 손 축에서 Offset 만큼 앞으로
                 sr.enabled = true;
                 sr.flipX = t.FacesLeft;
-                sr.transform.position = hand + DirectionOf(t.Angle) * t.Offset;
+                sr.transform.position = hand + (Vector3)(DirectionOf(t.Angle) * t.Offset);
                 sr.transform.rotation = Quaternion.Euler(0f, 0f, t.Angle - 90f);
             }
         }

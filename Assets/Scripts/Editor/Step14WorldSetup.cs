@@ -87,7 +87,7 @@ namespace Samkuk.EditorTools
             {
                 var sr = root.GetComponentInChildren<SpriteRenderer>();
                 if (sr == null) return 0;
-                WorldSorting.Configure(sr);
+                WorldSorting.Configure(sr, PixelArt.WalkFootUnits);
                 PrefabUtility.SaveAsPrefabAsset(root, path);
                 return 1;
             }

@@ -39,6 +39,7 @@ namespace Samkuk.UI
         [SerializeField, Tooltip("도트 격자 맞춤 켜기/끄기 (없어도 동작)")] Button pixelButton;
         [SerializeField, Tooltip("드리운 그림자 켜기/끄기 (없어도 동작)")] Button shadowButton;
         [SerializeField, Tooltip("틸트 시프트(미니어처 흐림) 켜기/끄기 (없어도 동작)")] Button tiltShiftButton;
+        [SerializeField, Tooltip("2.5D 틸트 시점 켜기/끄기 (없어도 동작: Step 9-2 를 다시 실행하면 생김)")] Button tiltButton;
 
         [Header("하위 화면")]
         [SerializeField] Button shopCloseButton;
@@ -58,6 +59,7 @@ namespace Samkuk.UI
         [SerializeField] Text pixelLabel;
         [SerializeField] Text shadowLabel;
         [SerializeField] Text tiltShiftLabel;
+        [SerializeField] Text tiltLabel;
         [SerializeField] MetaCatalog catalog;
         [SerializeField, Tooltip("저장 초기화 확인 대기 시간(초)")] float resetConfirmSeconds = 3f;
 
@@ -99,6 +101,7 @@ namespace Samkuk.UI
             Bind(pixelButton, TogglePixelPerfect);
             Bind(shadowButton, ToggleShadows);
             Bind(tiltShiftButton, ToggleTiltShift);
+            Bind(tiltButton, ToggleTilt);
             Bind(shopCloseButton, ShowMain);
             Bind(recordsCloseButton, ShowMain);
 
@@ -288,6 +291,7 @@ namespace Samkuk.UI
             RefreshPixelLabel();
             RefreshShadowLabel();
             RefreshTiltShiftLabel();
+            RefreshTiltLabel();
         }
 
         void RefreshLightingLabel()
@@ -337,6 +341,20 @@ namespace Samkuk.UI
             if (shadowLabel != null) shadowLabel.text = $"그림자: {(SaveSystem.Current.hd2dShadows ? "켬" : "끔")}";
         }
 
+        /// <summary>2.5D 틸트 시점(원근 카메라, 서 있는 그림, 3D 그림자·빛)을 켜고 끈다. 저장된다. 전투 씬에서 적용된다.</summary>
+        public void ToggleTilt()
+        {
+            var save = SaveSystem.Current;
+            save.hd2dTilt = !save.hd2dTilt;
+            SaveSystem.SaveCurrent();
+            RefreshTiltLabel();
+        }
+
+        void RefreshTiltLabel()
+        {
+            if (tiltLabel != null) tiltLabel.text = $"2.5D 시점: {(SaveSystem.Current.hd2dTilt ? "켬" : "끔")}";
+        }
+
         /// <summary>틸트 시프트(화면 위아래 띠 흐림)를 켜고 끈다. 저장된다.</summary>
         public void ToggleTiltShift()
         {
@@ -344,6 +362,7 @@ namespace Samkuk.UI
             save.hd2dTiltShift = !save.hd2dTiltShift;
             SaveSystem.SaveCurrent();
             RefreshTiltShiftLabel();
+            RefreshTiltLabel();
         }
 
         void RefreshTiltShiftLabel()

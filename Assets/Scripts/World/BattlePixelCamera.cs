@@ -38,12 +38,13 @@ namespace Samkuk.World
             p.gridSnapping = PixelPerfectCamera.GridSnapping.PixelSnapping;
         }
 
-        /// <summary>켜면 픽셀 격자 맞춤, 끄면 예전 카메라 크기로.</summary>
+        /// <summary>켜면 픽셀 격자 맞춤, 끄면 예전 카메라 크기로. 2.5D 틸트(원근 카메라)에서는 쓸 수 없어 항상 끈다.</summary>
         public void Apply(bool enabled)
         {
-            IsEnabled = enabled;
-            ppc.enabled = enabled;
-            if (!enabled) cam.orthographicSize = PixelArt.DefaultOrthographicSize;
+            bool tilt = TiltView.Active;
+            IsEnabled = enabled && !tilt;
+            ppc.enabled = IsEnabled;
+            if (!IsEnabled && !tilt) cam.orthographicSize = PixelArt.DefaultOrthographicSize;
         }
     }
 }

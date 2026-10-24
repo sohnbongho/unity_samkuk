@@ -126,7 +126,7 @@ namespace Samkuk.Allies
             var go = new GameObject("Body");
             go.transform.SetParent(transform, false);
             body = go.AddComponent<SpriteRenderer>();
-            Samkuk.World.WorldSorting.Configure(body);   // 주인공·적과 같은 월드 정렬: 발 위치로 앞뒤 (Step 14-4)
+            Samkuk.World.WorldSorting.Configure(body, Samkuk.Core.PixelArt.WalkFootUnits);   // 주인공·적과 같은 월드 정렬: 발 위치로 앞뒤 (Step 14-4)
             Samkuk.World.CastShadow.Attach(body);
         }
 
@@ -362,6 +362,7 @@ namespace Samkuk.Allies
             sr.color = color;
             sr.sortingLayerName = GameLayers.Sorting.Player;
             sr.sortingOrder = order;
+            Samkuk.World.StandingSprite.Attach(go, 0f, Samkuk.World.TiltPreset.OverlayToward, translucent: true);   // 2.5D 틸트면 몸 위에 겹치는 반투명 그림
             return sr;
         }
 
@@ -370,6 +371,7 @@ namespace Samkuk.Allies
             var go = new GameObject("HpBar");
             go.transform.SetParent(transform, false);
             go.transform.localPosition = new Vector3(0f, 1.4f, 0f);   // 기준점이 발이라(Step 14-4) 몸(약 1.2유닛) 위에
+            Samkuk.World.StandingSprite.Attach(go, liftHeight: 1.4f);   // 2.5D 틸트면 같은 높이를 카메라 위쪽으로
             barRoot = go.transform;
 
             barBack = MakeBarPart("Back", new Color(0.08f, 0.06f, 0.06f, 0.85f), 20);

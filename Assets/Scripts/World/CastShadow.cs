@@ -83,7 +83,8 @@ namespace Samkuk.World
         public void Sync()
         {
             if (source == null) return;
-            bool on = Hd2dSettings.Shadows && source.enabled && source.sprite != null;
+            // 2.5D 틸트에서는 3D 빛이 진짜 그림자를 드리우므로 가짜 그림자는 숨긴다
+            bool on = Hd2dSettings.Shadows && !TiltView.Active && source.enabled && source.sprite != null;
             if (shadow.enabled != on) shadow.enabled = on;
             if (!on) return;
 

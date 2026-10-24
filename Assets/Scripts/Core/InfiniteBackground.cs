@@ -25,6 +25,8 @@ namespace Samkuk.Core
         Vector2 tileSize;
         Sprite defaultSprite;
         Color defaultColor;
+        Material defaultMaterial;
+        float defaultZ;
         GameObject propsRoot;
         TerrainPropSpawner spawner;
         TerrainCollision collision;
@@ -68,6 +70,8 @@ namespace Samkuk.Core
             sr = GetComponent<SpriteRenderer>();
             defaultSprite = sr.sprite;
             defaultColor = sr.color;
+            defaultMaterial = sr.sharedMaterial;
+            defaultZ = transform.position.z;
             RefreshTileSize();
             ApplyCastle(GameSession.SortieCastle);
         }
@@ -79,10 +83,33 @@ namespace Samkuk.Core
             if (spawner != null) spawner.SetFollow(followTarget);
         }
 
+        void OnEnable() => TiltView.Changed += RefreshTilt;
+
+        void OnDisable() => TiltView.Changed -= RefreshTilt;
+
         void OnDestroy()
         {
             if (propsRoot != null) Destroy(propsRoot);
             ReleaseCollision();
+        }
+
+        /// <summary>
+        /// 2.5D 틸트(Step 16-1)에 맞춘 바닥: 켜져 있으면 그림자를 받는 바닥 재질, 아니면 원래 재질. 바닥 소품도 같은 재질을 빌려 쓴다.
+        /// 켜고 끌 때(디버그 키 F10) 다시 불린다. 돌려주는 값: 지금 바닥 재질.
+        /// </summary>
+        Material ApplyTiltMaterial()
+        {
+            if (sr == null) sr = GetComponent<SpriteRenderer>();
+            var mat = TiltView.ConfigureGround(sr, defaultMaterial);
+            var overlay = transform.Find(OverlayName);
+            if (overlay != null) TiltView.ConfigureGround(overlay.GetComponent<SpriteRenderer>(), defaultMaterial);
+            return mat;
+        }
+
+        void RefreshTilt()
+        {
+            var mat = ApplyTiltMaterial();
+            if (spawner != null) spawner.SetMaterial(mat);
         }
 
         /// <summary>
@@ -120,6 +147,7 @@ namespace Samkuk.Core
                 RefreshTileSize();
             }
             else ApplyTerrainOverlay(BattleTerrain.Overlay(map.Terrain));
+            ApplyTiltMaterial();   // 소품 스포너가 배경의 재질을 빌리므로 그 전에
 
             // 소품은 배경과 따로 둔다 (배경은 카메라를 따라 움직이므로 자식으로 두면 소품도 함께 끌려온다)
             propsRoot = new GameObject("TerrainProps");
@@ -194,6 +222,8 @@ namespace Samkuk.Core
             }
             layer.sprite = whiteSprite;
             layer.color = overlay.Value;
+            layer.sharedMaterial = sr.sharedMaterial;
+            layer.receiveShadows = sr.receiveShadows;
             layer.sortingLayerID = sr.sortingLayerID;
             layer.sortingOrder = sr.sortingOrder + 1;
             layer.transform.localScale = new Vector3(Mathf.Max(1f, sr.size.x), Mathf.Max(1f, sr.size.y), 1f);
@@ -209,11 +239,12 @@ namespace Samkuk.Core
         {
             if (followTarget == null || tileSize.x <= 0f || tileSize.y <= 0f) return;
 
-            Vector3 p = followTarget.position;
+            // 틸트면 카메라가 바라보는 땅 위의 점을 따라가고, 바닥은 서 있는 그림의 발 바로 아래(z≈0)에 둔다
+            Vector3 p = TiltView.LookPoint(followTarget);
             transform.position = new Vector3(
                 Mathf.Round(p.x / tileSize.x) * tileSize.x,
                 Mathf.Round(p.y / tileSize.y) * tileSize.y,
-                transform.position.z);
+                TiltView.GroundZ(defaultZ));
         }
     }
 }

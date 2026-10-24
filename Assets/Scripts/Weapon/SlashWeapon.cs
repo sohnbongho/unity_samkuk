@@ -64,7 +64,7 @@ namespace Samkuk.Weapons
             {
                 swings[i] = new SwingMotion();
                 trails[i] = new WeaponTrail(MakeEffectRenderer($"Trail{i}", WaveSprites.Arc(), 0));
-                if (Data.heldSprite != null) held[i] = MakeEffectRenderer($"Held{i}", Data.heldSprite, 1); // 검기보다 앞
+                if (Data.heldSprite != null) held[i] = MakeEffectRenderer($"Held{i}", Data.heldSprite, 1, held: true); // 검기보다 앞
             }
         }
 
@@ -144,7 +144,7 @@ namespace Samkuk.Weapons
 
         void TickSwings()
         {
-            Vector2 hand = OwnerPosition + new Vector2(0f, HandHeight);
+            Vector3 hand = (Vector3)OwnerPosition + Samkuk.World.TiltView.Lift(HandHeight);   // 2.5D 틸트면 손 높이는 카메라 위쪽으로
             for (int i = 0; i < swings.Length; i++)
             {
                 var s = swings[i];

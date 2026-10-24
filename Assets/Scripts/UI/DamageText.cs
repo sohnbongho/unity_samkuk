@@ -17,6 +17,7 @@ namespace Samkuk.UI
         public void Show(Vector2 position, string value, Color color, float scale = 1f)
         {
             transform.position = position;
+            transform.rotation = Samkuk.World.TiltView.StandingRotation;   // 2.5D 틸트면 카메라를 향해 세운다
             transform.localScale = Vector3.one * scale;
             text.text = value;
             baseColor = color;
@@ -34,7 +35,7 @@ namespace Samkuk.UI
                 return;
             }
 
-            transform.position += Vector3.up * (RiseSpeed * Time.deltaTime);
+            transform.position += Samkuk.World.TiltView.Up * (RiseSpeed * Time.deltaTime);   // 2.5D 틸트면 화면 위쪽으로 떠오른다
             var c = baseColor;
             c.a = 1f - age / Life;
             text.color = c;

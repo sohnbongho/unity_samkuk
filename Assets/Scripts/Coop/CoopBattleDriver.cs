@@ -222,7 +222,7 @@ namespace Samkuk.Coop
             var go = Instantiate(localPlayer.gameObject, localPlayer.position, Quaternion.identity);
             go.name = $"RemotePlayer{slot}";
             foreach (var mb in go.GetComponentsInChildren<MonoBehaviour>(true))
-                if (!(mb is Samkuk.World.CastShadow)) mb.enabled = false;
+                if (!(mb is Samkuk.World.CastShadow) && !(mb is Samkuk.World.StandingSprite)) mb.enabled = false;
             var rb = go.GetComponent<Rigidbody2D>();
             if (rb != null) rb.bodyType = RigidbodyType2D.Kinematic;
             return go.transform;

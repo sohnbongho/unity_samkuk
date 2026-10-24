@@ -266,6 +266,15 @@ namespace Samkuk.EditorTools
             tiltRt.anchoredPosition = new Vector2(40f, -670f);
             var tiltLabel = tiltBtn.GetComponentInChildren<Text>();
             tiltLabel.fontSize = 30;
+
+            // 2.5D 틸트 시점 켜기/끄기 버튼 (미니어처 흐림 버튼 아래)
+            var tiltViewBtn = NewButton("TiltViewButton", main, font, "2.5D 시점: 켬", 1f, new Vector2(360f, 70f), new Color(0.22f, 0.28f, 0.4f));
+            var tiltViewRt = (RectTransform)tiltViewBtn.transform;
+            tiltViewRt.anchorMin = tiltViewRt.anchorMax = new Vector2(0f, 1f);
+            tiltViewRt.pivot = new Vector2(0f, 1f);
+            tiltViewRt.anchoredPosition = new Vector2(40f, -750f);
+            var tiltViewLabel = tiltViewBtn.GetComponentInChildren<Text>();
+            tiltViewLabel.fontSize = 30;
             var resetLabel = resetBtn.GetComponentInChildren<Text>();
             resetLabel.fontSize = 28;
             quitBtn.GetComponentInChildren<Text>().fontSize = 28;
@@ -368,6 +377,8 @@ namespace Samkuk.EditorTools
             so.FindProperty("shadowLabel").objectReferenceValue = shadowLabel;
             so.FindProperty("tiltShiftButton").objectReferenceValue = tiltBtn;
             so.FindProperty("tiltShiftLabel").objectReferenceValue = tiltLabel;
+            so.FindProperty("tiltButton").objectReferenceValue = tiltViewBtn;
+            so.FindProperty("tiltLabel").objectReferenceValue = tiltViewLabel;
             so.FindProperty("catalog").objectReferenceValue = catalog;
             so.ApplyModifiedPropertiesWithoutUndo();
 

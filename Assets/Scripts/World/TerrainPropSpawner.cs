@@ -27,11 +27,12 @@ namespace Samkuk.World
         Material material;
         int sortingLayerId;
 
-        /// <summary>풀에서 돌려 쓰는 소품 하나: 렌더러 + (서 있는 소품으로 쓰였을 때 붙은) 그림자.</summary>
+        /// <summary>풀에서 돌려 쓰는 소품 하나: 렌더러 + (서 있는 소품으로 쓰였을 때 붙은) 그림자와 서 있는 그림(2.5D 틸트).</summary>
         class PropView
         {
             public SpriteRenderer sr;
             public CastShadow shadow;
+            public StandingSprite stand;
             public bool standing;
         }
 
@@ -44,17 +45,26 @@ namespace Samkuk.World
         readonly List<Vector2Int> removeBuffer = new List<Vector2Int>();
         bool fxAllowed = true;
 
-        /// <summary>소품에 붙은 점광원 하나. 일렁임은 매 프레임 세기만 바꾼다.</summary>
+        /// <summary>소품에 붙은 점광원 하나 (Light2D, 또는 2.5D 틸트면 3D 점광원). 일렁임은 매 프레임 세기만 바꾼다.</summary>
         class PropLight
         {
             public Light2D light;
+            public Light light3d;
             public float baseIntensity;
             public float flicker;
             public float phase;
+
+            public GameObject GameObject => light != null ? light.gameObject : light3d.gameObject;
+            public void SetIntensity(float value)
+            {
+                if (light != null) light.intensity = value;
+                else light3d.intensity = value;
+            }
         }
 
         readonly Dictionary<Vector2Int, List<PropLight>> activeLights = new Dictionary<Vector2Int, List<PropLight>>();
-        readonly Stack<PropLight> lightPool = new Stack<PropLight>();
+        readonly Stack<PropLight> lightPool = new Stack<PropLight>();      // Light2D
+        readonly Stack<PropLight> lightPool3d = new Stack<PropLight>();    // 3D 점광원 (틸트)
         bool lightsEnabled;
 
         public TerrainMap Map => map;
@@ -102,6 +112,14 @@ namespace Samkuk.World
         /// <summary>따라갈 대상을 바꾼다 (카메라가 늦게 정해질 때).</summary>
         public void SetFollow(Transform followTarget) => follow = followTarget;
 
+        /// <summary>바닥 소품의 재질을 바꾸고 화면 주변 칸을 다시 만든다 (2.5D 틸트를 켜고 끌 때 배경이 부른다).</summary>
+        public void SetMaterial(Material groundMaterial)
+        {
+            material = groundMaterial;
+            Clear();
+            Refresh();
+        }
+
         void LateUpdate()
         {
             Refresh();
@@ -137,7 +155,7 @@ namespace Samkuk.World
                     c.a = a;
                     sr.color = c;
                 }
-                if (a < 1f) faded++;
+                if (a < 1f) faded++;   // 틸트에서는 StandingSprite 가 알파 < 1 인 동안 반투명 재질로 스스로 바꾼다
             }
             FadedCount = faded;
         }
@@ -150,7 +168,7 @@ namespace Samkuk.World
                 {
                     if (pl.flicker <= 0f) continue;
                     float n = Mathf.PerlinNoise(time * 6f + pl.phase, pl.phase);   // 0~1
-                    pl.light.intensity = pl.baseIntensity * (1f - pl.flicker * n);
+                    pl.SetIntensity(pl.baseIntensity * (1f - pl.flicker * n));
                 }
         }
 
@@ -159,19 +177,32 @@ namespace Samkuk.World
         {
             if (map == null) return;
 
-            Vector2 center = follow != null ? (Vector2)follow.position : Vector2.zero;
-            float halfW = 11f, halfH = 6.5f;
             if (cam == null && follow != null) cam = follow.GetComponent<Camera>();
             if (cam == null) cam = Camera.main;
-            if (cam != null && cam.orthographic)
+
+            // 화면에 보이는 땅의 범위: 틸트면 바라보는 점 기준 사다리꼴을 감싼 사각형(북쪽이 더 멀다), 아니면 직교 화면 사각형
+            Rect view;
+            if (TiltView.Active)
             {
-                halfH = cam.orthographicSize;
-                halfW = halfH * cam.aspect;
+                Vector2 look = follow != null ? (Vector2)TiltView.LookPoint(follow) : Vector2.zero;
+                var r = TiltView.GroundFootprint(cam != null ? cam.aspect : 16f / 9f);
+                view = new Rect(look.x + r.xMin, look.y + r.yMin, r.width, r.height);
+            }
+            else
+            {
+                Vector2 center = follow != null ? (Vector2)follow.position : Vector2.zero;
+                float halfW = 11f, halfH = 6.5f;
+                if (cam != null && cam.orthographic)
+                {
+                    halfH = cam.orthographicSize;
+                    halfW = halfH * cam.aspect;
+                }
+                view = new Rect(center.x - halfW, center.y - halfH, halfW * 2f, halfH * 2f);
             }
 
             float c = TerrainMap.ChunkSize;
-            int x0 = Mathf.FloorToInt((center.x - halfW - ViewMargin) / c), x1 = Mathf.FloorToInt((center.x + halfW + ViewMargin) / c);
-            int y0 = Mathf.FloorToInt((center.y - halfH - ViewMargin) / c), y1 = Mathf.FloorToInt((center.y + halfH + ViewMargin) / c);
+            int x0 = Mathf.FloorToInt((view.xMin - ViewMargin) / c), x1 = Mathf.FloorToInt((view.xMax + ViewMargin) / c);
+            int y0 = Mathf.FloorToInt((view.yMin - ViewMargin) / c), y1 = Mathf.FloorToInt((view.yMax + ViewMargin) / c);
 
             for (int y = y0; y <= y1; y++)
                 for (int x = x0; x <= x1; x++)
@@ -227,17 +258,23 @@ namespace Samkuk.World
                 sr.sprite = p.prop.sprite;
                 sr.color = p.tinted ? p.tint : Color.white;   // 풀에서 꺼낸 것은 이전 색이 남아 있으므로 항상 다시 정한다
                 sr.flipX = p.flipX;
-                sr.transform.position = new Vector3(p.position.x, p.position.y, PropZ);
+                sr.transform.position = new Vector3(p.position.x, p.position.y, TiltView.GroundZ(PropZ));
                 sr.transform.localScale = new Vector3(p.scale, p.scale * (p.stretchY > 0f ? p.stretchY : 1f), 1f);
                 if (standing)
                 {
-                    // 서 있는 소품: 캐릭터와 같은 월드 정렬(발 y), 눕히지 않는다 (맵 편집기에서 돌려 둔 값이 있어도 무시)
-                    WorldSorting.Configure(sr);
+                    // 서 있는 소품: 캐릭터와 같은 월드 정렬(발 y), 눕히지 않는다 (맵 편집기에서 돌려 둔 값이 있어도 무시).
+                    // 2.5D 틸트면 서 있는 그림(StandingSprite)이 되어 셰이더가 세운다
+                    if (material != null) sr.sharedMaterial = material;   // 서 있는 그림이 틸트 재질로 바꾸기 전의 원래 재질
+                    WorldSorting.Configure(sr, PixelArt.PropFootUnits);
                     sr.transform.localRotation = Quaternion.identity;
+                    view.stand = sr.GetComponent<StandingSprite>();
                 }
                 else
                 {
-                    sr.sortingLayerID = sortingLayerId;   // 풀에서 꺼낸 것은 서 있는 소품이었을 수 있으므로 항상 다시 정한다
+                    StandingSprite.Release(sr);           // 풀에서 꺼낸 것은 서 있는 소품이었을 수 있으므로 항상 다시 정한다
+                    view.stand = null;
+                    TiltView.ConfigureGround(sr, material);
+                    sr.sortingLayerID = sortingLayerId;
                     sr.sortingOrder = p.order;
                     sr.spriteSortPoint = SpriteSortPoint.Center;
                     sr.transform.localRotation = Quaternion.Euler(0f, 0f, p.rotation);
@@ -266,16 +303,30 @@ namespace Samkuk.World
         {
             var pl = AcquireLight();
             var prop = p.prop;
-            var l = pl.light;
-            l.color = prop.lightColor;
-            l.pointLightOuterRadius = prop.lightRadius * p.scale;
-            l.pointLightInnerRadius = 0f;
-            pl.baseIntensity = prop.lightIntensity;
             pl.flicker = prop.lightFlicker;
             pl.phase = (p.position.x * 12.9898f + p.position.y * 78.233f) % 97f;   // 같은 자리의 빛은 늘 같은 위상(결정적), 이웃끼리는 다르게
-            l.intensity = pl.baseIntensity;
             // 빛은 소품 스프라이트의 자식이 아니다: 소품의 회전/반전/세로 배율이 빛에 섞이지 않게 자리만 맞춘다
-            l.transform.position = new Vector3(p.position.x, p.position.y + prop.lightHeight * p.scale, PropZ);
+            if (pl.light != null)
+            {
+                var l = pl.light;
+                l.color = prop.lightColor;
+                l.pointLightOuterRadius = prop.lightRadius * p.scale;
+                l.pointLightInnerRadius = 0f;
+                pl.baseIntensity = prop.lightIntensity;
+                l.intensity = pl.baseIntensity;
+                l.transform.position = new Vector3(p.position.x, p.position.y + prop.lightHeight * p.scale, PropZ);
+            }
+            else
+            {
+                // 2.5D 틸트: 3D 점광원. 횃불 높이는 서 있는 그림을 따라 카메라 위쪽으로 올린다
+                var l = pl.light3d;
+                l.color = prop.lightColor;
+                l.range = prop.lightRadius * p.scale;
+                pl.baseIntensity = prop.lightIntensity * TiltPreset.PointLightScale;
+                l.intensity = pl.baseIntensity;
+                float h = Mathf.Max(prop.lightHeight * p.scale, TiltPreset.GlowHeight);
+                l.transform.position = new Vector3(p.position.x, p.position.y, 0f) + TiltView.Lift(h);
+            }
             return pl;
         }
 
@@ -295,8 +346,8 @@ namespace Samkuk.World
             {
                 foreach (var pl in lights)
                 {
-                    pl.light.gameObject.SetActive(false);
-                    lightPool.Push(pl);
+                    pl.GameObject.SetActive(false);
+                    (pl.light != null ? lightPool : lightPool3d).Push(pl);
                 }
                 ActiveLightCount -= lights.Count;
                 activeLights.Remove(key);
@@ -305,14 +356,24 @@ namespace Samkuk.World
 
         PropLight AcquireLight()
         {
-            if (lightPool.Count > 0)
+            // 틸트 여부에 맞는 풀에서 꺼낸다 (켜고 끄면 Clear 로 모두 풀에 돌아가 있으므로 다른 종류는 그냥 남겨 둔다)
+            bool tilt = TiltView.Active;
+            var pool = tilt ? lightPool3d : lightPool;
+            if (pool.Count > 0)
             {
-                var pl = lightPool.Pop();
-                pl.light.gameObject.SetActive(true);
+                var pl = pool.Pop();
+                pl.GameObject.SetActive(true);
                 return pl;
             }
             var go = new GameObject("PropLight");
             go.transform.SetParent(transform, false);
+            if (tilt)
+            {
+                var light3d = go.AddComponent<Light>();
+                light3d.type = LightType.Point;
+                light3d.shadows = LightShadows.None;
+                return new PropLight { light3d = light3d };
+            }
             var light = go.AddComponent<Light2D>();
             light.lightType = Light2D.LightType.Point;
             light.falloffIntensity = 0.6f;
