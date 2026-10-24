@@ -30,6 +30,7 @@ namespace Samkuk.Core
         GameObject propsRoot;
         TerrainPropSpawner spawner;
         TerrainCliffs cliffs;
+        TerrainPaths paths;
         TerrainCollision collision;
         WaterRippleFx ripples;
         BattleLighting lighting;
@@ -42,6 +43,7 @@ namespace Samkuk.Core
                 followTarget = value;
                 if (spawner != null) spawner.SetFollow(value);
                 if (cliffs != null) cliffs.SetFollow(value);
+                if (paths != null) paths.SetFollow(value);
             }
         }
 
@@ -50,6 +52,9 @@ namespace Samkuk.Core
 
         /// <summary>언덕·절벽 메시(Step 16-2, 지형 맵이 적용된 경우에만 있다. 틸트일 때만 보인다).</summary>
         public TerrainCliffs Cliffs => cliffs;
+
+        /// <summary>흙길 메시(Step 16-3, 지형 맵이 적용된 경우에만 있다. 틸트일 때만 보인다).</summary>
+        public TerrainPaths Paths => paths;
 
         /// <summary>지형이 이동에 주는 효과(막는 소품, 느려지는 물). 맵이 적용된 동안 <see cref="TerrainCollision.Active"/> 로도 찾을 수 있다.</summary>
         public TerrainCollision Collision => collision;
@@ -87,6 +92,7 @@ namespace Samkuk.Core
                 followTarget = Camera.main.transform;
             if (spawner != null) spawner.SetFollow(followTarget);
             if (cliffs != null) cliffs.SetFollow(followTarget);
+            if (paths != null) paths.SetFollow(followTarget);
         }
 
         void OnEnable() => TiltView.Changed += RefreshTilt;
@@ -167,6 +173,9 @@ namespace Samkuk.Core
             // 언덕·절벽 메시 (틸트일 때만 보인다. 소품보다 먼저 만들어야 소품이 윗면 높이를 읽을 때 같은 맵을 본다 — 높이는 맵에서 읽으므로 순서는 자유)
             cliffs = propsRoot.AddComponent<TerrainCliffs>();
             cliffs.Initialize(map, followTarget, map.Theme.groundTile != null ? map.Theme.groundTile.texture : null);
+            // 흙길 띠 (틸트일 때만 보인다)
+            paths = propsRoot.AddComponent<TerrainPaths>();
+            paths.Initialize(map, followTarget);
 
             // 물에 들어가면 발밑에 물결: 느려지는 자리가 눈에 보이게 (소품 루트와 함께 사라진다)
             ripples = propsRoot.AddComponent<WaterRippleFx>();
@@ -194,7 +203,7 @@ namespace Samkuk.Core
             if (defaultSprite == null) { defaultSprite = sr.sprite; defaultColor = sr.color; }
 
             ApplyTerrainOverlay(null);
-            if (propsRoot != null) { Destroy(propsRoot); propsRoot = null; spawner = null; cliffs = null; ripples = null; lighting = null; }
+            if (propsRoot != null) { Destroy(propsRoot); propsRoot = null; spawner = null; cliffs = null; paths = null; ripples = null; lighting = null; }
             ReleaseCollision();
             sr.sprite = defaultSprite;
             sr.color = defaultColor;

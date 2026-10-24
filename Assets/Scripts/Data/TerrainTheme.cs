@@ -57,5 +57,6 @@ namespace Samkuk.Data
 
         [Header("언덕 (Step 16-2)")]
         [Tooltip("절벽 옆면 그림 (2x2 유닛 = 64x64px, 반복). 비워 두면 코드로 만든 임시 그림")] public Texture2D cliffTexture;
+        [Tooltip("흙길 띠 그림 (길이 2 x 폭 1 유닛 = 64x32px, 길이 방향 반복, 위아래 가장자리는 알파). 비워 두면 코드로 만든 임시 그림")] public Texture2D pathTexture;
     }
 }

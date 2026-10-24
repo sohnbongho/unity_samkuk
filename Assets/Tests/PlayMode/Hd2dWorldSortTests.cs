@@ -181,11 +181,13 @@ namespace Samkuk.Tests
         // ───────────────────────── 서 있는 소품 ─────────────────────────
 
         [Test]
-        public void PropKinds_StandingEqualsBlocking()
+        public void PropKinds_StandingIsBlockingOrPlant()
         {
             foreach (var kind in new[] { "tree", "pine", "rock", "boulder", "yurt", "boat", "banner", "mound" })
-                Assert.IsTrue(TerrainPropKinds.IsStanding(kind), kind);
-            foreach (var kind in new[] { "bush", "tuft", "flowers", "fern", "reed", "pond", "riverwater", "riverbank" })
+                Assert.IsTrue(TerrainPropKinds.IsStanding(kind) && !TerrainPropKinds.IsPlant(kind), kind);
+            foreach (var kind in new[] { "bush", "tuft", "flowers", "fern", "reed" })
+                Assert.IsTrue(TerrainPropKinds.IsStanding(kind) && TerrainPropKinds.IsPlant(kind) && TerrainPropKinds.BlockRadius(kind) == 0f, kind + ": 세우지만 막지 않는다");
+            foreach (var kind in new[] { "pond", "riverwater", "riverbank" })
                 Assert.IsFalse(TerrainPropKinds.IsStanding(kind), kind);
             Assert.IsFalse(new TerrainProp().standing, "값을 채우기 전(예전 에셋)에는 바닥 장식");
         }

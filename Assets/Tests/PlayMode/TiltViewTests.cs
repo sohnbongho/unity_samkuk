@@ -226,6 +226,22 @@ namespace Samkuk.Tests
         }
 
         [Test]
+        public void StandingSprite_AttachedTranslucent_StaysTranslucent_EvenWithOpaqueColor()
+        {
+            if (!TiltView.ShaderAvailable) Assert.Ignore($"셰이더 {TiltView.ShaderName} 없음");
+            TiltView.SetReady(true);
+            var go = new GameObject("BarFill", typeof(SpriteRenderer));
+            toDestroy.Add(go);
+            var sr = go.GetComponent<SpriteRenderer>();
+            sr.color = Color.green;   // 알파 1
+            var stand = StandingSprite.Attach(go, 0f, TiltPreset.OverlayToward, translucent: true);
+            Assert.AreSame(TiltView.StandingMaterial(0f, TiltPreset.OverlayToward, true), sr.sharedMaterial);
+            stand.SendMessage("LateUpdate");   // 알파 규칙이 돌아도
+            Assert.IsTrue(stand.Translucent, "체력 막대 채움처럼 처음부터 반투명이면 알파 1 이어도 컷아웃으로 바뀌지 않는다 (뒷판과 깊이가 겹쳐 깜박인다)");
+            Assert.AreSame(TiltView.StandingMaterial(0f, TiltPreset.OverlayToward, true), sr.sharedMaterial);
+        }
+
+        [Test]
         public void StandingSprite_LiftHeight_MovesAlongBillboardUp()
         {
             var root = new GameObject("Ally");

@@ -122,6 +122,16 @@ namespace Samkuk.World
         readonly float riverAngle, riverOffset, riverAmp, riverWave, riverPhase;
         readonly Vector2 dirU, dirV;
 
+        // 흙길(Step 16-3): 강처럼 세계 전체에 같은 모양의 길이 PathSpacing 간격으로 평행하게 흐른다 (방향·굽이는 성마다 다름). 강과는 엇갈린 방향
+        public const float PathSpacing = 48f;
+        readonly float pathAngle, pathOffset, pathAmp, pathWave, pathPhase;
+        readonly Vector2 pathU, pathV;
+
+        /// <summary>이 맵에 흙길이 있는가 (모든 맵에 있다. 끄려면 테마에서 — 지금은 늘 켜짐).</summary>
+        public bool HasPath => true;
+        /// <summary>흙길 폭(유닛, 성마다 ±15%).</summary>
+        public float PathWidth { get; }
+
         // 맵 편집기로 직접 고친 칸: 이 칸은 자동 생성 대신 이 목록을 그대로 쓴다 (나머지 칸은 평소처럼 자동 생성)
         readonly Dictionary<Vector2Int, List<PropPlacement>> custom = new Dictionary<Vector2Int, List<PropPlacement>>();
         // 직접 고친 칸의 높이(Step 16-2). 고친 칸이 아니면 자동 생성 높이(heightCache)
@@ -180,8 +190,65 @@ namespace Samkuk.World
                 RiverWaterProp = new TerrainProp { name = "RiverWater", sprite = theme.riverWater };
                 RiverBankProp = new TerrainProp { name = "RiverBank", sprite = theme.riverBank };
             }
-            BuildStarterHill();   // 강 모양이 정해진 뒤
+            // 흙길: 강과 60~120° 엇갈리게, 시작 위치에서 5~8유닛 옆을 지나 첫 화면부터 보인다
+            pathAngle = HasRiver ? riverAngle + (Frac(50) < 0.5f ? 1f : -1f) * (60f + Frac(57) * 60f) * Mathf.Deg2Rad : Frac(50) * Mathf.PI;
+            pathU = new Vector2(Mathf.Cos(pathAngle), Mathf.Sin(pathAngle));
+            pathV = new Vector2(-pathU.y, pathU.x);
+            pathOffset = (Frac(51) < 0.5f ? -1f : 1f) * (5f + Frac(52) * 3f);
+            pathAmp = 2f + Frac(53) * 2f;
+            pathWave = 24f + Frac(54) * 12f;
+            pathPhase = Frac(55) * Mathf.PI * 2f;
+            PathWidth = 2.2f * (0.85f + Frac(56) * 0.3f);
+
+            BuildStarterHill();   // 강·길 모양이 정해진 뒤
         }
+
+        // ───────────────────────── 흙길 ─────────────────────────
+
+        float PathCenterV(float u, int k) => pathOffset + k * PathSpacing + pathAmp * Mathf.Sin(u * (Mathf.PI * 2f / pathWave) + pathPhase + k * 2.3f);
+
+        float PathSlopeV(float u, int k) => pathAmp * (Mathf.PI * 2f / pathWave) * Mathf.Cos(u * (Mathf.PI * 2f / pathWave) + pathPhase + k * 2.3f);
+
+        /// <summary>가장 가까운 흙길 중심선까지의 (대략적인) 거리. 길이 없으면 무한대.</summary>
+        public float PathDistance(Vector2 p)
+        {
+            if (!HasPath) return float.PositiveInfinity;
+            float u = Vector2.Dot(p, pathU), v = Vector2.Dot(p, pathV);
+            int center = Mathf.RoundToInt((v - pathOffset) / PathSpacing);
+            float best = float.PositiveInfinity;
+            for (int k = center - 1; k <= center + 1; k++)
+            {
+                float slope = PathSlopeV(u, k);
+                best = Mathf.Min(best, Mathf.Abs(v - PathCenterV(u, k)) / Mathf.Sqrt(1f + slope * slope));
+            }
+            return best;
+        }
+
+        /// <summary>k 번째 길의 길이 방향 u 에서의 중심점과 진행 방향(단위 벡터).</summary>
+        public Vector2 PathPoint(float u, int k, out Vector2 tangent)
+        {
+            tangent = (pathU + pathV * PathSlopeV(u, k)).normalized;
+            return pathU * u + pathV * PathCenterV(u, k);
+        }
+
+        /// <summary>사각형 영역을 지날 수 있는 길 번호 범위와 길이 방향 u 범위 (메시를 만들 때 훑을 범위).</summary>
+        public void PathRange(Rect area, out int k0, out int k1, out float uMin, out float uMax)
+        {
+            uMin = float.MaxValue; uMax = float.MinValue;
+            float vMin = float.MaxValue, vMax = float.MinValue;
+            for (int i = 0; i < 4; i++)
+            {
+                var corner = new Vector2(area.xMin + (i % 2) * area.width, area.yMin + (i / 2) * area.height);
+                float u = Vector2.Dot(corner, pathU), v = Vector2.Dot(corner, pathV);
+                uMin = Mathf.Min(uMin, u); uMax = Mathf.Max(uMax, u); vMin = Mathf.Min(vMin, v); vMax = Mathf.Max(vMax, v);
+            }
+            float reach = pathAmp + PathWidth + 1f;
+            k0 = Mathf.FloorToInt((vMin - reach - pathOffset) / PathSpacing);
+            k1 = Mathf.CeilToInt((vMax + reach - pathOffset) / PathSpacing);
+        }
+
+        /// <summary>길에서 비워 두는 거리: 소품·연못·얼룩·언덕이 길을 덮지 않게.</summary>
+        public float PathClearance => PathWidth * 0.5f + 0.5f;
 
         /// <summary>시작 언덕 자리를 고른다: 네 후보 가운데 강에 닿지 않는 첫 번째 (모두 닿으면 마지막 후보).</summary>
         void BuildStarterHill()
@@ -204,12 +271,12 @@ namespace Samkuk.World
                 StarterRampCenter = (rampCell + Vector2.one * 0.5f) * TerrainHeight.CellSize;
 
                 bool clear = true;
-                if (HasRiver)
-                    foreach (var cell in starterHill.Keys)
-                    {
-                        var center = (cell + Vector2.one * 0.5f) * TerrainHeight.CellSize;
-                        if (RiverDistance(center) < RiverWidth * 0.5f * BankExtra + TerrainHeight.CellSize) { clear = false; break; }
-                    }
+                foreach (var cell in starterHill.Keys)
+                {
+                    var center = (cell + Vector2.one * 0.5f) * TerrainHeight.CellSize;
+                    if (HasRiver && RiverDistance(center) < RiverWidth * 0.5f * BankExtra + TerrainHeight.CellSize) { clear = false; break; }
+                    if (HasPath && PathDistance(center) < PathClearance + TerrainHeight.CellSize) { clear = false; break; }
+                }
                 if (clear) return;
             }
         }
@@ -555,6 +622,7 @@ namespace Samkuk.World
             var center = new Vector2((gx + 0.5f) * TerrainHeight.CellSize, (gy + 0.5f) * TerrainHeight.CellSize);
             if (center.magnitude < TerrainHeight.FlatRadius + TerrainHeight.CellSize) return 0;
             if (HasRiver && RiverDistance(center) < RiverWidth * 0.5f * BankExtra + TerrainHeight.CellSize) return 0;
+            if (HasPath && PathDistance(center) < PathClearance + TerrainHeight.CellSize) return 0;   // 길은 평지를 따라간다
             float n = HillNoise(gx, gy);
             if (n > 1f - HillCoverage * 0.3f && Terrain == CastleTerrain.Mountain) return 2;
             return n > 1f - HillCoverage ? 1 : 0;
@@ -787,6 +855,7 @@ namespace Samkuk.World
                 var p = new Vector2(originX + (float)rng.NextDouble() * ChunkSize, originY + (float)rng.NextDouble() * ChunkSize);
                 if (p.magnitude < ClearRadius) continue;
                 if (HasRiver && RiverDistance(p) < riverClear) continue;
+                if (HasPath && PathDistance(p) < PathClearance + 0.5f) continue;   // 길 위에는 얼룩을 놓지 않는다 (길 그림이 덮는다)
 
                 float roll = (float)rng.NextDouble();
                 Color tint;
@@ -851,6 +920,7 @@ namespace Samkuk.World
             if (p.x < originX || p.x >= originX + ChunkSize || p.y < originY || p.y >= originY + ChunkSize) return false;
             if (p.magnitude < clearRadius) return false;
             if (HasRiver && RiverDistance(p) < riverClearance) return false;
+            if (HasPath && PathDistance(p) < PathClearance) return false;   // 길 위에는 소품·연못이 서지 않는다
             foreach (var b in blockers)
                 if (Vector2.Distance(p, new Vector2(b.x, b.y)) < Mathf.Max(spacing, b.z)) return false;
             return true;

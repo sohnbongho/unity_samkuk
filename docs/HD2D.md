@@ -57,7 +57,7 @@
 
 1. **16-1 틸트 카메라·서 있는 그림·3D 빛** (완료): 위 표 전부. `TiltPreset`/`TiltView`/`StandingSprite`/`BattleTiltCamera`, 셰이더 `PixelSprite.shader`, 셋업 `Step 16-1`(Run All 포함), 테스트 `TiltViewTests`.
 2. **16-2 높이·절벽** (완료): 셀(2x2 유닛) 층 0~3 + 경사로(`HeightChunk`/`TerrainHeight`), 자동 생성 언덕(`TerrainMap.GenerateHeights`, 지형별 비율, 시작 위치·강가 평지), 절벽 메시(`CliffMeshBuilder`/`TerrainCliffs`, 틸트일 때만, 옆면 그림 `CliffArt`), 벽 충돌(`TerrainCollision.Wall`, 경사로만 통과), 캐릭터·소품·이펙트가 높이에 올라섬(`TerrainHeight.ZAt/Feet`), 맵 편집기 높이 도구(4)와 표시, 저장 형식 version 2. 테스트 `TerrainHeightTests`.
-3. **16-3 그림**: 절벽·흙길·물 가장자리 타일 생성기(코드), 투사체·검기·보석 높이, 덤불·갈대 세우기, 진짜 픽셀 타일셋 교체.
+3. **16-3 그림** (완료): 남은 이펙트(장판·회전 도끼·충격파·스킬·협동 뷰) 높이 올리기, 풀·덤불·꽃·고사리·갈대를 서 있는 소품으로(`TerrainPropKinds.IsPlant`, Step 12-6 재실행), 흙길(`TerrainPaths`/`PathMeshBuilder`/`PathArt`, 소품·언덕이 비킴), 절벽·흙길의 진짜 그림 슬롯(`cliffTexture`/`pathTexture`)과 교체 지점 정리(`docs/TERRAIN.md`). 물 가장자리 모래 테·길 위 가속은 후속. 테스트 `TerrainPathTests`.
 4. 후속: 맵 편집기 틸트 미리보기, 내정·타이틀 적용.
 
 ## 검증

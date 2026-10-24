@@ -129,7 +129,7 @@ namespace Samkuk.Weapons
             }
 
             sr.sprite = Data.sprite;
-            sr.transform.position = position;
+            sr.transform.position = Samkuk.World.TerrainHeight.Feet(position);   // 언덕 위면 윗면 위에
             float size = Data.sprite.bounds.size.x;
             sr.transform.localScale = Vector3.one * (size > 0f ? Data.size * 2f / size : 1f);
             sr.gameObject.SetActive(true);

@@ -136,7 +136,7 @@ namespace Samkuk.Coop
 
         public void Move(int id, Vector2 position)
         {
-            if (active.TryGetValue(id, out var g)) g.transform.position = position;
+            if (active.TryGetValue(id, out var g)) g.transform.position = Samkuk.World.TerrainHeight.Feet(position);
         }
 
         public void Hide(int id)
@@ -177,7 +177,7 @@ namespace Samkuk.Coop
             v.sr.sprite = sprite;
             v.sr.color = tint;
             v.sr.gameObject.SetActive(true);
-            v.sr.transform.position = position;
+            v.sr.transform.position = Samkuk.World.TerrainHeight.Feet(position);
             v.sr.transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg);
             v.sr.transform.localScale = Vector3.one * scale;
             active.Add(id, v);
@@ -358,7 +358,7 @@ namespace Samkuk.Coop
             {
                 float a = CoopBattleModel.OrbitAngle(elapsedSeconds, Data.rotateSpeed, i, n);
                 float rad = a * Mathf.Deg2Rad;
-                blades[i].transform.position = center + new Vector2(Mathf.Cos(rad), Mathf.Sin(rad)) * Data.range;
+                blades[i].transform.position = Samkuk.World.TerrainHeight.Feet(center + new Vector2(Mathf.Cos(rad), Mathf.Sin(rad)) * Data.range);
                 blades[i].transform.rotation = Quaternion.Euler(0f, 0f, a * 2f);
             }
         }

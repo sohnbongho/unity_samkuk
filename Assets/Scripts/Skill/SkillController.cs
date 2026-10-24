@@ -196,7 +196,7 @@ namespace Samkuk.Skills
             fxFollow = follow;
             fxColor = skill.effectColor;
 
-            fx.transform.position = transform.position;
+            fx.transform.position = Samkuk.World.TerrainHeight.Feet(transform.position);
             fx.enabled = true;
             ApplyFx(0f);
         }
@@ -212,7 +212,7 @@ namespace Samkuk.Skills
                 return;
             }
 
-            if (fxFollow) fx.transform.position = transform.position;
+            if (fxFollow) fx.transform.position = Samkuk.World.TerrainHeight.Feet(transform.position);
             ApplyFx(1f - fxLeft / fxDuration);
         }
 

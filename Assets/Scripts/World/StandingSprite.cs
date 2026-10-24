@@ -15,6 +15,7 @@ namespace Samkuk.World
         [SerializeField, Tooltip("피벗(발)에서 그림 아래 끝까지 (유닛, 배율 1). 걷기 시트 8px = 0.25")] float footLift;
         [SerializeField, Tooltip("카메라 쪽으로 미는 거리. 몸과 같은 평면에 겹치는 무기/막대가 번쩍이지 않게")] float toward;
         [SerializeField, Tooltip("알파 블렌드(깊이 안 씀, 그림자 없음)")] bool translucent;
+        [SerializeField, Tooltip("처음부터 반투명으로 붙인 그림(체력 막대): 알파가 1이어도 컷아웃으로 바꾸지 않는다")] bool alwaysTranslucent;
         [SerializeField, Tooltip("0 보다 크면 자기 자리를 발에서 이만큼 위로 (체력 막대 뿌리)")] float liftHeight;
         [SerializeField, Tooltip("세로 배율 보정 (서 있는 소품은 TiltPreset.PropStretch, 캐릭터는 1)")] float stretchScale = 1f;
 
@@ -43,6 +44,7 @@ namespace Samkuk.World
             s.footLift = footLift;
             s.toward = toward;
             s.translucent = translucent;
+            s.alwaysTranslucent = translucent;   // 반투명으로 붙인 것은 알파와 무관하게 반투명 유지 (막대 채움이 컷아웃이 되어 뒷판과 깊이가 겹쳐 깜박였다)
             s.liftHeight = liftHeight;
             s.stretchScale = stretchScale;
             if (!s.enabled) s.enabled = true;          // 풀에서 돌아온 것(Release 로 꺼 둠): OnEnable 이 맞춘다
@@ -92,7 +94,7 @@ namespace Samkuk.World
             if (liftHeight > 0f && TiltView.Active) ApplyLift();
             // 컷아웃 재질은 알파를 섞지 못한다: 렌더러 색의 알파가 1 보다 작은 동안(무적 깜빡임, 쓰러진 아군, 흐려진 소품)만 반투명 재질로
             if (!swapped || sr == null) return;
-            SetTranslucent(sr.color.a < 0.999f);
+            if (!alwaysTranslucent) SetTranslucent(sr.color.a < 0.999f);
         }
 
         /// <summary>지금 틸트 상태에 맞춘다.</summary>

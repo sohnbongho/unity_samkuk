@@ -153,3 +153,24 @@ powershell -File tools\terrain_art\generate.ps1 -Only Jungle    # 한 지형만 
 - **자동 생성** (`TerrainMap.GenerateHeights`): 성 시드의 값 노이즈로 언덕을 뽑는다. 지형별 비율 `BaseHillCoverage`(산악 32%, 황토 22%, 남방 14%, 초원 10%, 평야 7%, 강변 4%) × 성마다 0.6~1.4배. 산악은 2층까지. 외톨이 셀은 깎고, 언덕 가장자리 일부(셀마다 정해진 값)를 경사로로 만든다. 시작 위치 반경 4.5 와 강가는 평지.
 - **직접 고치기**: 맵 편집기의 **높이 도구(4)** — `docs/MAP_EDITOR.md`. 고친 칸의 높이는 저장 파일(version 2)의 `levels`/`ramps` 에 들어가고, 예전 파일(version 1)의 칸은 자동 생성 높이를 쓴다.
 - 수치: `TerrainHeight`(셀 2유닛, 최대 3층, 평지 반지름 4.5), `TerrainMap.BaseHillCoverage`. 절벽 그림 색은 `CliffArt.Base`.
+
+## 흙길 (Step 16-3, 2.5D 틸트)
+
+참고 그림의 흙길처럼 **성마다 정해진 굽은 길**이 세계를 가로지릅니다(`TerrainMap.PathDistance/PathPoint`, 강과 같은 방식: 48유닛 간격의 평행한 사인 곡선, 성 시드로 방향·굽이·폭이 다르고 강과는 60~120° 엇갈림). 시작 위치에서 5~8유닛 옆을 지나 첫 화면부터 보입니다.
+
+- **보이는 것** (`TerrainPaths` + `PathMeshBuilder`): 길 중심선을 1유닛마다 따라가며 폭(2.2유닛 ±15%)만큼 벌린 띠 메시를 칸마다 만든다. 그림은 코드로 만든 `PathArt`(지형별 흙색, 위아래 가장자리가 2px 계단으로 들쭉날쭉한 알파) — 테마의 `pathTexture` 에 진짜 그림(64x32, 길이 방향 반복)을 넣으면 그쪽. 바닥 타일보다 살짝 앞(z 0.006)에 깔리는 불투명 띠라 얼룩·강 토막은 길 아래에 숨고, 강을 건너는 자리는 끊는다(여울). **2.5D 틸트일 때만 보인다**.
+- **비켜 가는 것**: 소품·연못·얼룩은 길 폭 + 0.5 안에 놓이지 않고(`PathClearance`), 언덕은 길을 따라 평지가 되며, 시작 언덕도 길 밖에 놓인다. 걷는 속도에는 영향이 없다(길 위 가속은 후속 후보).
+- 수치: `TerrainMap.PathSpacing`(48), 생성자의 길 폭·굽이, `PathMeshBuilder.Step/TexLength/Z`, 색 `PathArt.Base`.
+
+## 진짜 그림으로 바꾸는 자리 (Step 16-3 정리)
+
+코드가 만든 임시 그림은 모두 **에셋 슬롯에 그림을 넣으면 대체**됩니다. 코드 수정은 없습니다.
+
+| 무엇 | 지금 | 바꾸는 자리 | 규격 |
+|---|---|---|---|
+| 바닥 타일 | `Assets/Sprites/Terrain/Ground_*.png`(생성기) | 같은 파일을 덮어쓰기 (`generate.ps1 -Only` 로 피함) | 128x128, PPU 32, 반복 |
+| 소품(나무·바위·풀…) | `Assets/Sprites/Terrain/*.png`(생성기) | 같은 파일 덮어쓰기. 서 있는 소품은 옆모습, 바닥 점이 아래 3px | 폭 자유, PPU 32 |
+| 걷기 시트 | `Assets/Sprites/HeroWalk`, `EnemyWalk` | `docs/HERO_WALK_SHEETS.md` | 4x4 칸 48px, 발 8px |
+| 절벽 옆면 | 코드 `CliffArt` | `Theme_*.asset` 의 `cliffTexture` | 64x64, 반복, Point |
+| 흙길 띠 | 코드 `PathArt` | `Theme_*.asset` 의 `pathTexture` | 64x32, 길이 방향 반복, 위아래 가장자리 알파 |
+| 물 가장자리(모래 테) | 없음 | 후속 (강둑 그림 `RiverBank_*` 로 대신) | — |

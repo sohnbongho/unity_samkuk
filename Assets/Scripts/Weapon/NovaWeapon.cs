@@ -101,7 +101,7 @@ namespace Samkuk.Weapons
             if (ring == null || ring.sprite == null) return;
 
             float size = ring.sprite.bounds.size.x;
-            ring.transform.position = center;
+            ring.transform.position = Samkuk.World.TerrainHeight.Feet(center);
             ring.transform.localScale = Vector3.one * (size > 0f ? radius * 2f / size : 1f);
 
             var c = Data.tint;

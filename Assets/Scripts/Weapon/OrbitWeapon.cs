@@ -47,7 +47,7 @@ namespace Samkuk.Weapons
             for (int i = 0; i < n; i++)
             {
                 float a = (angle + 360f * i / n) * Mathf.Deg2Rad;
-                blades[i].position = center + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * Data.range;
+                blades[i].position = Samkuk.World.TerrainHeight.Feet(center + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * Data.range);
                 blades[i].rotation = Quaternion.Euler(0f, 0f, angle * 2f);
             }
 
