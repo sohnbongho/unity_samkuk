@@ -36,8 +36,8 @@ namespace Samkuk.World
         const int MaxUndo = 60;
 
         readonly HashSet<Vector2Int> dirtyChunks = new HashSet<Vector2Int>();
-        readonly List<Dictionary<Vector2Int, List<PropPlacement>>> undo = new List<Dictionary<Vector2Int, List<PropPlacement>>>();
-        readonly List<Dictionary<Vector2Int, List<PropPlacement>>> redo = new List<Dictionary<Vector2Int, List<PropPlacement>>>();
+        readonly List<TerrainMap.CustomSnapshot> undo = new List<TerrainMap.CustomSnapshot>();
+        readonly List<TerrainMap.CustomSnapshot> redo = new List<TerrainMap.CustomSnapshot>();
         bool inStroke;
 
         public TerrainMap Map { get; private set; }
@@ -117,12 +117,69 @@ namespace Samkuk.World
             return true;
         }
 
-        void Restore(Dictionary<Vector2Int, List<PropPlacement>> snapshot)
+        void Restore(TerrainMap.CustomSnapshot snapshot)
         {
-            foreach (var key in Map.CustomChunks) dirtyChunks.Add(key);
-            foreach (var key in snapshot.Keys) dirtyChunks.Add(key);
+            foreach (var key in Map.CustomChunks) MarkDirtyWithNeighbors(key);
+            foreach (var key in snapshot.Chunks) MarkDirtyWithNeighbors(key);
             Map.RestoreCustom(snapshot);
             Unsaved = true;
+        }
+
+        /// <summary>높이가 바뀌면 이웃 칸의 절벽 옆면·벽도 달라지므로 둘레 칸까지 다시 만들게 한다.</summary>
+        void MarkDirtyWithNeighbors(Vector2Int chunk)
+        {
+            for (int dy = -1; dy <= 1; dy++)
+                for (int dx = -1; dx <= 1; dx++) dirtyChunks.Add(new Vector2Int(chunk.x + dx, chunk.y + dy));
+        }
+
+        // ───────────────────────── 높이 (Step 16-2) ─────────────────────────
+
+        /// <summary>위치가 속한 셀의 층과 경사로.</summary>
+        public void GetCell(Vector2 position, out int level, out RampDir ramp)
+        {
+            TerrainHeight.Locate(position, out var chunk, out int cx, out int cy, out _, out _);
+            var h = Map.GetHeights(chunk);
+            level = h.Level(cx, cy);
+            ramp = h.Ramp(cx, cy);
+        }
+
+        /// <summary>셀의 층을 바꾼다 (<paramref name="delta"/> 만큼, 0~최대층으로 잘림). 바뀌지 않으면 false. 경사로는 층이 0이 되면 사라진다.</summary>
+        public bool ChangeLevel(Vector2 position, int delta)
+        {
+            TerrainHeight.Locate(position, out var chunk, out int cx, out int cy, out _, out _);
+            var current = Map.GetHeights(chunk);
+            int level = Mathf.Clamp(current.Level(cx, cy) + delta, 0, TerrainHeight.MaxLevel);
+            if (level == current.Level(cx, cy)) return false;
+            Touch();
+            Map.EnsureCustomHeights(chunk).Set(cx, cy, level, current.Ramp(cx, cy));
+            MarkDirtyWithNeighbors(chunk);
+            return true;
+        }
+
+        /// <summary>셀을 경사로로(또는 경사로를 없앤다). 0층 셀은 한 층 올려 경사로로 만든다.</summary>
+        public bool SetRamp(Vector2 position, RampDir ramp)
+        {
+            TerrainHeight.Locate(position, out var chunk, out int cx, out int cy, out _, out _);
+            var current = Map.GetHeights(chunk);
+            int level = current.Level(cx, cy);
+            if (ramp != RampDir.None && level == 0) level = 1;
+            if (level == current.Level(cx, cy) && ramp == current.Ramp(cx, cy)) return false;
+            Touch();
+            Map.EnsureCustomHeights(chunk).Set(cx, cy, level, ramp);
+            MarkDirtyWithNeighbors(chunk);
+            return true;
+        }
+
+        /// <summary>셀을 평지(0층)로.</summary>
+        public bool Flatten(Vector2 position)
+        {
+            TerrainHeight.Locate(position, out var chunk, out int cx, out int cy, out _, out _);
+            var current = Map.GetHeights(chunk);
+            if (current.Level(cx, cy) == 0 && current.Ramp(cx, cy) == RampDir.None) return false;
+            Touch();
+            Map.EnsureCustomHeights(chunk).Set(cx, cy, 0, RampDir.None);
+            MarkDirtyWithNeighbors(chunk);
+            return true;
         }
 
         // ───────────────────────── 찾기 ─────────────────────────
@@ -269,22 +326,23 @@ namespace Samkuk.World
             return hits.Count;
         }
 
-        /// <summary>칸을 자동 생성 상태로 되돌린다 (직접 고친 내용을 버린다).</summary>
+        /// <summary>칸을 자동 생성 상태로 되돌린다 (직접 고친 물건과 높이를 버린다).</summary>
         public bool ResetChunk(Vector2Int chunk)
         {
             if (!Map.IsCustom(chunk)) return false;
             Touch();
             Map.RemoveCustomChunk(chunk);
-            dirtyChunks.Add(chunk);
+            MarkDirtyWithNeighbors(chunk);
             return true;
         }
 
-        /// <summary>칸을 텅 비운다 (소품, 얼룩, 강 모두).</summary>
+        /// <summary>칸을 텅 비운다 (소품, 얼룩, 강 모두, 높이는 평지로).</summary>
         public void ClearChunk(Vector2Int chunk)
         {
             Touch();
             Map.SetCustomChunk(chunk, new List<PropPlacement>());
-            dirtyChunks.Add(chunk);
+            Map.SetCustomHeights(chunk, new HeightChunk());
+            MarkDirtyWithNeighbors(chunk);
         }
 
         /// <summary>맵 전체를 자동 생성 상태로 되돌린다.</summary>
@@ -292,7 +350,7 @@ namespace Samkuk.World
         {
             if (!Map.HasCustom) return false;
             Touch();
-            foreach (var key in Map.CustomChunks) dirtyChunks.Add(key);
+            foreach (var key in Map.CustomChunks) MarkDirtyWithNeighbors(key);
             Map.ClearCustom();
             return true;
         }

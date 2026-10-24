@@ -69,7 +69,7 @@ namespace Samkuk.Feedback
             p.color = color;
 
             p.sr.color = color;
-            p.sr.transform.position = position;
+            p.sr.transform.position = Samkuk.World.TerrainHeight.Feet(position);
             p.sr.transform.localScale = Vector3.one * size;
             p.sr.gameObject.SetActive(true);
             active.Add(p);

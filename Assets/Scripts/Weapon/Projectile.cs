@@ -55,7 +55,8 @@ namespace Samkuk.Weapons
         void Update()
         {
             float dt = Time.deltaTime;
-            transform.position += (Vector3)(direction * (speed * dt));
+            Vector2 next = (Vector2)transform.position + direction * (speed * dt);
+            transform.position = Samkuk.World.TerrainHeight.Feet(next);   // 언덕을 지나면 윗면 위로 (안 그러면 윗면에 묻힌다)
 
             lifeLeft -= dt;
             if (lifeLeft <= 0f)

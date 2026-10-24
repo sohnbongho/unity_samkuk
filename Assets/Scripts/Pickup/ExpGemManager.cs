@@ -119,7 +119,7 @@ namespace Samkuk.Pickups
                     continue;
                 }
 
-                gem.transform.position = p + toTarget / dist * step;
+                gem.transform.position = Samkuk.World.TerrainHeight.Feet(p + toTarget / dist * step);
             }
         }
 

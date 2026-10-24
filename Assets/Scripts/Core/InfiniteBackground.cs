@@ -29,6 +29,7 @@ namespace Samkuk.Core
         float defaultZ;
         GameObject propsRoot;
         TerrainPropSpawner spawner;
+        TerrainCliffs cliffs;
         TerrainCollision collision;
         WaterRippleFx ripples;
         BattleLighting lighting;
@@ -40,11 +41,15 @@ namespace Samkuk.Core
             {
                 followTarget = value;
                 if (spawner != null) spawner.SetFollow(value);
+                if (cliffs != null) cliffs.SetFollow(value);
             }
         }
 
         /// <summary>지형 소품을 만드는 쪽 (지형 맵이 적용된 경우에만 있다).</summary>
         public TerrainPropSpawner Props => spawner;
+
+        /// <summary>언덕·절벽 메시(Step 16-2, 지형 맵이 적용된 경우에만 있다. 틸트일 때만 보인다).</summary>
+        public TerrainCliffs Cliffs => cliffs;
 
         /// <summary>지형이 이동에 주는 효과(막는 소품, 느려지는 물). 맵이 적용된 동안 <see cref="TerrainCollision.Active"/> 로도 찾을 수 있다.</summary>
         public TerrainCollision Collision => collision;
@@ -81,6 +86,7 @@ namespace Samkuk.Core
             if (followTarget == null && Camera.main != null)
                 followTarget = Camera.main.transform;
             if (spawner != null) spawner.SetFollow(followTarget);
+            if (cliffs != null) cliffs.SetFollow(followTarget);
         }
 
         void OnEnable() => TiltView.Changed += RefreshTilt;
@@ -154,9 +160,13 @@ namespace Samkuk.Core
             spawner = propsRoot.AddComponent<TerrainPropSpawner>();
             spawner.Initialize(map, followTarget, sr, LightingAllowed);
 
-            // 보이는 것과 같은 배치에서 막는 소품/느려지는 물을 뽑아 플레이어·적·아군의 이동이 참조하게 한다
+            // 보이는 것과 같은 배치에서 막는 소품/느려지는 물/절벽 벽을 뽑아 플레이어·적·아군의 이동이 참조하게 한다
             collision = new TerrainCollision(map);
             TerrainCollision.Active = collision;
+
+            // 언덕·절벽 메시 (틸트일 때만 보인다. 소품보다 먼저 만들어야 소품이 윗면 높이를 읽을 때 같은 맵을 본다 — 높이는 맵에서 읽으므로 순서는 자유)
+            cliffs = propsRoot.AddComponent<TerrainCliffs>();
+            cliffs.Initialize(map, followTarget, map.Theme.groundTile != null ? map.Theme.groundTile.texture : null);
 
             // 물에 들어가면 발밑에 물결: 느려지는 자리가 눈에 보이게 (소품 루트와 함께 사라진다)
             ripples = propsRoot.AddComponent<WaterRippleFx>();
@@ -184,7 +194,7 @@ namespace Samkuk.Core
             if (defaultSprite == null) { defaultSprite = sr.sprite; defaultColor = sr.color; }
 
             ApplyTerrainOverlay(null);
-            if (propsRoot != null) { Destroy(propsRoot); propsRoot = null; spawner = null; ripples = null; lighting = null; }
+            if (propsRoot != null) { Destroy(propsRoot); propsRoot = null; spawner = null; cliffs = null; ripples = null; lighting = null; }
             ReleaseCollision();
             sr.sprite = defaultSprite;
             sr.color = defaultColor;

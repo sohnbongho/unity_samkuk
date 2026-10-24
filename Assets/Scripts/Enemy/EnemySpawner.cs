@@ -134,9 +134,16 @@ namespace Samkuk.Enemies
             float halfW = halfH * (cam != null ? cam.aspect : 16f / 9f);
             float radius = ScreenRadius(halfW, halfH) + spawnMargin;
             float angle = UnityEngine.Random.value * Mathf.PI * 2f;
+            var terrain = TerrainCollision.Active;
+            // 언덕 위에서 태어나면 경사로를 못 찾고 벽에 갇힐 수 있어 평지 자리를 몇 번 다시 고른다 (Step 16-2)
+            for (int attempt = 0; attempt < 4 && terrain != null && terrain.Map != null; attempt++)
+            {
+                var candidate = center + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
+                if (terrain.Map.HeightAt(candidate) <= 0f) break;
+                angle = UnityEngine.Random.value * Mathf.PI * 2f;
+            }
             Vector2 pos = center + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
             // 나무/바위 안에 스폰되지 않게 (안에서 태어나면 밀려 나오느라 한동안 제자리에 머문다)
-            var terrain = TerrainCollision.Active;
             return terrain != null ? terrain.PushOut(pos, 0.5f) : pos;
         }
 

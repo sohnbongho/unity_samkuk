@@ -208,6 +208,7 @@ namespace Samkuk.Enemies
                 else velocity = desired + sep + e.TickKnockback(dt);
 
                 e.Body.linearVelocity = velocity;
+                e.SetGroundZ(TerrainHeight.ZAt(p));   // 언덕 위면 올라선다 (틸트가 아니면 0)
                 if (e.HasWalkSheet)
                     e.TickAnimation(dirToTarget, desired.sqrMagnitude > 0.0025f, dt); // 목표를 바라보며 걷는다 (궁병이 물러날 때도 정면)
                 else if (desired.x > 0.05f) e.SetFacing(false);

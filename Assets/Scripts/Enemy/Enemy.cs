@@ -129,6 +129,13 @@ namespace Samkuk.Enemies
 
         public void SetFacing(bool faceLeft) => sr.flipX = faceLeft;
 
+        /// <summary>언덕 위에 올라서게 z 를 맞춘다 (Step 16-2). 같은 값이면 트랜스폼을 건드리지 않는다.</summary>
+        public void SetGroundZ(float z)
+        {
+            var p = transform.position;
+            if (Mathf.Abs(p.z - z) > 1e-4f) transform.position = new Vector3(p.x, p.y, z);
+        }
+
         /// <summary>
         /// 걷기 애니메이션을 dt만큼 진행한다. faceDir 쪽을 바라보고(보통 플레이어 방향), moving 이면 프레임을 돌린다.
         /// 시트가 없으면 아무것도 하지 않는다. 스프라이트는 바뀔 때만 교체해 많은 적에서도 가볍다.

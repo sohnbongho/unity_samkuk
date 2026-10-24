@@ -73,6 +73,12 @@ namespace Samkuk.Player
 
         void Update()
         {
+            // 언덕 위에 서면 몸 그림을 그 높이로 (Step 16-2. 몸은 자식이라 Rigidbody2D 를 건드리지 않는다)
+            if (body != null)
+            {
+                float gz = Samkuk.World.TerrainHeight.ZAt(rb.position);
+                if (Mathf.Abs(body.transform.localPosition.z - gz) > 1e-4f) body.transform.localPosition = new Vector3(0f, 0f, gz);
+            }
             moveInput = Vector2.ClampMagnitude(moveAction.ReadValue<Vector2>(), 1f);
 
             if (moveInput.sqrMagnitude > 0.0001f)

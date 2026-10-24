@@ -20,7 +20,7 @@ namespace Samkuk.Pickups
             Value = value;
             Attracted = false;
             Speed = 0f;
-            transform.position = position;
+            transform.position = Samkuk.World.TerrainHeight.Feet(position);   // 언덕 위에 떨어진 보석이 윗면에 묻히지 않게
             sr.color = TintFor(value);
         }
 

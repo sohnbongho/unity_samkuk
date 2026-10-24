@@ -66,20 +66,21 @@ namespace Samkuk.Tests
         }
 
         [Test]
-        public void Preset_GroundFootprint_CoversOldOrthographicView_AndReachesFartherNorth()
+        public void Preset_GroundFootprint_CoversOldTopDownView_AndIsTallerOnTheGround()
         {
-            var r = TiltPreset.GroundFootprint(TiltPreset.Pitch, TiltPreset.Distance, TiltPreset.FieldOfView, 16f / 9f);
-            Assert.That(r.width, Is.GreaterThanOrEqualTo(18f).And.LessThan(40f), "예전 직교 화면 폭(20) 안팎");
-            Assert.That(r.height, Is.GreaterThanOrEqualTo(11f).And.LessThan(30f), "예전 직교 화면 높이(11.25) 이상");
+            var r = TiltPreset.GroundFootprint(TiltPreset.Pitch, TiltPreset.OrthoSize, 16f / 9f);
+            Assert.AreEqual(20f, r.width, 1e-3f, "예전 2D 화면 폭(20) 그대로");
+            Assert.AreEqual(2f * TiltPreset.OrthoSize / Mathf.Sin(TiltPreset.Pitch * Mathf.Deg2Rad), r.height, 1e-3f, "기울어진 만큼 바닥은 더 길게 보인다");
+            Assert.Greater(r.height, 11.25f);
             Assert.IsTrue(r.Contains(Vector2.zero), "바라보는 점은 화면 안");
-            Assert.Greater(r.yMax, -r.yMin, "북쪽(멀리)이 남쪽보다 넓게 보인다");
+            Assert.AreEqual(-r.yMin, r.yMax, 1e-4f, "직교라 남북 대칭");
             Assert.AreEqual(-r.xMin, r.xMax, 1e-4f, "좌우 대칭");
         }
 
         [Test]
         public void Preset_SpawnRadius_IsBeyondEveryCorner()
         {
-            var r = TiltPreset.GroundFootprint(TiltPreset.Pitch, TiltPreset.Distance, TiltPreset.FieldOfView, 16f / 9f);
+            var r = TiltPreset.GroundFootprint(TiltPreset.Pitch, TiltPreset.OrthoSize, 16f / 9f);
             float radius = TiltPreset.SpawnRadius(r);
             foreach (var corner in new[] { new Vector2(r.xMin, r.yMin), new Vector2(r.xMax, r.yMin), new Vector2(r.xMin, r.yMax), new Vector2(r.xMax, r.yMax) })
                 Assert.LessOrEqual(corner.magnitude, radius + 1e-4f);
@@ -124,9 +125,13 @@ namespace Samkuk.Tests
                 TiltView.SetReady(true);
                 Assert.IsTrue(TiltView.Active);
                 Assert.AreEqual(1, changed);
-                Assert.AreEqual(TiltPreset.Up(TiltPreset.Pitch), TiltView.Lift(1f));
+                Assert.AreEqual(TiltPreset.StandUp * TiltPreset.StandScale(TiltPreset.Pitch), TiltView.Lift(1f), "올리는 방향은 수직(-z), 세로 배율을 곱한다");
+                Assert.AreEqual(1f / Mathf.Cos(TiltPreset.Pitch * Mathf.Deg2Rad), TiltView.StandScale, 1e-4f);
+                Assert.AreEqual(TiltPreset.Up(TiltPreset.Pitch), TiltView.CameraUp);
                 Assert.AreEqual(TiltPreset.GroundZ, TiltView.GroundZ(0.5f));
-                Assert.AreEqual(TiltPreset.Rotation(TiltPreset.Pitch), TiltView.StandingRotation);
+                Assert.AreEqual(TiltPreset.StandRotation, TiltView.StandingRotation);
+                Assert.AreEqual(1f, Vector3.Dot(TiltView.StandingRotation * Vector3.up, Vector3.back), 1e-4f, "세운 그림의 위는 -z");
+                Assert.AreEqual(1f, Vector3.Dot(TiltView.StandingRotation * Vector3.right, Vector3.right), 1e-4f, "오른쪽은 그대로 (글자가 뒤집히지 않게)");
 
                 Hd2dSettings.TiltOverride = false;
                 Assert.IsFalse(TiltView.Active, "설정이 꺼지면 카메라가 준비됐어도 꺼진다");
@@ -134,6 +139,19 @@ namespace Samkuk.Tests
                 Assert.AreEqual(1, changed, "같은 값이면 알리지 않는다");
             }
             finally { TiltView.Changed -= OnChanged; }
+        }
+
+        [Test]
+        public void View_StandScale_IsTheSameEverywhere_UnderOrthographicTilt()
+        {
+            TiltView.SetReady(true);
+            float expected = 1f / Mathf.Cos(TiltPreset.Pitch * Mathf.Deg2Rad);
+            Assert.AreEqual(expected, TiltView.StandScale, 1e-4f, "수직 그림은 카메라 기울기의 1/cos 만큼 늘린다");
+            Assert.AreEqual(expected, TiltView.StandScaleAt(new Vector2(0f, -5f)), 1e-4f, "직교라 화면 아래쪽도 같다");
+            Assert.AreEqual(expected, TiltView.StandScaleAt(new Vector2(0f, 6f)), 1e-4f, "화면 위쪽도 같다");
+            Assert.AreEqual(TiltView.Up * (0.55f * expected), TiltView.Lift(0.55f, new Vector2(0f, -5f)));
+            Hd2dSettings.TiltOverride = false;
+            Assert.AreEqual(1f, TiltView.StandScaleAt(new Vector2(0f, -5f)), "틸트가 꺼지면 1");
         }
 
         [Test]
@@ -217,7 +235,7 @@ namespace Samkuk.Tests
             StandingSprite.Attach(bar, liftHeight: 1.4f);
             Assert.AreEqual(new Vector3(0f, 1.4f, 0f), bar.transform.localPosition);
             TiltView.SetReady(true);
-            Assert.AreEqual(TiltPreset.Up(TiltPreset.Pitch) * 1.4f, bar.transform.localPosition);
+            Assert.AreEqual(TiltPreset.StandUp * (1.4f * TiltPreset.StandScale(TiltPreset.Pitch)), bar.transform.localPosition);
             TiltView.SetReady(false);
             Assert.AreEqual(new Vector3(0f, 1.4f, 0f), bar.transform.localPosition);
         }
@@ -231,16 +249,17 @@ namespace Samkuk.Tests
             toDestroy.Add(go);
             var sr = go.GetComponent<SpriteRenderer>();
             var original = sr.sharedMaterial;
-            WorldSorting.Configure(sr, PixelArt.PropFootUnits);
+            WorldSorting.Configure(sr, PixelArt.PropFootUnits, TiltPreset.PropStretch);
             Assert.AreNotSame(original, sr.sharedMaterial);
 
             StandingSprite.Release(sr);   // 풀에서 바닥 장식으로 다시 쓰일 때
             Assert.AreSame(original, sr.sharedMaterial);
             Assert.IsFalse(go.GetComponent<StandingSprite>().enabled);
 
-            WorldSorting.Configure(sr, PixelArt.PropFootUnits);   // 다시 서 있는 소품으로
+            WorldSorting.Configure(sr, PixelArt.PropFootUnits, TiltPreset.PropStretch);   // 다시 서 있는 소품으로
             Assert.IsTrue(go.GetComponent<StandingSprite>().enabled);
-            Assert.AreSame(TiltView.StandingMaterial(PixelArt.PropFootUnits), sr.sharedMaterial);
+            Assert.AreSame(TiltView.StandingMaterial(PixelArt.PropFootUnits, 0f, false, TiltPreset.PropStretch), sr.sharedMaterial);
+            Assert.AreEqual(TiltPreset.PropStretch, sr.sharedMaterial.GetFloat("_StretchScale"), 1e-5f, "서 있는 소품은 세로를 덜 늘린다");
         }
 
         // ───────────────────────── 틸트일 때 비켜 주는 것들 ─────────────────────────
@@ -434,8 +453,8 @@ namespace Samkuk.Tests
             Assert.AreEqual(LightType.Point, lights[0].type);
             Assert.AreEqual(2f, lights[0].range, 1e-4f);
             Assert.AreEqual(0.5f * TiltPreset.PointLightScale, lights[0].intensity, 1e-4f);
-            var want = new Vector3(3f, 2f, 0f) + TiltPreset.Up(TiltPreset.Pitch) * 1.6f;
-            Assert.AreEqual(want.y, lights[0].transform.position.y, 1e-4f, "횃불은 카메라 위쪽으로 올린 자리");
+            var want = new Vector3(3f, 2f, 0f) + TiltPreset.StandUp * (1.6f * TiltPreset.StandScale(TiltPreset.Pitch));
+            Assert.AreEqual(want.y, lights[0].transform.position.y, 1e-4f, "횃불은 수직으로 올린 자리");
             Assert.AreEqual(want.z, lights[0].transform.position.z, 1e-4f);
         }
     }

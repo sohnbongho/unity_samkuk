@@ -124,7 +124,22 @@ namespace Samkuk.World
 
         // 맵 편집기로 직접 고친 칸: 이 칸은 자동 생성 대신 이 목록을 그대로 쓴다 (나머지 칸은 평소처럼 자동 생성)
         readonly Dictionary<Vector2Int, List<PropPlacement>> custom = new Dictionary<Vector2Int, List<PropPlacement>>();
+        // 직접 고친 칸의 높이(Step 16-2). 고친 칸이 아니면 자동 생성 높이(heightCache)
+        readonly Dictionary<Vector2Int, HeightChunk> customHeights = new Dictionary<Vector2Int, HeightChunk>();
+        readonly Dictionary<Vector2Int, HeightChunk> heightCache = new Dictionary<Vector2Int, HeightChunk>();
         Dictionary<string, TerrainProp> library;
+
+        /// <summary>언덕이 차지하는 비율(0~1, Step 16-2). 지형별 기본값에 성마다 0.6~1.4배. 0 이면 자동 생성 언덕이 없다.</summary>
+        public float HillCoverage { get; }
+
+        // 시작 언덕(Step 16-2): 어느 맵이든 시작 위치 가까이에 늘 보이는 작은 언덕 — 가로 3 x 세로 2 셀 1층, 뒷줄 가운데 2층, 시작 쪽 가운데가 경사로.
+        // 경사로가 내려서는 셀은 평지로 묶어 둔다. 강에서 떨어진 쪽(북동 → 남동 → 북서 → 남서)에 놓는다. 세계 셀 좌표 → (층, 경사로)
+        readonly Dictionary<Vector2Int, (int level, RampDir ramp)> starterHill = new Dictionary<Vector2Int, (int, RampDir)>();
+
+        /// <summary>시작 언덕의 셀 수 (평지로 묶어 둔 경사로 아래 셀 포함).</summary>
+        public int StarterHillCellCount => starterHill.Count;
+        /// <summary>시작 언덕의 경사로 셀 가운데 (세계 좌표).</summary>
+        public Vector2 StarterRampCenter { get; private set; }
 
         TerrainMap(CastleData castle, TerrainTheme theme, TerrainThemeCatalog catalog, CastleTerrain terrain)
         {
@@ -140,6 +155,7 @@ namespace Samkuk.World
             if (castle.hasWater) PondPerChunk = terrain == CastleTerrain.River ? 0.9f : 0.5f;
             else PondPerChunk = terrain == CastleTerrain.River ? 0.35f : 0f;
             BannerPerChunk = castle.size == CastleSize.Capital ? 0.9f : (castle.size == CastleSize.Large ? 0.45f : 0f);
+            HillCoverage = BaseHillCoverage(terrain) * (0.6f + 0.8f * Frac(40));
 
             weights = new float[theme.props.Count];
             for (int i = 0; i < weights.Length; i++)
@@ -163,6 +179,38 @@ namespace Samkuk.World
                 RiverWidth = Mathf.Max(1f, theme.riverWidth) * (0.85f + Frac(26) * 0.3f);
                 RiverWaterProp = new TerrainProp { name = "RiverWater", sprite = theme.riverWater };
                 RiverBankProp = new TerrainProp { name = "RiverBank", sprite = theme.riverBank };
+            }
+            BuildStarterHill();   // 강 모양이 정해진 뒤
+        }
+
+        /// <summary>시작 언덕 자리를 고른다: 네 후보 가운데 강에 닿지 않는 첫 번째 (모두 닿으면 마지막 후보).</summary>
+        void BuildStarterHill()
+        {
+            // 후보: 블록의 왼쪽 아래 셀, 시작 쪽이 남쪽(블록이 북쪽에 있음)인가
+            var candidates = new[] { (new Vector2Int(3, 3), true), (new Vector2Int(3, -5), false), (new Vector2Int(-6, 3), true), (new Vector2Int(-6, -5), false) };
+            foreach (var (origin, southFacing) in candidates)
+            {
+                starterHill.Clear();
+                int nearRow = southFacing ? origin.y : origin.y + 1;      // 시작 쪽 줄
+                int farRow = southFacing ? origin.y + 1 : origin.y;       // 먼 줄
+                for (int dx = 0; dx < 3; dx++)
+                {
+                    starterHill[new Vector2Int(origin.x + dx, nearRow)] = (1, RampDir.None);
+                    starterHill[new Vector2Int(origin.x + dx, farRow)] = (dx == 1 ? 2 : 1, RampDir.None);
+                }
+                var rampCell = new Vector2Int(origin.x + 1, nearRow);
+                starterHill[rampCell] = (1, southFacing ? RampDir.South : RampDir.North);
+                starterHill[new Vector2Int(origin.x + 1, nearRow + (southFacing ? -1 : 1))] = (0, RampDir.None);   // 경사로가 내려서는 자리는 평지
+                StarterRampCenter = (rampCell + Vector2.one * 0.5f) * TerrainHeight.CellSize;
+
+                bool clear = true;
+                if (HasRiver)
+                    foreach (var cell in starterHill.Keys)
+                    {
+                        var center = (cell + Vector2.one * 0.5f) * TerrainHeight.CellSize;
+                        if (RiverDistance(center) < RiverWidth * 0.5f * BankExtra + TerrainHeight.CellSize) { clear = false; break; }
+                    }
+                if (clear) return;
             }
         }
 
@@ -334,13 +382,20 @@ namespace Samkuk.World
         }
 
         /// <summary>직접 고친 칸이 하나라도 있는가.</summary>
-        public bool HasCustom => custom.Count > 0;
+        public bool HasCustom => custom.Count > 0 || customHeights.Count > 0;
 
         public int CustomChunkCount => custom.Count;
 
-        public IEnumerable<Vector2Int> CustomChunks => custom.Keys;
+        public IEnumerable<Vector2Int> CustomChunks
+        {
+            get
+            {
+                foreach (var k in custom.Keys) yield return k;
+                foreach (var k in customHeights.Keys) if (!custom.ContainsKey(k)) yield return k;
+            }
+        }
 
-        public bool IsCustom(Vector2Int chunk) => custom.ContainsKey(chunk);
+        public bool IsCustom(Vector2Int chunk) => custom.ContainsKey(chunk) || customHeights.ContainsKey(chunk);
 
         /// <summary>한 칸에 실제로 보일 모든 것 (직접 고친 칸이면 그 내용, 아니면 자동 생성: 바닥 얼룩 + 소품/강/연못). 읽기 전용으로 쓴다.</summary>
         public List<PropPlacement> GetChunk(int chunkX, int chunkY)
@@ -357,7 +412,7 @@ namespace Samkuk.World
             return list;
         }
 
-        /// <summary>칸을 편집할 수 있게 한다: 아직 고친 적 없으면 지금 보이는 자동 생성 내용을 그대로 옮겨 와 시작점으로 삼는다.</summary>
+        /// <summary>칸을 편집할 수 있게 한다: 아직 고친 적 없으면 지금 보이는 자동 생성 내용(물건과 높이)을 그대로 옮겨 와 시작점으로 삼는다.</summary>
         public List<PropPlacement> EnsureCustomChunk(Vector2Int chunk)
         {
             if (!custom.TryGetValue(chunk, out var list))
@@ -365,29 +420,182 @@ namespace Samkuk.World
                 list = Generate(chunk.x, chunk.y);
                 custom[chunk] = list;
             }
+            if (!customHeights.ContainsKey(chunk)) customHeights[chunk] = GetHeights(chunk).Clone();
             return list;
+        }
+
+        /// <summary>칸의 높이를 편집할 수 있게 한다 (물건도 함께 직접 고친 칸이 된다).</summary>
+        public HeightChunk EnsureCustomHeights(Vector2Int chunk)
+        {
+            EnsureCustomChunk(chunk);
+            return customHeights[chunk];
         }
 
         public void SetCustomChunk(Vector2Int chunk, List<PropPlacement> items) => custom[chunk] = items ?? new List<PropPlacement>();
 
-        /// <summary>칸을 다시 자동 생성으로 되돌린다.</summary>
-        public bool RemoveCustomChunk(Vector2Int chunk) => custom.Remove(chunk);
-
-        public void ClearCustom() => custom.Clear();
-
-        /// <summary>직접 고친 칸 전체의 복사본 (실행 취소용).</summary>
-        public Dictionary<Vector2Int, List<PropPlacement>> SnapshotCustom()
+        /// <summary>칸의 높이를 직접 정한다 (null 이면 자동 생성으로).</summary>
+        public void SetCustomHeights(Vector2Int chunk, HeightChunk heights)
         {
-            var copy = new Dictionary<Vector2Int, List<PropPlacement>>(custom.Count);
-            foreach (var kv in custom) copy[kv.Key] = new List<PropPlacement>(kv.Value);
+            if (heights == null) customHeights.Remove(chunk);
+            else customHeights[chunk] = heights;
+        }
+
+        /// <summary>칸을 다시 자동 생성으로 되돌린다 (물건과 높이 모두).</summary>
+        public bool RemoveCustomChunk(Vector2Int chunk)
+        {
+            bool a = custom.Remove(chunk), b = customHeights.Remove(chunk);
+            return a || b;
+        }
+
+        public void ClearCustom()
+        {
+            custom.Clear();
+            customHeights.Clear();
+        }
+
+        /// <summary>직접 고친 칸 전체(물건과 높이)의 복사본 (실행 취소용).</summary>
+        public sealed class CustomSnapshot
+        {
+            public readonly Dictionary<Vector2Int, List<PropPlacement>> items = new Dictionary<Vector2Int, List<PropPlacement>>();
+            public readonly Dictionary<Vector2Int, HeightChunk> heights = new Dictionary<Vector2Int, HeightChunk>();
+
+            public IEnumerable<Vector2Int> Chunks
+            {
+                get
+                {
+                    foreach (var k in items.Keys) yield return k;
+                    foreach (var k in heights.Keys) if (!items.ContainsKey(k)) yield return k;
+                }
+            }
+        }
+
+        public CustomSnapshot SnapshotCustom()
+        {
+            var copy = new CustomSnapshot();
+            foreach (var kv in custom) copy.items[kv.Key] = new List<PropPlacement>(kv.Value);
+            foreach (var kv in customHeights) copy.heights[kv.Key] = kv.Value.Clone();
             return copy;
         }
 
-        public void RestoreCustom(Dictionary<Vector2Int, List<PropPlacement>> snapshot)
+        public void RestoreCustom(CustomSnapshot snapshot)
         {
             custom.Clear();
-            foreach (var kv in snapshot) custom[kv.Key] = new List<PropPlacement>(kv.Value);
+            customHeights.Clear();
+            foreach (var kv in snapshot.items) custom[kv.Key] = new List<PropPlacement>(kv.Value);
+            foreach (var kv in snapshot.heights) customHeights[kv.Key] = kv.Value.Clone();
         }
+
+        // ───────────────────────── 높이 (Step 16-2) ─────────────────────────
+
+        /// <summary>지형별 언덕 비율 기본값. 산악·황토는 언덕이 많고 강변·평야는 거의 평지.</summary>
+        public static float BaseHillCoverage(CastleTerrain terrain)
+        {
+            switch (terrain)
+            {
+                case CastleTerrain.Mountain: return 0.32f;
+                case CastleTerrain.Loess: return 0.22f;
+                case CastleTerrain.Jungle: return 0.14f;
+                case CastleTerrain.Steppe: return 0.1f;
+                case CastleTerrain.River: return 0.04f;
+                default: return 0.07f;   // Plain
+            }
+        }
+
+        /// <summary>한 칸의 높이 (직접 고친 칸이면 그것, 아니면 자동 생성. 자동 생성은 캐시).</summary>
+        public HeightChunk GetHeights(Vector2Int chunk)
+        {
+            if (customHeights.TryGetValue(chunk, out var h)) return h;
+            if (heightCache.TryGetValue(chunk, out h)) return h;
+            if (heightCache.Count > 512) heightCache.Clear();   // 무한 세계를 오래 돌아다녀도 메모리가 늘지 않게
+            h = GenerateHeights(chunk);
+            heightCache[chunk] = h;
+            return h;
+        }
+
+        /// <summary>위치가 속한 셀의 층과 경사로.</summary>
+        public void GetHeightsAt(Vector2 position, out int level, out RampDir ramp)
+        {
+            TerrainHeight.Locate(position, out var chunk, out int cx, out int cy, out _, out _);
+            var h = GetHeights(chunk);
+            level = h.Level(cx, cy);
+            ramp = h.Ramp(cx, cy);
+        }
+
+        /// <summary>어떤 위치의 바닥 높이(층 단위 실수). 경사로 위에서는 연속적으로 변한다.</summary>
+        public float HeightAt(Vector2 position)
+        {
+            TerrainHeight.Locate(position, out var chunk, out int cx, out int cy, out float fx, out float fy);
+            return TerrainHeight.Surface(GetHeights(chunk), cx, cy, fx, fy);
+        }
+
+        /// <summary>
+        /// 자동 생성 높이 (같은 입력이면 항상 같은 결과, 이웃 칸과 이어진다): 성 시드의 값 노이즈로 언덕을 뽑고, 외톨이 셀은 깎고,
+        /// 언덕 가장자리 일부를 경사로로 만든다. 시작 위치 주변과 강가는 평지.
+        /// </summary>
+        public HeightChunk GenerateHeights(Vector2Int chunk)
+        {
+            var h = new HeightChunk();
+            for (int cy = 0; cy < HeightChunk.Cells; cy++)
+                for (int cx = 0; cx < HeightChunk.Cells; cx++)
+                {
+                    int gx = chunk.x * HeightChunk.Cells + cx, gy = chunk.y * HeightChunk.Cells + cy;
+                    if (starterHill.TryGetValue(new Vector2Int(gx, gy), out var s)) { h.Set(cx, cy, s.level, s.ramp); continue; }
+                    if (HillCoverage <= 0f) continue;
+                    int level = FinalLevel(gx, gy);
+                    h.Set(cx, cy, level, level > 0 ? AutoRamp(gx, gy, level) : RampDir.None);
+                }
+            return h;
+        }
+
+        /// <summary>노이즈만으로 정한 층 (세계 셀 좌표). 시작 언덕 셀은 정해진 값.</summary>
+        int RawLevel(int gx, int gy)
+        {
+            if (starterHill.TryGetValue(new Vector2Int(gx, gy), out var s)) return s.level;
+            if (HillCoverage <= 0f) return 0;
+            var center = new Vector2((gx + 0.5f) * TerrainHeight.CellSize, (gy + 0.5f) * TerrainHeight.CellSize);
+            if (center.magnitude < TerrainHeight.FlatRadius + TerrainHeight.CellSize) return 0;
+            if (HasRiver && RiverDistance(center) < RiverWidth * 0.5f * BankExtra + TerrainHeight.CellSize) return 0;
+            float n = HillNoise(gx, gy);
+            if (n > 1f - HillCoverage * 0.3f && Terrain == CastleTerrain.Mountain) return 2;
+            return n > 1f - HillCoverage ? 1 : 0;
+        }
+
+        /// <summary>외톨이 셀(4방 이웃이 모두 낮은 셀)은 한 층 깎는다 — 혼자 솟은 기둥이 되지 않게.</summary>
+        int FinalLevel(int gx, int gy)
+        {
+            int l = RawLevel(gx, gy);
+            if (l == 0) return 0;
+            if (RawLevel(gx, gy - 1) >= l || RawLevel(gx, gy + 1) >= l || RawLevel(gx - 1, gy) >= l || RawLevel(gx + 1, gy) >= l) return l;
+            return l - 1;
+        }
+
+        /// <summary>언덕 가장자리 셀 일부를 경사로로: 내려가는 쪽 이웃이 한 층 낮고 양옆이 같은 층일 때, 셀마다 정해진 값으로 고른다.</summary>
+        RampDir AutoRamp(int gx, int gy, int level)
+        {
+            int s = FinalLevel(gx, gy - 1), n = FinalLevel(gx, gy + 1), w = FinalLevel(gx - 1, gy), e = FinalLevel(gx + 1, gy);
+            float r = Hash01(gx, gy, 77);
+            if (s == level - 1 && w == level && e == level && n >= level && r < 0.35f) return RampDir.South;
+            if (n == level - 1 && w == level && e == level && s >= level && r >= 0.35f && r < 0.5f) return RampDir.North;
+            if (w == level - 1 && n == level && s == level && e >= level && r >= 0.5f && r < 0.65f) return RampDir.West;
+            if (e == level - 1 && n == level && s == level && w >= level && r >= 0.65f && r < 0.8f) return RampDir.East;
+            return RampDir.None;
+        }
+
+        /// <summary>언덕 노이즈 (0~1): 값 노이즈 두 옥타브 (큰 덩어리 + 가장자리 들쭉날쭉).</summary>
+        float HillNoise(int gx, int gy) => ValueNoise(gx / 5f, gy / 5f, 1) * 0.65f + ValueNoise(gx / 2.5f, gy / 2.5f, 2) * 0.35f;
+
+        float ValueNoise(float x, float y, int salt)
+        {
+            int x0 = Mathf.FloorToInt(x), y0 = Mathf.FloorToInt(y);
+            float tx = Smooth(x - x0), ty = Smooth(y - y0);
+            float a = Hash01(x0, y0, salt), b = Hash01(x0 + 1, y0, salt), c = Hash01(x0, y0 + 1, salt), d = Hash01(x0 + 1, y0 + 1, salt);
+            return Mathf.Lerp(Mathf.Lerp(a, b, tx), Mathf.Lerp(c, d, tx), ty);
+        }
+
+        static float Smooth(float t) => t * t * (3f - 2f * t);
+
+        float Hash01(int x, int y, int salt) =>
+            (Mix(Mix((uint)Seed ^ (0x7a3d9f1bu + (uint)salt * 0x9e3779b9u), (uint)x), (uint)y) & 0xffff) / 65535f;
 
         /// <summary>저장 파일 속 그림 이름으로 소품 정보를 찾는다. 모든 지형 테마의 소품, 강 토막, 연못, 깃발, 얼룩을 포함한다.</summary>
         public TerrainProp ResolveProp(string spriteName)
@@ -436,19 +644,49 @@ namespace Samkuk.World
                         tinted = p.tinted, r = p.tint.r, g = p.tint.g, b = p.tint.b, a = p.tint.a,
                     });
                 }
+                if (customHeights.TryGetValue(kv.Key, out var hc)) WriteHeights(chunk, hc);
+                data.chunks.Add(chunk);
+            }
+            // 높이만 고친 칸 (물건 목록 없이 높이만 있는 경우)
+            foreach (var kv in customHeights)
+            {
+                if (custom.ContainsKey(kv.Key)) continue;
+                var chunk = new MapChunk { cx = kv.Key.x, cy = kv.Key.y };
+                WriteHeights(chunk, kv.Value);
                 data.chunks.Add(chunk);
             }
             data.chunks.Sort((a, b) => a.cy != b.cy ? a.cy.CompareTo(b.cy) : a.cx.CompareTo(b.cx));
             return data;
         }
 
+        static void WriteHeights(MapChunk chunk, HeightChunk h)
+        {
+            chunk.levels = new int[HeightChunk.Count];
+            chunk.ramps = new int[HeightChunk.Count];
+            for (int i = 0; i < HeightChunk.Count; i++) { chunk.levels[i] = h.levels[i]; chunk.ramps[i] = h.ramps[i]; }
+        }
+
         /// <summary>저장 파일의 칸들을 이 맵의 직접 고친 칸으로 쓴다 (기존 것은 지운다). 그림을 찾지 못한 물건은 건너뛴다.</summary>
         public void ImportLayout(MapLayoutData data)
         {
             custom.Clear();
+            customHeights.Clear();
             if (data == null) return;
             foreach (var chunk in data.chunks)
             {
+                var key = new Vector2Int(chunk.cx, chunk.cy);
+                // 높이 (예전 파일(version 1)에는 없다 → 자동 생성 높이를 쓴다)
+                if (chunk.levels != null && chunk.levels.Length == HeightChunk.Count)
+                {
+                    var h = new HeightChunk();
+                    for (int i = 0; i < HeightChunk.Count; i++)
+                    {
+                        int ramp = chunk.ramps != null && chunk.ramps.Length == HeightChunk.Count ? chunk.ramps[i] : 0;
+                        h.Set(i % HeightChunk.Cells, i / HeightChunk.Cells, chunk.levels[i], ramp >= 1 && ramp <= 4 ? (RampDir)ramp : RampDir.None);
+                    }
+                    customHeights[key] = h;
+                }
+                if (chunk.items == null) continue;
                 var list = new List<PropPlacement>(chunk.items.Count);
                 foreach (var item in chunk.items)
                 {
@@ -462,7 +700,7 @@ namespace Samkuk.World
                         tinted = item.tinted, tint = new Color(item.r, item.g, item.b, item.a),
                     });
                 }
-                custom[new Vector2Int(chunk.cx, chunk.cy)] = list;
+                custom[key] = list;
             }
         }
 

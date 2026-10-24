@@ -98,7 +98,7 @@ namespace Samkuk.Weapons
 
         void TickThrusts()
         {
-            Vector3 hand = (Vector3)OwnerPosition + Samkuk.World.TiltView.Lift(HandHeight);   // 2.5D 틸트면 손 높이는 카메라 위쪽으로
+            Vector3 hand = Samkuk.World.TerrainHeight.Feet(OwnerPosition) + Samkuk.World.TiltView.Lift(HandHeight, OwnerPosition);   // 2.5D 틸트면 손 높이는 카메라 위쪽으로, 언덕 위면 그 높이에서
             for (int i = 0; i < thrusts.Length; i++)
             {
                 var t = thrusts[i];

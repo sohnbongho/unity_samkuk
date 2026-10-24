@@ -41,6 +41,7 @@ namespace Samkuk.World
             }
             TiltView.Changed += OnChanged;
             RenderPipelineManager.beginCameraRendering += OnBeginCamera;
+            TiltView.CameraTransform = transform;
             TiltView.SetReady(ok);     // 바뀌면 Changed → Apply
             Apply(TiltView.Active);    // 바뀌지 않았어도 한 번은 맞춘다
         }
@@ -49,12 +50,13 @@ namespace Samkuk.World
         {
             TiltView.Changed -= OnChanged;
             RenderPipelineManager.beginCameraRendering -= OnBeginCamera;
+            if (TiltView.CameraTransform == transform) TiltView.CameraTransform = null;
             TiltView.SetReady(false);
         }
 
         void OnChanged() => Apply(TiltView.Active);
 
-        /// <summary>켜면 원근 + 3D 렌더러, 끄면 직교 + 기본 렌더러. 픽셀 퍼펙트는 다시 맞춘다.</summary>
+        /// <summary>켜면 기울인 직교 카메라 + 3D 렌더러, 끄면 탑다운 직교 + 기본 렌더러. 픽셀 퍼펙트는 다시 맞춘다.</summary>
         public void Apply(bool enabled)
         {
             IsEnabled = enabled;
@@ -62,8 +64,8 @@ namespace Samkuk.World
             if (data == null) data = cam.GetUniversalAdditionalCameraData();
             if (enabled)
             {
-                cam.orthographic = false;
-                cam.fieldOfView = TiltPreset.FieldOfView;
+                cam.orthographic = true;
+                cam.orthographicSize = TiltPreset.OrthoSize;
                 cam.nearClipPlane = TiltPreset.Near;
                 cam.farClipPlane = TiltPreset.Far;
                 if (rendererIndex >= 0) data.SetRenderer(rendererIndex);
@@ -93,8 +95,8 @@ namespace Samkuk.World
         void OnBeginCamera(ScriptableRenderContext context, Camera rendering)
         {
             if (rendering != cam || !IsEnabled) return;
-            cam.cullingMatrix = Matrix4x4.Perspective(TiltPreset.FieldOfView + TiltPreset.CullMargin, cam.aspect, cam.nearClipPlane, cam.farClipPlane)
-                * cam.worldToCameraMatrix;
+            float h = cam.orthographicSize + TiltPreset.CullMargin, w = cam.orthographicSize * cam.aspect + TiltPreset.CullMargin;
+            cam.cullingMatrix = Matrix4x4.Ortho(-w, w, -h, h, cam.nearClipPlane, cam.farClipPlane) * cam.worldToCameraMatrix;
         }
     }
 }

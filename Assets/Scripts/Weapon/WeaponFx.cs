@@ -52,7 +52,7 @@ namespace Samkuk.Weapons
             e.baseScale = new Vector3(scale.x, scale.y, 1f);
 
             var t = e.sr.transform;
-            t.position = position;
+            t.position = Samkuk.World.TerrainHeight.Feet(position);
             t.rotation = Quaternion.Euler(0f, 0f, rotationDegrees);
             t.localScale = e.baseScale * startScale;
             e.sr.gameObject.SetActive(true);

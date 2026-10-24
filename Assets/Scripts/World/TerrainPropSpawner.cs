@@ -179,26 +179,7 @@ namespace Samkuk.World
 
             if (cam == null && follow != null) cam = follow.GetComponent<Camera>();
             if (cam == null) cam = Camera.main;
-
-            // 화면에 보이는 땅의 범위: 틸트면 바라보는 점 기준 사다리꼴을 감싼 사각형(북쪽이 더 멀다), 아니면 직교 화면 사각형
-            Rect view;
-            if (TiltView.Active)
-            {
-                Vector2 look = follow != null ? (Vector2)TiltView.LookPoint(follow) : Vector2.zero;
-                var r = TiltView.GroundFootprint(cam != null ? cam.aspect : 16f / 9f);
-                view = new Rect(look.x + r.xMin, look.y + r.yMin, r.width, r.height);
-            }
-            else
-            {
-                Vector2 center = follow != null ? (Vector2)follow.position : Vector2.zero;
-                float halfW = 11f, halfH = 6.5f;
-                if (cam != null && cam.orthographic)
-                {
-                    halfH = cam.orthographicSize;
-                    halfW = halfH * cam.aspect;
-                }
-                view = new Rect(center.x - halfW, center.y - halfH, halfW * 2f, halfH * 2f);
-            }
+            var view = ViewRect(follow, cam);
 
             float c = TerrainMap.ChunkSize;
             int x0 = Mathf.FloorToInt((view.xMin - ViewMargin) / c), x1 = Mathf.FloorToInt((view.xMax + ViewMargin) / c);
@@ -216,6 +197,28 @@ namespace Samkuk.World
             foreach (var key in active.Keys)
                 if (key.x < x0 - 1 || key.x > x1 + 1 || key.y < y0 - 1 || key.y > y1 + 1) removeBuffer.Add(key);
             foreach (var key in removeBuffer) DespawnChunk(key);
+        }
+
+        /// <summary>
+        /// 화면에 보이는 땅의 범위 (세계 좌표): 2.5D 틸트면 바라보는 점 기준 사다리꼴을 감싼 사각형(북쪽이 더 멀다), 아니면 직교 화면 사각형.
+        /// 소품·절벽 메시가 어느 칸을 만들지 정하는 한 곳.
+        /// </summary>
+        public static Rect ViewRect(Transform follow, Camera cam)
+        {
+            if (TiltView.Active)
+            {
+                Vector2 look = follow != null ? (Vector2)TiltView.LookPoint(follow) : Vector2.zero;
+                var r = TiltView.GroundFootprint(cam != null ? cam.aspect : 16f / 9f);
+                return new Rect(look.x + r.xMin, look.y + r.yMin, r.width, r.height);
+            }
+            Vector2 center = follow != null ? (Vector2)follow.position : Vector2.zero;
+            float halfW = 11f, halfH = 6.5f;
+            if (cam != null && cam.orthographic)
+            {
+                halfH = cam.orthographicSize;
+                halfW = halfH * cam.aspect;
+            }
+            return new Rect(center.x - halfW, center.y - halfH, halfW * 2f, halfH * 2f);
         }
 
         /// <summary>한 칸의 소품을 다시 만든다 (맵 편집기에서 그 칸을 고쳤을 때). 화면 주변에 없는 칸이면 아무것도 하지 않는다.</summary>
@@ -258,14 +261,16 @@ namespace Samkuk.World
                 sr.sprite = p.prop.sprite;
                 sr.color = p.tinted ? p.tint : Color.white;   // 풀에서 꺼낸 것은 이전 색이 남아 있으므로 항상 다시 정한다
                 sr.flipX = p.flipX;
-                sr.transform.position = new Vector3(p.position.x, p.position.y, TiltView.GroundZ(PropZ));
+                // 틸트면 언덕 위에 올려놓는다 (바닥 그림은 윗면보다 살짝 뒤, 서 있는 소품의 발은 윗면 높이)
+                float z = TiltView.Active ? TerrainHeight.ZOf(map.HeightAt(p.position)) + (standing ? 0f : TiltPreset.GroundZ) : PropZ;
+                sr.transform.position = new Vector3(p.position.x, p.position.y, z);
                 sr.transform.localScale = new Vector3(p.scale, p.scale * (p.stretchY > 0f ? p.stretchY : 1f), 1f);
                 if (standing)
                 {
                     // 서 있는 소품: 캐릭터와 같은 월드 정렬(발 y), 눕히지 않는다 (맵 편집기에서 돌려 둔 값이 있어도 무시).
                     // 2.5D 틸트면 서 있는 그림(StandingSprite)이 되어 셰이더가 세운다
                     if (material != null) sr.sharedMaterial = material;   // 서 있는 그림이 틸트 재질로 바꾸기 전의 원래 재질
-                    WorldSorting.Configure(sr, PixelArt.PropFootUnits);
+                    WorldSorting.Configure(sr, PixelArt.PropFootUnits, TiltPreset.PropStretch);
                     sr.transform.localRotation = Quaternion.identity;
                     view.stand = sr.GetComponent<StandingSprite>();
                 }
@@ -325,7 +330,7 @@ namespace Samkuk.World
                 pl.baseIntensity = prop.lightIntensity * TiltPreset.PointLightScale;
                 l.intensity = pl.baseIntensity;
                 float h = Mathf.Max(prop.lightHeight * p.scale, TiltPreset.GlowHeight);
-                l.transform.position = new Vector3(p.position.x, p.position.y, 0f) + TiltView.Lift(h);
+                l.transform.position = new Vector3(p.position.x, p.position.y, TerrainHeight.ZOf(map.HeightAt(p.position))) + TiltView.Lift(h, p.position);
             }
             return pl;
         }

@@ -74,7 +74,7 @@ namespace Samkuk.Enemies
             {
                 EnemyProjectile p = active[i];
                 Vector2 pos = (Vector2)p.transform.position + p.Velocity * dt;
-                p.transform.position = pos;
+                p.transform.position = Samkuk.World.TerrainHeight.Feet(pos);   // 언덕 위를 지나면 윗면 위로
                 p.LifeLeft -= dt;
 
                 if (p.LifeLeft <= 0f)

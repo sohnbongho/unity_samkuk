@@ -54,5 +54,8 @@ namespace Samkuk.Data
         [Tooltip("강둑: 물 밑에 더 넓게 깔리는 흙색 가장자리")] public Sprite riverBank;
         [Tooltip("강 폭 (유닛, 성마다 +-15%)")] public float riverWidth = 3.6f;
         [Tooltip("강물 위에서의 속도 배율 (0.5 = 절반). 1 이면 느려지지 않는다")] public float riverSlowFactor = 0.5f;
+
+        [Header("언덕 (Step 16-2)")]
+        [Tooltip("절벽 옆면 그림 (2x2 유닛 = 64x64px, 반복). 비워 두면 코드로 만든 임시 그림")] public Texture2D cliffTexture;
     }
 }

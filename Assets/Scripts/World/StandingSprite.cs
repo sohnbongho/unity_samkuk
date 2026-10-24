@@ -16,6 +16,7 @@ namespace Samkuk.World
         [SerializeField, Tooltip("카메라 쪽으로 미는 거리. 몸과 같은 평면에 겹치는 무기/막대가 번쩍이지 않게")] float toward;
         [SerializeField, Tooltip("알파 블렌드(깊이 안 씀, 그림자 없음)")] bool translucent;
         [SerializeField, Tooltip("0 보다 크면 자기 자리를 발에서 이만큼 위로 (체력 막대 뿌리)")] float liftHeight;
+        [SerializeField, Tooltip("세로 배율 보정 (서 있는 소품은 TiltPreset.PropStretch, 캐릭터는 1)")] float stretchScale = 1f;
 
         static readonly int SeedId = Shader.PropertyToID("_StandSeed");
         static MaterialPropertyBlock block;
@@ -34,7 +35,7 @@ namespace Samkuk.World
         public bool IsStanding => swapped;
 
         /// <summary>붙이거나(이미 있으면 값만 고치고) 지금 상태에 맞춘다.</summary>
-        public static StandingSprite Attach(GameObject go, float footLift = 0f, float toward = 0f, bool translucent = false, float liftHeight = 0f)
+        public static StandingSprite Attach(GameObject go, float footLift = 0f, float toward = 0f, bool translucent = false, float liftHeight = 0f, float stretchScale = 1f)
         {
             if (go == null) return null;
             var s = go.GetComponent<StandingSprite>();
@@ -43,6 +44,7 @@ namespace Samkuk.World
             s.toward = toward;
             s.translucent = translucent;
             s.liftHeight = liftHeight;
+            s.stretchScale = stretchScale;
             if (!s.enabled) s.enabled = true;          // 풀에서 돌아온 것(Release 로 꺼 둠): OnEnable 이 맞춘다
             else if (s.isActiveAndEnabled) s.Apply();
             return s;
@@ -87,6 +89,7 @@ namespace Samkuk.World
 
         void LateUpdate()
         {
+            if (liftHeight > 0f && TiltView.Active) ApplyLift();
             // 컷아웃 재질은 알파를 섞지 못한다: 렌더러 색의 알파가 1 보다 작은 동안(무적 깜빡임, 쓰러진 아군, 흐려진 소품)만 반투명 재질로
             if (!swapped || sr == null) return;
             SetTranslucent(sr.color.a < 0.999f);
@@ -100,7 +103,7 @@ namespace Samkuk.World
             {
                 if (on)
                 {
-                    var mat = TiltView.StandingMaterial(footLift, toward, translucent);
+                    var mat = TiltView.StandingMaterial(footLift, toward, translucent, stretchScale);
                     if (mat != null)
                     {
                         if (!swapped) original = sr.sharedMaterial;
@@ -118,7 +121,16 @@ namespace Samkuk.World
                 }
                 else Restore();
             }
-            if (liftHeight > 0f) transform.localPosition = on ? TiltView.Lift(liftHeight) : new Vector3(0f, liftHeight, 0f);
+            if (liftHeight > 0f) ApplyLift();
+        }
+
+        /// <summary>자기 자리를 발에서 liftHeight 만큼 위로 (그 자리의 세로 배율로). 틸트에서는 자리가 바뀌면 배율도 바뀌어 매 프레임 맞춘다.</summary>
+        void ApplyLift()
+        {
+            var parent = transform.parent;
+            Vector2 at = parent != null ? (Vector2)parent.position : (Vector2)transform.position;
+            var want = TiltView.Active ? TiltView.Lift(liftHeight, at) : new Vector3(0f, liftHeight, 0f);
+            if ((transform.localPosition - want).sqrMagnitude > 1e-8f) transform.localPosition = want;
         }
 
         void Restore()

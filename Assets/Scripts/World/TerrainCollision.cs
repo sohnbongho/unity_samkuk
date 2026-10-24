@@ -24,7 +24,16 @@ namespace Samkuk.World
             public bool Blocks => slow <= 0f;
         }
 
+        /// <summary>절벽 벽(Step 16-2): 높이가 다른 두 셀 사이의 가장자리 선분. 양쪽 어느 쪽에서도 넘지 못한다 (경사로 셀의 낮은 가장자리는 높이가 같아 벽이 없다).</summary>
+        public struct Wall
+        {
+            public Vector2 a, b;
+            public Vector2Int chunk;
+        }
+
         public const float CellSize = 4f;
+        /// <summary>절벽 벽과 몸 사이 여유. 서 있는 그림은 몸보다 넓어(걷기 칸 1.5유닛) 발이 벽에 닿으면 그림 가장자리가 벽면 안으로 들어가 보인다.</summary>
+        public const float WallPadding = 0.25f;
         /// <summary>질의하는 몸의 최대 반지름(보스 포함) + 여유. 원을 셀에 넣을 때 이만큼 넓게 넣어 질의는 자기 셀 하나만 본다.</summary>
         const float BodyMargin = 1.6f;
         /// <summary>겹쳤을 때 밀어내는 최대 속도 (유닛/초). 너무 크면 튕기고 너무 작으면 한동안 소품 안에 서 있다.</summary>
@@ -39,8 +48,10 @@ namespace Samkuk.World
 
         readonly TerrainMap map;
         readonly Dictionary<Vector2Int, List<Circle>> cells = new Dictionary<Vector2Int, List<Circle>>();
+        readonly Dictionary<Vector2Int, List<Wall>> wallCells = new Dictionary<Vector2Int, List<Wall>>();
         readonly HashSet<Vector2Int> builtChunks = new HashSet<Vector2Int>();
         readonly List<Circle> scratch = new List<Circle>(64);
+        readonly List<Wall> wallScratch = new List<Wall>(64);
         Vector2Int lastEnsured = new Vector2Int(int.MinValue, int.MinValue);
 
         public TerrainMap Map => map;
@@ -69,19 +80,33 @@ namespace Samkuk.World
             return factor;
         }
 
-        /// <summary>반지름 <paramref name="radius"/> 인 몸이 막는 소품에 겹쳐 있는가.</summary>
+        /// <summary>반지름 <paramref name="radius"/> 인 몸이 막는 소품이나 절벽 벽에 겹쳐 있는가.</summary>
         public bool Overlaps(Vector2 position, float radius)
         {
             var list = CellAt(position);
-            if (list == null) return false;
-            for (int i = 0; i < list.Count; i++)
-            {
-                var c = list[i];
-                if (!c.Blocks) continue;
-                float min = c.radius + radius;
-                if ((position - c.center).sqrMagnitude < min * min) return true;
-            }
+            if (list != null)
+                for (int i = 0; i < list.Count; i++)
+                {
+                    var c = list[i];
+                    if (!c.Blocks) continue;
+                    float min = c.radius + radius;
+                    if ((position - c.center).sqrMagnitude < min * min) return true;
+                }
+            var walls = WallsAt(position);
+            if (walls != null)
+                for (int i = 0; i < walls.Count; i++)
+                    if ((position - ClosestOnWall(walls[i], position)).sqrMagnitude < (radius + WallPadding) * (radius + WallPadding)) return true;
             return false;
+        }
+
+        /// <summary>선분 위에서 점에 가장 가까운 자리.</summary>
+        public static Vector2 ClosestOnWall(Wall w, Vector2 p)
+        {
+            Vector2 ab = w.b - w.a;
+            float len = ab.sqrMagnitude;
+            if (len < 1e-8f) return w.a;
+            float t = Mathf.Clamp01(Vector2.Dot(p - w.a, ab) / len);
+            return w.a + ab * t;
         }
 
         /// <summary>
@@ -92,44 +117,57 @@ namespace Samkuk.World
         public Vector2 Resolve(Vector2 position, float radius, Vector2 velocity, float dt, bool deflect = false, int side = 1)
         {
             var list = CellAt(position);
-            if (list == null) return velocity;
+            var walls = WallsAt(position);
+            if (list == null && walls == null) return velocity;
 
             Vector2 slide = velocity;
             Vector2 push = Vector2.zero;
             float speedSqr = velocity.sqrMagnitude;
             float invDt = dt > 1e-5f ? 1f / dt : 0f;
 
-            for (int i = 0; i < list.Count; i++)
-            {
-                var c = list[i];
-                if (!c.Blocks) continue;
-
-                Vector2 d = position - c.center;
-                float min = c.radius + radius;
-                float reach = min + Skin;
-                float dSqr = d.sqrMagnitude;
-                if (dSqr >= reach * reach) continue;
-
-                float dist = Mathf.Sqrt(dSqr);
-                Vector2 n = dist > 1e-4f ? d / dist : Tangent(Vector2.right, side);   // 정확히 중심에 있으면 아무 쪽으로든 밀어낸다
-
-                if (dist < min)   // 겹침: 바깥으로. 한 틱에 다 빼지 않고 상한을 둬 튕기지 않게 한다
-                    push += n * Mathf.Min((min - dist) * invDt, PushOutSpeed);
-
-                float into = Vector2.Dot(slide, n);
-                if (into >= 0f) continue;   // 멀어지는 중이면 그대로
-                slide -= n * into;          // 안쪽 성분 제거 = 접선 방향으로 미끄러짐
-
-                if (deflect && speedSqr > 1e-6f && slide.sqrMagnitude < speedSqr * StuckRatioSqr)
+            if (list != null)
+                for (int i = 0; i < list.Count; i++)
                 {
-                    // 정면으로 막혀 멈춤: 원래 가려던 쪽에 가까운 접선으로 돌아간다 (정확히 정면이면 side 로 고른다)
-                    Vector2 t = Tangent(n, 1);
-                    float along = Vector2.Dot(t, velocity);
-                    int pick = along > 1e-3f ? 1 : along < -1e-3f ? -1 : (side >= 0 ? 1 : -1);
-                    slide = t * (pick * Mathf.Sqrt(speedSqr) * 0.8f);
+                    var c = list[i];
+                    if (!c.Blocks) continue;
+                    Vector2 d = position - c.center;
+                    float min = c.radius + radius;
+                    Vector2 n = d.sqrMagnitude > 1e-8f ? d.normalized : Tangent(Vector2.right, side);   // 정확히 중심에 있으면 아무 쪽으로든 밀어낸다
+                    Block(ref slide, ref push, d.magnitude, min, n, velocity, speedSqr, invDt, deflect, side);
                 }
-            }
+
+            if (walls != null)
+                for (int i = 0; i < walls.Count; i++)
+                {
+                    // 벽은 두께 없는 선분: 가장 가까운 점에서 몸 쪽으로의 법선. 선 위에 정확히 있으면 선에 수직인 쪽으로 밀어낸다
+                    Vector2 d = position - ClosestOnWall(walls[i], position);
+                    Vector2 n = d.sqrMagnitude > 1e-8f ? d.normalized : Tangent((walls[i].b - walls[i].a).normalized, side);
+                    Block(ref slide, ref push, d.magnitude, radius + WallPadding, n, velocity, speedSqr, invDt, deflect, side);
+                }
             return slide + push;
+        }
+
+        /// <summary>막는 것 하나(원 또는 벽)에 대해: 겹치면 밀어내고, 안쪽으로 향하는 속도 성분을 지워 미끄러지게 한다. <paramref name="min"/> 은 닿는 거리.</summary>
+        void Block(ref Vector2 slide, ref Vector2 push, float dist, float min, Vector2 n, Vector2 velocity, float speedSqr, float invDt, bool deflect, int side)
+        {
+            float reach = min + Skin;
+            if (dist >= reach) return;
+
+            if (dist < min)   // 겹침: 바깥으로. 한 틱에 다 빼지 않고 상한을 둬 튕기지 않게 한다
+                push += n * Mathf.Min((min - dist) * invDt, PushOutSpeed);
+
+            float into = Vector2.Dot(slide, n);
+            if (into >= 0f) return;   // 멀어지는 중이면 그대로
+            slide -= n * into;        // 안쪽 성분 제거 = 접선 방향으로 미끄러짐
+
+            if (deflect && speedSqr > 1e-6f && slide.sqrMagnitude < speedSqr * StuckRatioSqr)
+            {
+                // 정면으로 막혀 멈춤: 원래 가려던 쪽에 가까운 접선으로 돌아간다 (정확히 정면이면 side 로 고른다)
+                Vector2 t = Tangent(n, 1);
+                float along = Vector2.Dot(t, velocity);
+                int pick = along > 1e-3f ? 1 : along < -1e-3f ? -1 : (side >= 0 ? 1 : -1);
+                slide = t * (pick * Mathf.Sqrt(speedSqr) * 0.8f);
+            }
         }
 
         /// <summary>막는 소품 안이면 가장 가까운 바깥 자리로 옮긴 위치 (스폰/순간이동용). 아니면 그대로.</summary>
@@ -138,23 +176,38 @@ namespace Samkuk.World
             for (int pass = 0; pass < 8; pass++)   // 빽빽한 숲에서는 한 나무에서 밀려 나온 자리가 다른 나무 안일 수 있어 몇 번 되풀이한다
             {
                 var list = CellAt(position);
-                if (list == null) return position;
+                var walls = WallsAt(position);
+                if (list == null && walls == null) return position;
 
                 bool moved = false;
-                for (int i = 0; i < list.Count; i++)
-                {
-                    var c = list[i];
-                    if (!c.Blocks) continue;
-                    Vector2 d = position - c.center;
-                    float min = c.radius + radius;
-                    float dSqr = d.sqrMagnitude;
-                    if (dSqr >= min * min) continue;
+                if (list != null)
+                    for (int i = 0; i < list.Count; i++)
+                    {
+                        var c = list[i];
+                        if (!c.Blocks) continue;
+                        Vector2 d = position - c.center;
+                        float min = c.radius + radius;
+                        float dSqr = d.sqrMagnitude;
+                        if (dSqr >= min * min) continue;
 
-                    float dist = Mathf.Sqrt(dSqr);
-                    Vector2 n = dist > 1e-4f ? d / dist : Vector2.up;
-                    position = c.center + n * (min + 0.02f);
-                    moved = true;
-                }
+                        float dist = Mathf.Sqrt(dSqr);
+                        Vector2 n = dist > 1e-4f ? d / dist : Vector2.up;
+                        position = c.center + n * (min + 0.02f);
+                        moved = true;
+                    }
+                if (walls != null)
+                    for (int i = 0; i < walls.Count; i++)
+                    {
+                        Vector2 closest = ClosestOnWall(walls[i], position);
+                        Vector2 d = position - closest;
+                        float dSqr = d.sqrMagnitude;
+                        float wallMin = radius + WallPadding;
+                        if (dSqr >= wallMin * wallMin) continue;
+                        float dist = Mathf.Sqrt(dSqr);
+                        Vector2 n = dist > 1e-4f ? d / dist : Tangent((walls[i].b - walls[i].a).normalized, 1);
+                        position = closest + n * (wallMin + 0.02f);
+                        moved = true;
+                    }
                 if (!moved) return position;
             }
             return position;
@@ -171,8 +224,11 @@ namespace Samkuk.World
             int y0 = Mathf.FloorToInt((chunk.y * c - CellSize) / CellSize), y1 = Mathf.FloorToInt(((chunk.y + 1) * c + CellSize) / CellSize);
             for (int y = y0; y <= y1; y++)
                 for (int x = x0; x <= x1; x++)
-                    if (cells.TryGetValue(new Vector2Int(x, y), out var list))
-                        list.RemoveAll(ci => ci.chunk == chunk);
+                {
+                    var key = new Vector2Int(x, y);
+                    if (cells.TryGetValue(key, out var list)) list.RemoveAll(ci => ci.chunk == chunk);
+                    if (wallCells.TryGetValue(key, out var walls)) walls.RemoveAll(w => w.chunk == chunk);
+                }
             lastEnsured = new Vector2Int(int.MinValue, int.MinValue);
         }
 
@@ -184,12 +240,27 @@ namespace Samkuk.World
             result.AddRange(scratch);
         }
 
+        /// <summary>한 칸에서 나온 절벽 벽들 (테스트/표시용). 칸의 동쪽·북쪽 가장자리까지 포함한다.</summary>
+        public void CollectWalls(Vector2Int chunk, List<Wall> result)
+        {
+            wallScratch.Clear();
+            ExtractWalls(chunk, wallScratch);
+            result.AddRange(wallScratch);
+        }
+
         // ───────────────────────── 내부 ─────────────────────────
 
         List<Circle> CellAt(Vector2 position)
         {
             EnsureAround(position);
             cells.TryGetValue(CellOf(position), out var list);
+            return list;
+        }
+
+        List<Wall> WallsAt(Vector2 position)
+        {
+            EnsureAround(position);
+            wallCells.TryGetValue(CellOf(position), out var list);
             return list;
         }
 
@@ -225,6 +296,57 @@ namespace Samkuk.World
                         list.Add(ci);
                     }
             }
+
+            wallScratch.Clear();
+            ExtractWalls(chunk, wallScratch);
+            foreach (var w in wallScratch)
+            {
+                float minX = Mathf.Min(w.a.x, w.b.x) - BodyMargin, maxX = Mathf.Max(w.a.x, w.b.x) + BodyMargin;
+                float minY = Mathf.Min(w.a.y, w.b.y) - BodyMargin, maxY = Mathf.Max(w.a.y, w.b.y) + BodyMargin;
+                int x0 = Mathf.FloorToInt(minX / CellSize), x1 = Mathf.FloorToInt(maxX / CellSize);
+                int y0 = Mathf.FloorToInt(minY / CellSize), y1 = Mathf.FloorToInt(maxY / CellSize);
+                for (int y = y0; y <= y1; y++)
+                    for (int x = x0; x <= x1; x++)
+                    {
+                        var key = new Vector2Int(x, y);
+                        if (!wallCells.TryGetValue(key, out var list)) wallCells[key] = list = new List<Wall>(8);
+                        list.Add(w);
+                    }
+            }
+        }
+
+        /// <summary>
+        /// 칸의 높이(<see cref="TerrainMap.GetHeights"/>)에서 절벽 벽을 뽑는다: 셀의 동쪽·북쪽 가장자리를 이웃과 비교해 높이가 다르면 벽
+        /// (서쪽·남쪽 가장자리는 이웃 칸이 맡아 두 번 나오지 않는다). 가장자리 한쪽 끝만 달라도(경사로 옆) 벽으로 친다.
+        /// </summary>
+        void ExtractWalls(Vector2Int chunk, List<Wall> result)
+        {
+            if (map == null) return;
+            var h = map.GetHeights(chunk);
+            if (h == null) return;
+            var east = map.GetHeights(new Vector2Int(chunk.x + 1, chunk.y));
+            var north = map.GetHeights(new Vector2Int(chunk.x, chunk.y + 1));
+            float s = TerrainHeight.CellSize;
+
+            for (int cy = 0; cy < HeightChunk.Cells; cy++)
+                for (int cx = 0; cx < HeightChunk.Cells; cx++)
+                {
+                    var o = TerrainHeight.CellOrigin(chunk, cx, cy);
+                    // 동쪽 가장자리: 이 셀의 10→11, 이웃(동)의 00→01
+                    float a0 = TerrainHeight.Corner(h, cx, cy, 1, 0), a1 = TerrainHeight.Corner(h, cx, cy, 1, 1);
+                    float b0, b1;
+                    if (cx + 1 < HeightChunk.Cells) { b0 = TerrainHeight.Corner(h, cx + 1, cy, 0, 0); b1 = TerrainHeight.Corner(h, cx + 1, cy, 0, 1); }
+                    else { b0 = TerrainHeight.Corner(east, 0, cy, 0, 0); b1 = TerrainHeight.Corner(east, 0, cy, 0, 1); }
+                    if (TerrainHeight.IsWall(a0, b0) || TerrainHeight.IsWall(a1, b1))
+                        result.Add(new Wall { a = new Vector2(o.x + s, o.y), b = new Vector2(o.x + s, o.y + s), chunk = chunk });
+
+                    // 북쪽 가장자리: 이 셀의 01→11, 이웃(북)의 00→10
+                    a0 = TerrainHeight.Corner(h, cx, cy, 0, 1); a1 = TerrainHeight.Corner(h, cx, cy, 1, 1);
+                    if (cy + 1 < HeightChunk.Cells) { b0 = TerrainHeight.Corner(h, cx, cy + 1, 0, 0); b1 = TerrainHeight.Corner(h, cx, cy + 1, 1, 0); }
+                    else { b0 = TerrainHeight.Corner(north, cx, 0, 0, 0); b1 = TerrainHeight.Corner(north, cx, 0, 1, 0); }
+                    if (TerrainHeight.IsWall(a0, b0) || TerrainHeight.IsWall(a1, b1))
+                        result.Add(new Wall { a = new Vector2(o.x, o.y + s), b = new Vector2(o.x + s, o.y + s), chunk = chunk });
+                }
         }
 
         /// <summary>칸의 배치에서 막는 원과 느려지는 원을 뽑는다. 강물 토막은 폭의 절반을 반지름으로, 소품은 자기 값 x 크기 배율.</summary>

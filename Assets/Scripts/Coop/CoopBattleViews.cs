@@ -299,7 +299,7 @@ namespace Samkuk.Coop
             if (!swing.Active || held.sprite == null) { held.enabled = false; return; }
             held.enabled = true;
             held.flipX = swing.FacesLeft;
-            held.transform.position = (Vector3)ownerPosition + Samkuk.World.TiltView.Lift(SlashWeapon.HandHeight);
+            held.transform.position = Samkuk.World.TerrainHeight.Feet(ownerPosition) + Samkuk.World.TiltView.Lift(SlashWeapon.HandHeight, ownerPosition);
             held.transform.rotation = Quaternion.Euler(0f, 0f, swing.Angle - 90f);
         }
 

@@ -21,12 +21,14 @@ namespace Samkuk.World
         public float r = 1f, g = 1f, b = 1f, a = 1f;
     }
 
-    /// <summary>12x12 유닛 칸 하나의 직접 편집한 내용. 이 칸은 자동 생성 대신 이 목록을 그대로 쓴다.</summary>
+    /// <summary>12x12 유닛 칸 하나의 직접 편집한 내용(물건 목록과 높이). 이 칸은 자동 생성 대신 이 내용을 그대로 쓴다.</summary>
     [Serializable]
     public class MapChunk
     {
         public int cx, cy;
         public List<MapItem> items = new List<MapItem>();
+        [UnityEngine.Tooltip("셀(2x2 유닛) 6x6 의 층 (0~3). 비어 있으면 자동 생성 높이 (version 1 파일)")] public int[] levels;
+        [UnityEngine.Tooltip("셀마다 경사로 방향 (0 없음, 1 남, 2 북, 3 서, 4 동)")] public int[] ramps;
     }
 
     /// <summary>
@@ -36,7 +38,7 @@ namespace Samkuk.World
     [Serializable]
     public class MapLayoutData
     {
-        public const int CurrentVersion = 1;
+        public const int CurrentVersion = 2;   // 2: 칸 높이(levels/ramps, Step 16-2)
 
         public int version = CurrentVersion;
         public string castleId;

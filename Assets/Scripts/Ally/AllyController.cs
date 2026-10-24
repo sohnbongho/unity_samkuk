@@ -278,7 +278,7 @@ namespace Samkuk.Allies
             if (terrain != null) velocity = terrain.Resolve(pos, AllyConfig.BodyRadius, velocity, dt);   // 나무/바위를 따라 미끄러진다
             if (velocity.sqrMagnitude < 1e-6f) return false;
 
-            transform.position = pos + velocity * dt;
+            transform.position = Samkuk.World.TerrainHeight.Feet(pos + velocity * dt);   // 언덕 위면 올라선다
             return true;
         }
 

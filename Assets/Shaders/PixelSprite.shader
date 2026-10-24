@@ -15,6 +15,7 @@ Shader "Samkuk/PixelSprite"
         _Stand ("Stand Up (0 = flat, 1 = standing)", Float) = 1
         _FootLift ("Foot Lift (units, pivot to bottom edge)", Float) = 0
         _Toward ("Toward Camera (units)", Float) = 0
+        _StretchScale ("Stand Stretch Scale (props < 1)", Float) = 1
         [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend ("Src Blend", Float) = 1
         [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend ("Dst Blend", Float) = 0
         [Enum(Off, 0, On, 1)] _ZWrite ("ZWrite", Float) = 1
@@ -36,12 +37,14 @@ Shader "Samkuk/PixelSprite"
             float _Stand;
             float _FootLift;
             float _Toward;
+            float _StretchScale;
         CBUFFER_END
 
         TEXTURE2D(_MainTex);
         SAMPLER(sampler_MainTex);
 
-        // 전역값 (TiltView 가 넣는다): 서 있는 그림의 위쪽 방향과 카메라 쪽 방향. 틸트가 꺼져 있으면 (0,1,0) / 0 이라 세워도 그대로다.
+        // 전역값 (TiltView 가 넣는다): 서 있는 그림의 위쪽 방향 x 세로 배율(수직인 것은 카메라 기울기의 cos 만큼 납작해 보이므로 1/cos 을 곱해 둔다;
+        // 직교 카메라라 화면 어디서나 같다)과 카메라 쪽 방향. 틸트가 꺼져 있으면 (0,1,0) / 0 이라 세워도 그대로다.
         float4 _SamkukStandUp;
         float4 _SamkukStandToward;
 
@@ -58,7 +61,7 @@ Shader "Samkuk/PixelSprite"
             float3 d = pw - origin;
             float scaleY = length(float3(UNITY_MATRIX_M._m01, UNITY_MATRIX_M._m11, UNITY_MATRIX_M._m21));
             float3 stood = origin + float3(d.x, 0.0, 0.0)
-                + _SamkukStandUp.xyz * (d.y + _FootLift * scaleY)
+                + _SamkukStandUp.xyz * ((d.y + _FootLift * scaleY) * _StretchScale)
                 + _SamkukStandToward.xyz * _Toward;
             return lerp(pw, stood, _Stand);
         }

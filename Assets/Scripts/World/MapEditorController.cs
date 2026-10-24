@@ -31,8 +31,10 @@ namespace Samkuk.World
     {
         public static readonly Vector2 ReferenceResolution = new Vector2(1920f, 1080f);
 
-        public enum Tool { Place, Select, Erase }
+        public enum Tool { Place, Select, Erase, Height }
         public enum EraseTarget { All, Props, Patches, Water }
+        /// <summary>높이 도구(Step 16-2)의 동작: 셀을 올리고 내리고, 경사로(내려가는 쪽)를 두고, 평지로.</summary>
+        public enum HeightMode { Raise, Lower, RampSouth, RampNorth, RampWest, RampEast, Flatten }
 
         const float MinZoom = 3f, MaxZoom = 28f;
         const float LeftPanelWidth = 250f, RightPanelWidth = 400f, TopBarHeight = 74f, BottomBarHeight = 44f;
@@ -52,6 +54,7 @@ namespace Samkuk.World
         public CastleData CurrentCastle { get; private set; }
         public Tool CurrentTool { get; private set; } = Tool.Place;
         public EraseTarget CurrentEraseTarget { get; private set; } = EraseTarget.All;
+        public HeightMode CurrentHeightMode { get; private set; } = HeightMode.Raise;
         public PaletteEntry SelectedEntry { get; private set; }
         public ItemRef Selected { get; private set; } = ItemRef.None;
         public CastleTerrain? TerrainOverride { get; private set; }
@@ -66,6 +69,7 @@ namespace Samkuk.World
         Camera cam;
         InfiniteBackground background;
         TerrainPropSpawner spawner;
+        TerrainCliffs cliffs;
         readonly List<CastleData> castles = new List<CastleData>();
         int castleIndex;
         List<PaletteEntry> palette = new List<PaletteEntry>();
@@ -76,15 +80,21 @@ namespace Samkuk.World
         bool strokeActive, dragging, moveStarted;
         Vector2 dragOffset, lastStamp;
         bool hasLastStamp;
+        Vector2Int lastHeightCell;   // 높이 도구: 한 획에서 같은 셀을 여러 번 고치지 않게 (세계 셀 번호)
+        bool hasLastHeightCell;
         float messageLeft;
         bool exitArmed;
         bool built;
 
         // 화면 위에 그리는 것들
-        static Sprite whiteSprite, ringSprite, groundFallback;
-        SpriteRenderer ghost, selectionRing, brushRing, startRing;
+        static Sprite whiteSprite, ringSprite, groundFallback, arrowSprite;
+        SpriteRenderer ghost, selectionRing, brushRing, startRing, cellRing;
         readonly List<SpriteRenderer> gridLines = new List<SpriteRenderer>();
         readonly List<SpriteRenderer> chunkMarks = new List<SpriteRenderer>();
+        readonly List<SpriteRenderer> heightMarks = new List<SpriteRenderer>();   // 층 덮개 + 경사로 화살표
+        readonly List<SpriteRenderer> wallMarks = new List<SpriteRenderer>();     // 절벽 벽 선
+        readonly List<TerrainCollision.Wall> wallBuffer = new List<TerrainCollision.Wall>();
+        TerrainCollision wallSource;   // 벽 선을 뽑는 데 쓰는 충돌(맵이 바뀌면 새로)
 
         // UI
         RectTransform paletteContent, tabRow;
@@ -94,6 +104,7 @@ namespace Samkuk.World
         readonly List<Button> tabButtons = new List<Button>();
         readonly List<string> tabNames = new List<string>();
         readonly Dictionary<Tool, Button> toolButtons = new Dictionary<Tool, Button>();
+        readonly Dictionary<HeightMode, Button> heightButtons = new Dictionary<HeightMode, Button>();
         Text castleLabel, statusLabel, selectionLabel, terrainLabel, snapLabel, gridLabel, brushLabel, eraseLabel, paletteHint, saveLabel;
         Button undoButton, redoButton;
         Color buttonBase = Color.white;
@@ -216,7 +227,10 @@ namespace Samkuk.World
             else Model.SetMap(map);
             background.ApplyMap(map);
             spawner = background.Props;
+            cliffs = background.Cliffs;
             if (spawner != null) spawner.SetFollow(cam.transform);
+            if (cliffs != null) cliffs.SetFollow(cam.transform);
+            wallSource = new TerrainCollision(map);   // 벽 선 표시용 (배경의 것과 별개: 편집 중 칸마다 다시 뽑는다)
         }
 
         /// <summary>지금 맵을 저장한다. 고친 내용이 없으면 저장 파일을 지워 자동 생성 맵으로 둔다.</summary>
@@ -325,6 +339,47 @@ namespace Samkuk.World
         {
             CurrentEraseTarget = (EraseTarget)(((int)CurrentEraseTarget + 1) % 4);
             RefreshUi();
+        }
+
+        /// <summary>높이 도구의 동작을 고른다 (도구도 높이로 바뀐다).</summary>
+        public void SetHeightMode(HeightMode mode)
+        {
+            CurrentHeightMode = mode;
+            SetTool(Tool.Height);
+        }
+
+        /// <summary>높이 도구를 한 셀에 적용한다 (한 획에서 같은 셀은 한 번만). 바뀌었으면 true.</summary>
+        public bool ApplyHeight(Vector2 world)
+        {
+            if (Model == null) return false;
+            var cell = new Vector2Int(Mathf.FloorToInt(world.x / TerrainHeight.CellSize), Mathf.FloorToInt(world.y / TerrainHeight.CellSize));
+            if (hasLastHeightCell && cell == lastHeightCell) return false;
+            lastHeightCell = cell;
+            hasLastHeightCell = true;
+            switch (CurrentHeightMode)
+            {
+                case HeightMode.Raise: return Model.ChangeLevel(world, +1);
+                case HeightMode.Lower: return Model.ChangeLevel(world, -1);
+                case HeightMode.RampSouth: return Model.SetRamp(world, RampDir.South);
+                case HeightMode.RampNorth: return Model.SetRamp(world, RampDir.North);
+                case HeightMode.RampWest: return Model.SetRamp(world, RampDir.West);
+                case HeightMode.RampEast: return Model.SetRamp(world, RampDir.East);
+                default: return Model.Flatten(world);
+            }
+        }
+
+        public static string HeightModeLabel(HeightMode mode)
+        {
+            switch (mode)
+            {
+                case HeightMode.Raise: return "올리기 ＋";
+                case HeightMode.Lower: return "내리기 －";
+                case HeightMode.RampSouth: return "경사로 ↓";
+                case HeightMode.RampNorth: return "경사로 ↑";
+                case HeightMode.RampWest: return "경사로 ←";
+                case HeightMode.RampEast: return "경사로 →";
+                default: return "평지로";
+            }
         }
 
         public void ChangeBrush(float delta)
@@ -537,6 +592,7 @@ namespace Samkuk.World
             if (kb.digit1Key.wasPressedThisFrame) SetTool(Tool.Place);
             else if (kb.digit2Key.wasPressedThisFrame) SetTool(Tool.Select);
             else if (kb.digit3Key.wasPressedThisFrame) SetTool(Tool.Erase);
+            else if (kb.digit4Key.wasPressedThisFrame) SetTool(Tool.Height);
             else if (kb.gKey.wasPressedThisFrame) ToggleGrid();
             else if (kb.qKey.wasPressedThisFrame) RotateSelected(shift ? -1f : -15f);
             else if (kb.eKey.wasPressedThisFrame) RotateSelected(shift ? 1f : 15f);
@@ -599,6 +655,11 @@ namespace Samkuk.World
                     Model.BeginStroke();
                     EraseAt(world);
                     break;
+                case Tool.Height:
+                    Model.BeginStroke();
+                    hasLastHeightCell = false;
+                    ApplyHeight(world);
+                    break;
             }
         }
 
@@ -630,6 +691,9 @@ namespace Samkuk.World
                 case Tool.Erase:
                     EraseAt(world);
                     break;
+                case Tool.Height:
+                    ApplyHeight(world);
+                    break;
             }
         }
 
@@ -638,6 +702,7 @@ namespace Samkuk.World
             strokeActive = false;
             dragging = false;
             hasLastStamp = false;
+            hasLastHeightCell = false;
             if (Model != null) Model.EndStroke();
         }
 
@@ -647,7 +712,9 @@ namespace Samkuk.World
             foreach (var chunk in Model.ConsumeDirtyChunks())
             {
                 spawner.RebuildChunk(chunk);
+                if (cliffs != null) cliffs.RebuildChunk(chunk);
                 background.Collision?.Invalidate(chunk);   // 보이는 것과 막는 것이 어긋나지 않게 (전투 테스트는 어차피 새로 만든다)
+                wallSource?.Invalidate(chunk);
             }
         }
 
@@ -706,6 +773,29 @@ namespace Samkuk.World
             return ringSprite;
         }
 
+        /// <summary>위를 가리키는 작은 삼각형 (경사로가 내려가는 쪽을 돌려서 표시).</summary>
+        static Sprite ArrowSprite()
+        {
+            if (arrowSprite == null)
+            {
+                const int n = 32;
+                var tex = new Texture2D(n, n, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave, filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp };
+                var px = new Color32[n * n];
+                for (int y = 0; y < n; y++)
+                    for (int x = 0; x < n; x++)
+                    {
+                        float fy = (y + 0.5f) / n, half = (1f - fy) * 0.45f;   // 위로 갈수록 좁아진다
+                        bool inside = fy > 0.1f && fy < 0.95f && Mathf.Abs((x + 0.5f) / n - 0.5f) < half;
+                        px[y * n + x] = inside ? new Color32(255, 255, 255, 255) : new Color32(0, 0, 0, 0);
+                    }
+                tex.SetPixels32(px);
+                tex.Apply();
+                arrowSprite = Sprite.Create(tex, new Rect(0, 0, n, n), new Vector2(0.5f, 0.5f), n);   // 1유닛
+                arrowSprite.hideFlags = HideFlags.HideAndDontSave;
+            }
+            return arrowSprite;
+        }
+
         SpriteRenderer NewOverlay(string name, Sprite sprite, Color color, int order)
         {
             var go = new GameObject(name);
@@ -725,9 +815,12 @@ namespace Samkuk.World
             brushRing = NewOverlay("BrushRing", RingSprite(), new Color(1f, 0.4f, 0.35f, 1f), 21);
             startRing = NewOverlay("StartArea", RingSprite(), new Color(1f, 1f, 1f, 0.5f), 2);
             startRing.transform.localScale = Vector3.one * TerrainMap.ClearRadius;
+            cellRing = NewOverlay("CellCursor", WhiteSprite(), new Color(1f, 0.9f, 0.3f, 0.35f), 19);
+            cellRing.transform.localScale = new Vector3(TerrainHeight.CellSize, TerrainHeight.CellSize, 1f);
             selectionRing.gameObject.SetActive(false);
             brushRing.gameObject.SetActive(false);
             ghost.gameObject.SetActive(false);
+            cellRing.gameObject.SetActive(false);
         }
 
         SpriteRenderer Pooled(List<SpriteRenderer> pool, int index, string name, Color color, int order)
@@ -771,6 +864,15 @@ namespace Samkuk.World
             {
                 brushRing.transform.position = world;
                 brushRing.transform.localScale = Vector3.one * BrushRadius;
+            }
+
+            // 높이 도구: 마우스가 있는 셀
+            bool showCell = CurrentTool == Tool.Height && !overUi && mouse != null;
+            cellRing.gameObject.SetActive(showCell);
+            if (showCell)
+            {
+                float cs = TerrainHeight.CellSize;
+                cellRing.transform.position = new Vector3((Mathf.Floor(world.x / cs) + 0.5f) * cs, (Mathf.Floor(world.y / cs) + 0.5f) * cs, 0f);
             }
 
             // 선택 표시
@@ -825,6 +927,69 @@ namespace Samkuk.World
                     sr.transform.localScale = new Vector3(size, size, 1f);
                 }
             HideFrom(chunkMarks, marks);
+
+            DrawHeights(c, halfW, halfH);
+        }
+
+        /// <summary>
+        /// 높이 표시(Step 16-2): 0층보다 높은 셀은 층마다 밝아지는 덮개, 경사로는 내려가는 쪽을 가리키는 화살표, 절벽 벽은 짙은 선.
+        /// 편집기는 탑다운이라 절벽 메시가 보이지 않으므로 이 표시가 높이를 보는 유일한 방법이다.
+        /// </summary>
+        void DrawHeights(Vector2 c, float halfW, float halfH)
+        {
+            int marks = 0, walls = 0;
+            if (Map != null)
+            {
+                float cs = TerrainHeight.CellSize;
+                int x0 = Mathf.FloorToInt((c.x - halfW) / TerrainMap.ChunkSize), x1 = Mathf.FloorToInt((c.x + halfW) / TerrainMap.ChunkSize);
+                int y0 = Mathf.FloorToInt((c.y - halfH) / TerrainMap.ChunkSize), y1 = Mathf.FloorToInt((c.y + halfH) / TerrainMap.ChunkSize);
+                float line = Mathf.Max(0.06f, cam.orthographicSize * 0.008f);
+                for (int cy = y0; cy <= y1; cy++)
+                    for (int cx = x0; cx <= x1; cx++)
+                    {
+                        var chunk = new Vector2Int(cx, cy);
+                        var h = Map.GetHeights(chunk);
+                        for (int j = 0; j < HeightChunk.Cells; j++)
+                            for (int i = 0; i < HeightChunk.Cells; i++)
+                            {
+                                int level = h.Level(i, j);
+                                if (level <= 0) continue;
+                                var o = TerrainHeight.CellOrigin(chunk, i, j);
+                                var cover = Pooled(heightMarks, marks++, "HeightCell", new Color(1f, 0.95f, 0.8f, 0.1f + 0.1f * level), 4);
+                                cover.sprite = WhiteSprite();
+                                cover.color = new Color(1f, 0.95f, 0.8f, 0.1f + 0.1f * level);   // 풀에서 꺼낸 것은 색이 남아 있다
+                                cover.sortingOrder = 4;
+                                cover.transform.position = new Vector3(o.x + cs * 0.5f, o.y + cs * 0.5f, 0f);
+                                cover.transform.localScale = new Vector3(cs, cs, 1f);
+                                cover.transform.rotation = Quaternion.identity;
+
+                                var ramp = h.Ramp(i, j);
+                                if (ramp == RampDir.None) continue;
+                                var arrow = Pooled(heightMarks, marks++, "Ramp", new Color(1f, 0.85f, 0.3f, 0.8f), 5);
+                                arrow.sprite = ArrowSprite();
+                                arrow.color = new Color(1f, 0.85f, 0.3f, 0.8f);
+                                arrow.sortingOrder = 5;
+                                arrow.transform.position = new Vector3(o.x + cs * 0.5f, o.y + cs * 0.5f, 0f);
+                                arrow.transform.localScale = Vector3.one * (cs * 0.6f);
+                                float deg = ramp == RampDir.North ? 0f : ramp == RampDir.West ? 90f : ramp == RampDir.South ? 180f : -90f;
+                                arrow.transform.rotation = Quaternion.Euler(0f, 0f, deg);
+                            }
+
+                        if (wallSource == null) continue;
+                        wallBuffer.Clear();
+                        wallSource.CollectWalls(chunk, wallBuffer);
+                        foreach (var w in wallBuffer)
+                        {
+                            var sr = Pooled(wallMarks, walls++, "Wall", new Color(0.25f, 0.12f, 0.05f, 0.9f), 6);
+                            Vector2 mid = (w.a + w.b) * 0.5f, d = w.b - w.a;
+                            sr.transform.position = new Vector3(mid.x, mid.y, 0f);
+                            sr.transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(d.y, d.x) * Mathf.Rad2Deg);
+                            sr.transform.localScale = new Vector3(d.magnitude, line, 1f);
+                        }
+                    }
+            }
+            HideFrom(heightMarks, marks);
+            HideFrom(wallMarks, walls);
         }
 
         // ───────────────────────── 상태 표시 ─────────────────────────
@@ -843,8 +1008,10 @@ namespace Samkuk.World
 
             Vector2 pos = Mouse.current != null ? MouseWorld(Mouse.current) : CameraCenter();
             var chunk = TerrainMap.ChunkOf(pos);
-            statusLabel.text = $"({pos.x:0.0}, {pos.y:0.0})  칸 {chunk.x},{chunk.y} [{(Map.IsCustom(chunk) ? "직접 고친 칸" : "자동 생성")}]   " +
-                               "좌클릭 배치/선택 · 우클릭 드래그 이동 · 휠 확대 · 1 배치 2 선택 3 지우개 · Q/E 회전 · [ ] 크기 · F 반전 · Del 삭제 · Ctrl+Z/Y · Ctrl+S 저장";
+            Model.GetCell(pos, out int level, out var ramp);
+            string height = level > 0 ? $"  높이 {level}층{(ramp != RampDir.None ? " 경사로" : "")}" : "";
+            statusLabel.text = $"({pos.x:0.0}, {pos.y:0.0})  칸 {chunk.x},{chunk.y} [{(Map.IsCustom(chunk) ? "직접 고친 칸" : "자동 생성")}]{height}   " +
+                               "좌클릭 배치/선택 · 우클릭 드래그 이동 · 휠 확대 · 1 배치 2 선택 3 지우개 4 높이 · Q/E 회전 · [ ] 크기 · F 반전 · Del 삭제 · Ctrl+Z/Y · Ctrl+S 저장";
             undoButton.interactable = Model.CanUndo;
             redoButton.interactable = Model.CanRedo;
         }
@@ -929,9 +1096,25 @@ namespace Samkuk.World
             toolButtons[Tool.Place] = NewButton("ToolPlace", col, "1  배치", 0f, 24, 52f);
             toolButtons[Tool.Select] = NewButton("ToolSelect", col, "2  선택/이동", 0f, 24, 52f);
             toolButtons[Tool.Erase] = NewButton("ToolErase", col, "3  지우개", 0f, 24, 52f);
+            toolButtons[Tool.Height] = NewButton("ToolHeight", col, "4  높이 (언덕·절벽)", 0f, 24, 52f);
             Bind(toolButtons[Tool.Place], () => SetTool(Tool.Place));
             Bind(toolButtons[Tool.Select], () => SetTool(Tool.Select));
             Bind(toolButtons[Tool.Erase], () => SetTool(Tool.Erase));
+            Bind(toolButtons[Tool.Height], () => SetTool(Tool.Height));
+
+            // 높이 도구의 동작 (2x4 격자)
+            var heightGrid = NewRect("HeightGrid", col);
+            var hg = heightGrid.gameObject.AddComponent<GridLayoutGroup>();
+            hg.cellSize = new Vector2(110f, 40f);
+            hg.spacing = new Vector2(6f, 6f);
+            heightGrid.gameObject.AddComponent<LayoutElement>().preferredHeight = 4 * 40f + 3 * 6f;
+            foreach (HeightMode mode in Enum.GetValues(typeof(HeightMode)))
+            {
+                var m = mode;
+                var b = NewButton("Height_" + m, heightGrid, HeightModeLabel(m), 0f, 19);
+                Bind(b, () => SetHeightMode(m));
+                heightButtons[m] = b;
+            }
 
             var brushRow = NewRow("BrushRow", col, 6f);
             brushRow.gameObject.AddComponent<LayoutElement>().preferredHeight = 48f;
@@ -1122,6 +1305,8 @@ namespace Samkuk.World
 
             foreach (var kv in toolButtons)
                 SetHighlight(kv.Value, kv.Key == CurrentTool);
+            foreach (var kv in heightButtons)
+                SetHighlight(kv.Value, CurrentTool == Tool.Height && kv.Key == CurrentHeightMode);
             for (int i = 0; i < tabButtons.Count; i++)
                 SetHighlight(tabButtons[i], tabNames[i] == currentGroup);
             for (int i = 0; i < paletteCellBackgrounds.Count; i++)

@@ -24,6 +24,7 @@ namespace Samkuk.World
         static readonly int FootLiftId = Shader.PropertyToID("_FootLift");
         static readonly int TowardId = Shader.PropertyToID("_Toward");
         static readonly int CutoffId = Shader.PropertyToID("_Cutoff");
+        static readonly int StretchScaleId = Shader.PropertyToID("_StretchScale");
         static readonly int SrcBlendId = Shader.PropertyToID("_SrcBlend");
         static readonly int DstBlendId = Shader.PropertyToID("_DstBlend");
         static readonly int ZWriteId = Shader.PropertyToID("_ZWrite");
@@ -54,7 +55,8 @@ namespace Samkuk.World
         public static void Refresh()
         {
             bool on = Active;
-            Shader.SetGlobalVector(StandUpId, on ? (Vector4)TiltPreset.Up(TiltPreset.Pitch) : new Vector4(0f, 1f, 0f, 0f));
+            // 세우는 방향 x 세로 배율(1/cos 기울기): 셰이더는 그림의 y 에 이 벡터를 곱하므로 길이가 곧 배율이다 (직교라 화면 어디서나 같다)
+            Shader.SetGlobalVector(StandUpId, on ? (Vector4)(TiltPreset.StandUp * TiltPreset.StandScale(TiltPreset.Pitch)) : new Vector4(0f, 1f, 0f, 0f));
             Shader.SetGlobalVector(StandTowardId, on ? (Vector4)(-TiltPreset.Forward(TiltPreset.Pitch)) : Vector4.zero);
             Changed?.Invoke();
         }
@@ -63,14 +65,28 @@ namespace Samkuk.World
 
         /// <summary>카메라가 보는 방향 (틸트와 무관한 상수).</summary>
         public static Vector3 Forward => TiltPreset.Forward(TiltPreset.Pitch);
-        /// <summary>서 있는 그림의 위쪽. 꺼져 있으면 2D 의 위(+y).</summary>
-        public static Vector3 Up => Active ? TiltPreset.Up(TiltPreset.Pitch) : Vector3.up;
+        /// <summary>서 있는 그림의 위쪽(수직, -z). 꺼져 있으면 2D 의 위(+y).</summary>
+        public static Vector3 Up => Active ? TiltPreset.StandUp : Vector3.up;
+        /// <summary>카메라의 위쪽 (화면 흔들림용). 꺼져 있으면 +y.</summary>
+        public static Vector3 CameraUp => Active ? TiltPreset.Up(TiltPreset.Pitch) : Vector3.up;
         public static Vector3 Right => Vector3.right;
-        /// <summary>서 있는 그림(빌보드)의 회전. 꺼져 있으면 회전 없음. 트랜스폼을 직접 돌리는 것(데미지 숫자)만 쓴다 — 스프라이트는 셰이더가 세운다.</summary>
-        public static Quaternion StandingRotation => Active ? TiltPreset.Rotation(TiltPreset.Pitch) : Quaternion.identity;
+        /// <summary>서 있는 그림의 회전. 꺼져 있으면 회전 없음. 트랜스폼을 직접 돌리는 것(데미지 숫자)만 쓴다 — 스프라이트는 셰이더가 세운다.</summary>
+        public static Quaternion StandingRotation => Active ? TiltPreset.StandRotation : Quaternion.identity;
 
-        /// <summary>발에서 <paramref name="height"/> 만큼 "위". 틸트면 카메라 위쪽(땅에서 솟음), 아니면 +y.</summary>
-        public static Vector3 Lift(float height) => Up * height;
+        /// <summary>전투 카메라의 트랜스폼 (<see cref="BattleTiltCamera"/> 가 켜질 때 넣는다).</summary>
+        public static Transform CameraTransform { get; set; }
+
+        /// <summary>서 있는 그림의 세로 배율 (틸트면 1/cos 기울기, 아니면 1). 직교 카메라라 화면 어디서나 같다.</summary>
+        public static float StandScale => Active ? TiltPreset.StandScale(TiltPreset.Pitch) : 1f;
+
+        /// <summary>어떤 자리의 세로 배율. 직교 카메라에서는 자리와 무관하게 <see cref="StandScale"/> (호출처가 자리를 넘기는 형태를 유지).</summary>
+        public static float StandScaleAt(Vector2 position) => StandScale;
+
+        /// <summary>발에서 화면 기준 <paramref name="height"/> 만큼 "위". 틸트면 수직으로 세로 배율을 곱해(그림과 같은 비율), 아니면 +y.</summary>
+        public static Vector3 Lift(float height) => Up * (height * StandScale);
+
+        /// <summary>그 자리의 서 있는 그림과 같은 배율로 <paramref name="height"/> 만큼 "위" (무기 손, 체력 막대, 횃불, 데미지 숫자).</summary>
+        public static Vector3 Lift(float height, Vector2 at) => Up * (height * StandScaleAt(at));
 
         /// <summary>바닥 그림의 z: 틸트면 <see cref="TiltPreset.GroundZ"/>, 아니면 예전 값 그대로.</summary>
         public static float GroundZ(float legacyZ) => Active ? TiltPreset.GroundZ : legacyZ;
@@ -84,7 +100,7 @@ namespace Samkuk.World
 
         /// <summary>바라보는 점 기준으로 화면에 보이는 땅의 범위.</summary>
         public static Rect GroundFootprint(float aspect) =>
-            TiltPreset.GroundFootprint(TiltPreset.Pitch, TiltPreset.Distance, TiltPreset.FieldOfView, aspect);
+            TiltPreset.GroundFootprint(TiltPreset.Pitch, TiltPreset.OrthoSize, aspect);
 
         /// <summary>바라보는 점에서 화면 밖까지의 거리 (적 스폰 링).</summary>
         public static float SpawnRadius(float aspect) => TiltPreset.SpawnRadius(GroundFootprint(aspect));
@@ -119,26 +135,27 @@ namespace Samkuk.World
         public static bool ShaderAvailable => TiltShader != null;
 
         /// <summary>바닥 그림 재질: 눕힌 채 알파 블렌드, 그림자를 받는다. 셰이더가 없으면 null.</summary>
-        public static Material GroundMaterial => Get(false, 0f, 0f, 0f);
+        public static Material GroundMaterial => Get(false, 0f, 0f, 0f, 1f);
 
         /// <summary>
         /// 서 있는 그림 재질. <paramref name="footLift"/> 는 피벗에서 그림 아래 끝까지(유닛, 배율 1), <paramref name="toward"/> 는 카메라 쪽으로 미는 거리.
         /// <paramref name="translucent"/> 면 알파 블렌드(깊이 안 씀, 그림자 안 드리움). 같은 값은 같은 재질을 돌려준다.
         /// </summary>
-        public static Material StandingMaterial(float footLift, float toward = 0f, bool translucent = false) =>
-            Get(!translucent, 1f, footLift, toward);
+        public static Material StandingMaterial(float footLift, float toward = 0f, bool translucent = false, float stretchScale = 1f) =>
+            Get(!translucent, 1f, footLift, toward, stretchScale);
 
-        static Material Get(bool cutout, float stand, float footLift, float toward)
+        static Material Get(bool cutout, float stand, float footLift, float toward, float stretchScale)
         {
             var s = TiltShader;
             if (s == null) return null;
-            string key = $"{(cutout ? "c" : "t")}|{stand}|{footLift:0.####}|{toward:0.####}";
+            string key = $"{(cutout ? "c" : "t")}|{stand}|{footLift:0.####}|{toward:0.####}|{stretchScale:0.####}";
             if (materials.TryGetValue(key, out var m) && m != null) return m;
 
             m = new Material(s) { name = "PixelSprite " + key, hideFlags = HideFlags.HideAndDontSave };
             m.SetFloat(StandId, stand);
             m.SetFloat(FootLiftId, footLift);
             m.SetFloat(TowardId, toward);
+            m.SetFloat(StretchScaleId, stretchScale);
             if (cutout)
             {
                 m.SetFloat(SrcBlendId, (float)BlendMode.One);
@@ -157,6 +174,31 @@ namespace Samkuk.World
                 m.SetShaderPassEnabled("ShadowCaster", false);   // 반투명한 것은 그림자를 드리우지 않는다
             }
             materials[key] = m;
+            return m;
+        }
+
+        static readonly Dictionary<Texture, Material> solidMaterials = new Dictionary<Texture, Material>();
+
+        /// <summary>
+        /// 메시(절벽 윗면·옆면, Step 16-2)용 불투명 재질: 같은 셰이더를 눕힌 채(_Stand 0) 컷아웃·깊이 쓰기로, 그림자를 드리우고 받는다.
+        /// 텍스처마다 하나씩 돌려 쓴다. 셰이더나 텍스처가 없으면 null.
+        /// </summary>
+        public static Material SolidMaterial(Texture texture)
+        {
+            if (texture == null) return null;
+            if (solidMaterials.TryGetValue(texture, out var m) && m != null) return m;
+            var s = TiltShader;
+            if (s == null) return null;
+            m = new Material(s) { name = "PixelSprite solid " + texture.name, hideFlags = HideFlags.HideAndDontSave, mainTexture = texture };
+            m.SetFloat(StandId, 0f);
+            m.SetFloat(FootLiftId, 0f);
+            m.SetFloat(TowardId, 0f);
+            m.SetFloat(SrcBlendId, (float)BlendMode.One);
+            m.SetFloat(DstBlendId, (float)BlendMode.Zero);
+            m.SetFloat(ZWriteId, 1f);
+            m.SetFloat(CutoffId, 0.5f);
+            m.renderQueue = (int)RenderQueue.Geometry;
+            solidMaterials[texture] = m;
             return m;
         }
 

@@ -59,7 +59,7 @@ namespace Samkuk.Weapons
             var t = Renderer.transform;
             t.rotation = Quaternion.Euler(0f, 0f, angleDegrees);
             t.localScale = Vector3.one * (radiusUnits / spriteRadiusUnits);
-            t.position = from;
+            t.position = Samkuk.World.TerrainHeight.Feet(from);
             Renderer.color = tint;
             Renderer.enabled = true;
         }
@@ -73,7 +73,7 @@ namespace Samkuk.Weapons
             float p = 1f - Mathf.Clamp01(left / seconds);     // 0 → 1
             float ease = 1f - (1f - p) * (1f - p);             // 빠르게 나가다 느려진다
             Position = from + dir * (distance * ease);
-            Renderer.transform.position = Position;
+            Renderer.transform.position = Samkuk.World.TerrainHeight.Feet(Position);
             tint.a *= 1f - p;
             Renderer.color = tint;
             if (left <= 0f) Renderer.enabled = false;

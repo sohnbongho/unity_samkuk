@@ -28,13 +28,13 @@ namespace Samkuk.World
         /// 렌더러를 월드 정렬에 넣는다: World 레이어, 순서 0, 정렬 기준점 = 피벗(발). 2.5D 틸트(Step 16-1)에서 세워질 그림(<see cref="StandingSprite"/>)으로도 등록한다 —
         /// <paramref name="footLift"/> 는 피벗에서 그림 아래 끝까지(걷기 시트 <see cref="PixelArt.WalkFootUnits"/>, 소품 <see cref="PixelArt.PropFootUnits"/>).
         /// </summary>
-        public static void Configure(SpriteRenderer sr, float footLift = 0f)
+        public static void Configure(SpriteRenderer sr, float footLift = 0f, float stretchScale = 1f)
         {
             if (sr == null) return;
             sr.sortingLayerID = LayerId;
             sr.sortingOrder = 0;
             sr.spriteSortPoint = SpriteSortPoint.Pivot;
-            StandingSprite.Attach(sr.gameObject, footLift);
+            StandingSprite.Attach(sr.gameObject, footLift, stretchScale: stretchScale);
         }
 
         /// <summary>월드 정렬에 들어 있는가 (레이어와 기준점으로 판단).</summary>
