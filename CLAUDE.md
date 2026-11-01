@@ -12,7 +12,7 @@
 
 ## 진행 상황
 
-마지막 갱신: 2026-10-18 (Step 10-9 후속 조조 연속 베기·여포 극 완료, 무기 휘두르기(베기) 완료, Step 8-5 장수별 무기 목록 완료. Step 14 HD-2D 전환 진행 중: 14-1 조명 완료, 14-2 후처리 완료, 14-3 도트 규격 완료, 14-4 월드 정렬·그림자 완료, 14-5 틸트 시프트 완료, 후속 14-6 겹친 소품 반투명 완료. 나머지 후속은 `docs/HD2D.md` 후속 목록. 계획/결정은 `docs/HD2D.md`, 용어 `CONTEXT.md`, ADR `docs/adr/`)
+마지막 갱신: 2026-11-01 (Step 15-0 야전 설계 완료, 15-1 진행 중 — `docs/FIELD_BATTLE.md`. 이전: Step 10-9 후속 조조 연속 베기·여포 극 완료, 무기 휘두르기(베기) 완료, Step 8-5 장수별 무기 목록 완료. Step 14 HD-2D 전환 진행 중: 14-1 조명 완료, 14-2 후처리 완료, 14-3 도트 규격 완료, 14-4 월드 정렬·그림자 완료, 14-5 틸트 시프트 완료, 후속 14-6 겹친 소품 반투명 완료. 나머지 후속은 `docs/HD2D.md` 후속 목록. 계획/결정은 `docs/HD2D.md`, 용어 `CONTEXT.md`, ADR `docs/adr/`)
 
 | Step | 내용 | 상태 | 커밋 |
 |---|---|---|---|
@@ -54,6 +54,7 @@
 | 14-6 | 겹친 소품 반투명: 서 있는 소품이 플레이어 앞(발이 더 아래)에서 몸 사각형(발 기준 0.6x1.1)을 덮으면 알파 0.4 로, 아니면 1 로 초당 6 씩 부드럽게(`PropFadeRule` 순수 규칙, `TerrainPropSpawner.TickFade` 가 화면 주변 서 있는 소품만 검사, 플레이어는 0.5초마다 찾음, `FadeTarget` 으로 테스트). 맵 편집기 제외. 테스트 `Hd2dPropFadeTests` | 완료 | |
 | 10-9 | 무기 휘두르기·찌르기(베기 6종 + 창 3종 + 연속 베기 2종 + 극 2종): 쿨다운이 차면 **가장 가까운 적 쪽**으로 무기 그림이 손 축(발+0.55)에서 호를 그리며 돌고(`SwingMotion` 순수 규칙: 각도 완화, 왼쪽이면 반전, 위→아래), 호의 **40% 지점**에서 같은 원 판정(`SlashWeapon.Strike`) + 반원 검기(`SlashArcSprite` 코드 생성, 앞으로 range×0.35 날아가며 사라짐). 휘두르는 동안 몸이 그쪽을 본다(`ILookOverride`: `PlayerAnimator`/`AllyController`). **사거리 안에 적이 있을 때만** 휘두르고 없으면 쿨다운을 소모하지 않고 대기(화살 규칙). **찌르기(`ThrustWeapon`: 창 찌르기·용담창·장팔사모)**: `ThrustMotion`(당김→내지름→거둠, 내지르는 중간 40% 에서 직선 판정) + 창 끝에서 뾰족한 검기(`WaveSprites.Point`). **장팔사모는 화살형 → 찌르기형으로 바꿈**(셋업이 화살형일 때 한 번만, 피해 10·쿨 1.1·사거리 3.6, 검기 6유닛·1.2배·50%; 비룡사모는 화살형 그대로; Step 8 새 기본값도 찌르기형, 밸런스 오버라이드의 장팔사모 화살 줄은 제거). 검기 공통 `WeaponTrail`/`Weapon.TickTrail`, 판정 공통 `Weapon.StrikeCircle/StrikeLine`. **조조 의천검·패왕의천검은 화살형 → 연속 베기**(`WeaponData.comboSwings`: count 를 같은 쪽 잇단 베기 횟수로, 내려치기·올려치기 번갈아 `SwingMotion.Upward`, 다음 베기는 앞 베기의 80% 지점 `SlashWeapon.ComboGap`, 최대 4, 베기마다 검기; 의천검 피해 6·쿨 1.0·count 2·검기 5유닛·40%). **여포 방천화극·천하무쌍극은 회전형 → 극**(새 `WeaponType.Halberd`/`HalberdWeapon`: 찌르기(창 직선 판정, 뾰족 검기)와 휩쓸기(200° 호, 베기 원 판정, 넉백 1.5배, 반원 검기)를 번갈아; 방천화극 피해 13·쿨 1.1·사거리 3.4·넉백 4; 여포 전용이라 카탈로그 테스트에서 제외, `BalanceModel` 은 찌르기·베기 평균 2.25명, 소리는 동작마다 창/베기). 네 에셋 이전은 Step 10-9 가 예전 종류일 때 한 번만(값은 `Step8Setup.Configure*`/`Step8EvolutionSetup.Configure*` 한 곳, `Step10BalanceSetup.Overrides` 의 예전 줄 제거). **유비 계열(쌍고검/쌍룡자웅검)은 검기가 무기**: `trailTravel/trailScale/trailDamageRatio`(7유닛·0.7배·50% / 9·0.9·70%)로 작은 검기가 멀리 날며 지나치는 적을 적마다 한 번 다치게 함(`BalanceModel` 밖, 세면 비율을 내림). 다른 베기는 장식용 짧은 검기. `WeaponData.heldSprite/swingArcDegrees/swingDuration`(0 이면 기본 120°/0.25초), 임시 그림 13장 `tools/hero_art/WeaponSprites.cs`(`generate.ps1 -Only weapon`, `Assets/Sprites/Weapons/*_Held.png`, 임포터 `HeldWeaponImporter` PPU 32·피벗 아래 가운데), 셋업 `Step 10-9`(빈 슬롯/0 값만 채움, Run All 포함). 아군 자동 적용. 설명 `docs/WEAPON_SWING.md`, 용어 `CONTEXT.md`(휘두르기, 찌르기, 검기, 연속 베기, 극, 휩쓸기). 테스트 `WeaponSwingTests` | 완료 | |
 | 11 | PC 빌드(친구 공유용 Windows 빌드 환경): 메뉴 `Samkuk > Build`(릴리스/개발용) 또는 `tools/build_windows.ps1` → `Builds/` 에 실행 폴더 + 공유용 zip(README.txt 포함), 릴리스는 DebugOverlay/F1~F4 치트 꺼짐, 타이틀에 버전 표시(`BuildTool`, `docs/BUILD.md`). 최적화(GC/풀링)·아이콘·설치 파일은 아직 | 완료 | 15e5ad2 |
+| 15-0 | 야전(남코 삼국지2식 부대 전투) 설계: 독립 테스트 모드, 아이소메트릭 12x9 격자, 병과(보병·궁병·기병)별 부대 2개 + 기병 고정 장수 부대, 실시간 + 정지 중 명령(전진·대기·후퇴, 전진은 목표 지정 가능), 배치 4종, 상성, 단순 적 AI. 용어 `CONTEXT.md` "야전", 결정 `docs/adr/0003`, 설계·계획 `docs/FIELD_BATTLE.md` | 완료 | |
 
 ## 남은 작업
 
@@ -67,7 +68,8 @@
 4. **내정(Step 12) 이어서**: 12-1~12-7(성, 지도, 성 화면, 시작 성, 출진/정복, 전투 맵, 지형 이동) 다음 — 성별 내정 수치(농업/상업/인구/방어 등)와 명령(개발/징병 등)을 성 화면의 명령 자리(`CastlePanel` 아래 띠 `Note`)에 붙이기, 성 규모/지형에 따른 전투 난이도, 정복 보상, 적 반격/세력 등. 사용자 방향을 확인한 뒤 진행.
    - **12-7 지형 이동 후속(사용자 체감 뒤)**: 맵 편집기에 막는 범위(원) 표시, 지형별 바닥 효과(산악 전체 느려짐 등), 느려지는 배율/막는 반지름 조정(`Theme_*.asset`), 막힌 적이 머뭇거리면 길 찾기 보강.
 5. **Step 14 HD-2D 스타일 전환(진행 중)**: 계획/결정은 `docs/HD2D.md`, 용어는 `CONTEXT.md`, 이유는 `docs/adr/0001`(가짜 3/4 시점), `0002`(PPU 32). 순서: 14-1 조명 → 14-2 후처리 → 14-3 픽셀 파이프라인 → 14-4 서 있는 소품·월드 정렬·드리운 그림자 → 14-5 틸트 시프트. 후속(소품 반투명, 덤불 세우기, 내정·타이틀 적용, 진짜 그림 교체)은 문서의 "후속" 목록.
-6. **미결정(PLAN.md 8번)**: 모바일 포함 여부, 실제 아트 에셋 사용 여부, 장수/무기 최종 목록.
+6. **Step 15 야전(남코 삼국지2식 부대 전투, 설계 완료)**: 계획은 `docs/FIELD_BATTLE.md` "작업 단계". 순서: 15-1 순수 로직 `FieldBattleModel` + 테스트 → 15-2 아이소메트릭 임시 아트(`tools/field_art`) + `IsoGrid` → 15-3 씬 `FieldBattleScene`(빌드 4번, `RegisterBuildScenes`/`SetupAll`/`BuildTool` 씬 목록에 추가) + 코드 생성 UI + 타이틀 [야전 테스트] → 15-4 체감 조정. 출진·정복 흐름 연결은 재미 확인 뒤 다시 인터뷰.
+7. **미결정(PLAN.md 8번)**: 모바일 포함 여부, 실제 아트 에셋 사용 여부, 장수/무기 최종 목록.
 
 ## 알려진 이슈 / 메모
 
