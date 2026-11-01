@@ -44,6 +44,10 @@
 5장 모두 **코드로 그린 임시 그림**(머리가 큰 2등신 평면 벡터풍)입니다. `tools/hero_art/HeroSprites.cs` 가 그리며
 `powershell -File tools\hero_art\generate.ps1 -Only walk` 로 다시 만들 수 있습니다. 직접 그린 그림으로 덮어쓴 뒤에는 이 스크립트를 실행하지 마세요.
 
+## 야전 부대 시트 (15-8)
+
+야전(`docs/FIELD_BATTLE.md`)의 부대 그림 `Assets/Sprites/Field/Unit_*.png` 8장도 **이 시트와 같은 규격**이다(4x4, 칸 48, PPU 32, 발 피벗). 야전은 왼쪽/오른쪽 줄만 쓰고, 내 장수 부대는 고른 장수의 시트를 그대로 쓴다. 임시 그림은 `tools/hero_art/FieldSprites.cs`(`tools/field_art/generate.ps1 -Only unit`).
+
 ## 적 걷기 시트
 
 적도 같은 규격(4열 x 4행, 칸 48x48, 투명 PNG)을 씁니다. 적의 크기 차이(졸병은 작게, 기병/보스는 크게)는 PPU 가 아니라 **칸 안에 그리는 크기**로 냅니다(생성기 `EnemyBodyPx`, 예전 PPU 표 112/104/100 의 비율). 파일은 `Assets/Sprites/EnemyWalk/<적 에셋 이름>_Walk.png` 에 넣고

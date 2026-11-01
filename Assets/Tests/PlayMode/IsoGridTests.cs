@@ -80,28 +80,26 @@ namespace Samkuk.Tests
             Assert.AreEqual(IsoFacing.DownRight, IsoGrid.FacingFor(0, -1, IsoFacing.UpRight));
             Assert.AreEqual(IsoFacing.UpLeft, IsoGrid.FacingFor(0, 0, IsoFacing.UpLeft), "안 움직이면 그대로");
 
-            Assert.IsTrue(IsoGrid.UsesBackSprite(IsoFacing.UpRight));
-            Assert.IsTrue(IsoGrid.UsesBackSprite(IsoFacing.UpLeft));
-            Assert.IsFalse(IsoGrid.UsesBackSprite(IsoFacing.DownRight));
-            Assert.IsFalse(IsoGrid.UsesBackSprite(IsoFacing.DownLeft));
-            Assert.IsTrue(IsoGrid.FlipX(IsoFacing.DownLeft));
-            Assert.IsTrue(IsoGrid.FlipX(IsoFacing.UpLeft));
-            Assert.IsFalse(IsoGrid.FlipX(IsoFacing.UpRight));
+            Assert.IsTrue(IsoGrid.FacesLeft(IsoFacing.DownLeft));
+            Assert.IsTrue(IsoGrid.FacesLeft(IsoFacing.UpLeft));
+            Assert.IsFalse(IsoGrid.FacesLeft(IsoFacing.UpRight));
+            Assert.IsFalse(IsoGrid.FacesLeft(IsoFacing.DownRight));
 
             Assert.AreEqual(IsoFacing.UpRight, IsoGrid.DefaultFacing(FieldSide.Player), "내 편은 적이 있는 오른쪽 위를 본다");
             Assert.AreEqual(IsoFacing.DownLeft, IsoGrid.DefaultFacing(FieldSide.Enemy));
         }
 
         [Test]
-        public void ArtSpec_SheetColumns_AndNames()
+        public void ArtSpec_WalkSheetFormat_AndNames()
         {
-            Assert.AreEqual(0, FieldArtSpec.SheetColumn(false, 0));
-            Assert.AreEqual(1, FieldArtSpec.SheetColumn(false, 1));
-            Assert.AreEqual(2, FieldArtSpec.SheetColumn(true, 0));
-            Assert.AreEqual(3, FieldArtSpec.SheetColumn(true, 1));
-            Assert.AreEqual(1, FieldArtSpec.SheetColumn(false, 3), "프레임은 돌려 쓴다");
+            // 15-8: 장수 걷기 시트와 같은 규격 (4x4, 칸 48, 발 피벗 8). 야전은 왼쪽(2)/오른쪽(3) 줄만 쓴다
             Assert.AreEqual(192, FieldArtSpec.SheetWidth);
-            Assert.AreEqual(12, FieldArtSpec.UnitFootPixels);
+            Assert.AreEqual(192, FieldArtSpec.SheetHeight);
+            Assert.AreEqual(48, FieldArtSpec.UnitCell);
+            Assert.AreEqual(4, FieldArtSpec.WalkFrames);
+            Assert.AreEqual(8, FieldArtSpec.UnitFootPixels);
+            Assert.AreEqual(2, FieldArtSpec.SheetRow(true));
+            Assert.AreEqual(3, FieldArtSpec.SheetRow(false));
             Assert.AreEqual("Unit_Infantry_Player", FieldArtSpec.UnitFile(UnitClass.Infantry, false, FieldSide.Player));
             Assert.AreEqual("Unit_General_Enemy", FieldArtSpec.UnitFile(UnitClass.Cavalry, true, FieldSide.Enemy));
             Assert.AreEqual("Tile_Plain", FieldArtSpec.TileFile("Plain"));

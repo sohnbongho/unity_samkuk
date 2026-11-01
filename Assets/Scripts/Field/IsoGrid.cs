@@ -3,7 +3,7 @@ using Samkuk.Core;
 
 namespace Samkuk.Field
 {
-    /// <summary>부대 그림이 바라보는 아이소메트릭 방향. 앞모습(아래쪽으로 옴)과 뒷모습(위쪽으로 감) 두 장을 좌우 반전해 넷을 만든다.</summary>
+    /// <summary>부대 그림이 바라보는 아이소메트릭 방향 (열이 늘면 오른쪽 위, 행이 늘면 왼쪽 위). 그림은 왼쪽/오른쪽 둘만 구분한다(15-8).</summary>
     public enum IsoFacing { DownRight, DownLeft, UpRight, UpLeft }
 
     /// <summary>
@@ -46,7 +46,7 @@ namespace Samkuk.Field
             return FieldBattleModel.InBounds(col, row);
         }
 
-        /// <summary>이동 방향(-1/0/1)에서 그림 방향. 열이 느는 쪽이 오른쪽 위(뒷모습), 행이 느는 쪽이 왼쪽 위(뒷모습 반전).</summary>
+        /// <summary>이동 방향(-1/0/1)에서 그림 방향. 열이 느는 쪽이 오른쪽 위, 행이 느는 쪽이 왼쪽 위. 안 움직이면 fallback.</summary>
         public static IsoFacing FacingFor(int dx, int dy, IsoFacing fallback)
         {
             if (dx > 0) return IsoFacing.UpRight;
@@ -59,10 +59,7 @@ namespace Samkuk.Field
         /// <summary>편의 기본 방향 (움직인 적이 없을 때): 내 편은 적이 있는 오른쪽 위를, 적은 왼쪽 아래를 본다.</summary>
         public static IsoFacing DefaultFacing(FieldSide side) => side == FieldSide.Player ? IsoFacing.UpRight : IsoFacing.DownLeft;
 
-        /// <summary>그 방향이 뒷모습 그림(위쪽으로 가는 방향)을 쓰는가.</summary>
-        public static bool UsesBackSprite(IsoFacing f) => f == IsoFacing.UpRight || f == IsoFacing.UpLeft;
-
-        /// <summary>그 방향이 그림을 좌우 반전해 그리는가 (왼쪽을 보는 둘).</summary>
-        public static bool FlipX(IsoFacing f) => f == IsoFacing.DownLeft || f == IsoFacing.UpLeft;
+        /// <summary>그 방향이 왼쪽을 보는가 (왼쪽을 보는 둘). 걷기 시트의 왼쪽 줄을 쓴다 (15-8: 위/아래 줄은 안 쓴다).</summary>
+        public static bool FacesLeft(IsoFacing f) => f == IsoFacing.DownLeft || f == IsoFacing.UpLeft;
     }
 }

@@ -9,15 +9,15 @@ namespace Samkuk.Field
     /// <summary>
     /// 야전 장수 부대의 무기 연출(15-7): 서바이버 전투의 휘두르기·찌르기 규칙(<see cref="SwingMotion"/>, <see cref="ThrustMotion"/>)과 검기(<see cref="WeaponTrail"/>),
     /// 들고 있는 그림(<see cref="WeaponData.heldSprite"/>)을 그대로 빌려 장수의 시작 무기로 때리는 모습을 보여 준다. 규칙(피해)은 전혀 없다.
-    /// 종류별: 베기(연속 베기면 올려치기를 이어서), 찌르기, 극(찌르기·휩쓸기 번갈아), 그 밖은 베기로. 무기 그림은 아이소메트릭 부대 옆이라
-    /// <see cref="Scale"/> 로 줄이고, 멀리 나는 검기(유비)는 <see cref="MaxTravel"/> 까지만. 동작 중엔 새 타격을 받지 않는다(그게 간격 조절).
+    /// 종류별: 베기(연속 베기면 올려치기를 이어서), 찌르기, 극(찌르기·휩쓸기 번갈아), 그 밖은 베기로. 장수 부대가 장수 그림 그대로라(15-8)
+    /// 무기 배율은 <see cref="Scale"/>(1), 멀리 나는 검기(유비)는 <see cref="MaxTravel"/> 까지만. 동작 중엔 새 타격을 받지 않는다(그게 간격 조절).
     /// </summary>
     public sealed class FieldWeaponShow
     {
-        /// <summary>전투 무기 그림(위에서 본 시점 크기)을 아이소메트릭 부대 옆에 맞추는 배율.</summary>
-        public const float Scale = 0.6f;
+        /// <summary>무기 그림 배율. 15-8 부터 장수 부대가 서바이버 전투의 장수 그림 그대로라 무기도 그대로(1).</summary>
+        public const float Scale = 1f;
         /// <summary>검기 최대 비거리 (유닛). 유비 검기 7유닛이 전장을 가로지르지 않게.</summary>
-        public const float MaxTravel = 2.5f;
+        public const float MaxTravel = 3f;
         public const float ComboGap = SlashWeapon.ComboGap;
 
         readonly WeaponData data;

@@ -1,6 +1,6 @@
 # 야전 (남코 삼국지2식 부대 전투, Step 15)
 
-> **상태: 15-1 순수 로직, 15-2 격자·임시 그림, 15-3 씬·화면 완료. 15-4 연출 완료(Play 미확인). 15-5 수치 에셋 완료. 15-6 키보드 조작·양옆 부대 목록 완료. 15-7 장수 개성(능력치·무기 연출) 완료. 수치 조정은 체감 피드백 뒤.** 2026-11-01 설계 인터뷰(`/grill-with-docs`)로 정한 내용을 모았다. 코드는 `Assets/Scripts/Field/`(`Samkuk.Field`), 테스트는 `FieldBattleModelTests`. 용어는 `CONTEXT.md` "야전", 시점 결정은 `docs/adr/0003`.
+> **상태: 15-1 순수 로직, 15-2 격자·임시 그림, 15-3 씬·화면 완료. 15-4 연출 완료(Play 미확인). 15-5 수치 에셋 완료. 15-6 키보드 조작·양옆 부대 목록 완료. 15-7 장수 개성(능력치·무기 연출) 완료. 15-8 부대 그림을 장수 걷기 시트 규격으로 완료. 수치 조정은 체감 피드백 뒤.** 2026-11-01 설계 인터뷰(`/grill-with-docs`)로 정한 내용을 모았다. 코드는 `Assets/Scripts/Field/`(`Samkuk.Field`), 테스트는 `FieldBattleModelTests`. 용어는 `CONTEXT.md` "야전", 시점 결정은 `docs/adr/0003`.
 
 성 밖 들판에서 **부대** 여러 개가 맞붙는 반자동 전투 모드. 시간이 실시간으로 흐르고, [정지]를 눌러 멈춘 상태에서 부대마다 **명령**(전진·대기·후퇴)을 주고 [재개]한다. 남코 삼국지2(覇王の大陸)의 합전이 본보기이며, 화면은 아이소메트릭(대각선) 격자다. **1단계는 독립 테스트 모드**로 만들고 출진·정복 흐름과는 연결하지 않는다.
 
@@ -135,11 +135,11 @@
 | 그림 | 파일 | 크기 | 비고 |
 |---|---|---|---|
 | 바닥 타일 | `Assets/Sprites/Field/Tile_<지형>.png` (Plain/Steppe/Mountain/River/Jungle/Loess) | 48x24 | 고전 2:1 마름모를 픽셀로 직접 찍어 이어 붙여도 틈이 없다. 피벗 가운데, PPU 32 → 1.5x0.75 유닛. 색은 `tools/terrain_art/terrain.json` 의 지형 바닥 색 |
-| 부대 시트 | `Unit_<Infantry|Archer|Cavalry|General>_<Player|Enemy>.png` (8장) | 192x48 = 48x48 칸 4개 | 칸 순서 [앞모습 0, 앞모습 1, 뒷모습 0, 뒷모습 1]. 앞모습 = 오른쪽 아래로 오는 모습(얼굴 보임), 뒷모습 = 오른쪽 위로 가는 모습. 왼쪽 방향은 **좌우 반전**. 부대가 선 마름모 가운데는 칸 아래에서 12픽셀 위(피벗 (0.5, 0.25)). 실행 중에 자른다(에디터 슬라이스 없음) |
+| 부대 시트 | `Unit_<Infantry|Archer|Cavalry|General>_<Player|Enemy>.png` (8장) | 192x192 = 48x48 칸 4열 x 4행 | **15-8 부터 장수 걷기 시트와 같은 규격**(`docs/HERO_WALK_SHEETS.md`): 열 = 걷기 프레임 0~3, 행 = 아래/위/왼쪽/오른쪽, PPU 32, 발 피벗(아래에서 8px). 야전은 **왼쪽/오른쪽 줄만** 쓴다(아이소메트릭 한 걸음은 화면에서 가로가 세로의 두 배라 두 군대가 마주 보는 모양). 자르기는 `HeroSpriteSet`. **내 장수 부대는 고른 장수의 시트(`HeroData.walkSheet`)를 그대로** 쓰고, 적 장수 부대는 `Unit_General_Enemy`. 몸이 약 1.25유닛이라 타일(1.5x0.75)보다 크고 뒷줄과 겹치지만 World 정렬(발 y)이 앞뒤를 맞춘다 |
 
-- 임시 그림은 `tools/field_art/generate.ps1`(`-Only tile|unit`)이 그린다(`FieldArt.cs`, 4배 확대로 그린 뒤 `PixelTools` 로 축소·색 단계 7·1픽셀 외곽선). 미리보기 `%TEMP%ield_art_preview.png`. 직접 그린 그림으로 바꾸면 그 종류는 다시 돌리지 말 것.
-- 임포터 `FieldSpriteImporter`(`Assets/Scripts/Editor`)가 폴더 안 PNG 를 자동으로 맞춘다: Tile_* 는 단일 스프라이트(피벗 가운데), Unit_* 는 Default 텍스처, 둘 다 Point·PPU 32·압축 없음.
-- 격자↔월드: `IsoGrid`. 열(col)이 늘면 오른쪽 위, 행(row)이 늘면 왼쪽 위. 가운데 칸 (5.5, 4) 이 원점, 전장 외곽 15.75x7.875 유닛. 이동 방향 → 그림 방향은 `IsoGrid.FacingFor`(+col 뒷모습, -col 앞모습 반전, +row 뒷모습 반전, -row 앞모습). 월드 y 가 클수록 먼 칸이라 기존 y 정렬(World 레이어)이 그대로 앞뒤를 맞춘다.
+- 임시 그림은 `tools/field_art/generate.ps1`(`-Only tile|unit`)이 그린다. 타일은 `FieldArt.cs`, 부대 시트는 `tools/hero_art/FieldSprites.cs`(`HeroArt` 의 partial: 적 시트와 같은 몸·병과 그림에 편 색만 파랑/빨강, 보병 투구+창, 궁병 두건+활, 기병 말+창, 장수 부대 금빛 투구+깃털+극에 흰 말/검붉은 말; 몸 크기 병사 36px·기병 38px·장수 40px). 미리보기 `%TEMP%\field_unit_preview.png`(부대), `%TEMP%\field_art_preview.png`(타일+시트). 직접 그린 그림으로 바꾸면 그 종류는 다시 돌리지 말 것. 진짜 그림으로 바꿀 때는 장수 걷기 시트와 같은 방법(`docs/HERO_WALK_SHEETS.md` "넣는 법")으로 같은 파일 이름에 덮어쓴다.
+- 임포터 `FieldSpriteImporter`(`Assets/Scripts/Editor`)가 폴더 안 PNG 를 자동으로 맞춘다: Tile_* 는 단일 스프라이트(피벗 가운데), Unit_* 는 Default 텍스처(실행 중에 자름), 둘 다 Point·PPU 32·압축 없음.
+- 격자↔월드: `IsoGrid`. 열(col)이 늘면 오른쪽 위, 행(row)이 늘면 왼쪽 위. 가운데 칸 (5.5, 4) 이 원점, 전장 외곽 15.75x7.875 유닛. 이동 방향 → 그림 방향은 `IsoGrid.FacingFor`(+col/-row 오른쪽, -col/+row 왼쪽: `IsoGrid.FacesLeft` → `FieldUnitView.WalkDirOf`). 월드 y 가 클수록 먼 칸이라 기존 y 정렬(World 레이어)이 그대로 앞뒤를 맞춘다.
 
 ## 작업 단계 (계획)
 
@@ -153,4 +153,5 @@
 | **15-5** (완료) | 수치 에셋 `FieldRulesData`(`FieldRules` 를 [Serializable] 로 감싼 ScriptableObject, `Assets/ScriptableObjects/Field/FieldRules.asset`), Step 15 가 없을 때만 생성·연결, 컨트롤러가 야전 시작마다 모델에 넘김(고친 값은 [다시]부터) | `FieldBattleSceneTests` +2, 사용자: Step 15 재실행 → 인스펙터에서 값 바꿔 보기 |
 | **15-6** (완료) | 키보드 조작: 정지 시 첫 내 부대 자동 선택, W/S·↑/↓ 부대, Enter 세부 명령 메뉴(전진·목표 정해 전진·대기·후퇴·같은 병과·전체, 장수 부대 제외), 목표 고르기(적 목록 커서). 양옆 패널(아군/적군 목록, 키 안내). `FieldBattleController.KeyMode/MoveSelection/OpenDetail/MoveCursor/Confirm/Back/IssueGroupOrder` | `FieldBattleSceneTests` +5, 사용자 Play |
 | **15-7** (완료) | 장수 개성: `FieldHeroLink`(장수 데이터 → 피해·이동·병사 배율), `FieldSetup.playerGeneral*Mul`/`FieldUnit.DamageMul·SpeedMul`(순수), `FieldWeaponShow`(장수 시작 무기의 휘두르기·찌르기·극 연출, 전투 규칙·검기 재사용), 준비 화면·띠에 요약 | `FieldBattleModelTests` +3(유니티 밖), `FieldBattleSceneTests` +2, 사용자 Play |
+| **15-8** (완료) | 부대 그림을 장수 걷기 시트 규격(4x4, 칸 48, 발 피벗)으로: 내 장수 부대 = 고른 장수의 `walkSheet`, 병사·기병·적 장수 = `tools/hero_art/FieldSprites.cs` 가 같은 몸으로 그린 시트 8장(편 색 파랑/빨강). `FieldUnitView` 가 `HeroSpriteSet` 으로 왼쪽/오른쪽 줄만 씀, `FieldSpriteSet` 은 색 덩어리·마름모만, 무기 연출 배율 1 | `IsoGridTests` 규격 테스트 갱신, `FieldBattleSceneTests` +2, 사용자 Play |
 | 2단계(미정) | 출진·정복 흐름 연결, 장수 능력치·동행 장수, 징병/성 크기 연동, 진형 이름, 지형 효과, 서바이버 전투와의 연결(일기토 등), 진짜 그림 | 재미 확인 뒤 다시 인터뷰 |

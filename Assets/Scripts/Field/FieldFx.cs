@@ -123,7 +123,7 @@ namespace Samkuk.Field
         static Vector3 PositionOf(FieldUnit u)
         {
             IsoGrid.CellToWorld(u.VisualCol, u.VisualRow, out float x, out float y);
-            return new Vector3(x, y + 0.45f, 0f);   // 몸통 높이
+            return new Vector3(x, y + 0.55f, 0f);   // 손 높이 (서바이버 전투의 손 축과 같음: 발 + 0.55)
         }
 
         void OnHit(FieldUnit attacker, FieldUnit victim, float amount, bool ranged, bool charge)

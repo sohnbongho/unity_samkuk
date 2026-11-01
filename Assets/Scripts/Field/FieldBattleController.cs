@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Samkuk.Core;
 using Samkuk.Data;
+using Samkuk.Player;
 using Samkuk.World;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -43,7 +44,7 @@ namespace Samkuk.Field
         [SerializeField, Tooltip("준비 화면의 장수 목록 (장수 부대 이름). 없어도 동작")] HeroCatalog heroCatalog;
         [SerializeField, Tooltip("야전 수치(병과 표·상성·AI). 없으면 코드 기본값 FieldRules.Default()")] FieldRulesData rulesData;
         [SerializeField, Tooltip("바닥 타일. CastleTerrain 순서 (Plain, Steppe, Mountain, River, Jungle, Loess)")] Sprite[] tileSprites = new Sprite[6];
-        [SerializeField, Tooltip("부대 시트 8장. 순서 = (보병, 궁병, 기병, 장수) x (내 편, 적)")] Texture2D[] unitSheets = new Texture2D[8];
+        [SerializeField, Tooltip("부대 시트 8장 (걷기 시트 규격 4x4). 순서 = (보병, 궁병, 기병, 장수) x (내 편, 적). 내 장수 부대는 장수의 걷기 시트가 우선")] Texture2D[] unitSheets = new Texture2D[8];
 
         public Phase CurrentPhase { get; private set; } = Phase.Prep;
         public FieldBattleModel Model { get; private set; }
@@ -224,8 +225,15 @@ namespace Samkuk.Field
             var view = go.AddComponent<FieldUnitView>();
             int idx = SheetIndex(u.Class, u.IsGeneral, u.Side);
             var sheet = unitSheets != null && idx < unitSheets.Length ? unitSheets[idx] : null;
+            float ppu = PixelArt.PPU;
+            // 내 장수 부대는 고른 장수의 걷기 시트 그대로 (서바이버 전투의 그 장수가 선다). 시트가 없으면 야전의 장수 시트
+            if (u.IsGeneral && u.Side == FieldSide.Player && Hero != null && Hero.walkSheet != null)
+            {
+                sheet = Hero.walkSheet;
+                ppu = Hero.walkPixelsPerUnit > 0f ? Hero.walkPixelsPerUnit : PixelArt.PPU;
+            }
             var fallback = FieldSpriteSet.Placeholder(u.Side == FieldSide.Player ? new Color(0.3f, 0.45f, 0.9f) : new Color(0.85f, 0.3f, 0.3f));
-            view.Init(u, FieldSpriteSet.Get(sheet), fallback, ringSprite);
+            view.Init(u, HeroSpriteSet.Get(sheet, ppu), fallback, ringSprite);
             viewOf[u] = view;
             return view;
         }

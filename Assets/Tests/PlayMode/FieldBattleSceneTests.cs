@@ -3,6 +3,7 @@ using NUnit.Framework;
 using Samkuk.Core;
 using Samkuk.Data;
 using Samkuk.Field;
+using Samkuk.Player;
 using UnityEngine;
 
 namespace Samkuk.Tests
@@ -382,6 +383,62 @@ namespace Samkuk.Tests
             StringAssert.Contains("정지", c.Ui.Hint);
             Assert.IsFalse(c.IssueGroupOrder(UnitOrder.Advance, sameClass: false));
             Assert.IsTrue(c.MoveSelection(+1), "진행 중에도 부대는 고를 수 있다");
+        }
+
+        // ───────────────────────── 부대 그림 = 걷기 시트 규격 (15-8) ─────────────────────────
+
+        static Texture2D MakeWalkSheet(string name)
+        {
+            var tex = new Texture2D(192, 192, TextureFormat.RGBA32, false) { name = name };
+            var px = new Color32[192 * 192];
+            for (int i = 0; i < px.Length; i++) px[i] = new Color32(200, 200, 200, 255);
+            tex.SetPixels32(px); tex.Apply();
+            return tex;
+        }
+
+        [Test]
+        public void UnitView_UsesWalkSheetRows_LeftRightOnly()
+        {
+            var c = Make();
+            c.StartBattle(Quiet(), CastleTerrain.Plain);
+            var gen = c.Model.PlayerGeneral;
+            var view = c.ViewOf(gen);
+            var sheet = MakeWalkSheet("TestSheet");
+            view.Init(gen, HeroSpriteSet.Get(sheet, PixelArt.PPU), null, FieldSpriteSet.Diamond(Color.white, false));
+            var sprite = view.Renderer.sprite;
+            Assert.AreEqual(48f, sprite.rect.width, 1e-3f);
+            Assert.AreEqual(48f, sprite.rect.height, 1e-3f);
+            StringAssert.EndsWith("_Right_0", sprite.name, "내 편은 오른쪽(적 쪽)을 보고 서 있다");
+            Assert.AreEqual(FacingDir.Right, view.WalkDir);
+            Assert.IsFalse(view.Renderer.flipX, "시트에 왼쪽 줄이 따로 있어 반전하지 않는다");
+            Assert.AreEqual(HeroSpriteSet.FootPivot(48), sprite.pivot / 48f, "발 피벗");
+
+            Assert.AreEqual(FacingDir.Left, FieldUnitView.WalkDirOf(IsoFacing.DownLeft));
+            Assert.AreEqual(FacingDir.Left, FieldUnitView.WalkDirOf(IsoFacing.UpLeft));
+            Assert.AreEqual(FacingDir.Right, FieldUnitView.WalkDirOf(IsoFacing.DownRight));
+            Object.Destroy(sheet);
+        }
+
+        [Test]
+        public void PlayerGeneral_UsesTheHeroWalkSheet_AndWalksThroughFourFrames()
+        {
+            var c = Make();
+            var hero = ScriptableObject.CreateInstance<HeroData>();
+            hero.displayName = "관우";
+            hero.walkSheet = MakeWalkSheet("Hero_GuanYu_Walk");
+            hero.walkPixelsPerUnit = PixelArt.PPU;
+            var setup = new FieldSetup { enemyAi = false, playerCounts = new[] { 0, 0, 0 }, enemyCounts = new[] { 0, 0, 0 } };
+            c.StartBattle(setup, CastleTerrain.Plain, hero);
+            var view = c.ViewOf(c.Model.PlayerGeneral);
+            Assert.AreSame(hero.walkSheet, view.Renderer.sprite.texture, "내 장수 부대 = 고른 장수의 걷기 시트");
+            Assert.AreNotSame(hero.walkSheet, c.ViewOf(c.Model.EnemyGeneral).Renderer.sprite?.texture, "적 장수 부대는 아니다");
+
+            c.Model.SetOrder(c.Model.PlayerGeneral.Id, UnitOrder.Advance);
+            c.TogglePause();
+            int maxFrame = 0;
+            for (int i = 0; i < 12; i++) { c.Step(0.05f); maxFrame = Mathf.Max(maxFrame, view.Frame); }
+            Assert.GreaterOrEqual(maxFrame, 2, "움직이면 4프레임을 돈다");
+            Object.Destroy(hero.walkSheet); Object.Destroy(hero);
         }
 
         // ───────────────────────── 장수 개성 (15-7) ─────────────────────────
