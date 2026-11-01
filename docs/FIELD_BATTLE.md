@@ -1,6 +1,6 @@
 # 야전 (남코 삼국지2식 부대 전투, Step 15)
 
-> **상태: 설계(확인 대기).** 아직 코드가 없다. 2026-11-01 설계 인터뷰(`/grill-with-docs`)로 정한 내용을 모았다. 용어는 `CONTEXT.md` "야전", 시점 결정은 `docs/adr/0003`.
+> **상태: 15-1 순수 로직 완료, 화면·그림은 아직 없다.** 2026-11-01 설계 인터뷰(`/grill-with-docs`)로 정한 내용을 모았다. 코드는 `Assets/Scripts/Field/`(`Samkuk.Field`), 테스트는 `FieldBattleModelTests`. 용어는 `CONTEXT.md` "야전", 시점 결정은 `docs/adr/0003`.
 
 성 밖 들판에서 **부대** 여러 개가 맞붙는 반자동 전투 모드. 시간이 실시간으로 흐르고, [정지]를 눌러 멈춘 상태에서 부대마다 **명령**(전진·대기·후퇴)을 주고 [재개]한다. 남코 삼국지2(覇王の大陸)의 합전이 본보기이며, 화면은 아이소메트릭(대각선) 격자다. **1단계는 독립 테스트 모드**로 만들고 출진·정복 흐름과는 연결하지 않는다.
 
@@ -54,12 +54,20 @@
 - 그림: 마름모 타일 **48x24 픽셀**(PPU 32 → 1.5x0.75 유닛), 격자선 옅게, 지형별 색조 6종(`CastleTerrain`). 부대 그림은 병과 3종 x 진영 2 x 방향 2(↘·↗, 좌우 반전으로 4방향) x 걷기 2프레임, 칸 안에 병사 3~5명 무리(보병 창·방패, 궁병 활, 기병 말, 장수 부대는 기병 + 깃발). 피벗은 칸 바닥 가운데. `Assets/Sprites/Field/`, 임포터 Point·PPU 32.
 - 교전 연출은 기존 `BurstFx`/화살 그림/`SfxId` 재사용. 부대 위 병사 수 숫자, 병과 아이콘, 현재 명령 표시, 내 편 파란 테·적 빨간 테, 선택 부대 강조, 목표에 표식 + 점선.
 
+## 모델 구조 (15-1)
+
+- `FieldBattleModel.Tick(dt)`: 정지·종료면 아무것도 안 함 → 적 AI 타이머(1초) → **공격**(모든 부대가 상대를 고른 뒤 한 번에 피해, 백병전은 인접·궁병은 사거리 3, 목표 우선) → 무너진 부대 정리(내 부대면 자동 정지, 장수 부대면 승패) → **이동**(이동 중이면 진행, 도착하면 기병 돌격 장전; 멈춰 있으면 명령대로 다음 칸 예약).
+- 다음 칸 고르기 `StepToward`: 남은 거리가 큰 축 → 다른 축 → 옆 칸(정렬돼 있을 때) → 직전에 떠난 칸까지 허용. 이동 중인 부대는 출발·도착 칸을 둘 다 차지한다.
+- 명령은 `SetOrder`(내 부대, 정지 중에만)와 `ForceOrder`(검사 없음: AI·테스트·연출). 시작은 전원 대기·정지.
+- `CreateEmpty` + `AddUnit` 으로 임의 장면을 만들 수 있다(테스트, 뒤에 시나리오/튜토리얼).
+- 화면이 쓸 것: `Units`, `VisualCol/VisualRow`(보간 위치), `FacingDx/Dy`, 이벤트 `Hit`(공격자·피해자·양·원거리·돌격, 매 틱이라 화면이 묶어서 표현), `UnitRouted`, `UnitExited`, `AutoPaused`, `FinishedEvent`.
+
 ## 작업 단계 (계획)
 
 | 하위 Step | 내용 | 검증 |
 |---|---|---|
 | **15-0** | 설계 문서(`CONTEXT.md` 야전 용어, ADR 0003, 이 문서, CLAUDE.md) | 사용자 확인 뒤 커밋 |
-| **15-1** | 순수 로직 `FieldBattleModel`(격자, 부대, 명령·목표, 이동·비켜 가기, 교전·상성·돌격, 후퇴 퇴장, 자동 정지, 적 AI, 승패) + 병과/배치 데이터(`FieldUnitClassData`, `FieldFormation`) | PlayMode 테스트 `FieldBattleModelTests`(유니티 의존 없음, `Temp/ci` 컴파일 검사) |
+| **15-1** (완료) | 순수 로직 `FieldBattleModel`(격자, 부대, 명령·목표, 이동·비켜 가기, 교전·상성·돌격, 후퇴 퇴장, 자동 정지, 적 AI, 승패) + `FieldRules`(병과 표) + `FieldFormation`(배치). 수치 에셋 `FieldUnitClassData` 는 15-3 으로 | PlayMode 테스트 `FieldBattleModelTests` 28개 (유니티 의존 없음, `Temp/ci/fieldtest.sh` 로 유니티 밖에서도 실행) |
 | **15-2** | 아이소메트릭 임시 아트 `tools/field_art`(`generate.ps1 -Only field`), 임포터 `FieldSpriteImporter`, 격자↔월드 변환 `IsoGrid` | 그림 파일 확인, `IsoGrid` 테스트 |
 | **15-3** | 씬 `FieldBattleScene` + 셋업 `Step 15`(SetupAll·`RegisterBuildScenes`·BuildTool 씬 목록 추가), `FieldBattleController`(모델 ↔ 화면), 코드 생성 UI(준비 화면·명령 띠·결과창), 타이틀 [야전 테스트](`MapEditorLauncher` 방식) | 사용자 Play: 준비 → 정지/명령/목표 → 승패 → 결과창 |
 | **15-4** | 체감 조정(병과 수치·상성·속도), 연출(교전 입자·소리·돌격 표시), 남는 문제 반영 | 사용자 체감 |
