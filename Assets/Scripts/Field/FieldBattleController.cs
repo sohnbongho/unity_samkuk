@@ -17,6 +17,9 @@ namespace Samkuk.Field
     /// 씬에는 카메라·조명·이벤트 시스템·이 컴포넌트(그림 참조)만 있고 나머지는 실행 중에 코드로 만든다(맵 편집기와 같은 방식).
     /// 그림 참조가 비어 있으면(테스트, 셋업 전) 코드로 만든 색 덩어리로 대신한다.
     /// 정지는 모델의 깃발이고 ESC 메뉴도 모델을 정지시킬 뿐 timeScale 은 건드리지 않는다.
+    /// 키보드 조작(15-6): 정지 중에 선택이 없으면 첫 내 부대가 저절로 선택되고, W/S(↑/↓)로 부대를 바꾸고 Enter 로 세부 명령 메뉴(<see cref="KeyMode.Detail"/>:
+    /// 전진·목표 정해 전진·대기·후퇴·같은 병과·전체)를 열어 ↑/↓·Enter 로 실행한다. 목표 지정은 적 목록을 ↑/↓ 로 고른다(<see cref="KeyMode.Target"/>).
+    /// 같은 병과/전체 명령은 장수 부대를 뺀다(장수 부대의 후퇴 = 패배라 따로만 명령한다).
     /// </summary>
     public class FieldBattleController : MonoBehaviour
     {
@@ -28,6 +31,14 @@ namespace Samkuk.Field
         public const float PickRadius = 0.9f;
 
         public enum Phase { Prep, Battle, Result }
+        /// <summary>키보드 조작 상태: 부대 목록 → (Enter) 세부 명령 → (목표 정해 전진) 적 목록.</summary>
+        public enum KeyMode { List, Detail, Target }
+        /// <summary>세부 명령 메뉴 항목 (순서 = 화면 순서).</summary>
+        public enum DetailItem { Advance, AdvanceTo, Hold, Retreat, ClassAdvance, ClassHold, ClassRetreat, AllAdvance, AllHold, AllRetreat }
+        public static readonly string[] DetailLabels =
+        {
+            "전진", "목표 정해 전진", "대기", "후퇴", "같은 병과 전진", "같은 병과 대기", "같은 병과 후퇴", "전체 전진", "전체 대기", "전체 후퇴"
+        };
 
         [SerializeField, Tooltip("준비 화면의 장수 목록 (장수 부대 이름). 없어도 동작")] HeroCatalog heroCatalog;
         [SerializeField, Tooltip("야전 수치(병과 표·상성·AI). 없으면 코드 기본값 FieldRules.Default()")] FieldRulesData rulesData;
@@ -48,6 +59,13 @@ namespace Samkuk.Field
         /// <summary>지금 켜진 사거리 표시 칸 수 (테스트용).</summary>
         public int RangeMarkCount { get; private set; }
         public bool MenuOpen => Ui != null && Ui.MenuOpen;
+        public KeyMode Mode { get; private set; } = KeyMode.List;
+        /// <summary>세부 명령 메뉴의 커서 (<see cref="DetailItem"/>).</summary>
+        public int DetailIndex { get; private set; }
+        /// <summary>목표 고르기 커서: 살아 있는 적 부대 목록(모델 순서)에서의 번호.</summary>
+        public int TargetCursor { get; private set; }
+        /// <summary>목표 고르기 중 커서가 가리키는 적 부대 (아니면 null). 화면이 빨간 테로 미리 보여 준다.</summary>
+        public FieldUnit TargetCursorUnit => Mode == KeyMode.Target ? EnemyAt(TargetCursor) : null;
 
         /// <summary>씬 이동 (테스트에서 가짜로 바꾼다).</summary>
         public Action<string> SceneLoader { get; set; } = name => SceneManager.LoadScene(name);
@@ -138,6 +156,7 @@ namespace Samkuk.Field
             FieldSession.LastTerrain = terrain;
             Terrain = terrain;
             Selected = null;
+            Mode = KeyMode.List;
             finishClock = 0f;
 
             Model = new FieldBattleModel(setup, rulesData != null ? rulesData.rules : null);
@@ -149,7 +168,7 @@ namespace Samkuk.Field
             foreach (var u in Model.Units) views.Add(CreateView(u));
             CurrentPhase = Phase.Battle;
             Ui.ShowBand(views);
-            Ui.SetHint("부대를 고르고(클릭, 숫자 키) 명령을 준 뒤 Space 로 시작합니다. 적을 찍으면 그 부대로 전진합니다.");
+            Ui.SetHint("W/S(↑/↓)로 부대를 고르고 Enter 로 명령을 준 뒤 Space 로 시작합니다. 마우스: 내 부대 클릭 = 선택, 적 클릭 = 목표.");
             SyncViews(0f);
         }
 
@@ -233,7 +252,9 @@ namespace Samkuk.Field
 
         void SyncViews(float dt)
         {
-            var target = Selected != null ? Model.Find(Selected.TargetId) : null;
+            EnsureSelection();
+            // 목표 고르는 중엔 커서가 가리키는 적을 빨간 테로 미리 보여 준다
+            var target = Mode == KeyMode.Target ? TargetCursorUnit : (Selected != null ? Model.Find(Selected.TargetId) : null);
             for (int i = 0; i < views.Count; i++)
             {
                 var v = views[i];
@@ -315,10 +336,17 @@ namespace Samkuk.Field
             var kb = Keyboard.current;
             if (kb != null)
             {
-                if (kb.escapeKey.wasPressedThisFrame) ToggleMenu();
+                // ESC: 세부/목표 고르기 중이면 한 단계 뒤로, 목록이면 메뉴
+                if (kb.escapeKey.wasPressedThisFrame) { if (MenuOpen || Mode == KeyMode.List) ToggleMenu(); else Back(); }
                 if (!MenuOpen && !Model.Finished)
                 {
                     if (kb.spaceKey.wasPressedThisFrame) TogglePause();
+                    bool up = kb.wKey.wasPressedThisFrame || kb.upArrowKey.wasPressedThisFrame;
+                    bool down = kb.sKey.wasPressedThisFrame || kb.downArrowKey.wasPressedThisFrame;
+                    if (up) MoveCursor(-1);
+                    else if (down) MoveCursor(+1);
+                    if (kb.enterKey.wasPressedThisFrame || kb.numpadEnterKey.wasPressedThisFrame) Confirm();
+                    if (kb.backspaceKey.wasPressedThisFrame) Back();
                     if (kb.digit1Key.wasPressedThisFrame) SelectPlayerIndex(0);
                     else if (kb.digit2Key.wasPressedThisFrame) SelectPlayerIndex(1);
                     else if (kb.digit3Key.wasPressedThisFrame) SelectPlayerIndex(2);
@@ -376,9 +404,179 @@ namespace Samkuk.Field
         public bool Select(FieldUnit unit)
         {
             if (unit == null || !unit.Alive || unit.Side != FieldSide.Player) return false;
+            if (Selected != unit) Mode = KeyMode.List;   // 다른 부대를 고르면 세부 메뉴는 닫힌다
             Selected = unit;
             return true;
         }
+
+        // ───────────────────────── 키보드 조작 ─────────────────────────
+
+        /// <summary>정지 중에 살아 있는 선택이 없으면 첫 내 부대(장수 부대)를 고른다. 방금 고른 부대는 빼앗지 않는다.</summary>
+        void EnsureSelection()
+        {
+            if (!Model.Paused || Model.Finished) return;
+            if (Selected != null && Selected.Alive) return;
+            Selected = PlayerAt(0);
+            Mode = KeyMode.List;
+        }
+
+        /// <summary>살아 있는 내 부대 n 번째 (모델 순서 = 숫자 키 순서, 장수 부대가 0).</summary>
+        public FieldUnit PlayerAt(int n) => AliveAt(FieldSide.Player, n);
+        /// <summary>살아 있는 적 부대 n 번째 (모델 순서).</summary>
+        public FieldUnit EnemyAt(int n) => AliveAt(FieldSide.Enemy, n);
+
+        FieldUnit AliveAt(FieldSide side, int n)
+        {
+            if (Model == null || n < 0) return null;
+            int k = 0;
+            var units = Model.Units;
+            for (int i = 0; i < units.Count; i++)
+            {
+                var u = units[i];
+                if (!u.Alive || u.Side != side) continue;
+                if (k++ == n) return u;
+            }
+            return null;
+        }
+
+        /// <summary>살아 있는 같은 편 부대 중 몇 번째인가 (없으면 -1).</summary>
+        public int AliveIndexOf(FieldUnit unit)
+        {
+            if (unit == null || Model == null) return -1;
+            int k = 0;
+            var units = Model.Units;
+            for (int i = 0; i < units.Count; i++)
+            {
+                var u = units[i];
+                if (!u.Alive || u.Side != unit.Side) continue;
+                if (u == unit) return k;
+                k++;
+            }
+            return -1;
+        }
+
+        /// <summary>선택을 살아 있는 내 부대 목록에서 delta 만큼 옮긴다 (끝에서 반대쪽으로 돈다). 진행 중에도 된다.</summary>
+        public bool MoveSelection(int delta)
+        {
+            int n = Model != null ? Model.CountAlive(FieldSide.Player) : 0;
+            if (n == 0) return false;
+            int idx = AliveIndexOf(Selected);
+            idx = idx < 0 ? 0 : Wrap(idx + delta, n);
+            return Select(PlayerAt(idx));
+        }
+
+        /// <summary>Enter: 선택한 부대의 세부 명령 메뉴를 연다. 정지 중에만.</summary>
+        public bool OpenDetail()
+        {
+            if (Selected == null) return false;
+            if (!Model.CanCommand)
+            {
+                Ui.SetHint(Model.Finished ? "야전이 끝났습니다." : "명령은 정지 중에만 줄 수 있습니다 (Space).");
+                return false;
+            }
+            Mode = KeyMode.Detail;
+            DetailIndex = 0;
+            return true;
+        }
+
+        /// <summary>W/S·↑/↓: 목록이면 부대, 세부 메뉴면 항목, 목표 고르기면 적 부대를 옮긴다.</summary>
+        public void MoveCursor(int delta)
+        {
+            switch (Mode)
+            {
+                case KeyMode.Detail: DetailIndex = Wrap(DetailIndex + delta, DetailLabels.Length); break;
+                case KeyMode.Target:
+                {
+                    int n = Model.CountAlive(FieldSide.Enemy);
+                    if (n > 0) TargetCursor = Wrap(TargetCursor + delta, n);
+                    break;
+                }
+                default: MoveSelection(delta); break;
+            }
+        }
+
+        /// <summary>Enter: 목록이면 세부 메뉴 열기, 세부 메뉴면 항목 실행, 목표 고르기면 그 적으로 전진.</summary>
+        public bool Confirm()
+        {
+            switch (Mode)
+            {
+                case KeyMode.Detail: return ExecuteDetail((DetailItem)DetailIndex);
+                case KeyMode.Target:
+                {
+                    var enemy = TargetCursorUnit;
+                    Mode = KeyMode.List;
+                    return SetTarget(enemy);
+                }
+                default: return OpenDetail();
+            }
+        }
+
+        /// <summary>ESC/Backspace: 한 단계 뒤로 (목표 고르기 → 세부 메뉴 → 목록). 목록이면 아무 일도 없다.</summary>
+        public bool Back()
+        {
+            switch (Mode)
+            {
+                case KeyMode.Target: Mode = KeyMode.Detail; return true;
+                case KeyMode.Detail: Mode = KeyMode.List; return true;
+                default: return false;
+            }
+        }
+
+        bool ExecuteDetail(DetailItem item)
+        {
+            bool ok;
+            switch (item)
+            {
+                case DetailItem.AdvanceTo:
+                    if (Model.CountAlive(FieldSide.Enemy) == 0) { Mode = KeyMode.List; return false; }
+                    Mode = KeyMode.Target;
+                    // 이미 목표가 있으면 거기서 시작
+                    int cur = Selected != null ? AliveIndexOf(Model.Find(Selected.TargetId)) : -1;
+                    TargetCursor = cur < 0 ? 0 : cur;
+                    return true;
+                case DetailItem.Advance: ok = IssueOrder(UnitOrder.Advance); break;
+                case DetailItem.Hold: ok = IssueOrder(UnitOrder.Hold); break;
+                case DetailItem.Retreat: ok = IssueOrder(UnitOrder.Retreat); break;
+                case DetailItem.ClassAdvance: ok = IssueGroupOrder(UnitOrder.Advance, sameClass: true); break;
+                case DetailItem.ClassHold: ok = IssueGroupOrder(UnitOrder.Hold, sameClass: true); break;
+                case DetailItem.ClassRetreat: ok = IssueGroupOrder(UnitOrder.Retreat, sameClass: true); break;
+                case DetailItem.AllAdvance: ok = IssueGroupOrder(UnitOrder.Advance, sameClass: false); break;
+                case DetailItem.AllHold: ok = IssueGroupOrder(UnitOrder.Hold, sameClass: false); break;
+                default: ok = IssueGroupOrder(UnitOrder.Retreat, sameClass: false); break;
+            }
+            Mode = KeyMode.List;   // 실행했으면 다음 부대를 고를 수 있게 목록으로
+            return ok;
+        }
+
+        /// <summary>
+        /// 여러 부대에 한 번에 명령: sameClass 면 선택한 부대와 같은 병과의 내 병사 부대 전부, 아니면 내 병사 부대 전부.
+        /// 장수 부대는 뺀다(후퇴하면 패배라 따로만 명령). 정지 중에만.
+        /// </summary>
+        public bool IssueGroupOrder(UnitOrder order, bool sameClass)
+        {
+            if (!Model.CanCommand)
+            {
+                Ui.SetHint(Model.Finished ? "야전이 끝났습니다." : "명령은 정지 중에만 줄 수 있습니다 (Space).");
+                return false;
+            }
+            if (sameClass && Selected == null) return false;
+            var cls = sameClass ? Selected.Class : default;
+            int count = 0;
+            var units = Model.Units;
+            for (int i = 0; i < units.Count; i++)
+            {
+                var u = units[i];
+                if (!u.Alive || u.Side != FieldSide.Player || u.IsGeneral) continue;
+                if (sameClass && u.Class != cls) continue;
+                if (Model.SetOrder(u.Id, order, -1)) count++;
+            }
+            Ui.SetHint(count > 0
+                ? $"{(sameClass ? FieldNames.Class(cls) + " 부대" : "병사 부대")} {count}개에 {FieldNames.Order(order)} 명령 (장수 부대는 따로)."
+                : "명령을 줄 병사 부대가 없습니다.");
+            return count > 0;
+        }
+
+        static int Wrap(int v, int n) => n <= 0 ? 0 : ((v % n) + n) % n;
 
         /// <summary>살아 있는 내 부대 중 n 번째(0부터)를 고른다 (숫자 키).</summary>
         public bool SelectPlayerIndex(int n)
@@ -414,6 +612,7 @@ namespace Samkuk.Field
         {
             if (Model == null || Model.Finished) return;
             Model.TogglePause();
+            if (!Model.Paused) Mode = KeyMode.List;   // 재개하면 세부 메뉴는 닫는다
         }
 
         public void ToggleMenu()

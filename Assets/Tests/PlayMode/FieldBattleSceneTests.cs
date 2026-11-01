@@ -100,13 +100,12 @@ namespace Samkuk.Tests
             IsoGrid.CellToWorld(mine.Col, mine.Row, out float mx, out float my);
             IsoGrid.CellToWorld(foe.Col, foe.Row, out float fx, out float fy);
 
-            c.HandleClick(new Vector2(fx, fy));
-            Assert.IsNull(c.Selected, "선택 없이 적을 찍으면 아무 일도 없다");
-            c.HandleClick(new Vector2(mx, my));
-            Assert.AreSame(mine, c.Selected);
-            c.HandleClick(new Vector2(fx, fy));
+            Assert.AreSame(mine, c.Selected, "정지 중엔 첫 내 부대(장수 부대)가 저절로 선택된다");
+            c.HandleClick(new Vector2(fx, fy));   // 선택이 있으니 적 클릭 = 그 부대로 전진
             Assert.AreEqual(UnitOrder.Advance, mine.Order);
             Assert.AreEqual(foe.Id, mine.TargetId);
+            c.HandleClick(new Vector2(mx, my));
+            Assert.AreSame(mine, c.Selected, "내 부대 클릭은 선택");
 
             Assert.IsTrue(c.IssueOrder(UnitOrder.Hold));
             Assert.AreEqual(UnitOrder.Hold, mine.Order);
@@ -269,6 +268,120 @@ namespace Samkuk.Tests
             c.Step(0f);
             Assert.Greater(c.RangeMarkCount, 15, "사거리 5 는 3 보다 칸이 많다");
             Object.Destroy(data);
+        }
+
+        // ───────────────────────── 키보드 조작 (15-6) ─────────────────────────
+
+        [Test]
+        public void Keyboard_AutoSelectsFirstUnit_AndMovesSelection_Wrapping()
+        {
+            var c = Make();
+            c.StartBattle(Quiet(), CastleTerrain.Plain);
+            Assert.AreSame(c.Model.PlayerGeneral, c.Selected, "정지 상태로 시작하므로 장수 부대가 선택");
+            Assert.AreEqual(FieldBattleController.KeyMode.List, c.Mode);
+
+            Assert.IsTrue(c.MoveSelection(+1));
+            Assert.AreSame(c.PlayerAt(1), c.Selected);
+            Assert.IsTrue(c.MoveSelection(-1));
+            Assert.AreSame(c.Model.PlayerGeneral, c.Selected);
+            Assert.IsTrue(c.MoveSelection(-1));
+            Assert.AreSame(c.PlayerAt(6), c.Selected, "맨 앞에서 위로 가면 맨 뒤로");
+            Assert.AreEqual(6, c.AliveIndexOf(c.Selected));
+        }
+
+        [Test]
+        public void Keyboard_Detail_IssuesOrder_AndReturnsToList()
+        {
+            var c = Make();
+            c.StartBattle(Quiet(), CastleTerrain.Plain);
+            var gen = c.Model.PlayerGeneral;
+            Assert.IsTrue(c.Confirm(), "Enter = 세부 메뉴");
+            Assert.AreEqual(FieldBattleController.KeyMode.Detail, c.Mode);
+            Assert.AreEqual(0, c.DetailIndex);
+            Assert.IsTrue(c.Confirm(), "첫 항목 = 전진");
+            Assert.AreEqual(UnitOrder.Advance, gen.Order);
+            Assert.AreEqual(FieldBattleController.KeyMode.List, c.Mode, "실행하면 목록으로");
+
+            c.OpenDetail();
+            c.MoveCursor(+3);
+            Assert.AreEqual((int)FieldBattleController.DetailItem.Retreat, c.DetailIndex);
+            c.MoveCursor(-4);
+            Assert.AreEqual(FieldBattleController.DetailLabels.Length - 1, c.DetailIndex, "위로 넘기면 마지막 항목");
+            c.MoveCursor(+4);
+            c.Confirm();
+            Assert.AreEqual(UnitOrder.Retreat, gen.Order);
+        }
+
+        [Test]
+        public void Keyboard_TargetMode_PicksEnemy_AndBackStepsOut()
+        {
+            var c = Make();
+            c.StartBattle(Quiet(), CastleTerrain.Plain);
+            var gen = c.Model.PlayerGeneral;
+            c.OpenDetail();
+            c.MoveCursor(+1);   // 목표 정해 전진
+            Assert.IsTrue(c.Confirm());
+            Assert.AreEqual(FieldBattleController.KeyMode.Target, c.Mode);
+            Assert.IsNotNull(c.TargetCursorUnit);
+            Assert.AreEqual(FieldSide.Enemy, c.TargetCursorUnit.Side);
+
+            Assert.IsTrue(c.Back());
+            Assert.AreEqual(FieldBattleController.KeyMode.Detail, c.Mode);
+            Assert.IsTrue(c.Back());
+            Assert.AreEqual(FieldBattleController.KeyMode.List, c.Mode);
+            Assert.IsFalse(c.Back(), "목록에선 더 뒤가 없다");
+
+            c.OpenDetail(); c.MoveCursor(+1); c.Confirm();
+            c.MoveCursor(+1);
+            var picked = c.TargetCursorUnit;
+            Assert.AreSame(c.EnemyAt(1), picked);
+            Assert.IsTrue(c.Confirm());
+            Assert.AreEqual(FieldBattleController.KeyMode.List, c.Mode);
+            Assert.AreEqual(UnitOrder.Advance, gen.Order);
+            Assert.AreEqual(picked.Id, gen.TargetId);
+
+            // 다시 열면 지금 목표에서 시작
+            c.OpenDetail(); c.MoveCursor(+1); c.Confirm();
+            Assert.AreSame(picked, c.TargetCursorUnit);
+        }
+
+        [Test]
+        public void Keyboard_GroupOrders_ExcludeTheGeneral()
+        {
+            var c = Make();
+            c.StartBattle(Quiet(), CastleTerrain.Plain);
+            var gen = c.Model.PlayerGeneral;
+            c.Select(gen);   // 장수 부대 = 기병
+            Assert.IsTrue(c.IssueGroupOrder(UnitOrder.Advance, sameClass: true));
+            foreach (var u in c.Model.Units)
+            {
+                if (u.Side != FieldSide.Player) continue;
+                if (u.IsGeneral) Assert.AreEqual(UnitOrder.Hold, u.Order, "장수 부대는 뺀다");
+                else Assert.AreEqual(u.Class == UnitClass.Cavalry ? UnitOrder.Advance : UnitOrder.Hold, u.Order, u.Name);
+            }
+            Assert.IsTrue(c.IssueGroupOrder(UnitOrder.Retreat, sameClass: false));
+            foreach (var u in c.Model.Units)
+            {
+                if (u.Side != FieldSide.Player) continue;
+                Assert.AreEqual(u.IsGeneral ? UnitOrder.Hold : UnitOrder.Retreat, u.Order, u.Name);
+            }
+            StringAssert.Contains("장수 부대는 따로", c.Ui.Hint);
+        }
+
+        [Test]
+        public void Keyboard_DetailRefusedWhileRunning_AndResumeClosesIt()
+        {
+            var c = Make();
+            c.StartBattle(Quiet(), CastleTerrain.Plain);
+            c.OpenDetail();
+            Assert.AreEqual(FieldBattleController.KeyMode.Detail, c.Mode);
+            c.TogglePause();
+            Assert.IsFalse(c.Model.Paused);
+            Assert.AreEqual(FieldBattleController.KeyMode.List, c.Mode, "재개하면 메뉴가 닫힌다");
+            Assert.IsFalse(c.OpenDetail());
+            StringAssert.Contains("정지", c.Ui.Hint);
+            Assert.IsFalse(c.IssueGroupOrder(UnitOrder.Advance, sameClass: false));
+            Assert.IsTrue(c.MoveSelection(+1), "진행 중에도 부대는 고를 수 있다");
         }
 
         [Test]

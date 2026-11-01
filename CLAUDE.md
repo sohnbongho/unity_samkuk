@@ -12,7 +12,7 @@
 
 ## 진행 상황
 
-마지막 갱신: 2026-11-01 (Step 10-9b 무기 그림 앞뒤·쉬는 자세 완료(Play 미확인). Step 15 야전은 15-5 까지 완료(15-4·15-5 는 사용자 지시로 Play 미확인 커밋), 후속은 체감 피드백 대기 — `docs/FIELD_BATTLE.md`. 이전: Step 10-9 후속 조조 연속 베기·여포 극 완료, 무기 휘두르기(베기) 완료, Step 8-5 장수별 무기 목록 완료. Step 14 HD-2D 전환 진행 중: 14-1 조명 완료, 14-2 후처리 완료, 14-3 도트 규격 완료, 14-4 월드 정렬·그림자 완료, 14-5 틸트 시프트 완료, 후속 14-6 겹친 소품 반투명 완료. 나머지 후속은 `docs/HD2D.md` 후속 목록. 계획/결정은 `docs/HD2D.md`, 용어 `CONTEXT.md`, ADR `docs/adr/`)
+마지막 갱신: 2026-11-01 (Step 15-6 야전 키보드 조작·양옆 부대 목록 완료(Play 확인). 야전 후속은 체감 피드백 대기. Step 10-9b 무기 그림 앞뒤·쉬는 자세는 Play 미확인 커밋 — `docs/FIELD_BATTLE.md`. 이전: Step 10-9 후속 조조 연속 베기·여포 극 완료, 무기 휘두르기(베기) 완료, Step 8-5 장수별 무기 목록 완료. Step 14 HD-2D 전환 진행 중: 14-1 조명 완료, 14-2 후처리 완료, 14-3 도트 규격 완료, 14-4 월드 정렬·그림자 완료, 14-5 틸트 시프트 완료, 후속 14-6 겹친 소품 반투명 완료. 나머지 후속은 `docs/HD2D.md` 후속 목록. 계획/결정은 `docs/HD2D.md`, 용어 `CONTEXT.md`, ADR `docs/adr/`)
 
 | Step | 내용 | 상태 | 커밋 |
 |---|---|---|---|
@@ -59,8 +59,9 @@
 | 15-1 | 야전 순수 로직: `Assets/Scripts/Field/`(네임스페이스 `Samkuk.Field`) — `FieldBattleModel`(12x9 격자, 칸 예약 이동·비켜 가기, 공격은 명령과 무관하게 매 틱, 전진 목표·지나치며 때리기, 후퇴 퇴장, 돌격 장전, 자동 정지, 승패), `FieldRules`(병과 표·상성·AI 문턱 한 곳), `FieldFormation`(배치 4종·좌우 반전), `FieldAi`(단순 규칙), `FieldSetup`, `FieldUnit`. 유니티 의존 없음. 테스트 `FieldBattleModelTests` 28개(유니티 밖 Mono 로 전부 통과, Test Runner 확인) | 완료 | |
 | 15-2 | 야전 아이소메트릭 격자·임시 그림: `IsoGrid`(12x9 칸 ↔ 월드, 타일 1.5x0.75 유닛, 가운데 칸이 원점, 이동 방향 → 그림 방향), `FieldArtSpec`(파일 이름·시트 칸 규격), 생성기 `tools/field_art/generate.ps1`(마름모 타일 6장 + 부대 시트 8장 = 병과 3 + 장수 x 진영 2, 앞/뒷모습 x 2프레임, 왼쪽은 반전), 임포터 `FieldSpriteImporter`(`Assets/Sprites/Field`). 테스트 `IsoGridTests` | 완료 | |
 | 15-3 | 야전 씬·화면: `FieldBattleScene`(빌드 4번, 셋업 `Step 15`, Run All 포함, 메뉴 `Play Field Battle`), `FieldBattleController`(준비 → 야전 → 결과, 클릭 선택·적 클릭 = 목표·Space 정지·숫자 키·ESC 메뉴, 그림 참조 없으면 색 덩어리), `FieldUnitView`/`FieldSpriteSet`(실행 중 시트 자르기, World 정렬, 걷기 프레임), `FieldBattleUI`(코드 생성: 준비 화면·명령 띠·병사 수 라벨·결과창·메뉴), `FieldBattleLauncher`(타이틀 [야전 테스트], 씬 로드 이벤트 구독), `FieldSession`, `GameManager.FieldSceneName`. 테스트 `FieldBattleSceneTests` | 완료 | |
-| 15-4 | 야전 연출: `FieldFx`(모델 이벤트 → 불꽃 입자(`BurstFx` 재사용)·코드 화살 풀·돌격 고리·무너짐 입자·기존 효과음, 맞는/쏘는 부대마다 간격), `FieldUnitView.Flash`(붉은 번쩍임), 정지 중 고른 부대의 사거리 마름모 표시 + 화면 위 정지 배너. **수치 조정은 체감 피드백 뒤**(`FieldRules`). 테스트 `FieldBattleSceneTests` +2 | 완료(Play 미확인) | |
-| 15-5 | 야전 수치 에셋: `FieldRulesData`(ScriptableObject, `FieldRules`/`ClassStats` 를 [Serializable] 로 — 유니티 의존 없음 유지), `Assets/ScriptableObjects/Field/FieldRules.asset`(Step 15 가 **없을 때만** 기본값으로 생성 → 사용자 조정 보존, 되돌리기 = 에셋 삭제 후 재실행), `FieldBattleController.rulesData` → 야전 시작마다 모델에 넘겨 고친 값은 다음 야전([다시])부터 적용(진행 중 야전 즉시 반영 여부는 확인 항목). 테스트 `FieldBattleSceneTests` +2 | 완료(Play 미확인) | |
+| 15-4 | 야전 연출: `FieldFx`(모델 이벤트 → 불꽃 입자(`BurstFx` 재사용)·코드 화살 풀·돌격 고리·무너짐 입자·기존 효과음, 맞는/쏘는 부대마다 간격), `FieldUnitView.Flash`(붉은 번쩍임), 정지 중 고른 부대의 사거리 마름모 표시 + 화면 위 정지 배너. **수치 조정은 체감 피드백 뒤**(`FieldRules`). 테스트 `FieldBattleSceneTests` +2 | 완료 | |
+| 15-5 | 야전 수치 에셋: `FieldRulesData`(ScriptableObject, `FieldRules`/`ClassStats` 를 [Serializable] 로 — 유니티 의존 없음 유지), `Assets/ScriptableObjects/Field/FieldRules.asset`(Step 15 가 **없을 때만** 기본값으로 생성 → 사용자 조정 보존, 되돌리기 = 에셋 삭제 후 재실행), `FieldBattleController.rulesData` → 야전 시작마다 모델에 넘겨 고친 값은 다음 야전([다시])부터 적용(진행 중 야전 즉시 반영 여부는 확인 항목). 테스트 `FieldBattleSceneTests` +2 | 완료 | |
+| 15-6 | 야전 키보드 조작·양옆 부대 목록(사용자 요청: 마우스가 불편): 정지하면 첫 내 부대 자동 선택, W/S·↑/↓ 부대 바꾸기, Enter → 왼쪽 패널이 세부 명령 메뉴(전진·목표 정해 전진·대기·후퇴·같은 병과 전진/대기/후퇴·전체 전진/대기/후퇴, **장수 부대 제외**), 목표 고르기는 오른쪽 적 목록 커서(빨간 테 미리보기), ESC/Backspace 뒤로, 재개하면 메뉴 닫힘. `FieldBattleController.KeyMode/MoveSelection/OpenDetail/MoveCursor/Confirm/Back/IssueGroupOrder`, `FieldBattleUI` 양옆 패널(줄마다 바뀐 것만 다시 그림, 패널 raycast 끔). 테스트 `FieldBattleSceneTests` +5 | 완료 | |
 
 ## 남은 작업
 

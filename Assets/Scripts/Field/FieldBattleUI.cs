@@ -11,6 +11,7 @@ namespace Samkuk.Field
     /// <summary>
     /// 야전 화면 전체를 실행 중에 코드로 만든다 (내정 화면·맵 편집기와 같은 방식): 준비 화면(편성·배치·지형 고르기), 아래 명령 띠(선택 부대 정보,
     /// [전진][대기][후퇴], [정지/재개], 시간, 안내), 부대 위 병사 수 라벨, 결과창, ESC 메뉴. 규칙은 전혀 없고 <see cref="FieldBattleController"/> 를 부른다.
+    /// 양옆 패널(15-6): 왼쪽은 내 부대 목록(선택 커서, 세부 명령 메뉴로 바뀜), 오른쪽은 적 부대 목록(목표 표시, 목표 고르기 커서). 키 안내는 패널 아래.
     /// 기준 해상도 1920x1080, 명령 띠 높이 324 = 가상 해상도 640x360 의 108 픽셀 (ADR 0003).
     /// </summary>
     public class FieldBattleUI : MonoBehaviour
@@ -21,12 +22,30 @@ namespace Samkuk.Field
         static readonly Color PlayerLabel = new Color(0.6f, 0.78f, 1f);
         static readonly Color EnemyLabel = new Color(1f, 0.55f, 0.5f);
         static readonly int[] SoldierSteps = { 100, 200, 300, 500, 800 };
+        public const float SidePanelWidth = 250f, SidePanelTop = 76f;
+        const int MaxRows = 10;
+        static readonly Color CursorColor = new Color(1f, 0.85f, 0.4f);
+        static readonly Color DeadColor = new Color(0.5f, 0.45f, 0.45f);
+        const string ListHelp = "W/S (↑/↓)  부대 고르기\n1~0  번호로 고르기\nEnter  세부 명령\nSpace  재개 / 정지";
+        const string DetailHelp = "W/S (↑/↓)  항목\nEnter  실행\nESC / Backspace  돌아가기";
+        const string TargetHelp = "W/S (↑/↓)  적 부대 고르기\nEnter  이 부대로 전진\nESC  돌아가기";
+        const string EnemyHelp = "◎ = 선택한 부대의 목표\n적 부대 클릭 = 목표 지정";
 
         FieldBattleController ctrl;
         HeroCatalog heroes;
 
         RectTransform root, prep, band, result, menu, labelsRoot;
-        Text infoText, hintText, timeText, pauseLabel, resultTitle, resultBody, pauseBanner;
+        RectTransform leftPanel, rightPanel, leftRows, detailBox;
+        Text infoText, hintText, timeText, pauseLabel, resultTitle, resultBody, pauseBanner, leftHelp, detailTitle;
+        readonly Text[] playerRows = new Text[MaxRows];
+        readonly Text[] enemyRows = new Text[MaxRows];
+        readonly Text[] detailRows = new Text[MaxRows];
+        /// <summary>줄마다 마지막으로 그린 상태: 바뀐 줄만 글자를 다시 만든다 (Update 할당 금지 규칙).</summary>
+        struct RowState { public bool used, alive, cursor, mark; public int soldiers, target; public UnitOrder order; }
+        readonly RowState[] playerRowState = new RowState[MaxRows];
+        readonly RowState[] enemyRowState = new RowState[MaxRows];
+        int lastMode = -1, lastDetailIndex = -1;
+        FieldUnit lastDetailUnit;
         readonly List<Action> prepRefreshers = new List<Action>();
 
         // 준비 화면에서 고치는 값
@@ -85,6 +104,7 @@ namespace Samkuk.Field
             labelsRoot = NewRect("Labels", root);
             Stretch(labelsRoot);
             BuildBand();
+            BuildSidePanels();
             BuildPrep();
             BuildResult();
             BuildMenu();
@@ -106,6 +126,8 @@ namespace Samkuk.Field
             menu.gameObject.SetActive(false);
             labelsRoot.gameObject.SetActive(false);
             if (pauseBanner != null) pauseBanner.gameObject.SetActive(false);
+            if (leftPanel != null) leftPanel.gameObject.SetActive(false);
+            if (rightPanel != null) rightPanel.gameObject.SetActive(false);
         }
 
         public bool PauseBannerVisible => pauseBanner != null && pauseBanner.gameObject.activeSelf;
@@ -268,7 +290,7 @@ namespace Samkuk.Field
             trt.sizeDelta = new Vector2(360f, 50f);
 
             // 화면 위 가운데의 정지 배너 (전장 위에 겹침)
-            pauseBanner = NewText("PauseBanner", root, 34, TextAnchor.UpperCenter, "정지 중 — 명령을 주고 Space 로 재개");
+            pauseBanner = NewText("PauseBanner", root, 34, TextAnchor.UpperCenter, "정지 중 — W/S 로 부대, Enter 로 명령, Space 로 재개");
             UiSkin.StyleTitle(pauseBanner);
             var brt = pauseBanner.rectTransform;
             brt.anchorMin = brt.anchorMax = new Vector2(0.5f, 1f);
@@ -285,19 +307,155 @@ namespace Samkuk.Field
             hintText.rectTransform.sizeDelta = new Vector2(-80f, 90f);
         }
 
-        /// <summary>야전 시작: 띠와 부대 라벨을 보이고 라벨을 부대 그림에 묶는다.</summary>
+        // ───────────────────────── 양옆 패널: 내 부대 / 적 부대 목록 ─────────────────────────
+
+        void BuildSidePanels()
+        {
+            leftPanel = SidePanel("AllyPanel", "아군", PlayerLabel, left: true, out leftRows, out var playerRowTexts, out leftHelp);
+            for (int i = 0; i < MaxRows; i++) playerRows[i] = playerRowTexts[i];
+            rightPanel = SidePanel("EnemyPanel", "적군", EnemyLabel, left: false, out _, out var enemyRowTexts, out var rightHelp);
+            for (int i = 0; i < MaxRows; i++) enemyRows[i] = enemyRowTexts[i];
+            rightHelp.text = EnemyHelp;
+
+            // 세부 명령 메뉴: 왼쪽 패널의 목록 자리를 대신 쓴다
+            detailBox = NewRect("Detail", leftPanel);
+            TopLeft(detailBox, new Vector2(12f, -52f), new Vector2(SidePanelWidth - 24f, 440f));
+            detailTitle = NewText("Title", detailBox, 24, TextAnchor.UpperLeft, "");
+            detailTitle.color = CursorColor;
+            TopLeft(detailTitle.rectTransform, Vector2.zero, new Vector2(SidePanelWidth - 24f, 60f));
+            for (int i = 0; i < MaxRows; i++)
+            {
+                var t = NewText($"Item{i}", detailBox, 24, TextAnchor.MiddleLeft, "");
+                TopLeft(t.rectTransform, new Vector2(0f, -64f - i * 36f), new Vector2(SidePanelWidth - 24f, 34f));
+                detailRows[i] = t;
+            }
+            detailBox.gameObject.SetActive(false);
+        }
+
+        RectTransform SidePanel(string name, string title, Color titleColor, bool left, out RectTransform rows, out Text[] rowTexts, out Text help)
+        {
+            var panel = NewPanel(name, root, PanelColor);
+            // 패널(바탕 + 스킨이 붙인 테두리 자식)이 클릭을 먹지 않게: 패널이 전장 좌우 끝 칸 위에 조금 겹친다
+            foreach (var img in panel.GetComponentsInChildren<Image>(true)) img.raycastTarget = false;
+            float height = ReferenceResolution.y - SidePanelTop - BandHeight - 10f;
+            panel.anchorMin = panel.anchorMax = new Vector2(left ? 0f : 1f, 1f);
+            panel.pivot = new Vector2(left ? 0f : 1f, 1f);
+            panel.anchoredPosition = new Vector2(left ? 20f : -20f, -SidePanelTop);
+            panel.sizeDelta = new Vector2(SidePanelWidth, height);
+
+            var t = NewText("Title", panel, 28, TextAnchor.MiddleCenter, title);
+            t.color = titleColor;
+            t.fontStyle = FontStyle.Bold;
+            TopLeft(t.rectTransform, new Vector2(0f, -6f), new Vector2(SidePanelWidth, 44f));
+
+            rows = NewRect("Rows", panel);
+            TopLeft(rows, new Vector2(12f, -52f), new Vector2(SidePanelWidth - 24f, MaxRows * 40f));
+            rowTexts = new Text[MaxRows];
+            for (int i = 0; i < MaxRows; i++)
+            {
+                var r = NewText($"Row{i}", rows, 24, TextAnchor.MiddleLeft, "");
+                TopLeft(r.rectTransform, new Vector2(0f, -i * 40f), new Vector2(SidePanelWidth - 24f, 38f));
+                r.gameObject.SetActive(false);
+                rowTexts[i] = r;
+            }
+
+            help = NewText("Help", panel, 20, TextAnchor.LowerLeft, "");
+            help.color = new Color(0.85f, 0.8f, 0.7f);
+            help.rectTransform.anchorMin = new Vector2(0f, 0f);
+            help.rectTransform.anchorMax = new Vector2(1f, 0f);
+            help.rectTransform.pivot = new Vector2(0.5f, 0f);
+            help.rectTransform.anchoredPosition = new Vector2(0f, 12f);
+            help.rectTransform.sizeDelta = new Vector2(-24f, 150f);
+            return panel;
+        }
+
+        /// <summary>매 틱: 양옆 목록(바뀐 줄만), 세부 메뉴(커서가 바뀔 때만), 안내 글(조작 상태가 바뀔 때만).</summary>
+        void RefreshPanels(FieldBattleModel model, FieldUnit selected)
+        {
+            int mode = (int)ctrl.Mode;
+            bool detail = ctrl.Mode == FieldBattleController.KeyMode.Detail;
+            if (mode != lastMode)
+            {
+                lastMode = mode;
+                leftRows.gameObject.SetActive(!detail);
+                detailBox.gameObject.SetActive(detail);
+                leftHelp.text = detail ? DetailHelp : (ctrl.Mode == FieldBattleController.KeyMode.Target ? TargetHelp : ListHelp);
+                lastDetailIndex = -1;
+            }
+
+            var targetCursor = ctrl.TargetCursorUnit;
+            var selectedTarget = selected != null ? model.Find(selected.TargetId) : null;
+            int p = 0, e = 0;
+            var units = model.Units;
+            for (int i = 0; i < units.Count; i++)
+            {
+                var u = units[i];
+                if (u.Side == FieldSide.Player)
+                {
+                    if (p < MaxRows) RefreshRow(playerRows[p], ref playerRowState[p], u, cursor: u == selected, mark: false, number: p + 1);
+                    p++;
+                }
+                else
+                {
+                    if (e < MaxRows) RefreshRow(enemyRows[e], ref enemyRowState[e], u, cursor: u == targetCursor, mark: u == selectedTarget, number: 0);
+                    e++;
+                }
+            }
+            for (int i = p; i < MaxRows; i++) HideRow(playerRows[i], ref playerRowState[i]);
+            for (int i = e; i < MaxRows; i++) HideRow(enemyRows[i], ref enemyRowState[i]);
+
+            if (detail && (ctrl.DetailIndex != lastDetailIndex || selected != lastDetailUnit))
+            {
+                lastDetailIndex = ctrl.DetailIndex;
+                lastDetailUnit = selected;
+                detailTitle.text = selected != null ? $"{selected.Name}\n({(selected.IsGeneral ? "장수 부대" : FieldNames.Class(selected.Class))})" : "";
+                for (int i = 0; i < detailRows.Length; i++)
+                {
+                    bool on = i == ctrl.DetailIndex;
+                    detailRows[i].text = (on ? "▶ " : "   ") + FieldBattleController.DetailLabels[i];
+                    detailRows[i].color = on ? CursorColor : Color.white;
+                }
+            }
+        }
+
+        /// <summary>목록 한 줄. 병사 수·명령·목표·커서·생사가 바뀐 줄만 글자를 다시 만든다. number 는 내 부대의 숫자 키 번호(0 이면 안 씀).</summary>
+        static void RefreshRow(Text row, ref RowState st, FieldUnit u, bool cursor, bool mark, int number)
+        {
+            int soldiers = Mathf.CeilToInt(u.Soldiers);
+            if (st.used && st.alive == u.Alive && st.cursor == cursor && st.mark == mark && st.soldiers == soldiers && st.order == u.Order && st.target == u.TargetId) return;
+            st.used = true; st.alive = u.Alive; st.cursor = cursor; st.mark = mark; st.soldiers = soldiers; st.order = u.Order; st.target = u.TargetId;
+            if (!row.gameObject.activeSelf) row.gameObject.SetActive(true);
+            string head = cursor ? "▶ " : (mark ? "◎ " : "   ");
+            string num = number > 0 ? (number % 10) + " " : "";
+            row.text = u.Alive ? $"{head}{num}{u.Name}  {OrderMark(u.Order)}{soldiers}" : $"{head}{num}{u.Name}  무너짐";
+            row.color = !u.Alive ? DeadColor : (cursor ? CursorColor : Color.white);
+        }
+
+        static void HideRow(Text row, ref RowState st)
+        {
+            if (!st.used) return;
+            st.used = false;
+            row.gameObject.SetActive(false);
+        }
+
+        /// <summary>야전 시작: 띠·양옆 패널·부대 라벨을 보이고 라벨을 부대 그림에 묶는다.</summary>
         public void ShowBand(IReadOnlyList<FieldUnitView> views)
         {
             HideAll();
             band.gameObject.SetActive(true);
             labelsRoot.gameObject.SetActive(true);
+            leftPanel.gameObject.SetActive(true);
+            rightPanel.gameObject.SetActive(true);
+            lastMode = -1;
+            lastDetailIndex = -1;
+            for (int i = 0; i < MaxRows; i++) { playerRowState[i] = default; enemyRowState[i] = default; }
             BindLabels(views);
             lastSecond = -1;
             lastSelected = null;
             lastSelectedSoldiers = -1;
             lastSelectedTarget = -2;
             lastPaused = false;   // 모델은 정지 상태로 시작하므로 첫 Refresh 에서 버튼 글자가 "재개" 로 맞춰진다
-            infoText.text = "부대를 고르세요 (클릭 또는 숫자 키 1~0)";
+            infoText.text = "부대를 고르세요 (W/S, 클릭, 숫자 키)";
         }
 
         void BindLabels(IReadOnlyList<FieldUnitView> views)
@@ -360,11 +518,12 @@ namespace Samkuk.Field
             }
             bool banner = model.Paused && !model.Finished && !MenuOpen;
             if (pauseBanner.gameObject.activeSelf != banner) pauseBanner.gameObject.SetActive(banner);
+            RefreshPanels(model, selected);
 
             if (selected != lastSelected || (selected != null && (Mathf.CeilToInt(selected.Soldiers) != lastSelectedSoldiers || selected.Order != lastSelectedOrder || selected.TargetId != lastSelectedTarget)))
             {
                 lastSelected = selected;
-                if (selected == null) infoText.text = "부대를 고르세요 (클릭 또는 숫자 키 1~0)";
+                if (selected == null) infoText.text = "부대를 고르세요 (W/S, 클릭, 숫자 키)";
                 else
                 {
                     lastSelectedSoldiers = Mathf.CeilToInt(selected.Soldiers);
