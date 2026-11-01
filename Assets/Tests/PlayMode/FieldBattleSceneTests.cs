@@ -199,6 +199,48 @@ namespace Samkuk.Tests
         }
 
         [Test]
+        public void Fx_HitsMakeParticlesArrowsAndFlash_WhileRunning()
+        {
+            var c = Make();
+            c.StartBattle(Quiet(), CastleTerrain.Plain);
+            foreach (var u in c.Model.Units) if (u.Side == FieldSide.Player) c.Model.SetOrder(u.Id, UnitOrder.Advance);
+            c.TogglePause();
+            int arrowsSeen = 0;
+            bool flashSeen = false;
+            for (int i = 0; i < 200 && c.Fx.HitCount == 0; i++) c.Step(0.05f);   // 닿을 때까지
+            Assert.Greater(c.Fx.HitCount, 0, "교전이 일어난다");
+            for (int i = 0; i < 40; i++)
+            {
+                c.Step(0.05f);
+                if (c.Fx.ActiveArrows > 0) arrowsSeen++;
+                foreach (var v in c.Views) if (v.IsFlashing) flashSeen = true;
+            }
+            Assert.Greater(c.Fx.Burst.CreatedCount, 0, "불꽃 입자");
+            Assert.IsTrue(flashSeen, "맞은 부대가 번쩍인다");
+            Assert.Greater(arrowsSeen, 0, "궁병이 화살을 날린다");
+        }
+
+        [Test]
+        public void RangeMarks_ShowForSelected_OnlyWhilePaused()
+        {
+            var c = Make();
+            c.StartBattle(Quiet(), CastleTerrain.Plain);
+            FieldUnit archer = null;
+            foreach (var u in c.Model.Units) if (u.Side == FieldSide.Player && u.Class == UnitClass.Archer) { archer = u; break; }
+            c.Select(archer);
+            c.Step(0f);
+            Assert.Greater(c.RangeMarkCount, 4, "궁병은 3칸 사거리");
+            Assert.IsTrue(c.Ui.PauseBannerVisible);
+            c.Select(c.Model.PlayerGeneral);
+            c.Step(0f);
+            Assert.AreEqual(4, c.RangeMarkCount, "백병전은 인접 4칸 (격자 안)");
+            c.TogglePause();
+            c.Step(0.05f);
+            Assert.AreEqual(0, c.RangeMarkCount, "진행 중엔 숨긴다");
+            Assert.IsFalse(c.Ui.PauseBannerVisible);
+        }
+
+        [Test]
         public void PrepSetup_RandomEnemyFormation_AndHeroName()
         {
             var c = Make();

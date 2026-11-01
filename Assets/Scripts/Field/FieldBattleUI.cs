@@ -26,7 +26,7 @@ namespace Samkuk.Field
         HeroCatalog heroes;
 
         RectTransform root, prep, band, result, menu, labelsRoot;
-        Text infoText, hintText, timeText, pauseLabel, resultTitle, resultBody;
+        Text infoText, hintText, timeText, pauseLabel, resultTitle, resultBody, pauseBanner;
         readonly List<Action> prepRefreshers = new List<Action>();
 
         // 준비 화면에서 고치는 값
@@ -105,7 +105,10 @@ namespace Samkuk.Field
             result.gameObject.SetActive(false);
             menu.gameObject.SetActive(false);
             labelsRoot.gameObject.SetActive(false);
+            if (pauseBanner != null) pauseBanner.gameObject.SetActive(false);
         }
+
+        public bool PauseBannerVisible => pauseBanner != null && pauseBanner.gameObject.activeSelf;
 
         // ───────────────────────── 준비 화면 ─────────────────────────
 
@@ -264,6 +267,16 @@ namespace Samkuk.Field
             trt.anchoredPosition = new Vector2(-40f, -214f);
             trt.sizeDelta = new Vector2(360f, 50f);
 
+            // 화면 위 가운데의 정지 배너 (전장 위에 겹침)
+            pauseBanner = NewText("PauseBanner", root, 34, TextAnchor.UpperCenter, "정지 중 — 명령을 주고 Space 로 재개");
+            UiSkin.StyleTitle(pauseBanner);
+            var brt = pauseBanner.rectTransform;
+            brt.anchorMin = brt.anchorMax = new Vector2(0.5f, 1f);
+            brt.pivot = new Vector2(0.5f, 1f);
+            brt.anchoredPosition = new Vector2(0f, -16f);
+            brt.sizeDelta = new Vector2(1200f, 50f);
+            pauseBanner.gameObject.SetActive(false);
+
             hintText = NewText("Hint", band, 26, TextAnchor.LowerLeft, "");
             hintText.color = new Color(1f, 0.9f, 0.6f);
             Anchor(hintText.rectTransform, new Vector2(0f, 0f), new Vector2(0.78f, 0f));
@@ -345,6 +358,8 @@ namespace Samkuk.Field
                 lastPaused = model.Paused;
                 pauseLabel.text = model.Paused ? "재개 (Space)" : "정지 (Space)";
             }
+            bool banner = model.Paused && !model.Finished && !MenuOpen;
+            if (pauseBanner.gameObject.activeSelf != banner) pauseBanner.gameObject.SetActive(banner);
 
             if (selected != lastSelected || (selected != null && (Mathf.CeilToInt(selected.Soldiers) != lastSelectedSoldiers || selected.Order != lastSelectedOrder || selected.TargetId != lastSelectedTarget)))
             {

@@ -1,6 +1,6 @@
 # 야전 (남코 삼국지2식 부대 전투, Step 15)
 
-> **상태: 15-1 순수 로직, 15-2 격자·임시 그림 완료. 15-3 씬·화면 완료. 체감 조정·연출(15-4)은 아직.** 2026-11-01 설계 인터뷰(`/grill-with-docs`)로 정한 내용을 모았다. 코드는 `Assets/Scripts/Field/`(`Samkuk.Field`), 테스트는 `FieldBattleModelTests`. 용어는 `CONTEXT.md` "야전", 시점 결정은 `docs/adr/0003`.
+> **상태: 15-1 순수 로직, 15-2 격자·임시 그림, 15-3 씬·화면 완료. 15-4 연출 완료(Play 미확인), 수치 조정은 체감 피드백 뒤.** 2026-11-01 설계 인터뷰(`/grill-with-docs`)로 정한 내용을 모았다. 코드는 `Assets/Scripts/Field/`(`Samkuk.Field`), 테스트는 `FieldBattleModelTests`. 용어는 `CONTEXT.md` "야전", 시점 결정은 `docs/adr/0003`.
 
 성 밖 들판에서 **부대** 여러 개가 맞붙는 반자동 전투 모드. 시간이 실시간으로 흐르고, [정지]를 눌러 멈춘 상태에서 부대마다 **명령**(전진·대기·후퇴)을 주고 [재개]한다. 남코 삼국지2(覇王の大陸)의 합전이 본보기이며, 화면은 아이소메트릭(대각선) 격자다. **1단계는 독립 테스트 모드**로 만들고 출진·정복 흐름과는 연결하지 않는다.
 
@@ -87,6 +87,22 @@
 
 클릭은 마름모 칸으로 집되(`IsoGrid.WorldToCell` → `FieldBattleModel.UnitAt`), 빈 칸이면 그림이 0.9유닛 안에 있는 가장 가까운 부대를 집는다(그림이 칸보다 위로 길어서). 정지는 모델 깃발이고 ESC 메뉴도 `timeScale` 을 건드리지 않는다. 결과창은 승패 뒤 1초에 뜬다.
 
+## 연출 (15-4, `FieldFx`)
+
+규칙과 무관한 보여 주기만 모아 둔 곳. 모델 이벤트를 받아 표현하며 피해는 매 틱 일어나므로 간격을 둔다.
+
+| 사건 | 표현 |
+|---|---|
+| 백병전 피해 | 맞는 부대마다 0.2초에 한 번: 불꽃 입자 2개(`BurstFx`, 전투와 같은 풀) + `Hit` 소리 + 부대 그림이 0.15초 붉게 번쩍임(`FieldUnitView.Flash`) |
+| 궁병 사격 | 쏘는 부대마다 0.45초에 한 번: 코드로 만든 화살(12x2픽셀, 풀 32개)이 0.3초 동안 살짝 포물선으로 날아가 맞는 자리에서 작은 불꽃 + `Arrow` 소리 |
+| 돌격 | 흰 고리 입자 10개 + `Explosion` 소리 + 강한 번쩍임 |
+| 부대 무너짐 | 편 색 입자 20개(장수 부대 36개) + `Kill` 소리 |
+| 자동 정지 | `PlayerHurt` 소리 + 안내 줄 |
+| 승패 | `Victory` / `Defeat` 소리 |
+| 정지 중 | 화면 위 가운데에 "정지 중 — 명령을 주고 Space 로 재개" 배너. 고른 부대의 **공격 범위**(궁병 3칸, 나머지 인접 칸)를 옅은 노란 마름모로 표시 |
+
+소리는 새로 만들지 않고 기존 `SfxId` 를 재사용한다(실제 음원 교체는 `AudioManager.overrides`). 수치(간격, 입자 수)는 `FieldFx` 상수.
+
 ## 그림 규격 (15-2, `FieldArtSpec`)
 
 | 그림 | 파일 | 크기 | 비고 |
@@ -106,5 +122,5 @@
 | **15-1** (완료) | 순수 로직 `FieldBattleModel`(격자, 부대, 명령·목표, 이동·비켜 가기, 교전·상성·돌격, 후퇴 퇴장, 자동 정지, 적 AI, 승패) + `FieldRules`(병과 표) + `FieldFormation`(배치). 수치 에셋 `FieldUnitClassData` 는 15-3 으로 | PlayMode 테스트 `FieldBattleModelTests` 28개 (유니티 의존 없음, `Temp/ci/fieldtest.sh` 로 유니티 밖에서도 실행) |
 | **15-2** (완료) | 아이소메트릭 임시 아트 `tools/field_art/generate.ps1`(타일 6 + 부대 시트 8), 임포터 `FieldSpriteImporter`, 격자↔월드 `IsoGrid`, 규격 `FieldArtSpec` | `IsoGridTests` 6개(유니티 밖 통과), 그림은 미리보기로 확인 |
 | **15-3** (완료) | 씬 `FieldBattleScene`(빌드 4번) + 셋업 `Step 15`(SetupAll·`RegisterBuildScenes`), `FieldBattleController`(모델 ↔ 화면, 입력), `FieldUnitView`/`FieldSpriteSet`(실행 중 시트 자르기), `FieldBattleUI`(준비 화면·명령 띠·라벨·결과창·메뉴), `FieldBattleLauncher`(타이틀 [야전 테스트]), `FieldSession` | `FieldBattleSceneTests` 9개(Test Runner), 사용자 Play: 준비 → 정지/명령/목표 → 자동 정지 → 승패 → 결과창 |
-| **15-4** | 체감 조정(병과 수치·상성·속도), 연출(교전 입자·소리·돌격 표시), 남는 문제 반영 | 사용자 체감 |
+| **15-4** (연출 완료, Play 미확인) | 연출 `FieldFx`(불꽃·화살·번쩍임·소리), 사거리 표시, 정지 배너. **수치 조정(병과·상성·속도)은 체감 피드백을 받은 뒤** `FieldRules` 에서 | `FieldBattleSceneTests` +2, 사용자 체감 |
 | 2단계(미정) | 출진·정복 흐름 연결, 장수 능력치·동행 장수, 징병/성 크기 연동, 진형 이름, 지형 효과, 서바이버 전투와의 연결(일기토 등), 진짜 그림 | 재미 확인 뒤 다시 인터뷰 |

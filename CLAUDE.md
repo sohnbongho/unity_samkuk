@@ -12,7 +12,7 @@
 
 ## 진행 상황
 
-마지막 갱신: 2026-11-01 (Step 15-3 야전 씬·화면 완료, 15-4 진행 중 — `docs/FIELD_BATTLE.md`. 이전: Step 10-9 후속 조조 연속 베기·여포 극 완료, 무기 휘두르기(베기) 완료, Step 8-5 장수별 무기 목록 완료. Step 14 HD-2D 전환 진행 중: 14-1 조명 완료, 14-2 후처리 완료, 14-3 도트 규격 완료, 14-4 월드 정렬·그림자 완료, 14-5 틸트 시프트 완료, 후속 14-6 겹친 소품 반투명 완료. 나머지 후속은 `docs/HD2D.md` 후속 목록. 계획/결정은 `docs/HD2D.md`, 용어 `CONTEXT.md`, ADR `docs/adr/`)
+마지막 갱신: 2026-11-01 (Step 15-4 야전 연출 완료(Play 미확인, 사용자 지시로 진행) — `docs/FIELD_BATTLE.md`. 이전: Step 10-9 후속 조조 연속 베기·여포 극 완료, 무기 휘두르기(베기) 완료, Step 8-5 장수별 무기 목록 완료. Step 14 HD-2D 전환 진행 중: 14-1 조명 완료, 14-2 후처리 완료, 14-3 도트 규격 완료, 14-4 월드 정렬·그림자 완료, 14-5 틸트 시프트 완료, 후속 14-6 겹친 소품 반투명 완료. 나머지 후속은 `docs/HD2D.md` 후속 목록. 계획/결정은 `docs/HD2D.md`, 용어 `CONTEXT.md`, ADR `docs/adr/`)
 
 | Step | 내용 | 상태 | 커밋 |
 |---|---|---|---|
@@ -58,6 +58,7 @@
 | 15-1 | 야전 순수 로직: `Assets/Scripts/Field/`(네임스페이스 `Samkuk.Field`) — `FieldBattleModel`(12x9 격자, 칸 예약 이동·비켜 가기, 공격은 명령과 무관하게 매 틱, 전진 목표·지나치며 때리기, 후퇴 퇴장, 돌격 장전, 자동 정지, 승패), `FieldRules`(병과 표·상성·AI 문턱 한 곳), `FieldFormation`(배치 4종·좌우 반전), `FieldAi`(단순 규칙), `FieldSetup`, `FieldUnit`. 유니티 의존 없음. 테스트 `FieldBattleModelTests` 28개(유니티 밖 Mono 로 전부 통과, Test Runner 확인) | 완료 | |
 | 15-2 | 야전 아이소메트릭 격자·임시 그림: `IsoGrid`(12x9 칸 ↔ 월드, 타일 1.5x0.75 유닛, 가운데 칸이 원점, 이동 방향 → 그림 방향), `FieldArtSpec`(파일 이름·시트 칸 규격), 생성기 `tools/field_art/generate.ps1`(마름모 타일 6장 + 부대 시트 8장 = 병과 3 + 장수 x 진영 2, 앞/뒷모습 x 2프레임, 왼쪽은 반전), 임포터 `FieldSpriteImporter`(`Assets/Sprites/Field`). 테스트 `IsoGridTests` | 완료 | |
 | 15-3 | 야전 씬·화면: `FieldBattleScene`(빌드 4번, 셋업 `Step 15`, Run All 포함, 메뉴 `Play Field Battle`), `FieldBattleController`(준비 → 야전 → 결과, 클릭 선택·적 클릭 = 목표·Space 정지·숫자 키·ESC 메뉴, 그림 참조 없으면 색 덩어리), `FieldUnitView`/`FieldSpriteSet`(실행 중 시트 자르기, World 정렬, 걷기 프레임), `FieldBattleUI`(코드 생성: 준비 화면·명령 띠·병사 수 라벨·결과창·메뉴), `FieldBattleLauncher`(타이틀 [야전 테스트], 씬 로드 이벤트 구독), `FieldSession`, `GameManager.FieldSceneName`. 테스트 `FieldBattleSceneTests` | 완료 | |
+| 15-4 | 야전 연출: `FieldFx`(모델 이벤트 → 불꽃 입자(`BurstFx` 재사용)·코드 화살 풀·돌격 고리·무너짐 입자·기존 효과음, 맞는/쏘는 부대마다 간격), `FieldUnitView.Flash`(붉은 번쩍임), 정지 중 고른 부대의 사거리 마름모 표시 + 화면 위 정지 배너. **수치 조정은 체감 피드백 뒤**(`FieldRules`). 테스트 `FieldBattleSceneTests` +2 | 완료(Play 미확인) | |
 
 ## 남은 작업
 
@@ -72,6 +73,7 @@
    - **12-7 지형 이동 후속(사용자 체감 뒤)**: 맵 편집기에 막는 범위(원) 표시, 지형별 바닥 효과(산악 전체 느려짐 등), 느려지는 배율/막는 반지름 조정(`Theme_*.asset`), 막힌 적이 머뭇거리면 길 찾기 보강.
 5. **Step 14 HD-2D 스타일 전환(진행 중)**: 계획/결정은 `docs/HD2D.md`, 용어는 `CONTEXT.md`, 이유는 `docs/adr/0001`(가짜 3/4 시점), `0002`(PPU 32). 순서: 14-1 조명 → 14-2 후처리 → 14-3 픽셀 파이프라인 → 14-4 서 있는 소품·월드 정렬·드리운 그림자 → 14-5 틸트 시프트. 후속(소품 반투명, 덤불 세우기, 내정·타이틀 적용, 진짜 그림 교체)은 문서의 "후속" 목록.
 6. **Step 15 야전(남코 삼국지2식 부대 전투, 설계 완료)**: 계획은 `docs/FIELD_BATTLE.md` "작업 단계". 순서: 15-1 순수 로직 `FieldBattleModel` + 테스트 → 15-2 아이소메트릭 임시 아트(`tools/field_art`) + `IsoGrid` → 15-3 씬 `FieldBattleScene`(빌드 4번, `RegisterBuildScenes`/`SetupAll`/`BuildTool` 씬 목록에 추가) + 코드 생성 UI + 타이틀 [야전 테스트] → 15-4 체감 조정. 출진·정복 흐름 연결은 재미 확인 뒤 다시 인터뷰.
+   - **15 야전 후속(사용자 체감 뒤)**: 병과 수치·상성·돌격·속도 조정(`FieldRules`, 뒤에 `FieldUnitClassData` 에셋으로), 자동 정지 조건 추가, 적 AI 보강, 진형 이름, 지형 효과, 출진·정복 흐름 연결, 장수 능력치·동행 장수, 진짜 그림(`docs/FIELD_BATTLE.md` 2단계).
 7. **미결정(PLAN.md 8번)**: 모바일 포함 여부, 실제 아트 에셋 사용 여부, 장수/무기 최종 목록.
 
 ## 알려진 이슈 / 메모
@@ -169,6 +171,6 @@ F2 무기 레벨업, F3 경험치 지급, F4 스테이지 15초 건너뛰기, F5
 
 ### 커밋 / 보고
 - Step(또는 하위 Step)마다 커밋하되, **사용자가 확인한 뒤** 커밋한다.
-- 커밋 메시지: `Step N-M: 제목` + 변경 요점 불릿 + 맨 끝에 `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`.
+- 커밋 메시지: `Step N-M: 제목` + 변경 요점 불릿 + 맨 끝에 `Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>`.
 - Step 완료 보고에는 ① 만든 것 ② 에디터에서 할 일(셋업 메뉴, Play 확인 항목, Test Runner) ③ 다음 Step 안내를 포함한다.
 - 이 문서의 `진행 상황`/`남은 작업`을 같은 커밋에서 갱신한다.

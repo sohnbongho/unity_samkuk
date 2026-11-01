@@ -15,6 +15,9 @@ namespace Samkuk.Field
         public const float FrameInterval = 0.2f;
         /// <summary>병사 수 라벨을 띄울 높이 (유닛): 그림 위쪽 여유.</summary>
         public const float LabelHeight = 1.25f;
+        /// <summary>맞았을 때 붉게 번쩍이는 시간 (초).</summary>
+        public const float FlashTime = 0.15f;
+        static readonly Color FlashColor = new Color(1f, 0.45f, 0.4f);
 
         public FieldUnit Unit { get; private set; }
         public bool Selected { get; set; }
@@ -27,6 +30,8 @@ namespace Samkuk.Field
         IsoFacing facing;
         float animClock;
         int frame;
+        float flash;        // 남은 번쩍임 (0~FlashTime)
+        float flashStrength;
 
         public SpriteRenderer Renderer => sr;
         public IsoFacing Facing => facing;
@@ -77,10 +82,26 @@ namespace Samkuk.Field
             sr.sprite = set != null ? set.Get(IsoGrid.UsesBackSprite(facing), frame) : placeholder;
             sr.flipX = IsoGrid.FlipX(facing);
 
+            if (flash > 0f)
+            {
+                flash -= dt;
+                sr.color = Color.Lerp(Color.white, FlashColor, Mathf.Clamp01(flash / FlashTime) * flashStrength);
+            }
+            else if (sr.color != Color.white) sr.color = Color.white;
+
             bool showRing = Selected || Targeted;
             ring.enabled = showRing;
             if (showRing) ring.color = Targeted ? new Color(1f, 0.3f, 0.25f) : new Color(1f, 0.9f, 0.3f);
         }
+
+        /// <summary>맞았다: strength(0~1)만큼 붉게 번쩍인다.</summary>
+        public void Flash(float strength)
+        {
+            flash = FlashTime;
+            flashStrength = Mathf.Clamp01(strength);
+        }
+
+        public bool IsFlashing => flash > 0f;
 
         /// <summary>병사 수 라벨을 띄울 월드 위치.</summary>
         public Vector3 LabelWorldPosition => transform.position + Vector3.up * LabelHeight;

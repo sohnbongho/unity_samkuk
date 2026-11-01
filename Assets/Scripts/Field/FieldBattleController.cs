@@ -41,6 +41,9 @@ namespace Samkuk.Field
         public Camera Cam => cam;
         public IReadOnlyList<FieldUnitView> Views => views;
         public int TileCount => tiles.Count;
+        public FieldFx Fx => fx;
+        /// <summary>지금 켜진 사거리 표시 칸 수 (테스트용).</summary>
+        public int RangeMarkCount { get; private set; }
         public bool MenuOpen => Ui != null && Ui.MenuOpen;
 
         /// <summary>씬 이동 (테스트에서 가짜로 바꾼다).</summary>
@@ -53,6 +56,11 @@ namespace Samkuk.Field
         readonly Dictionary<FieldUnit, FieldUnitView> viewOf = new Dictionary<FieldUnit, FieldUnitView>();
         static Sprite ringSprite;      // 코드로 만든 스프라이트는 씬을 다시 열어도 하나만 (새지 않게)
         static Sprite fallbackTile;
+        static Sprite rangeSprite;
+        readonly List<SpriteRenderer> rangeMarks = new List<SpriteRenderer>(28);
+        FieldFx fx;
+        FieldUnit rangeFor;
+        bool rangeShown;
         float finishClock;
 
         /// <summary>시트 배열 번호: (보병 0, 궁병 1, 기병 2, 장수 3) x 2 + (내 편 0, 적 1).</summary>
@@ -67,6 +75,10 @@ namespace Samkuk.Field
             fieldRoot = new GameObject("Field").transform;
             fieldRoot.SetParent(transform, false);
             if (ringSprite == null) ringSprite = FieldSpriteSet.Diamond(Color.white, false);
+            if (rangeSprite == null) rangeSprite = FieldSpriteSet.Diamond(new Color(1f, 0.9f, 0.4f, 0.28f), true);
+            fx = new GameObject("FieldFx").AddComponent<FieldFx>();
+            fx.transform.SetParent(transform, false);
+            fx.ViewOf = ViewOf;
             Ui = FieldBattleUI.Create(this, heroCatalog);
         }
 
@@ -128,6 +140,7 @@ namespace Samkuk.Field
             Model = new FieldBattleModel(setup);
             Model.AutoPaused += OnAutoPaused;
             Model.FinishedEvent += OnFinished;
+            fx.Bind(Model);
 
             BuildTiles(terrain);
             foreach (var u in Model.Units) views.Add(CreateView(u));
@@ -149,6 +162,8 @@ namespace Samkuk.Field
             viewOf.Clear();
             foreach (var t in tiles) if (t != null) Destroy(t.gameObject);
             tiles.Clear();
+            fx.Unbind();
+            HideRange();
         }
 
         void BuildTiles(CastleTerrain terrain)
@@ -204,6 +219,7 @@ namespace Samkuk.Field
         {
             if (CurrentPhase != Phase.Battle || Model == null) return;
             Model.Tick(dt);
+            if (!Model.Paused) fx.Tick(dt);   // 정지면 화살도 멈춘다
             SyncViews(dt);
             if (Model.Finished)
             {
@@ -222,7 +238,61 @@ namespace Samkuk.Field
                 v.Targeted = target != null && v.Unit == target;
                 v.Sync(dt);
             }
+            UpdateRange();
             Ui.Refresh(Model, Selected, cam);
+        }
+
+        // ───────────────────────── 사거리 표시 ─────────────────────────
+
+        /// <summary>정지 중에 고른 부대의 공격 범위(맨해튼 거리 ≤ 사거리)를 옅은 마름모로 보여 준다. 궁병은 3칸, 나머지는 인접 칸.</summary>
+        void UpdateRange()
+        {
+            bool show = Selected != null && Selected.Alive && Model.Paused && !Model.Finished;
+            if (!show) { if (rangeShown) HideRange(); return; }
+            if (rangeShown && rangeFor == Selected && !Selected.Moving) return;
+
+            HideRange();
+            rangeFor = Selected;
+            rangeShown = true;
+            int range = Model.Rules.Stats(Selected.Class).range;
+            int k = 0;
+            for (int dc = -range; dc <= range; dc++)
+                for (int dr = -range; dr <= range; dr++)
+                {
+                    int d = Mathf.Abs(dc) + Mathf.Abs(dr);
+                    if (d == 0 || d > range) continue;
+                    int c = Selected.Col + dc, r = Selected.Row + dr;
+                    if (!FieldBattleModel.InBounds(c, r)) continue;
+                    var sr = RangeMark(k++);
+                    IsoGrid.CellToWorld(c, r, out float x, out float y);
+                    sr.transform.localPosition = new Vector3(x, y, 0f);
+                    sr.enabled = true;
+                }
+            RangeMarkCount = k;
+        }
+
+        SpriteRenderer RangeMark(int i)
+        {
+            while (rangeMarks.Count <= i)
+            {
+                var go = new GameObject("Range");
+                go.transform.SetParent(fieldRoot, false);
+                var sr = go.AddComponent<SpriteRenderer>();
+                sr.sprite = rangeSprite;
+                sr.sortingLayerName = GameLayers.Sorting.Background;
+                sr.sortingOrder = 3;   // 타일(0) 위, 선택 테(5) 아래
+                sr.enabled = false;
+                rangeMarks.Add(sr);
+            }
+            return rangeMarks[i];
+        }
+
+        void HideRange()
+        {
+            foreach (var m in rangeMarks) if (m != null) m.enabled = false;
+            rangeShown = false;
+            rangeFor = null;
+            RangeMarkCount = 0;
         }
 
         void OnAutoPaused(FieldUnit u) => Ui.SetHint($"{u.Name}이(가) 무너졌습니다 — 정지. 남은 부대의 명령을 정하고 Space 로 재개하세요.");
