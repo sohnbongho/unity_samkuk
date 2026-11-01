@@ -33,6 +33,7 @@ namespace Samkuk.EditorTools
             Step12TerrainSetup.Run();   // 전투 맵 지형 테마 (그림은 tools/terrain_art/generate.ps1)
             Step12StrategySetup.Run();  // 내정 화면 씬 (성 에셋과 Step 9-2 의 빌드 설정 뒤)
             Step13MapEditorSetup.Run(); // 맵 편집기 씬 (성 에셋과 지형 테마 뒤)
+            Step15FieldSetup.Run();     // 야전 테스트 씬 (장수 목록 뒤, 그림은 tools/field_art/generate.ps1)
             Step14PostFxSetup.Run();    // 전투 카메라 후처리 (HD-2D)
             Step14PixelSetup.Run();     // 도트 규격: Pixel Perfect Camera + 걷기 시트 PPU 이전 (시트 연결 10-6/10-7 뒤)
             Step14WorldSetup.Run();     // 월드 정렬: World 정렬 레이어 + 정렬 축 + 프리팹 (프리팹과 씬이 만들어진 뒤)

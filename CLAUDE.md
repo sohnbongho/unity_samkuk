@@ -12,7 +12,7 @@
 
 ## 진행 상황
 
-마지막 갱신: 2026-11-01 (Step 15-2 야전 격자·임시 그림 완료, 15-3 진행 중 — `docs/FIELD_BATTLE.md`. 이전: Step 10-9 후속 조조 연속 베기·여포 극 완료, 무기 휘두르기(베기) 완료, Step 8-5 장수별 무기 목록 완료. Step 14 HD-2D 전환 진행 중: 14-1 조명 완료, 14-2 후처리 완료, 14-3 도트 규격 완료, 14-4 월드 정렬·그림자 완료, 14-5 틸트 시프트 완료, 후속 14-6 겹친 소품 반투명 완료. 나머지 후속은 `docs/HD2D.md` 후속 목록. 계획/결정은 `docs/HD2D.md`, 용어 `CONTEXT.md`, ADR `docs/adr/`)
+마지막 갱신: 2026-11-01 (Step 15-3 야전 씬·화면 완료, 15-4 진행 중 — `docs/FIELD_BATTLE.md`. 이전: Step 10-9 후속 조조 연속 베기·여포 극 완료, 무기 휘두르기(베기) 완료, Step 8-5 장수별 무기 목록 완료. Step 14 HD-2D 전환 진행 중: 14-1 조명 완료, 14-2 후처리 완료, 14-3 도트 규격 완료, 14-4 월드 정렬·그림자 완료, 14-5 틸트 시프트 완료, 후속 14-6 겹친 소품 반투명 완료. 나머지 후속은 `docs/HD2D.md` 후속 목록. 계획/결정은 `docs/HD2D.md`, 용어 `CONTEXT.md`, ADR `docs/adr/`)
 
 | Step | 내용 | 상태 | 커밋 |
 |---|---|---|---|
@@ -57,6 +57,7 @@
 | 15-0 | 야전(남코 삼국지2식 부대 전투) 설계: 독립 테스트 모드, 아이소메트릭 12x9 격자, 병과(보병·궁병·기병)별 부대 2개 + 기병 고정 장수 부대, 실시간 + 정지 중 명령(전진·대기·후퇴, 전진은 목표 지정 가능), 배치 4종, 상성, 단순 적 AI. 용어 `CONTEXT.md` "야전", 결정 `docs/adr/0003`, 설계·계획 `docs/FIELD_BATTLE.md` | 완료 | |
 | 15-1 | 야전 순수 로직: `Assets/Scripts/Field/`(네임스페이스 `Samkuk.Field`) — `FieldBattleModel`(12x9 격자, 칸 예약 이동·비켜 가기, 공격은 명령과 무관하게 매 틱, 전진 목표·지나치며 때리기, 후퇴 퇴장, 돌격 장전, 자동 정지, 승패), `FieldRules`(병과 표·상성·AI 문턱 한 곳), `FieldFormation`(배치 4종·좌우 반전), `FieldAi`(단순 규칙), `FieldSetup`, `FieldUnit`. 유니티 의존 없음. 테스트 `FieldBattleModelTests` 28개(유니티 밖 Mono 로 전부 통과, Test Runner 확인) | 완료 | |
 | 15-2 | 야전 아이소메트릭 격자·임시 그림: `IsoGrid`(12x9 칸 ↔ 월드, 타일 1.5x0.75 유닛, 가운데 칸이 원점, 이동 방향 → 그림 방향), `FieldArtSpec`(파일 이름·시트 칸 규격), 생성기 `tools/field_art/generate.ps1`(마름모 타일 6장 + 부대 시트 8장 = 병과 3 + 장수 x 진영 2, 앞/뒷모습 x 2프레임, 왼쪽은 반전), 임포터 `FieldSpriteImporter`(`Assets/Sprites/Field`). 테스트 `IsoGridTests` | 완료 | |
+| 15-3 | 야전 씬·화면: `FieldBattleScene`(빌드 4번, 셋업 `Step 15`, Run All 포함, 메뉴 `Play Field Battle`), `FieldBattleController`(준비 → 야전 → 결과, 클릭 선택·적 클릭 = 목표·Space 정지·숫자 키·ESC 메뉴, 그림 참조 없으면 색 덩어리), `FieldUnitView`/`FieldSpriteSet`(실행 중 시트 자르기, World 정렬, 걷기 프레임), `FieldBattleUI`(코드 생성: 준비 화면·명령 띠·병사 수 라벨·결과창·메뉴), `FieldBattleLauncher`(타이틀 [야전 테스트], 씬 로드 이벤트 구독), `FieldSession`, `GameManager.FieldSceneName`. 테스트 `FieldBattleSceneTests` | 완료 | |
 
 ## 남은 작업
 
@@ -114,11 +115,11 @@
 
 ## 프로젝트 구조
 
-- 코드: `Assets/Scripts/<영역>/` — Core, Player, Enemy, Weapon, Skill, Hero, Stage, Pickup, Upgrade, Meta, Audio, Feedback, Balance, Strategy, World, UI, Data, Editor
+- 코드: `Assets/Scripts/<영역>/` — Core, Player, Enemy, Weapon, Skill, Hero, Stage, Pickup, Upgrade, Meta, Audio, Feedback, Balance, Strategy, World, Field(야전), UI, Data, Editor
   - 네임스페이스는 `Samkuk.*` (예: `Samkuk.Weapons`, `Samkuk.Enemies`, `Samkuk.Meta`, `Samkuk.UI`)
   - 런타임은 `Samkuk.Runtime.asmdef`, 에디터 스크립트는 `Editor/` 폴더
 - 데이터: `Assets/ScriptableObjects/<종류>/` — Weapons, Enemies, Passives, Heroes, Skills, Evolutions, Meta, Stage, Castles, 그리고 `UpgradeCatalog`, `HeroCatalog`, `MetaCatalog`, `CastleCatalog`
-- 씬: `Assets/Scenes/TitleScene.unity`(빌드 0번) → `BattleScene.unity`(전투, 1번) → `StrategyScene.unity`(내정, 2번) → `MapEditorScene.unity`(맵 편집기, 3번)
+- 씬: `Assets/Scenes/TitleScene.unity`(빌드 0번) → `BattleScene.unity`(전투, 1번) → `StrategyScene.unity`(내정, 2번) → `MapEditorScene.unity`(맵 편집기, 3번) → `FieldBattleScene.unity`(야전 테스트, 4번)
 - 테스트: `Assets/Tests/PlayMode/*.cs` (PlayMode, `Samkuk.Tests.PlayMode.asmdef`)
 - 저장: `Application.persistentDataPath/save.json` (`SaveSystem`)
 
@@ -142,7 +143,7 @@ F2 무기 레벨업, F3 경험치 지급, F4 스테이지 15초 건너뛰기, F5
 ## 작업 규칙
 
 ### 셋업 / 에셋
-- 씬 배치와 프리팹/SO 생성은 에디터 스크립트로 자동화한다. 메뉴 `Samkuk > Run All Setup (Step 2-9 + 타이틀)`(10 효과음 + 타격감 + 10-3 테마 + 10-4 밸런스, 12-1 내정 성, 12-6 지형, 13 맵 편집기, 10-9 무기 휘두르기, 14-2 후처리, 14-3 도트 규격, 14-4 월드 정렬, 14-5 틸트 시프트 포함) 한 번이면 전체 구성. 새 Step을 만들면 `SetupAll.cs`에도 추가한다.
+- 씬 배치와 프리팹/SO 생성은 에디터 스크립트로 자동화한다. 메뉴 `Samkuk > Run All Setup (Step 2-9 + 타이틀)`(10 효과음 + 타격감 + 10-3 테마 + 10-4 밸런스, 12-1 내정 성, 12-6 지형, 13 맵 편집기, 15 야전, 10-9 무기 휘두르기, 14-2 후처리, 14-3 도트 규격, 14-4 월드 정렬, 14-5 틸트 시프트 포함) 한 번이면 전체 구성. 새 Step을 만들면 `SetupAll.cs`에도 추가한다.
 - 셋업은 **멱등**이어야 한다: 이미 있는 에셋은 덮어쓰지 않아 사용자가 조정한 수치를 보존하고, 카탈로그는 **누적 방식**(없는 항목만 추가)으로 채운다.
 - 셋업에서 `EditorSceneManager.OpenScene/NewScene` **이후에** 에셋을 로드한다 (씬 전환이 로드된 에셋 참조를 무효화할 수 있음).
 - 진화 셋업(`Step8EvolutionSetup`)은 장수 시작 무기가 만들어진 **뒤**(Step 8 이후)에 실행해야 한다 (Run All 순서 참고).
@@ -163,7 +164,7 @@ F2 무기 레벨업, F3 경험치 지급, F4 스테이지 15초 건너뛰기, F5
 - 이 환경에서는 Unity를 직접 실행하지 못한다. 대신 Unity 번들 Roslyn(`csc.dll`)으로 **에디터 밖에서 컴파일 검사**를 한다
   (런타임 / 에디터 / 테스트 어셈블리 각각, 응답 파일은 `Temp/ci/*.rsp`에 있음 — `Temp/`는 로컬 전용이라 없으면 다시 만들어야 한다.
   만드는 법: `Temp/ci/common.rsp` 에 `-nostdlib -noconfig` + `NetStandard/ref/2.1.0/netstandard.dll` + `NetStandard/compat/2.1.0/shims/{netstandard,netfx}/*.dll` + `Managed/UnityEngine/*.dll` + `Library/ScriptAssemblies/*.dll`(Samkuk 제외) 참조와 `UNITY_EDITOR;UNITY_INCLUDE_TESTS;ENABLE_INPUT_SYSTEM` 등 정의를 적고, `runtime/editor/tests.rsp` 가 각자 소스 목록(`find`)과 `-out` 을 적는다. `Managed/UnityEditor.dll` 은 `Managed/UnityEngine/UnityEditor.CoreModule.dll` 과 겹치므로 넣지 않는다. 컴파일러는 유니티 번들 `Editor/Data/DotNetSdk/sdk/<버전>/Roslyn/bincore/csc.dll` 을 `dotnet` 으로 실행. 경로는 Windows 식(`D:/...`)으로 적는다(Git Bash 의 `/d/...` 는 dotnet 이 못 읽음). 새 `.cs` 를 만들면 소스 목록을 다시 모은다(`Temp/ci/regen.sh`), 검사는 `Temp/ci/check.sh`).
-- **유니티 의존이 없는 순수 로직 테스트는 유니티 밖에서도 돌릴 수 있다**: `Temp/ci/fieldtest.sh` 가 `Assets/Scripts/Field/*.cs` + `FieldBattleModelTests.cs` + 반사로 `[Test]` 를 부르는 작은 러너를 유니티 번들 Roslyn 으로 콘솔 exe 로 묶어(참조는 `MonoBleedingEdge/lib/mono/4.5` 의 mscorlib/System/System.Core + 패키지 캐시의 `nunit.framework.dll`) 번들 `MonoBleedingEdge/bin/mono.exe` 로 실행한다. 이렇게 돌린 결과는 "통과"라고 보고해도 되고, 에디터 Test Runner 는 같은 테스트가 유니티 안에서도 도는지 확인하는 자리다. 유니티 타입을 쓰는 테스트는 이 방법을 못 쓴다.
+- **유니티 의존이 없는 순수 로직 테스트는 유니티 밖에서도 돌릴 수 있다**: `Temp/ci/fieldtest.sh` 가 `Assets/Scripts/Field` 의 유니티 의존 없는 파일(모델·규칙·배치·AI·`IsoGrid`·`FieldArtSpec`) + `FieldBattleModelTests.cs`/`IsoGridTests.cs` + 반사로 `[Test]` 를 부르는 작은 러너를 유니티 번들 Roslyn 으로 콘솔 exe 로 묶어(참조는 `MonoBleedingEdge/lib/mono/4.5` 의 mscorlib/System/System.Core + 패키지 캐시의 `nunit.framework.dll`) 번들 `MonoBleedingEdge/bin/mono.exe` 로 실행한다. 이렇게 돌린 결과는 "통과"라고 보고해도 되고, 에디터 Test Runner 는 같은 테스트가 유니티 안에서도 도는지 확인하는 자리다. 유니티 타입을 쓰는 테스트는 이 방법을 못 쓴다.
 - 컴파일 통과 ≠ 동작 확인이다. 에디터 검증(셋업 실행, Play, Test Runner)은 **사용자가** 하고, 결과를 알려주면 이어서 진행한다. 검증하지 않은 것을 "동작한다"고 보고하지 않는다.
 
 ### 커밋 / 보고

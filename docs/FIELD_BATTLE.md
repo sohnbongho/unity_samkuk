@@ -1,6 +1,6 @@
 # 야전 (남코 삼국지2식 부대 전투, Step 15)
 
-> **상태: 15-1 순수 로직 완료, 15-2 아이소메트릭 격자·임시 그림 완료, 화면(15-3)은 아직 없다.** 2026-11-01 설계 인터뷰(`/grill-with-docs`)로 정한 내용을 모았다. 코드는 `Assets/Scripts/Field/`(`Samkuk.Field`), 테스트는 `FieldBattleModelTests`. 용어는 `CONTEXT.md` "야전", 시점 결정은 `docs/adr/0003`.
+> **상태: 15-1 순수 로직, 15-2 격자·임시 그림 완료. 15-3 씬·화면 완료. 체감 조정·연출(15-4)은 아직.** 2026-11-01 설계 인터뷰(`/grill-with-docs`)로 정한 내용을 모았다. 코드는 `Assets/Scripts/Field/`(`Samkuk.Field`), 테스트는 `FieldBattleModelTests`. 용어는 `CONTEXT.md` "야전", 시점 결정은 `docs/adr/0003`.
 
 성 밖 들판에서 **부대** 여러 개가 맞붙는 반자동 전투 모드. 시간이 실시간으로 흐르고, [정지]를 눌러 멈춘 상태에서 부대마다 **명령**(전진·대기·후퇴)을 주고 [재개]한다. 남코 삼국지2(覇王の大陸)의 합전이 본보기이며, 화면은 아이소메트릭(대각선) 격자다. **1단계는 독립 테스트 모드**로 만들고 출진·정복 흐름과는 연결하지 않는다.
 
@@ -62,6 +62,31 @@
 - `CreateEmpty` + `AddUnit` 으로 임의 장면을 만들 수 있다(테스트, 뒤에 시나리오/튜토리얼).
 - 화면이 쓸 것: `Units`, `VisualCol/VisualRow`(보간 위치), `FacingDx/Dy`, 이벤트 `Hit`(공격자·피해자·양·원거리·돌격, 매 틱이라 화면이 묶어서 표현), `UnitRouted`, `UnitExited`, `AutoPaused`, `FinishedEvent`.
 
+## 여는 방법 (15-3)
+
+1. 처음 한 번: 메뉴 **`Samkuk > Step 15 - Field Battle Scene (야전 테스트)`** 로 `FieldBattleScene`(빌드 4번)을 만든다 (`Run All Setup` 에도 포함). 장수 목록(Step 8)이 먼저 있으면 장수 이름을 쓰고, 그림은 `tools/field_art/generate.ps1` 이 만든 `Assets/Sprites/Field` 를 연결한다(없으면 색 덩어리로 동작).
+2. 열기: 메뉴 **`Samkuk > Play Field Battle (야전 테스트 실행)`**, 또는 타이틀에서 Play → 왼쪽 아래 **[야전 테스트]** 버튼([맵 편집기] 위, 에디터와 개발용 빌드에서만).
+
+## 화면과 조작 (15-3)
+
+씬에는 고정 카메라(도트 규격, y = -0.9375 로 전장이 아래 명령 띠 위에 들어옴)·전역 조명·이벤트 시스템·`FieldBattleController`(그림 참조)만 있고, **화면은 `FieldBattleUI` 가 실행 중에 코드로 만든다**(기준 해상도 1920x1080, 명령 띠 높이 324 = 가상 해상도의 108픽셀).
+
+| 화면 | 내용 |
+|---|---|
+| 준비 화면 | 장수(장수 부대 이름), 내/적 병과별 부대 수 0~3, 부대 병사 수(100/200/300/500/800), 내 배치(4종 x 반전), 적 배치(무작위 또는 고정), 적 AI 켬/끔, 지형(바닥 색). [시작] [타이틀로]. 마지막 값은 `FieldSession` 이 기억한다 |
+| 야전 | 전장(마름모 타일 108칸 + 부대 그림, 발밑 테 = 선택(노랑)/목표(빨강)), 부대 위 병사 수 라벨(▲전진 ■대기 ▼후퇴, 내 편 파랑·적 빨강), 아래 명령 띠: 선택 부대 정보 / [전진][대기][후퇴] / [정지·재개 (Space)] [메뉴 (ESC)] 시간 / 안내 |
+| 결과창 | 승리/패배, 남은 부대·병사 수, 걸린 시간. [다시](같은 조건) [준비 화면] [타이틀] |
+| ESC 메뉴 | [계속](정지 상태 그대로) [준비 화면] [타이틀]. 메뉴를 열면 정지한다 |
+
+| 조작 | 키 / 마우스 |
+|---|---|
+| 부대 선택 | 내 부대 클릭, 또는 숫자 키 `1`~`9`,`0`(살아 있는 내 부대 순서, 1 = 장수 부대) |
+| 명령 | 정지 중에만. [전진][대기][후퇴] 버튼. **적 부대를 클릭하면 선택한 부대가 그 부대를 목표로 전진** |
+| 정지 / 재개 | `Space` 또는 띠의 버튼. 시작은 전원 대기·정지 상태. 내 부대가 무너지면 저절로 정지(안내 줄에 표시) |
+| 메뉴 | `ESC` |
+
+클릭은 마름모 칸으로 집되(`IsoGrid.WorldToCell` → `FieldBattleModel.UnitAt`), 빈 칸이면 그림이 0.9유닛 안에 있는 가장 가까운 부대를 집는다(그림이 칸보다 위로 길어서). 정지는 모델 깃발이고 ESC 메뉴도 `timeScale` 을 건드리지 않는다. 결과창은 승패 뒤 1초에 뜬다.
+
 ## 그림 규격 (15-2, `FieldArtSpec`)
 
 | 그림 | 파일 | 크기 | 비고 |
@@ -80,6 +105,6 @@
 | **15-0** | 설계 문서(`CONTEXT.md` 야전 용어, ADR 0003, 이 문서, CLAUDE.md) | 사용자 확인 뒤 커밋 |
 | **15-1** (완료) | 순수 로직 `FieldBattleModel`(격자, 부대, 명령·목표, 이동·비켜 가기, 교전·상성·돌격, 후퇴 퇴장, 자동 정지, 적 AI, 승패) + `FieldRules`(병과 표) + `FieldFormation`(배치). 수치 에셋 `FieldUnitClassData` 는 15-3 으로 | PlayMode 테스트 `FieldBattleModelTests` 28개 (유니티 의존 없음, `Temp/ci/fieldtest.sh` 로 유니티 밖에서도 실행) |
 | **15-2** (완료) | 아이소메트릭 임시 아트 `tools/field_art/generate.ps1`(타일 6 + 부대 시트 8), 임포터 `FieldSpriteImporter`, 격자↔월드 `IsoGrid`, 규격 `FieldArtSpec` | `IsoGridTests` 6개(유니티 밖 통과), 그림은 미리보기로 확인 |
-| **15-3** | 씬 `FieldBattleScene` + 셋업 `Step 15`(SetupAll·`RegisterBuildScenes`·BuildTool 씬 목록 추가), `FieldBattleController`(모델 ↔ 화면), 코드 생성 UI(준비 화면·명령 띠·결과창), 타이틀 [야전 테스트](`MapEditorLauncher` 방식) | 사용자 Play: 준비 → 정지/명령/목표 → 승패 → 결과창 |
+| **15-3** (완료) | 씬 `FieldBattleScene`(빌드 4번) + 셋업 `Step 15`(SetupAll·`RegisterBuildScenes`), `FieldBattleController`(모델 ↔ 화면, 입력), `FieldUnitView`/`FieldSpriteSet`(실행 중 시트 자르기), `FieldBattleUI`(준비 화면·명령 띠·라벨·결과창·메뉴), `FieldBattleLauncher`(타이틀 [야전 테스트]), `FieldSession` | `FieldBattleSceneTests` 9개(Test Runner), 사용자 Play: 준비 → 정지/명령/목표 → 자동 정지 → 승패 → 결과창 |
 | **15-4** | 체감 조정(병과 수치·상성·속도), 연출(교전 입자·소리·돌격 표시), 남는 문제 반영 | 사용자 체감 |
 | 2단계(미정) | 출진·정복 흐름 연결, 장수 능력치·동행 장수, 징병/성 크기 연동, 진형 이름, 지형 효과, 서바이버 전투와의 연결(일기토 등), 진짜 그림 | 재미 확인 뒤 다시 인터뷰 |
