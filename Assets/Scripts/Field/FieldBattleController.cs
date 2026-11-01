@@ -30,6 +30,7 @@ namespace Samkuk.Field
         public enum Phase { Prep, Battle, Result }
 
         [SerializeField, Tooltip("준비 화면의 장수 목록 (장수 부대 이름). 없어도 동작")] HeroCatalog heroCatalog;
+        [SerializeField, Tooltip("야전 수치(병과 표·상성·AI). 없으면 코드 기본값 FieldRules.Default()")] FieldRulesData rulesData;
         [SerializeField, Tooltip("바닥 타일. CastleTerrain 순서 (Plain, Steppe, Mountain, River, Jungle, Loess)")] Sprite[] tileSprites = new Sprite[6];
         [SerializeField, Tooltip("부대 시트 8장. 순서 = (보병, 궁병, 기병, 장수) x (내 편, 적)")] Texture2D[] unitSheets = new Texture2D[8];
 
@@ -42,6 +43,8 @@ namespace Samkuk.Field
         public IReadOnlyList<FieldUnitView> Views => views;
         public int TileCount => tiles.Count;
         public FieldFx Fx => fx;
+        /// <summary>수치 에셋 (테스트가 바꿔 넣는다). 다음 StartBattle 부터 쓴다.</summary>
+        public FieldRulesData RulesData { get => rulesData; set => rulesData = value; }
         /// <summary>지금 켜진 사거리 표시 칸 수 (테스트용).</summary>
         public int RangeMarkCount { get; private set; }
         public bool MenuOpen => Ui != null && Ui.MenuOpen;
@@ -137,7 +140,7 @@ namespace Samkuk.Field
             Selected = null;
             finishClock = 0f;
 
-            Model = new FieldBattleModel(setup);
+            Model = new FieldBattleModel(setup, rulesData != null ? rulesData.rules : null);
             Model.AutoPaused += OnAutoPaused;
             Model.FinishedEvent += OnFinished;
             fx.Bind(Model);

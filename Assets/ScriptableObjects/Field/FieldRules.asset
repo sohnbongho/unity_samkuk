@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1c14d02c30b4bf18a03779965f88636, type: 3}
+  m_Name: FieldRules
+  m_EditorClassIdentifier: Samkuk.Runtime::Samkuk.Field.FieldRulesData
+  rules:
+    infantry:
+      moveCellsPerSec: 1
+      range: 1
+      damagePerSec: 20
+      incomingMul: 0.8
+      adjacentMul: 1
+      chargeBonus: 0
+    archer:
+      moveCellsPerSec: 1
+      range: 3
+      damagePerSec: 14
+      incomingMul: 1
+      adjacentMul: 0.5
+      chargeBonus: 0
+    cavalry:
+      moveCellsPerSec: 2
+      range: 1
+      damagePerSec: 28
+      incomingMul: 1
+      adjacentMul: 1
+      chargeBonus: 60
+    generalDamageMul: 1.3
+    strongMul: 1.5
+    weakMul: 0.6
+    aiInterval: 1
+    aiRetreatRatio: 0.2
+    aiGeneralAdvanceRatio: 0.5

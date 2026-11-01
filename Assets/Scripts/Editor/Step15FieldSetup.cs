@@ -21,17 +21,20 @@ namespace Samkuk.EditorTools
     {
         public const string ScenePath = "Assets/Scenes/FieldBattleScene.unity";
         const string HeroCatalogPath = "Assets/ScriptableObjects/HeroCatalog.asset";
+        public const string RulesPath = "Assets/ScriptableObjects/Field/FieldRules.asset";
         const string PlayingKey = "samkuk.fieldBattle.playing";
 
         [MenuItem("Samkuk/Step 15 - Field Battle Scene (야전 테스트)")]
         public static void Run()
         {
+            EnsureRulesAsset();
             AssetDatabase.Refresh();
 
             // 주의: NewScene 이후에 에셋을 로드한다 (씬 전환이 로드된 에셋 참조를 무효화할 수 있음).
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             var heroes = AssetDatabase.LoadAssetAtPath<HeroCatalog>(HeroCatalogPath);
             if (heroes == null) Debug.LogWarning("[Samkuk] HeroCatalog 가 없습니다 (Step 8). 장수 이름 없이 '주인공'으로 동작합니다.");
+            var rules = AssetDatabase.LoadAssetAtPath<FieldRulesData>(RulesPath);
 
             var camGo = new GameObject("Main Camera") { tag = "MainCamera" };
             var cam = camGo.AddComponent<Camera>();
@@ -62,6 +65,7 @@ namespace Samkuk.EditorTools
             var controller = go.AddComponent<FieldBattleController>();
             var so = new SerializedObject(controller);
             so.FindProperty("heroCatalog").objectReferenceValue = heroes;
+            so.FindProperty("rulesData").objectReferenceValue = rules;
 
             // 바닥 타일: CastleTerrain 순서. 부대 시트: FieldBattleController.SheetIndex 순서
             var tiles = so.FindProperty("tileSprites");
@@ -95,6 +99,18 @@ namespace Samkuk.EditorTools
             EditorSceneManager.SaveScene(scene, ScenePath);
             Step12StrategySetup.RegisterBuildScenes();
             Debug.Log("[Samkuk] Step 15 완료: FieldBattleScene 생성 (메뉴 Samkuk > Play Field Battle, 또는 타이틀 왼쪽 아래 [야전 테스트] 버튼. 설명은 docs/FIELD_BATTLE.md)");
+        }
+
+        /// <summary>수치 에셋이 없을 때만 코드 기본값으로 만든다 (있으면 사용자가 고친 값을 보존). 되돌리려면 에셋을 지우고 다시 실행.</summary>
+        static void EnsureRulesAsset()
+        {
+            if (File.Exists(RulesPath)) return;
+            Directory.CreateDirectory(Path.GetDirectoryName(RulesPath));
+            var data = ScriptableObject.CreateInstance<FieldRulesData>();
+            data.rules = FieldRules.Default();
+            AssetDatabase.CreateAsset(data, RulesPath);
+            AssetDatabase.SaveAssets();
+            Debug.Log($"[Samkuk] 야전 수치 에셋 생성: {RulesPath}");
         }
 
         // ───────────────────────── 바로 실행 ─────────────────────────

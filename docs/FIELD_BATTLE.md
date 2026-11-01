@@ -1,6 +1,6 @@
 # 야전 (남코 삼국지2식 부대 전투, Step 15)
 
-> **상태: 15-1 순수 로직, 15-2 격자·임시 그림, 15-3 씬·화면 완료. 15-4 연출 완료(Play 미확인), 수치 조정은 체감 피드백 뒤.** 2026-11-01 설계 인터뷰(`/grill-with-docs`)로 정한 내용을 모았다. 코드는 `Assets/Scripts/Field/`(`Samkuk.Field`), 테스트는 `FieldBattleModelTests`. 용어는 `CONTEXT.md` "야전", 시점 결정은 `docs/adr/0003`.
+> **상태: 15-1 순수 로직, 15-2 격자·임시 그림, 15-3 씬·화면 완료. 15-4 연출 완료(Play 미확인). 15-5 수치 에셋 완료(Play 미확인). 수치 조정은 체감 피드백 뒤.** 2026-11-01 설계 인터뷰(`/grill-with-docs`)로 정한 내용을 모았다. 코드는 `Assets/Scripts/Field/`(`Samkuk.Field`), 테스트는 `FieldBattleModelTests`. 용어는 `CONTEXT.md` "야전", 시점 결정은 `docs/adr/0003`.
 
 성 밖 들판에서 **부대** 여러 개가 맞붙는 반자동 전투 모드. 시간이 실시간으로 흐르고, [정지]를 눌러 멈춘 상태에서 부대마다 **명령**(전진·대기·후퇴)을 주고 [재개]한다. 남코 삼국지2(覇王の大陸)의 합전이 본보기이며, 화면은 아이소메트릭(대각선) 격자다. **1단계는 독립 테스트 모드**로 만들고 출진·정복 흐름과는 연결하지 않는다.
 
@@ -23,7 +23,7 @@
 | Q14 | 배치 | 시작 전에 **보기궁·기보궁·궁보기·날개** 중 선택 + 좌우 반전. 적은 무작위(테스트에서 고정 가능). 시작은 전원 대기 |
 | Q15 | 승패 | 승리 = 적 장수 부대 무너짐. 패배 = 내 장수 부대 무너짐 또는 맵 밖 후퇴. 시간 제한 없음, ESC [그만두기]. 승패 뒤 1초 → 결과창 |
 
-### 병과 표 (1단계 기본값, `FieldUnitClassData` 에셋으로 조정)
+### 병과 표 (1단계 기본값, 에셋 `Assets/ScriptableObjects/Field/FieldRules.asset` 으로 조정)
 
 | 병과 | 이동(칸/초) | 공격 | 초당 피해(명) | 특징 |
 |---|---|---|---|---|
@@ -33,6 +33,8 @@
 | 장수 부대 | 기병과 같음 | 인접 칸 | 기병 x1.3 | 상성에서 "궁병 > 기병" 을 받지 않음. 장수 능력치는 1단계에 안 씀 |
 
 상성 배율: 강한 쪽이 주는 피해 **x1.5**, 약한 쪽이 주는 피해 **x0.6**. 교전은 턴 없이 초당 피해를 병사 수에서 빼고, 인접한 둘은 서로 피해를 입는다.
+
+**수치 고치는 법 (15-5, `FieldRulesData`)**: 위 표와 상성·장수 배율·적 AI 문턱(`aiInterval` 판단 간격 1초, `aiRetreatRatio` 후퇴 0.2, `aiGeneralAdvanceRatio` 적 장수 전진 0.5)은 모두 에셋 `FieldRules.asset` 의 필드다(`FieldRules` 클래스와 같은 이름). Step 15 가 **없을 때만** 기본값으로 만들고 야전 씬의 `FieldBattleController` 에 연결하므로 고친 값은 셋업을 다시 돌려도 남는다. 야전을 시작할 때마다 에셋의 객체를 모델에 넘기므로 **고친 값은 다음 야전(결과창 [다시])부터 적용**되고 값은 에셋에 저장된다(Play 중 진행 중인 야전에도 바로 반영되는지는 확인 항목). 기본값으로 되돌리려면 에셋을 지우고 Step 15 재실행. 병과 수치는 구조체(`ClassStats`)라 코드에 필드를 더하면 기존 에셋에서 0 으로 읽히니 그때도 에셋을 다시 만든다. 에셋이 없으면(테스트) 코드 기본값 `FieldRules.Default()`.
 
 ### 배치 (앞 = 적과 가까운 쪽, 각 줄 위→아래)
 
@@ -122,5 +124,6 @@
 | **15-1** (완료) | 순수 로직 `FieldBattleModel`(격자, 부대, 명령·목표, 이동·비켜 가기, 교전·상성·돌격, 후퇴 퇴장, 자동 정지, 적 AI, 승패) + `FieldRules`(병과 표) + `FieldFormation`(배치). 수치 에셋 `FieldUnitClassData` 는 15-3 으로 | PlayMode 테스트 `FieldBattleModelTests` 28개 (유니티 의존 없음, `Temp/ci/fieldtest.sh` 로 유니티 밖에서도 실행) |
 | **15-2** (완료) | 아이소메트릭 임시 아트 `tools/field_art/generate.ps1`(타일 6 + 부대 시트 8), 임포터 `FieldSpriteImporter`, 격자↔월드 `IsoGrid`, 규격 `FieldArtSpec` | `IsoGridTests` 6개(유니티 밖 통과), 그림은 미리보기로 확인 |
 | **15-3** (완료) | 씬 `FieldBattleScene`(빌드 4번) + 셋업 `Step 15`(SetupAll·`RegisterBuildScenes`), `FieldBattleController`(모델 ↔ 화면, 입력), `FieldUnitView`/`FieldSpriteSet`(실행 중 시트 자르기), `FieldBattleUI`(준비 화면·명령 띠·라벨·결과창·메뉴), `FieldBattleLauncher`(타이틀 [야전 테스트]), `FieldSession` | `FieldBattleSceneTests` 9개(Test Runner), 사용자 Play: 준비 → 정지/명령/목표 → 자동 정지 → 승패 → 결과창 |
-| **15-4** (연출 완료, Play 미확인) | 연출 `FieldFx`(불꽃·화살·번쩍임·소리), 사거리 표시, 정지 배너. **수치 조정(병과·상성·속도)은 체감 피드백을 받은 뒤** `FieldRules` 에서 | `FieldBattleSceneTests` +2, 사용자 체감 |
+| **15-4** (연출 완료, Play 미확인) | 연출 `FieldFx`(불꽃·화살·번쩍임·소리), 사거리 표시, 정지 배너. **수치 조정(병과·상성·속도)은 체감 피드백을 받은 뒤** | `FieldBattleSceneTests` +2, 사용자 체감 |
+| **15-5** (완료, Play 미확인) | 수치 에셋 `FieldRulesData`(`FieldRules` 를 [Serializable] 로 감싼 ScriptableObject, `Assets/ScriptableObjects/Field/FieldRules.asset`), Step 15 가 없을 때만 생성·연결, 컨트롤러가 야전 시작마다 모델에 넘김(고친 값은 [다시]부터) | `FieldBattleSceneTests` +2, 사용자: Step 15 재실행 → 인스펙터에서 값 바꿔 보기 |
 | 2단계(미정) | 출진·정복 흐름 연결, 장수 능력치·동행 장수, 징병/성 크기 연동, 진형 이름, 지형 효과, 서바이버 전투와의 연결(일기토 등), 진짜 그림 | 재미 확인 뒤 다시 인터뷰 |

@@ -2,8 +2,11 @@ namespace Samkuk.Field
 {
     /// <summary>
     /// 야전의 수치 한 곳: 격자 크기, 병과 표, 상성, 돌격, 적 AI 문턱 (설계 docs/FIELD_BATTLE.md "병과 표").
-    /// 순수 데이터라 테스트가 값을 바꿔 쓸 수 있고, 에셋(FieldUnitClassData)으로 옮기는 것은 씬을 만드는 15-3 에서 한다.
+    /// 순수 데이터라 테스트가 값을 바꿔 쓸 수 있다. 야전 씬은 에셋 <c>FieldRulesData</c>(ScriptableObject, 15-5)에 든 이 객체를 모델에 넘기므로
+    /// 인스펙터에서 고친 값은 다음 야전(결과창 [다시])부터 적용된다. 유니티 의존은 없고 [Serializable] 만 붙어 있다(유니티 밖 테스트도 그대로 컴파일).
+    /// 주의: <see cref="ClassStats"/> 는 구조체라 뒤에 필드를 더하면 기존 에셋에서는 0 으로 읽힌다(클래스 필드는 초기값을 쓴다) — 그때는 에셋을 지우고 Step 15 를 다시 돌린다.
     /// </summary>
+    [System.Serializable]
     public sealed class FieldRules
     {
         /// <summary>격자 칸 수. 12x9 는 가상 해상도 640x360 에 48x24 마름모 타일로 전장이 다 들어오는 크기 (ADR 0003).</summary>
@@ -12,6 +15,7 @@ namespace Samkuk.Field
         public const int PlayerFrontCol = 2, EnemyFrontCol = 9;
 
         /// <summary>병과 하나의 수치.</summary>
+        [System.Serializable]
         public struct ClassStats
         {
             public float moveCellsPerSec;   // 이동 속도 (칸/초)

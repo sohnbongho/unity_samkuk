@@ -12,7 +12,7 @@
 
 ## 진행 상황
 
-마지막 갱신: 2026-11-01 (Step 15-4 야전 연출 완료(Play 미확인, 사용자 지시로 진행) — `docs/FIELD_BATTLE.md`. 이전: Step 10-9 후속 조조 연속 베기·여포 극 완료, 무기 휘두르기(베기) 완료, Step 8-5 장수별 무기 목록 완료. Step 14 HD-2D 전환 진행 중: 14-1 조명 완료, 14-2 후처리 완료, 14-3 도트 규격 완료, 14-4 월드 정렬·그림자 완료, 14-5 틸트 시프트 완료, 후속 14-6 겹친 소품 반투명 완료. 나머지 후속은 `docs/HD2D.md` 후속 목록. 계획/결정은 `docs/HD2D.md`, 용어 `CONTEXT.md`, ADR `docs/adr/`)
+마지막 갱신: 2026-11-01 (Step 15-5 야전 수치 에셋까지 완료(15-4·15-5 는 사용자 지시로 Play 미확인 커밋), 야전 후속은 체감 피드백 대기 — `docs/FIELD_BATTLE.md`. 이전: Step 10-9 후속 조조 연속 베기·여포 극 완료, 무기 휘두르기(베기) 완료, Step 8-5 장수별 무기 목록 완료. Step 14 HD-2D 전환 진행 중: 14-1 조명 완료, 14-2 후처리 완료, 14-3 도트 규격 완료, 14-4 월드 정렬·그림자 완료, 14-5 틸트 시프트 완료, 후속 14-6 겹친 소품 반투명 완료. 나머지 후속은 `docs/HD2D.md` 후속 목록. 계획/결정은 `docs/HD2D.md`, 용어 `CONTEXT.md`, ADR `docs/adr/`)
 
 | Step | 내용 | 상태 | 커밋 |
 |---|---|---|---|
@@ -59,6 +59,7 @@
 | 15-2 | 야전 아이소메트릭 격자·임시 그림: `IsoGrid`(12x9 칸 ↔ 월드, 타일 1.5x0.75 유닛, 가운데 칸이 원점, 이동 방향 → 그림 방향), `FieldArtSpec`(파일 이름·시트 칸 규격), 생성기 `tools/field_art/generate.ps1`(마름모 타일 6장 + 부대 시트 8장 = 병과 3 + 장수 x 진영 2, 앞/뒷모습 x 2프레임, 왼쪽은 반전), 임포터 `FieldSpriteImporter`(`Assets/Sprites/Field`). 테스트 `IsoGridTests` | 완료 | |
 | 15-3 | 야전 씬·화면: `FieldBattleScene`(빌드 4번, 셋업 `Step 15`, Run All 포함, 메뉴 `Play Field Battle`), `FieldBattleController`(준비 → 야전 → 결과, 클릭 선택·적 클릭 = 목표·Space 정지·숫자 키·ESC 메뉴, 그림 참조 없으면 색 덩어리), `FieldUnitView`/`FieldSpriteSet`(실행 중 시트 자르기, World 정렬, 걷기 프레임), `FieldBattleUI`(코드 생성: 준비 화면·명령 띠·병사 수 라벨·결과창·메뉴), `FieldBattleLauncher`(타이틀 [야전 테스트], 씬 로드 이벤트 구독), `FieldSession`, `GameManager.FieldSceneName`. 테스트 `FieldBattleSceneTests` | 완료 | |
 | 15-4 | 야전 연출: `FieldFx`(모델 이벤트 → 불꽃 입자(`BurstFx` 재사용)·코드 화살 풀·돌격 고리·무너짐 입자·기존 효과음, 맞는/쏘는 부대마다 간격), `FieldUnitView.Flash`(붉은 번쩍임), 정지 중 고른 부대의 사거리 마름모 표시 + 화면 위 정지 배너. **수치 조정은 체감 피드백 뒤**(`FieldRules`). 테스트 `FieldBattleSceneTests` +2 | 완료(Play 미확인) | |
+| 15-5 | 야전 수치 에셋: `FieldRulesData`(ScriptableObject, `FieldRules`/`ClassStats` 를 [Serializable] 로 — 유니티 의존 없음 유지), `Assets/ScriptableObjects/Field/FieldRules.asset`(Step 15 가 **없을 때만** 기본값으로 생성 → 사용자 조정 보존, 되돌리기 = 에셋 삭제 후 재실행), `FieldBattleController.rulesData` → 야전 시작마다 모델에 넘겨 고친 값은 다음 야전([다시])부터 적용(진행 중 야전 즉시 반영 여부는 확인 항목). 테스트 `FieldBattleSceneTests` +2 | 완료(Play 미확인) | |
 
 ## 남은 작업
 
@@ -73,7 +74,7 @@
    - **12-7 지형 이동 후속(사용자 체감 뒤)**: 맵 편집기에 막는 범위(원) 표시, 지형별 바닥 효과(산악 전체 느려짐 등), 느려지는 배율/막는 반지름 조정(`Theme_*.asset`), 막힌 적이 머뭇거리면 길 찾기 보강.
 5. **Step 14 HD-2D 스타일 전환(진행 중)**: 계획/결정은 `docs/HD2D.md`, 용어는 `CONTEXT.md`, 이유는 `docs/adr/0001`(가짜 3/4 시점), `0002`(PPU 32). 순서: 14-1 조명 → 14-2 후처리 → 14-3 픽셀 파이프라인 → 14-4 서 있는 소품·월드 정렬·드리운 그림자 → 14-5 틸트 시프트. 후속(소품 반투명, 덤불 세우기, 내정·타이틀 적용, 진짜 그림 교체)은 문서의 "후속" 목록.
 6. **Step 15 야전(남코 삼국지2식 부대 전투, 설계 완료)**: 계획은 `docs/FIELD_BATTLE.md` "작업 단계". 순서: 15-1 순수 로직 `FieldBattleModel` + 테스트 → 15-2 아이소메트릭 임시 아트(`tools/field_art`) + `IsoGrid` → 15-3 씬 `FieldBattleScene`(빌드 4번, `RegisterBuildScenes`/`SetupAll`/`BuildTool` 씬 목록에 추가) + 코드 생성 UI + 타이틀 [야전 테스트] → 15-4 체감 조정. 출진·정복 흐름 연결은 재미 확인 뒤 다시 인터뷰.
-   - **15 야전 후속(사용자 체감 뒤)**: 병과 수치·상성·돌격·속도 조정(`FieldRules`, 뒤에 `FieldUnitClassData` 에셋으로), 자동 정지 조건 추가, 적 AI 보강, 진형 이름, 지형 효과, 출진·정복 흐름 연결, 장수 능력치·동행 장수, 진짜 그림(`docs/FIELD_BATTLE.md` 2단계).
+   - **15 야전 후속(사용자 체감 뒤)**: 병과 수치·상성·돌격·속도 조정(에셋 `FieldRules.asset` 직접 수정, 기본값은 `FieldRules`), 자동 정지 조건 추가, 적 AI 보강, 진형 이름, 지형 효과, 출진·정복 흐름 연결, 장수 능력치·동행 장수, 진짜 그림(`docs/FIELD_BATTLE.md` 2단계).
 7. **미결정(PLAN.md 8번)**: 모바일 포함 여부, 실제 아트 에셋 사용 여부, 장수/무기 최종 목록.
 
 ## 알려진 이슈 / 메모
@@ -87,6 +88,7 @@
 - 장수 걷기 시트: `Assets/Sprites/HeroWalk/<장수 에셋 이름>_Walk.png`(4열 x 4행: 열=프레임 0~3, 행=아래/위/왼쪽/오른쪽, 칸 48x48 도트 규격, 배경 투명). 현재 5장은 **코드로 그린 임시 그림**(`tools/hero_art/HeroSprites.cs`, `generate.ps1 -Only walk`). 시트가 있는 장수는 `PlayerController`가 좌우 반전을 하지 않고 `PlayerAnimator`가 방향/프레임을 정하며, 장수 색(`tint`)도 입히지 않는다(`HeroSelectController.Apply`). 시트가 없으면 예전 동작(원 스프라이트 + tint + 반전). Player 프리팹에 `PlayerAnimator`를 붙이는 것은 `Step 10-6`이므로 셋업을 돌려야 한다.
 - 지형 이동(12-7): `InfiniteBackground.BuildMap` 이 소품을 만들 때 같은 맵으로 `TerrainCollision` 을 만들어 `TerrainCollision.Active` 에 올리고(`ResetToDefault`/`OnDestroy` 에서 내림), 플레이어·적·아군이 매 틱 `SpeedFactor`(물 배율)와 `Resolve`(막는 원 쪽 속도 성분 제거 + 겹침 밀어내기)를 부른다. **유니티 물리 콜라이더를 쓰지 않는다**(적 수백 마리를 이미 코드로 처리, 순수 로직이라 테스트 가능). `Active` 가 null 이면(지형 그림 없음, 테스트) 예전처럼 어디든 걷는다. 막는/느려지는 값은 소품 데이터(`TerrainProp.blockRadius/slowRadius/slowFactor`, 테마 `riverSlowFactor`)이고 셋업은 **이동 값이 하나도 없는 테마만** `TerrainPropKinds` 기본값으로 채우므로(**Step 12-6 재실행 필요**), 이후 조정은 `Theme_*.asset` 을 직접 고친다. 물에서는 스스로 가는 속도만 느려지고(겹침 밀림/넉백은 그대로) 나무/바위는 넉백도 막는다. 적은 길 찾기 없이 그 자리에서 접선으로 비켜 간다. 화살/투사체/보석은 영향 없음. 설명은 `docs/TERRAIN.md` "지형 이동".
 - 전투 맵: 출진한 성(`GameSession.SortieCastle`)의 지형으로 `InfiniteBackground.ApplyCastle` 이 바닥 타일을 바꾸고 `TerrainProps` 루트(배경의 자식이 아님: 배경은 카메라를 따라 움직임)에 소품을 흩뿌린다. 데이터는 `Resources/TerrainThemeCatalog.asset`(씬 연결 없음)이며 **없거나 그림이 비면 기존 색 덮개(`BattleTerrain`)로 대신**한다. (타이틀 [시작] 처럼 성 없이 시작한 판도 평야+강 고정 맵(`TerrainMap.CreateFreeBattle`)을 쓴다. 강은 세계에 60유닛 간격으로 평행하게 흐르는 사인 곡선이고 토막(256x128)을 1.5유닛 간격으로 겹쳐 놓으며(강둑 아래, 물 위, 순서 1/2) 칸 경계에서 중복/끊김이 없다(정수 격자). 소품이/연못은 강 위에 놓이지 않는다. 같은 성은 항상 같은 맵(성 id 시드, 12x12 칸 단위 결정적 배치)이고 성마다 밀도/소품 비율/색조가 다르다. 소품은 Background 정렬 레이어의 장식(충돌 없음, 시작 위치 반경 2.5 비움). 그림은 코드로 만든 **임시 그림**(`tools/terrain_art/generate.ps1`, 직접 그린 그림으로 덮어쓰면 해당 지형은 `-Only` 로 피해서 실행). 밀도/비중은 `Theme_*.asset` 을 직접 고친다(셋업은 기존 값을 덮어쓰지 않음). 설명은 `docs/TERRAIN.md`.
+- 야전 수치(15-5): `FieldRules.asset` 은 Step 15 가 없을 때만 만들므로 **코드 기본값(`FieldRules`)을 바꿔도 기존 에셋은 안 바뀐다** — 에셋을 직접 고치거나 지우고 재실행. `ClassStats` 는 구조체라 필드를 더하면 기존 에셋에서 0 으로 읽힌다(그때도 재생성). 고친 값은 다음 야전([다시])부터 적용되고 에셋에 저장된다. 유니티 밖 테스트(`fieldtest.sh`)는 `FieldRulesData` 를 포함하지 않는다.
 - 맵 편집기: 씬 `MapEditorScene`(타이틀 0, 게임 1, 내정 2, 맵 편집기 3)에는 카메라/전역 조명/이벤트 시스템/`MapEditorController`(성 목록 연결)만 있고 **화면은 실행 중에 코드로 만든다**. 고친 맵은 성 아이디별 JSON(`MapStore`)이며 **고친 칸만** 들어 있어 나머지 칸은 자동 생성이다. 읽는 순서는 `persistentDataPath/maps` → `Resources/Maps`. 테스트는 `MapStore.PathOverride`/`Disabled` 로 실제 파일을 건드리지 않는다. 시험 전투는 `GameSession.MapTest`(결과 저장/정복 안 함, `MapTestReturn` 이 M 키와 안내). 타이틀 버튼은 `MapEditorLauncher` 가 씬 로드 때 코드로 붙이므로 타이틀 씬을 다시 만들 필요가 없다. 규칙/조작은 `docs/MAP_EDITOR.md`.
 - 빌드: `BuildTool`(메뉴 `Samkuk > Build`, 명령줄 `tools/build_windows.ps1`)이 빌드 설정(타이틀 0, 전투 1, 내정 2) 확인 → 빌드 → README.txt → zip 까지 한다. 결과는 `Builds/`(git 제외). **릴리스 빌드는 `DebugOverlay`(FPS, F1~F4 치트)가 꺼지고**(`Debug.isDebugBuild` 로 구분), 개발용(Development Build)만 켜진다. 에디터가 프로젝트를 열고 있으면 명령줄 빌드는 실행되지 않는다. 저장 경로는 Company/Product Name(`DefaultCompany/Samkuk`)에서 나오므로 이름을 바꾸면 저장 위치가 바뀐다. 이 환경(Claude)에서는 유니티를 실행하지 못해 **빌드는 사용자가 직접 확인**한다. 자세한 사용법은 `docs/BUILD.md`.
 - 내정 시작/출진: 내정을 처음 열면 시작 성을 골라 내 성(`SaveData.homeCastleId`)으로 저장하고, 영토(`ownedCastleIds`)의 성 화면에서 [출진] → 이웃한 적 성 선택창에서 공격 대상을 고른다. 대상 성(`GameSession.SortieCastle`, 출발 성은 `SortieOrigin`)이 전투로 전달돼 `InfiniteBackground` 가 성 지형 색(`BattleTerrain`)을 배경 위에 한 겹 덮고, 결과 화면에 [내정으로] 가 생긴다. 승리하면 `ResultController` 가 대상 성을 `Territory.Conquer` 로 영토에 넣는다(정복은 결과 정산 때만 저장, 패배/재도전은 영토 불변, 영토가 늘면 시작 성 변경 불가)(Step 9 셋업이 만드는 버튼이라 **Step 9/Run All 재실행 필요**). 타이틀 [시작] 은 `SortieCastle` 을 비우는 "성 없이 시작"이다. 규칙은 `docs/CASTLES.md`.
@@ -120,7 +122,7 @@
 - 코드: `Assets/Scripts/<영역>/` — Core, Player, Enemy, Weapon, Skill, Hero, Stage, Pickup, Upgrade, Meta, Audio, Feedback, Balance, Strategy, World, Field(야전), UI, Data, Editor
   - 네임스페이스는 `Samkuk.*` (예: `Samkuk.Weapons`, `Samkuk.Enemies`, `Samkuk.Meta`, `Samkuk.UI`)
   - 런타임은 `Samkuk.Runtime.asmdef`, 에디터 스크립트는 `Editor/` 폴더
-- 데이터: `Assets/ScriptableObjects/<종류>/` — Weapons, Enemies, Passives, Heroes, Skills, Evolutions, Meta, Stage, Castles, 그리고 `UpgradeCatalog`, `HeroCatalog`, `MetaCatalog`, `CastleCatalog`
+- 데이터: `Assets/ScriptableObjects/<종류>/` — Weapons, Enemies, Passives, Heroes, Skills, Evolutions, Meta, Stage, Castles, Field(야전 수치), 그리고 `UpgradeCatalog`, `HeroCatalog`, `MetaCatalog`, `CastleCatalog`
 - 씬: `Assets/Scenes/TitleScene.unity`(빌드 0번) → `BattleScene.unity`(전투, 1번) → `StrategyScene.unity`(내정, 2번) → `MapEditorScene.unity`(맵 편집기, 3번) → `FieldBattleScene.unity`(야전 테스트, 4번)
 - 테스트: `Assets/Tests/PlayMode/*.cs` (PlayMode, `Samkuk.Tests.PlayMode.asmdef`)
 - 저장: `Application.persistentDataPath/save.json` (`SaveSystem`)

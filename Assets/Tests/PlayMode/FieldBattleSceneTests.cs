@@ -241,6 +241,37 @@ namespace Samkuk.Tests
         }
 
         [Test]
+        public void RulesData_DefaultMatchesCodeDefault()
+        {
+            var data = ScriptableObject.CreateInstance<FieldRulesData>();
+            var d = FieldRules.Default();
+            Assert.AreEqual(d.archer.range, data.rules.archer.range);
+            Assert.AreEqual(d.cavalry.chargeBonus, data.rules.cavalry.chargeBonus);
+            Assert.AreEqual(d.infantry.incomingMul, data.rules.infantry.incomingMul);
+            Assert.AreEqual(d.generalDamageMul, data.rules.generalDamageMul);
+            Assert.AreEqual(d.strongMul, data.rules.strongMul);
+            Assert.AreEqual(d.aiRetreatRatio, data.rules.aiRetreatRatio);
+            Object.Destroy(data);
+        }
+
+        [Test]
+        public void RulesData_IsUsedByModel_AndRangeMarks()
+        {
+            var c = Make();
+            var data = ScriptableObject.CreateInstance<FieldRulesData>();
+            data.rules.archer.range = 5;
+            c.RulesData = data;
+            c.StartBattle(Quiet(), CastleTerrain.Plain);
+            Assert.AreSame(data.rules, c.Model.Rules, "에셋의 규칙 객체를 그대로 쓴다");
+            FieldUnit archer = null;
+            foreach (var u in c.Model.Units) if (u.Side == FieldSide.Player && u.Class == UnitClass.Archer) { archer = u; break; }
+            c.Select(archer);
+            c.Step(0f);
+            Assert.Greater(c.RangeMarkCount, 15, "사거리 5 는 3 보다 칸이 많다");
+            Object.Destroy(data);
+        }
+
+        [Test]
         public void PrepSetup_RandomEnemyFormation_AndHeroName()
         {
             var c = Make();
