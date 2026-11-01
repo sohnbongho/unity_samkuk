@@ -12,7 +12,7 @@
 
 ## 진행 상황
 
-마지막 갱신: 2026-11-01 (Step 15-1 야전 순수 로직 완료, 15-2 진행 중 — `docs/FIELD_BATTLE.md`. 이전: Step 10-9 후속 조조 연속 베기·여포 극 완료, 무기 휘두르기(베기) 완료, Step 8-5 장수별 무기 목록 완료. Step 14 HD-2D 전환 진행 중: 14-1 조명 완료, 14-2 후처리 완료, 14-3 도트 규격 완료, 14-4 월드 정렬·그림자 완료, 14-5 틸트 시프트 완료, 후속 14-6 겹친 소품 반투명 완료. 나머지 후속은 `docs/HD2D.md` 후속 목록. 계획/결정은 `docs/HD2D.md`, 용어 `CONTEXT.md`, ADR `docs/adr/`)
+마지막 갱신: 2026-11-01 (Step 15-2 야전 격자·임시 그림 완료, 15-3 진행 중 — `docs/FIELD_BATTLE.md`. 이전: Step 10-9 후속 조조 연속 베기·여포 극 완료, 무기 휘두르기(베기) 완료, Step 8-5 장수별 무기 목록 완료. Step 14 HD-2D 전환 진행 중: 14-1 조명 완료, 14-2 후처리 완료, 14-3 도트 규격 완료, 14-4 월드 정렬·그림자 완료, 14-5 틸트 시프트 완료, 후속 14-6 겹친 소품 반투명 완료. 나머지 후속은 `docs/HD2D.md` 후속 목록. 계획/결정은 `docs/HD2D.md`, 용어 `CONTEXT.md`, ADR `docs/adr/`)
 
 | Step | 내용 | 상태 | 커밋 |
 |---|---|---|---|
@@ -56,6 +56,7 @@
 | 11 | PC 빌드(친구 공유용 Windows 빌드 환경): 메뉴 `Samkuk > Build`(릴리스/개발용) 또는 `tools/build_windows.ps1` → `Builds/` 에 실행 폴더 + 공유용 zip(README.txt 포함), 릴리스는 DebugOverlay/F1~F4 치트 꺼짐, 타이틀에 버전 표시(`BuildTool`, `docs/BUILD.md`). 최적화(GC/풀링)·아이콘·설치 파일은 아직 | 완료 | 15e5ad2 |
 | 15-0 | 야전(남코 삼국지2식 부대 전투) 설계: 독립 테스트 모드, 아이소메트릭 12x9 격자, 병과(보병·궁병·기병)별 부대 2개 + 기병 고정 장수 부대, 실시간 + 정지 중 명령(전진·대기·후퇴, 전진은 목표 지정 가능), 배치 4종, 상성, 단순 적 AI. 용어 `CONTEXT.md` "야전", 결정 `docs/adr/0003`, 설계·계획 `docs/FIELD_BATTLE.md` | 완료 | |
 | 15-1 | 야전 순수 로직: `Assets/Scripts/Field/`(네임스페이스 `Samkuk.Field`) — `FieldBattleModel`(12x9 격자, 칸 예약 이동·비켜 가기, 공격은 명령과 무관하게 매 틱, 전진 목표·지나치며 때리기, 후퇴 퇴장, 돌격 장전, 자동 정지, 승패), `FieldRules`(병과 표·상성·AI 문턱 한 곳), `FieldFormation`(배치 4종·좌우 반전), `FieldAi`(단순 규칙), `FieldSetup`, `FieldUnit`. 유니티 의존 없음. 테스트 `FieldBattleModelTests` 28개(유니티 밖 Mono 로 전부 통과, Test Runner 확인) | 완료 | |
+| 15-2 | 야전 아이소메트릭 격자·임시 그림: `IsoGrid`(12x9 칸 ↔ 월드, 타일 1.5x0.75 유닛, 가운데 칸이 원점, 이동 방향 → 그림 방향), `FieldArtSpec`(파일 이름·시트 칸 규격), 생성기 `tools/field_art/generate.ps1`(마름모 타일 6장 + 부대 시트 8장 = 병과 3 + 장수 x 진영 2, 앞/뒷모습 x 2프레임, 왼쪽은 반전), 임포터 `FieldSpriteImporter`(`Assets/Sprites/Field`). 테스트 `IsoGridTests` | 완료 | |
 
 ## 남은 작업
 
