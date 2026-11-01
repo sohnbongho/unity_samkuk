@@ -53,7 +53,7 @@ namespace Samkuk.Weapons
             {
                 thrusts[i] = new ThrustMotion();
                 trails[i] = new WeaponTrail(MakeEffectRenderer($"Trail{i}", WaveSprites.Point(), 0));
-                if (Data.heldSprite != null) held[i] = MakeEffectRenderer($"Held{i}", Data.heldSprite, 1);
+                if (Data.heldSprite != null) held[i] = MakeEffectRenderer($"Held{i}", Data.heldSprite, HeldOrder);
             }
         }
 
@@ -113,12 +113,11 @@ namespace Samkuk.Weapons
                     sr.enabled = false;
                     continue;
                 }
-                // 창 그림은 손잡이가 아래, 촉이 위(+y): 각도 - 90 만큼 돌리고 손 축에서 Offset 만큼 앞으로
-                sr.enabled = true;
-                sr.flipX = t.FacesLeft;
-                sr.transform.position = hand + DirectionOf(t.Angle) * t.Offset;
-                sr.transform.rotation = Quaternion.Euler(0f, 0f, t.Angle - 90f);
+                // 창 그림은 손잡이가 아래, 촉이 위(+y): 각도 - 90 만큼 돌리고 손 축에서 Offset 만큼 앞으로. 위로 찌르는 동안은 몸 뒤
+                ShowHeld(sr, hand + DirectionOf(t.Angle) * t.Offset, t.Angle, t.FacesLeft, rememberSide: i == 0);
             }
+            // 쉬는 자세: 찌르지 않는 동안 첫 그림을 어깨에 걸친다
+            if (held[0] != null && !IsThrusting) ShowHeldAtRest(held[0], hand);
         }
 
         void Thrust(int index, Vector2 origin, float angleDegrees)

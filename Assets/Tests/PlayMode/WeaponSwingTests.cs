@@ -1,10 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
+using Samkuk.Core;
 using Samkuk.Data;
 using Samkuk.Enemies;
 using Samkuk.Player;
 using Samkuk.Weapons;
+using Samkuk.World;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -219,7 +221,7 @@ namespace Samkuk.Tests
         }
 
         [UnityTest]
-        public IEnumerator Slash_HeldSprite_ShowsWhileSwinging_AndHidesAfter()
+        public IEnumerator Slash_HeldSprite_ShowsWhileSwinging_AndRestsOnTheShoulderAfter()
         {
             yield return null;
             spawner.SpawnAt(still, new Vector2(1.5f, 0f));
@@ -237,7 +239,79 @@ namespace Samkuk.Tests
 
             yield return new WaitForSeconds(0.6f);
             Assert.IsFalse(slash.IsSwinging);
-            Assert.IsFalse(held.enabled, "끝나면 숨김");
+            Assert.IsTrue(held.enabled, "끝나도 들고 있다 (쉬는 자세)");
+            Assert.AreEqual(0f, Mathf.DeltaAngle(held.transform.rotation.eulerAngles.z, Weapon.RestAngle - 90f), 1f, "오른쪽 어깨 위로 비스듬히 (마지막에 오른쪽을 벰)");
+            Assert.IsFalse(held.flipX);
+            Assert.AreEqual(SlashWeapon.HandHeight, held.transform.position.y - playerGo.transform.position.y, 0.001f, "손 자리");
+            Assert.AreEqual(WorldSorting.LayerId, held.sortingLayerID, "위를 향하므로 월드 정렬 = 몸 뒤");
+            Assert.AreEqual(SpriteSortPoint.Pivot, held.spriteSortPoint);
+        }
+
+        [UnityTest]
+        public IEnumerator Slash_HeldSprite_SortsBehindTheBody_WhenTheBladePointsUp()
+        {
+            yield return null;
+            spawner.SpawnAt(still, new Vector2(0f, 1.5f));   // 바로 위의 적: 호 150 → 30 도, 내내 위를 향한다
+            var data = MakeSlash(cooldown: 5f, swingDuration: 0.4f);
+            data.heldSprite = MakeSprite();
+            var slash = wc.AddWeapon(data) as SlashWeapon;
+
+            yield return null;
+            yield return new WaitForSeconds(0.1f);
+            Assert.IsTrue(slash.IsSwinging);
+            var held = slash.HeldRenderer(0);
+            Assert.IsTrue(held.enabled);
+            Assert.IsTrue(Weapon.HeldIsBehind(slash.Swing(0).Angle));
+            Assert.AreEqual(WorldSorting.LayerId, held.sortingLayerID, "위로 벨 때는 World 레이어(발 y 정렬)라 몸 뒤");
+            Assert.AreEqual(SpriteSortPoint.Pivot, held.spriteSortPoint, "손잡이(피벗) y 로 정렬");
+        }
+
+        [UnityTest]
+        public IEnumerator Slash_HeldSprite_StaysInFront_WhenTheBladePointsDown()
+        {
+            yield return null;
+            spawner.SpawnAt(still, new Vector2(0f, -1.5f));   // 바로 아래의 적: 호 -30 → -150 도, 내내 아래를 향한다
+            var data = MakeSlash(cooldown: 5f, swingDuration: 0.4f);
+            data.heldSprite = MakeSprite();
+            var slash = wc.AddWeapon(data) as SlashWeapon;
+
+            yield return null;
+            yield return new WaitForSeconds(0.1f);
+            Assert.IsTrue(slash.IsSwinging);
+            var held = slash.HeldRenderer(0);
+            Assert.IsFalse(Weapon.HeldIsBehind(slash.Swing(0).Angle));
+            Assert.AreEqual(GameLayers.Sorting.Effect, held.sortingLayerName, "아래로 벨 때는 Effect 레이어 = 몸 앞");
+            Assert.AreEqual(Weapon.HeldOrder, held.sortingOrder, "검기보다 앞");
+        }
+
+        [UnityTest]
+        public IEnumerator OnlyTheLastUsedWeapon_RestsOnTheShoulder()
+        {
+            yield return null;
+            spawner.SpawnAt(still, new Vector2(1.5f, 0f));
+            var a = MakeSlash(cooldown: 5f, swingDuration: 0.3f); a.heldSprite = MakeSprite(); a.displayName = "A";
+            var b = MakeSlash(cooldown: 5f, swingDuration: 0.3f); b.heldSprite = MakeSprite(); b.displayName = "B";
+            var slashA = wc.AddWeapon(a) as SlashWeapon;
+            var slashB = wc.AddWeapon(b) as SlashWeapon;
+
+            yield return null;
+            yield return new WaitForSeconds(0.5f);
+            Assert.IsFalse(slashA.IsSwinging);
+            Assert.IsFalse(slashB.IsSwinging);
+            int resting = (slashA.HeldRenderer(0).enabled ? 1 : 0) + (slashB.HeldRenderer(0).enabled ? 1 : 0);
+            Assert.AreEqual(1, resting, "쉴 때 어깨에 걸치는 그림은 하나만");
+            Assert.IsTrue(slashA.HoldsRestPose ^ slashB.HoldsRestPose);
+        }
+
+        [Test]
+        public void HeldIsBehind_OnlyWhenTheBladePointsUp()
+        {
+            Assert.IsTrue(Weapon.HeldIsBehind(90f));
+            Assert.IsTrue(Weapon.HeldIsBehind(Weapon.RestAngle), "쉬는 자세는 어깨 너머(몸 뒤)");
+            Assert.IsTrue(Weapon.HeldIsBehind(180f - Weapon.RestAngle));
+            Assert.IsFalse(Weapon.HeldIsBehind(0f));
+            Assert.IsFalse(Weapon.HeldIsBehind(-90f));
+            Assert.IsFalse(Weapon.HeldIsBehind(180f));
         }
 
         [UnityTest]
@@ -408,6 +482,7 @@ namespace Samkuk.Tests
             yield return null;
             var held = halberd.HeldRenderer(0);
             Assert.IsTrue(held.enabled);
+            yield return null;   // 첫 틱은 쉬는 자세일 수 있다: 찌르기 자세가 잡힌 뒤에 잰다
             float x0 = held.transform.position.x;
             float rot0 = held.transform.rotation.eulerAngles.z;
             yield return new WaitForSeconds(0.5f * ThrustMotion.LungeEnd - 0.05f);
@@ -612,6 +687,7 @@ namespace Samkuk.Tests
             Assert.IsTrue(thrust.IsThrusting);
             var held = thrust.HeldRenderer(0);
             Assert.IsTrue(held.enabled);
+            yield return null;   // 첫 틱은 쉬는 자세일 수 있다
             Assert.AreEqual(-90f, Mathf.DeltaAngle(held.transform.rotation.eulerAngles.z, 0f), 1f, "오른쪽 적을 향해 촉이 +x (각도 0 - 90)");
             float x0 = held.transform.position.x;
 
@@ -620,7 +696,9 @@ namespace Samkuk.Tests
 
             yield return new WaitForSeconds(0.5f);
             Assert.IsFalse(thrust.IsThrusting);
-            Assert.IsFalse(held.enabled, "끝나면 숨김");
+            Assert.IsTrue(held.enabled, "끝나도 들고 있다 (쉬는 자세)");
+            Assert.AreEqual(0f, Mathf.DeltaAngle(held.transform.rotation.eulerAngles.z, Weapon.RestAngle - 90f), 1f, "어깨 위로 비스듬히");
+            Assert.AreEqual(WorldSorting.LayerId, held.sortingLayerID, "몸 뒤");
         }
 
         [UnityTest]

@@ -66,7 +66,7 @@ namespace Samkuk.Weapons
                 thrusts[i] = new ThrustMotion();
                 sweeps[i] = new SwingMotion();
                 trails[i] = new WeaponTrail(MakeEffectRenderer($"Trail{i}", WaveSprites.Point(), 0));
-                if (Data.heldSprite != null) held[i] = MakeEffectRenderer($"Held{i}", Data.heldSprite, 1);
+                if (Data.heldSprite != null) held[i] = MakeEffectRenderer($"Held{i}", Data.heldSprite, HeldOrder);
             }
         }
 
@@ -134,23 +134,19 @@ namespace Samkuk.Weapons
                     if (t.Advance(Time.deltaTime)) Thrust(i, OwnerPosition, t.Angle);
                     if (sr == null) continue;
                     if (!t.Active) { sr.enabled = false; continue; }
-                    // 그림은 손잡이가 아래, 날이 위(+y): 각도 - 90 만큼 돌리고 손 축에서 Offset 만큼 앞으로 (창과 같음)
-                    sr.enabled = true;
-                    sr.flipX = t.FacesLeft;
-                    sr.transform.position = hand + DirectionOf(t.Angle) * t.Offset;
-                    sr.transform.rotation = Quaternion.Euler(0f, 0f, t.Angle - 90f);
+                    // 그림은 손잡이가 아래, 날이 위(+y): 각도 - 90 만큼 돌리고 손 축에서 Offset 만큼 앞으로 (창과 같음). 위를 향하면 몸 뒤
+                    ShowHeld(sr, hand + DirectionOf(t.Angle) * t.Offset, t.Angle, t.FacesLeft, rememberSide: i == 0);
                 }
                 else if (s.Active)
                 {
                     if (s.Advance(Time.deltaTime)) Sweep(i, s.CenterAngle);
                     if (sr == null) continue;
                     if (!s.Active) { sr.enabled = false; continue; }
-                    sr.enabled = true;
-                    sr.flipX = s.FacesLeft;
-                    sr.transform.position = hand;
-                    sr.transform.rotation = Quaternion.Euler(0f, 0f, s.Angle - 90f);
+                    ShowHeld(sr, hand, s.Angle, s.FacesLeft, rememberSide: i == 0);
                 }
             }
+            // 쉬는 자세: 찌르지도 휩쓸지도 않는 동안 첫 그림을 어깨에 걸친다
+            if (held[0] != null && !IsThrusting && !IsSweeping) ShowHeldAtRest(held[0], hand);
         }
 
         /// <summary>찌르기: 창과 같은 직선 판정, 극 끝에서 뾰족한 검기.</summary>

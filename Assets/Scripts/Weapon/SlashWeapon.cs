@@ -64,7 +64,7 @@ namespace Samkuk.Weapons
             {
                 swings[i] = new SwingMotion();
                 trails[i] = new WeaponTrail(MakeEffectRenderer($"Trail{i}", WaveSprites.Arc(), 0));
-                if (Data.heldSprite != null) held[i] = MakeEffectRenderer($"Held{i}", Data.heldSprite, 1); // 검기보다 앞
+                if (Data.heldSprite != null) held[i] = MakeEffectRenderer($"Held{i}", Data.heldSprite, HeldOrder); // 검기보다 앞
             }
         }
 
@@ -159,12 +159,11 @@ namespace Samkuk.Weapons
                     sr.enabled = false;
                     continue;
                 }
-                // 그림은 손잡이가 아래, 날이 위(+y)를 향하므로 각도 - 90 만큼 돌리면 날이 Angle 을 가리킨다
-                sr.enabled = true;
-                sr.flipX = s.FacesLeft;
-                sr.transform.position = hand;
-                sr.transform.rotation = Quaternion.Euler(0f, 0f, s.Angle - 90f);
+                // 그림은 손잡이가 아래, 날이 위(+y)를 향하므로 각도 - 90 만큼 돌리면 날이 Angle 을 가리킨다. 위를 향하는 동안은 몸 뒤
+                ShowHeld(sr, hand, s.Angle, s.FacesLeft, rememberSide: i == 0);
             }
+            // 쉬는 자세: 휘두르지 않는 동안(연속 베기 대기도 아닐 때) 첫 그림을 어깨에 걸친다
+            if (held[0] != null && !IsSwinging) ShowHeldAtRest(held[0], hand);
         }
 
         /// <summary>호의 가운데 방향으로 range*0.5 떨어진 원(반지름 range*0.6)에 피해. 예전 좌/우 베기와 같은 크기.</summary>

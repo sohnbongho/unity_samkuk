@@ -3,6 +3,7 @@ using Samkuk.Core;
 using Samkuk.Data;
 using Samkuk.Enemies;
 using Samkuk.Player;
+using Samkuk.World;
 using UnityEngine;
 
 namespace Samkuk.Weapons
@@ -97,6 +98,83 @@ namespace Samkuk.Weapons
             sr.sortingOrder = sortingOrder;
             sr.enabled = false;
             return sr;
+        }
+
+        // ───────────────────────── 들고 있는 그림: 앞뒤와 쉬는 자세 (10-9b) ─────────────────────────
+
+        /// <summary>들고 있는 그림의 Effect 레이어 순서 (검기 0 보다 앞).</summary>
+        public const int HeldOrder = 1;
+        /// <summary>쉬는 자세의 날 각도: 오른쪽 어깨 위로 비스듬히. 위를 향하므로 몸 뒤에 그려져 "어깨에 걸친" 모양. 왼쪽을 봤으면 180 - 이 값.</summary>
+        public const float RestAngle = 70f;
+
+        /// <summary>마지막으로 (적 쪽, 첫 번째) 휘두른 쪽이 왼쪽인가. 쉬는 자세가 그쪽 어깨에 걸린다. 걷는 방향은 보지 않는다(후속).</summary>
+        protected bool LastFacesLeft { get; private set; }
+
+        /// <summary>
+        /// 소유자(인스턴스 ID)마다 쉬는 자세를 보여 주는 무기 하나: 마지막으로 공격한 무기. 베기·창·극을 여럿 들면 그림이 어깨에 겹겹이 쌓이므로
+        /// 나머지는 쉴 때 숨긴다. 소유자가 사라지면 그 무기들도 사라지며 OnDestroy 가 항목을 지운다.
+        /// </summary>
+        static readonly Dictionary<Transform, Weapon> RestHolder = new Dictionary<Transform, Weapon>();
+
+        /// <summary>이 무기가 지금 쉬는 자세를 맡고 있는가 (테스트용).</summary>
+        public bool HoldsRestPose => Owner != null && RestHolder.TryGetValue(Owner, out var w) && w == this;
+
+        /// <summary>날이 위(+y)를 향하면 몸 뒤에 그린다 — 어깨 너머로 넘어간 무기가 머리 앞에 겹쳐 보이지 않게.</summary>
+        public static bool HeldIsBehind(float angleDegrees) => Mathf.Sin(angleDegrees * Mathf.Deg2Rad) > 0f;
+
+        /// <summary>
+        /// 들고 있는 그림을 position 에 angle 로 놓는다 (그림은 손잡이 아래·날 위 → angle - 90 회전, 왼쪽이면 반전).
+        /// 날이 위면 World 정렬(손잡이 피벗 y = 손 높이 > 발 → 몸 뒤, 다른 캐릭터와는 y 로), 아니면 Effect 레이어(몸 앞). 레이어는 바뀔 때만 쓴다.
+        /// rememberSide 는 적 쪽 첫 번째 동작만 true 로 (반대편 동시 베기가 쉬는 자세의 쪽을 뒤집지 않게).
+        /// </summary>
+        protected void ShowHeld(SpriteRenderer sr, Vector2 position, float angleDegrees, bool facesLeft, bool rememberSide)
+        {
+            sr.enabled = true;
+            sr.flipX = facesLeft;
+            sr.transform.position = position;
+            sr.transform.rotation = Quaternion.Euler(0f, 0f, angleDegrees - 90f);
+            SetHeldBehind(sr, HeldIsBehind(angleDegrees));
+            if (rememberSide)
+            {
+                LastFacesLeft = facesLeft;
+                if (Owner != null) RestHolder[Owner] = this;   // 마지막으로 공격한 무기가 쉬는 자세를 맡는다
+            }
+        }
+
+        /// <summary>
+        /// 쉬는 자세: 아무 동작도 없을 때 마지막에 본 쪽 어깨 위에 비스듬히(몸 뒤). 첫 그림만 쓴다.
+        /// 같은 소유자의 다른 무기가 쉬는 자세를 맡고 있으면(마지막 공격) 이 그림은 숨긴다. 아무도 없으면 이 무기가 맡는다.
+        /// </summary>
+        protected void ShowHeldAtRest(SpriteRenderer sr, Vector2 hand)
+        {
+            if (Owner == null) return;
+            if (RestHolder.TryGetValue(Owner, out var holder) && holder != null && holder != this && holder.isActiveAndEnabled)
+            {
+                sr.enabled = false;
+                return;
+            }
+            RestHolder[Owner] = this;
+            bool left = LastFacesLeft;
+            ShowHeld(sr, hand, left ? 180f - RestAngle : RestAngle, left, rememberSide: false);
+        }
+
+        protected virtual void OnDestroy()
+        {
+            if (Owner != null && RestHolder.TryGetValue(Owner, out var w) && w == this) RestHolder.Remove(Owner);
+        }
+
+        static void SetHeldBehind(SpriteRenderer sr, bool behind)
+        {
+            if (behind)
+            {
+                if (!WorldSorting.IsConfigured(sr)) WorldSorting.Configure(sr);
+            }
+            else if (sr.spriteSortPoint != SpriteSortPoint.Center)   // World 정렬에서 돌아온다 (Pivot 기준점이 그 표시)
+            {
+                sr.sortingLayerName = GameLayers.Sorting.Effect;
+                sr.sortingOrder = HeldOrder;
+                sr.spriteSortPoint = SpriteSortPoint.Center;
+            }
         }
 
         readonly List<Enemy> strikeHits = new List<Enemy>(64);
