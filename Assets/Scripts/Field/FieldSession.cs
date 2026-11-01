@@ -11,6 +11,8 @@ namespace Samkuk.Field
         public static FieldSetup LastSetup { get; set; }
         public static CastleTerrain LastTerrain { get; set; } = CastleTerrain.Plain;
         public static int LastHeroIndex { get; set; }
+        /// <summary>마지막으로 고른 장수 (무기 연출·능력치, 결과창 [다시]용).</summary>
+        public static HeroData LastHero { get; set; }
         /// <summary>적 배치를 매번 무작위로 고르는가 (준비 화면 옵션).</summary>
         public static bool EnemyFormationRandom { get; set; } = true;
         /// <summary>씬을 새로 열 때 준비 화면을 건너뛰고 마지막 조건으로 바로 시작할지. 지금은 결과창 [다시]가 씬 안에서 다시 시작해 쓰는 곳이 없고,

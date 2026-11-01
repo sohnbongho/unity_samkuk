@@ -1,6 +1,6 @@
 # 야전 (남코 삼국지2식 부대 전투, Step 15)
 
-> **상태: 15-1 순수 로직, 15-2 격자·임시 그림, 15-3 씬·화면 완료. 15-4 연출 완료(Play 미확인). 15-5 수치 에셋 완료. 15-6 키보드 조작·양옆 부대 목록 완료. 수치 조정은 체감 피드백 뒤.** 2026-11-01 설계 인터뷰(`/grill-with-docs`)로 정한 내용을 모았다. 코드는 `Assets/Scripts/Field/`(`Samkuk.Field`), 테스트는 `FieldBattleModelTests`. 용어는 `CONTEXT.md` "야전", 시점 결정은 `docs/adr/0003`.
+> **상태: 15-1 순수 로직, 15-2 격자·임시 그림, 15-3 씬·화면 완료. 15-4 연출 완료(Play 미확인). 15-5 수치 에셋 완료. 15-6 키보드 조작·양옆 부대 목록 완료. 15-7 장수 개성(능력치·무기 연출) 완료. 수치 조정은 체감 피드백 뒤.** 2026-11-01 설계 인터뷰(`/grill-with-docs`)로 정한 내용을 모았다. 코드는 `Assets/Scripts/Field/`(`Samkuk.Field`), 테스트는 `FieldBattleModelTests`. 용어는 `CONTEXT.md` "야전", 시점 결정은 `docs/adr/0003`.
 
 성 밖 들판에서 **부대** 여러 개가 맞붙는 반자동 전투 모드. 시간이 실시간으로 흐르고, [정지]를 눌러 멈춘 상태에서 부대마다 **명령**(전진·대기·후퇴)을 주고 [재개]한다. 남코 삼국지2(覇王の大陸)의 합전이 본보기이며, 화면은 아이소메트릭(대각선) 격자다. **1단계는 독립 테스트 모드**로 만들고 출진·정복 흐름과는 연결하지 않는다.
 
@@ -30,7 +30,7 @@
 | 보병 | 1.0 | 인접 칸 | 20 | 받는 피해 x0.8 |
 | 궁병 | 1.0 | 사거리 **3칸**(아군 너머로 쏨) | 14 | 인접한 적에게 주는 피해 x0.5 |
 | 기병 | 2.0 | 인접 칸 | 28 | **돌격**: 멈춘 상태에서 전진해 처음 닿는 순간 60명 추가 피해 |
-| 장수 부대 | 기병과 같음 | 인접 칸 | 기병 x1.3 | 상성에서 "궁병 > 기병" 을 받지 않음. 장수 능력치는 1단계에 안 씀 |
+| 장수 부대 | 기병과 같음 x 장수 이동 배율 | 인접 칸 | 기병 x1.3 x 장수 공격 배율 | 상성에서 "궁병 > 기병" 을 받지 않음. 병사 수 = 부대 병사 수 x 장수 병사 배율 (15-7, 아래 "장수 개성") |
 
 상성 배율: 강한 쪽이 주는 피해 **x1.5**, 약한 쪽이 주는 피해 **x0.6**. 교전은 턴 없이 초당 피해를 병사 수에서 빼고, 인접한 둘은 서로 피해를 입는다.
 
@@ -107,6 +107,29 @@
 
 소리는 새로 만들지 않고 기존 `SfxId` 를 재사용한다(실제 음원 교체는 `AudioManager.overrides`). 수치(간격, 입자 수)는 `FieldFx` 상수.
 
+## 장수 개성 (15-7)
+
+준비 화면에서 고른 장수(`HeroCatalog`)가 내 장수 부대에 개성을 준다. 적 장수 부대는 아직 배율 1·무기 연출 없음(2단계 적장 데이터).
+
+| 장수 데이터(`HeroData`) | 야전 장수 부대 | 어디서 |
+|---|---|---|
+| `damageMultiplier` 공격력 배율 | 주는 피해 배율(돌격 포함) `FieldUnit.DamageMul` | `FieldHeroLink.Apply` → `FieldSetup.playerGeneralDamageMul` |
+| `moveSpeedMultiplier` 이동 속도 배율 | 이동 속도 배율 `FieldUnit.SpeedMul` | `playerGeneralSpeedMul` |
+| `maxHpBonus` 체력 보정(기본 100 기준) | 병사 수 배율 = (100 + 보정) / 100, 최소 0.2 | `playerGeneralSoldierMul` |
+| `startingWeapon` 시작 무기 | 백병전 타격 때 무기 연출(`FieldWeaponShow`) | `FieldFx.Bind(model, weapon)` |
+
+무기 연출은 서바이버 전투의 휘두르기·찌르기 규칙(`SwingMotion`/`ThrustMotion`)과 검기(`WeaponTrail`, `WaveSprites`), 들고 있는 그림(`heldSprite`)을 그대로 빌린다(규칙 없음, 피해는 모델이 준다). 장수 부대가 백병전으로 때릴 때 불꽃·타격음 대신 손 높이에서 맞는 적 쪽으로 무기를 휘두르고 검기가 나간다. 동작 중엔 새 타격을 받지 않아 그게 간격이 된다. 그림은 아이소메트릭 부대 옆이라 0.6배, 검기 비거리는 2.5유닛까지(`FieldWeaponShow.Scale/MaxTravel`).
+
+| 무기 종류 | 모습 |
+|---|---|
+| 베기(관우 청룡언월도, 유비 쌍고검) | 호를 그리며 베고 반원 검기. 유비는 검기가 멀리(2.5유닛) 난다 |
+| 연속 베기(조조 의천검) | 내려친 뒤 올려치기를 이어서, 베기마다 검기 |
+| 찌르기(장비 장팔사모) | 당겼다 내지르고 뾰족한 검기 |
+| 극(여포 방천화극) | 찌르기와 휩쓸기를 번갈아 |
+| 그 밖 | 베기로 (그림이 없으면 검기만) |
+
+준비 화면의 장수 줄과 선택한 장수 부대의 띠 정보에 "공격 x / 이동 x / 병사 x / 무기" 한 줄이 뜬다. 값을 바꾸려면 `Hero_*.asset`(서바이버 전투와 공유).
+
 ## 그림 규격 (15-2, `FieldArtSpec`)
 
 | 그림 | 파일 | 크기 | 비고 |
@@ -129,4 +152,5 @@
 | **15-4** (연출 완료, Play 미확인) | 연출 `FieldFx`(불꽃·화살·번쩍임·소리), 사거리 표시, 정지 배너. **수치 조정(병과·상성·속도)은 체감 피드백을 받은 뒤** | `FieldBattleSceneTests` +2, 사용자 체감 |
 | **15-5** (완료) | 수치 에셋 `FieldRulesData`(`FieldRules` 를 [Serializable] 로 감싼 ScriptableObject, `Assets/ScriptableObjects/Field/FieldRules.asset`), Step 15 가 없을 때만 생성·연결, 컨트롤러가 야전 시작마다 모델에 넘김(고친 값은 [다시]부터) | `FieldBattleSceneTests` +2, 사용자: Step 15 재실행 → 인스펙터에서 값 바꿔 보기 |
 | **15-6** (완료) | 키보드 조작: 정지 시 첫 내 부대 자동 선택, W/S·↑/↓ 부대, Enter 세부 명령 메뉴(전진·목표 정해 전진·대기·후퇴·같은 병과·전체, 장수 부대 제외), 목표 고르기(적 목록 커서). 양옆 패널(아군/적군 목록, 키 안내). `FieldBattleController.KeyMode/MoveSelection/OpenDetail/MoveCursor/Confirm/Back/IssueGroupOrder` | `FieldBattleSceneTests` +5, 사용자 Play |
+| **15-7** (완료) | 장수 개성: `FieldHeroLink`(장수 데이터 → 피해·이동·병사 배율), `FieldSetup.playerGeneral*Mul`/`FieldUnit.DamageMul·SpeedMul`(순수), `FieldWeaponShow`(장수 시작 무기의 휘두르기·찌르기·극 연출, 전투 규칙·검기 재사용), 준비 화면·띠에 요약 | `FieldBattleModelTests` +3(유니티 밖), `FieldBattleSceneTests` +2, 사용자 Play |
 | 2단계(미정) | 출진·정복 흐름 연결, 장수 능력치·동행 장수, 징병/성 크기 연동, 진형 이름, 지형 효과, 서바이버 전투와의 연결(일기토 등), 진짜 그림 | 재미 확인 뒤 다시 인터뷰 |

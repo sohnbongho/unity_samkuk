@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Samkuk.Audio;
 using Samkuk.Core;
+using Samkuk.Data;
 using Samkuk.Feedback;
 using UnityEngine;
 
@@ -10,6 +11,7 @@ namespace Samkuk.Field
     /// 야전 연출(15-4): 모델 이벤트 → 입자·화살·번쩍임·소리. 규칙은 없고 보여 주기만 한다.
     /// 피해(<see cref="FieldBattleModel.Hit"/>)는 매 틱 일어나므로 맞는 부대마다/쏘는 부대마다 간격을 두고 한 번씩만 표현한다.
     /// 입자는 전투의 <see cref="BurstFx"/> 를 그대로 쓰고(코드 스프라이트, 풀), 화살은 여기서 작은 풀로 날린다. 소리는 기존 효과음 재사용.
+    /// 장수 개성(15-7): 내 장수 부대의 백병전 타격은 불꽃 대신 장수의 시작 무기 연출(<see cref="FieldWeaponShow"/>)로 보여 준다.
     /// </summary>
     public class FieldFx : MonoBehaviour
     {
@@ -32,6 +34,7 @@ namespace Samkuk.Field
 
         FieldBattleModel model;
         BurstFx burst;
+        FieldWeaponShow generalShow;
         readonly Dictionary<int, float> lastMelee = new Dictionary<int, float>();
         readonly Dictionary<int, float> lastArrow = new Dictionary<int, float>();
         readonly List<Arrow> arrows = new List<Arrow>(ArrowPoolMax);
@@ -42,14 +45,21 @@ namespace Samkuk.Field
         public BurstFx Burst => burst;
         public int ActiveArrows => arrows.Count;
         public int HitCount { get; private set; }
+        /// <summary>장수 부대 무기 연출 (장수 무기가 없으면 null).</summary>
+        public FieldWeaponShow GeneralShow => generalShow;
+        /// <summary>장수 무기 연출이 시작한 타격 수 (테스트용).</summary>
+        public int GeneralStrikeCount { get; private set; }
 
         /// <summary>부대 그림에 번쩍임을 주려고 뷰를 찾는 함수 (컨트롤러가 넣는다).</summary>
         public System.Func<FieldUnit, FieldUnitView> ViewOf { get; set; }
 
-        public void Bind(FieldBattleModel m)
+        public void Bind(FieldBattleModel m, WeaponData generalWeapon = null)
         {
             Unbind();
             model = m;
+            generalShow?.Destroy();
+            generalShow = generalWeapon != null ? new FieldWeaponShow(transform, generalWeapon) : null;
+            GeneralStrikeCount = 0;
             if (burst == null)
             {
                 var go = new GameObject("Burst");
@@ -71,6 +81,7 @@ namespace Samkuk.Field
 
         public void Unbind()
         {
+            generalShow?.Hide();
             if (model == null) return;
             model.Hit -= OnHit;
             model.UnitRouted -= OnRouted;
@@ -85,6 +96,12 @@ namespace Samkuk.Field
         public void Tick(float dt)
         {
             clock += dt;
+            var general = model?.PlayerGeneral;
+            if (generalShow != null && general != null)
+            {
+                if (general.Alive) generalShow.Tick(dt, PositionOf(general));
+                else generalShow.Hide();
+            }
             for (int i = arrows.Count - 1; i >= 0; i--)
             {
                 var a = arrows[i];
@@ -128,6 +145,15 @@ namespace Samkuk.Field
                 AudioManager.Play(SfxId.Explosion, 0.8f);
                 view?.Flash(1f);
                 lastMelee[victim.Id] = clock;
+                return;
+            }
+            if (generalShow != null && attacker == model.PlayerGeneral)
+            {
+                // 장수 부대: 불꽃·타격음 대신 무기를 휘두른다 (동작 중이면 거절 = 간격). 맞는 쪽 번쩍임은 그대로
+                if (!generalShow.Strike(PositionOf(attacker), PositionOf(victim))) return;
+                GeneralStrikeCount++;
+                lastMelee[victim.Id] = clock;
+                view?.Flash(0.6f);
                 return;
             }
             if (lastMelee.TryGetValue(victim.Id, out float lm) && clock - lm < MeleeInterval) return;

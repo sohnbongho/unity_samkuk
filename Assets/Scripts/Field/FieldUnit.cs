@@ -15,6 +15,9 @@ namespace Samkuk.Field
 
         public float Soldiers { get; internal set; }
         public int MaxSoldiers { get; internal set; }
+        /// <summary>장수 개성: 주는 피해 배율·이동 속도 배율 (보통 부대는 1).</summary>
+        public float DamageMul { get; internal set; } = 1f;
+        public float SpeedMul { get; internal set; } = 1f;
 
         /// <summary>서 있는 칸 (이동 중이면 출발 칸).</summary>
         public int Col { get; internal set; }

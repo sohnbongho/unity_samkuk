@@ -246,6 +246,62 @@ namespace Samkuk.Tests
             Assert.AreEqual(300f - 28f * 1.3f * 0.6f, foe.Soldiers, 0.01f, "기병 28 x 장수 1.3 x 궁병 상대 0.6");
         }
 
+        // ───────────────────────── 장수 개성 (15-7) ─────────────────────────
+
+        [Test]
+        public void GeneralMultipliers_ScaleSoldiers_OnlyForThePlayerGeneral()
+        {
+            var s = Quiet();
+            s.playerGeneralSoldierMul = 1.3f; s.playerGeneralDamageMul = 2f; s.playerGeneralSpeedMul = 1.5f;
+            var m = new FieldBattleModel(s);
+            Assert.AreEqual(390, m.PlayerGeneral.MaxSoldiers);
+            Assert.AreEqual(390f, m.PlayerGeneral.Soldiers, 0.01f);
+            Assert.AreEqual(2f, m.PlayerGeneral.DamageMul);
+            Assert.AreEqual(1.5f, m.PlayerGeneral.SpeedMul);
+            Assert.AreEqual(300, m.EnemyGeneral.MaxSoldiers, "적 장수 부대는 그대로");
+            Assert.AreEqual(1f, m.EnemyGeneral.DamageMul);
+            foreach (var u in m.Units)
+                if (!u.IsGeneral) { Assert.AreEqual(300, u.MaxSoldiers, u.Name); Assert.AreEqual(1f, u.DamageMul); Assert.AreEqual(1f, u.SpeedMul); }
+        }
+
+        [Test]
+        public void GeneralDamageMul_DoublesDamage_IncludingCharge()
+        {
+            float Loss(float mul, bool charge)
+            {
+                var s = Quiet(); s.playerGeneralDamageMul = mul;
+                var m = FieldBattleModel.CreateEmpty(s);
+                var gen = m.AddUnit(FieldSide.Player, UnitClass.Cavalry, true, charge ? 2 : 3, 4, 100000);
+                var foe = m.AddUnit(FieldSide.Enemy, UnitClass.Infantry, false, 4, 4, 100000);
+                if (charge) m.SetOrder(gen.Id, UnitOrder.Advance);
+                Run(m, charge ? 3f : 1f);
+                return 100000f - foe.Soldiers;
+            }
+            // 틱 수가 1 어긋날 수 있어(부동소수) 비율로 본다
+            Assert.AreEqual(2f, Loss(2f, false) / Loss(1f, false), 0.02f, "서 있는 타격 2배");
+            Assert.AreEqual(2f, Loss(2f, true) / Loss(1f, true), 0.02f, "돌격 포함 2배");
+        }
+
+        [Test]
+        public void GeneralSpeedMul_MovesFaster()
+        {
+            int TicksToLeaveCell(float mul)
+            {
+                var s = Quiet(); s.playerGeneralSpeedMul = mul;
+                var m = FieldBattleModel.CreateEmpty(s);
+                var gen = m.AddUnit(FieldSide.Player, UnitClass.Cavalry, true, 1, 4, 300);
+                m.AddUnit(FieldSide.Enemy, UnitClass.Infantry, false, 10, 4, 300);
+                m.SetOrder(gen.Id, UnitOrder.Advance);
+                m.Resume();
+                int ticks = 0;
+                while (gen.Col == 1 && ticks < 200) { m.Tick(0.05f); ticks++; }
+                return ticks;
+            }
+            int normal = TicksToLeaveCell(1f), fast = TicksToLeaveCell(2f);
+            Assert.Less(fast, normal, "2배면 더 빨리 다음 칸에 닿는다");
+            Assert.AreEqual(normal, fast * 2, 1, "대략 절반");
+        }
+
         [Test]
         public void Charge_AppliesOnceAfterMoving_NotWhenStanding()
         {

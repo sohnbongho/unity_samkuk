@@ -12,7 +12,7 @@
 
 ## 진행 상황
 
-마지막 갱신: 2026-11-01 (Step 15-6 야전 키보드 조작·양옆 부대 목록 완료(Play 확인). 야전 후속은 체감 피드백 대기. Step 10-9b 무기 그림 앞뒤·쉬는 자세는 Play 미확인 커밋 — `docs/FIELD_BATTLE.md`. 이전: Step 10-9 후속 조조 연속 베기·여포 극 완료, 무기 휘두르기(베기) 완료, Step 8-5 장수별 무기 목록 완료. Step 14 HD-2D 전환 진행 중: 14-1 조명 완료, 14-2 후처리 완료, 14-3 도트 규격 완료, 14-4 월드 정렬·그림자 완료, 14-5 틸트 시프트 완료, 후속 14-6 겹친 소품 반투명 완료. 나머지 후속은 `docs/HD2D.md` 후속 목록. 계획/결정은 `docs/HD2D.md`, 용어 `CONTEXT.md`, ADR `docs/adr/`)
+마지막 갱신: 2026-11-01 (Step 15-7 야전 장수 개성(능력치·무기 연출) 완료(Play 확인). 야전 후속은 체감 피드백 대기. Step 10-9b 무기 그림 앞뒤·쉬는 자세는 Play 미확인 커밋 — `docs/FIELD_BATTLE.md`. 이전: Step 10-9 후속 조조 연속 베기·여포 극 완료, 무기 휘두르기(베기) 완료, Step 8-5 장수별 무기 목록 완료. Step 14 HD-2D 전환 진행 중: 14-1 조명 완료, 14-2 후처리 완료, 14-3 도트 규격 완료, 14-4 월드 정렬·그림자 완료, 14-5 틸트 시프트 완료, 후속 14-6 겹친 소품 반투명 완료. 나머지 후속은 `docs/HD2D.md` 후속 목록. 계획/결정은 `docs/HD2D.md`, 용어 `CONTEXT.md`, ADR `docs/adr/`)
 
 | Step | 내용 | 상태 | 커밋 |
 |---|---|---|---|
@@ -62,6 +62,7 @@
 | 15-4 | 야전 연출: `FieldFx`(모델 이벤트 → 불꽃 입자(`BurstFx` 재사용)·코드 화살 풀·돌격 고리·무너짐 입자·기존 효과음, 맞는/쏘는 부대마다 간격), `FieldUnitView.Flash`(붉은 번쩍임), 정지 중 고른 부대의 사거리 마름모 표시 + 화면 위 정지 배너. **수치 조정은 체감 피드백 뒤**(`FieldRules`). 테스트 `FieldBattleSceneTests` +2 | 완료 | |
 | 15-5 | 야전 수치 에셋: `FieldRulesData`(ScriptableObject, `FieldRules`/`ClassStats` 를 [Serializable] 로 — 유니티 의존 없음 유지), `Assets/ScriptableObjects/Field/FieldRules.asset`(Step 15 가 **없을 때만** 기본값으로 생성 → 사용자 조정 보존, 되돌리기 = 에셋 삭제 후 재실행), `FieldBattleController.rulesData` → 야전 시작마다 모델에 넘겨 고친 값은 다음 야전([다시])부터 적용(진행 중 야전 즉시 반영 여부는 확인 항목). 테스트 `FieldBattleSceneTests` +2 | 완료 | |
 | 15-6 | 야전 키보드 조작·양옆 부대 목록(사용자 요청: 마우스가 불편): 정지하면 첫 내 부대 자동 선택, W/S·↑/↓ 부대 바꾸기, Enter → 왼쪽 패널이 세부 명령 메뉴(전진·목표 정해 전진·대기·후퇴·같은 병과 전진/대기/후퇴·전체 전진/대기/후퇴, **장수 부대 제외**), 목표 고르기는 오른쪽 적 목록 커서(빨간 테 미리보기), ESC/Backspace 뒤로, 재개하면 메뉴 닫힘. `FieldBattleController.KeyMode/MoveSelection/OpenDetail/MoveCursor/Confirm/Back/IssueGroupOrder`, `FieldBattleUI` 양옆 패널(줄마다 바뀐 것만 다시 그림, 패널 raycast 끔). 테스트 `FieldBattleSceneTests` +5 | 완료 | |
+| 15-7 | 야전 장수 개성(사용자 요청: 장수가 보통 기병과 같음): 장수 데이터의 공격력·이동 속도·체력 보정을 내 장수 부대의 피해·이동·병사 수 배율로(`FieldHeroLink` → `FieldSetup.playerGeneral*Mul` → `FieldUnit.DamageMul/SpeedMul`, 순수 모델은 유니티 모름), 장수 시작 무기로 백병전 연출(`FieldWeaponShow`: 전투의 `SwingMotion/ThrustMotion/WeaponTrail/WaveSprites/heldSprite` 재사용, 0.6배, 검기 2.5유닛까지, 베기·연속 베기·찌르기·극), `FieldFx.Bind(model, weapon)`, 준비 화면 장수 줄·띠에 요약. 적 장수는 아직 개성 없음. 테스트 `FieldBattleModelTests` +3, `FieldBattleSceneTests` +2 | 완료 | |
 
 ## 남은 작업
 
@@ -76,7 +77,7 @@
    - **12-7 지형 이동 후속(사용자 체감 뒤)**: 맵 편집기에 막는 범위(원) 표시, 지형별 바닥 효과(산악 전체 느려짐 등), 느려지는 배율/막는 반지름 조정(`Theme_*.asset`), 막힌 적이 머뭇거리면 길 찾기 보강.
 5. **Step 14 HD-2D 스타일 전환(진행 중)**: 계획/결정은 `docs/HD2D.md`, 용어는 `CONTEXT.md`, 이유는 `docs/adr/0001`(가짜 3/4 시점), `0002`(PPU 32). 순서: 14-1 조명 → 14-2 후처리 → 14-3 픽셀 파이프라인 → 14-4 서 있는 소품·월드 정렬·드리운 그림자 → 14-5 틸트 시프트. 후속(소품 반투명, 덤불 세우기, 내정·타이틀 적용, 진짜 그림 교체)은 문서의 "후속" 목록.
 6. **Step 15 야전(남코 삼국지2식 부대 전투, 설계 완료)**: 계획은 `docs/FIELD_BATTLE.md` "작업 단계". 순서: 15-1 순수 로직 `FieldBattleModel` + 테스트 → 15-2 아이소메트릭 임시 아트(`tools/field_art`) + `IsoGrid` → 15-3 씬 `FieldBattleScene`(빌드 4번, `RegisterBuildScenes`/`SetupAll`/`BuildTool` 씬 목록에 추가) + 코드 생성 UI + 타이틀 [야전 테스트] → 15-4 체감 조정. 출진·정복 흐름 연결은 재미 확인 뒤 다시 인터뷰.
-   - **15 야전 후속(사용자 체감 뒤)**: 병과 수치·상성·돌격·속도 조정(에셋 `FieldRules.asset` 직접 수정, 기본값은 `FieldRules`), 자동 정지 조건 추가, 적 AI 보강, 진형 이름, 지형 효과, 출진·정복 흐름 연결, 장수 능력치·동행 장수, 진짜 그림(`docs/FIELD_BATTLE.md` 2단계).
+   - **15 야전 후속(사용자 체감 뒤)**: 병과 수치·상성·돌격·속도 조정(에셋 `FieldRules.asset` 직접 수정, 기본값은 `FieldRules`), 자동 정지 조건 추가, 적 AI 보강, 진형 이름, 지형 효과, 출진·정복 흐름 연결, 적장 개성(데이터·무기)·동행 장수, 진짜 그림(`docs/FIELD_BATTLE.md` 2단계).
 7. **미결정(PLAN.md 8번)**: 모바일 포함 여부, 실제 아트 에셋 사용 여부, 장수/무기 최종 목록.
 
 ## 알려진 이슈 / 메모

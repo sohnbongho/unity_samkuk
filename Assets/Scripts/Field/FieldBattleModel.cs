@@ -81,10 +81,18 @@ namespace Samkuk.Field
         public FieldUnit AddUnit(FieldSide side, UnitClass cls, bool isGeneral, int col, int row, int soldiers, string name = null, int maxSoldiers = 0)
         {
             if (!InBounds(col, row) || grid[col, row] != null) return null;
+            // 장수 개성(15-7): 내 장수 부대만 시작 조건의 배율을 받는다 (병사 수는 maxSoldiers 를 따로 주지 않았을 때만)
+            bool heroGeneral = isGeneral && side == FieldSide.Player;
+            if (heroGeneral && maxSoldiers <= 0)
+            {
+                soldiers = (int)Math.Round(soldiers * setup.playerGeneralSoldierMul);
+                if (soldiers < 1) soldiers = 1;
+            }
             var u = new FieldUnit
             {
                 Id = units.Count, Side = side, Class = isGeneral ? UnitClass.Cavalry : cls, IsGeneral = isGeneral,
                 Soldiers = soldiers, MaxSoldiers = maxSoldiers > 0 ? maxSoldiers : soldiers,
+                DamageMul = heroGeneral ? setup.playerGeneralDamageMul : 1f, SpeedMul = heroGeneral ? setup.playerGeneralSpeedMul : 1f,
                 Col = col, Row = row, Order = UnitOrder.Hold,
                 FacingDx = side == FieldSide.Player ? 1 : -1,
             };
@@ -239,6 +247,7 @@ namespace Samkuk.Field
                 }
             }
 
+            amount *= attacker.DamageMul;   // 장수 개성 (돌격도 함께)
             victim.Soldiers -= amount;
             Hit?.Invoke(attacker, victim, amount, ranged, charge);
         }
@@ -293,7 +302,7 @@ namespace Samkuk.Field
             var st = rules.Stats(u.Class);
             if (u.Moving)
             {
-                u.MoveProgress += st.moveCellsPerSec * dt;
+                u.MoveProgress += st.moveCellsPerSec * u.SpeedMul * dt;
                 if (u.MoveProgress < 1f) return;
                 // 도착: 출발 칸을 비우고 도착 칸에 선다. 기병은 돌격이 장전된다.
                 grid[u.Col, u.Row] = null;

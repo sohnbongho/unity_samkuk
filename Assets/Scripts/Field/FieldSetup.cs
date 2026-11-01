@@ -16,6 +16,8 @@ namespace Samkuk.Field
         public bool enemyAi = true;
         public string playerGeneralName = "주인공";
         public string enemyGeneralName = "적장";
+        /// <summary>장수 개성(15-7): 내 장수 부대의 피해·이동 속도·병사 수 배율. 1 이면 보통 기병과 같다. 유니티 쪽 FieldHeroLink 가 장수 데이터에서 채운다.</summary>
+        public float playerGeneralDamageMul = 1f, playerGeneralSpeedMul = 1f, playerGeneralSoldierMul = 1f;
 
         public int Count(FieldSide side, UnitClass c)
         {

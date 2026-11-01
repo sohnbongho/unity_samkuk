@@ -384,6 +384,64 @@ namespace Samkuk.Tests
             Assert.IsTrue(c.MoveSelection(+1), "진행 중에도 부대는 고를 수 있다");
         }
 
+        // ───────────────────────── 장수 개성 (15-7) ─────────────────────────
+
+        [Test]
+        public void HeroLink_MapsHeroStats_AndSummarizes()
+        {
+            var hero = ScriptableObject.CreateInstance<HeroData>();
+            hero.displayName = "관우"; hero.damageMultiplier = 1.2f; hero.moveSpeedMultiplier = 0.9f; hero.maxHpBonus = 30f;
+            var s = new FieldSetup();
+            FieldHeroLink.Apply(s, hero);
+            Assert.AreEqual(1.2f, s.playerGeneralDamageMul, 1e-4f);
+            Assert.AreEqual(0.9f, s.playerGeneralSpeedMul, 1e-4f);
+            Assert.AreEqual(1.3f, s.playerGeneralSoldierMul, 1e-4f, "체력 +30 → 병사 x1.3");
+            Assert.AreEqual("관우", s.playerGeneralName);
+            StringAssert.Contains("공격 x1.2", FieldHeroLink.Summary(hero));
+            StringAssert.Contains("무기 없음", FieldHeroLink.Summary(hero));
+
+            hero.maxHpBonus = -200f;
+            FieldHeroLink.Apply(s, hero);
+            Assert.AreEqual(FieldHeroLink.MinSoldierMul, s.playerGeneralSoldierMul, 1e-4f, "아무리 낮아도 바닥");
+            FieldHeroLink.Apply(s, null);
+            Assert.AreEqual(1f, s.playerGeneralDamageMul); Assert.AreEqual(1f, s.playerGeneralSoldierMul);
+            Object.Destroy(hero);
+        }
+
+        [Test]
+        public void GeneralWeaponShow_SwingsAndTrails_OnGeneralMeleeHit()
+        {
+            var c = Make();
+            var weapon = ScriptableObject.CreateInstance<WeaponData>();
+            weapon.type = WeaponType.Slash; weapon.displayName = "청룡언월도"; weapon.range = 2.4f; weapon.duration = 0.1f;
+            var tex = new Texture2D(4, 8, TextureFormat.RGBA32, false);
+            weapon.heldSprite = Sprite.Create(tex, new Rect(0, 0, 4, 8), new Vector2(0.5f, 0f), 32f);
+            var hero = ScriptableObject.CreateInstance<HeroData>();
+            hero.displayName = "관우"; hero.startingWeapon = weapon;
+
+            var setup = new FieldSetup { enemyAi = false, playerCounts = new[] { 0, 0, 0 }, enemyCounts = new[] { 0, 0, 0 } };
+            c.StartBattle(setup, CastleTerrain.Plain, hero);
+            Assert.AreSame(hero, c.Hero);
+            Assert.IsNotNull(c.Fx.GeneralShow, "장수 무기가 있으면 연출이 붙는다");
+            Assert.AreEqual(300, c.Model.PlayerGeneral.MaxSoldiers, "장수 데이터 기본값이면 배율 1");
+
+            c.Model.SetOrder(c.Model.PlayerGeneral.Id, UnitOrder.Advance);
+            c.TogglePause();
+            int guard = 0;
+            while (c.Fx.GeneralStrikeCount == 0 && guard++ < 600) c.Step(0.05f);
+            Assert.Greater(c.Fx.GeneralStrikeCount, 0, "장수 부대가 백병전을 하면 무기를 휘두른다");
+            var show = c.Fx.GeneralShow;
+            Assert.IsTrue(show.Active);
+            Assert.IsTrue(show.HeldRenderer.enabled, "휘두르는 동안 무기 그림이 보인다");
+            Assert.AreEqual(FieldWeaponShow.Scale, show.HeldRenderer.transform.localScale.x, 1e-4f);
+
+            bool trailSeen = false;
+            for (int i = 0; i < 10; i++) { c.Step(0.05f); if (show.TrailRenderer.enabled) trailSeen = true; }
+            Assert.IsTrue(trailSeen, "호의 중간에서 검기가 나간다");
+
+            Object.Destroy(hero); Object.Destroy(weapon); Object.Destroy(tex);
+        }
+
         [Test]
         public void PrepSetup_RandomEnemyFormation_AndHeroName()
         {

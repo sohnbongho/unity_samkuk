@@ -116,6 +116,7 @@ namespace Samkuk.Field
             playerCounts = (int[])s.playerCounts.Clone(), enemyCounts = (int[])s.enemyCounts.Clone(), soldiers = s.soldiers,
             playerFormation = s.playerFormation, enemyFormation = s.enemyFormation, playerMirror = s.playerMirror, enemyMirror = s.enemyMirror,
             enemyAi = s.enemyAi, playerGeneralName = s.playerGeneralName, enemyGeneralName = s.enemyGeneralName,
+            playerGeneralDamageMul = s.playerGeneralDamageMul, playerGeneralSpeedMul = s.playerGeneralSpeedMul, playerGeneralSoldierMul = s.playerGeneralSoldierMul,
         };
 
         void HideAll()
@@ -151,7 +152,7 @@ namespace Samkuk.Field
             layout.childControlHeight = true;
             layout.childControlWidth = true;
 
-            Row(list, "장수 (장수 부대)", () => HeroName(heroIndex), d => { heroIndex = Wrap(heroIndex + d, HeroCount()); });
+            Row(list, "장수 (장수 부대)", () => HeroName(heroIndex) + "\n" + FieldHeroLink.Summary(HeroAt(heroIndex)), d => { heroIndex = Wrap(heroIndex + d, HeroCount()); }, height: 96f);
             Row(list, "내 보병 부대", () => editing.playerCounts[0].ToString(), d => editing.playerCounts[0] = Clamp(editing.playerCounts[0] + d, 0, FieldSetup.MaxPerClass));
             Row(list, "내 궁병 부대", () => editing.playerCounts[1].ToString(), d => editing.playerCounts[1] = Clamp(editing.playerCounts[1] + d, 0, FieldSetup.MaxPerClass));
             Row(list, "내 기병 부대", () => editing.playerCounts[2].ToString(), d => editing.playerCounts[2] = Clamp(editing.playerCounts[2] + d, 0, FieldSetup.MaxPerClass));
@@ -180,6 +181,7 @@ namespace Samkuk.Field
         }
 
         int HeroCount() => heroes != null && heroes.heroes.Count > 0 ? heroes.heroes.Count : 1;
+        HeroData HeroAt(int i) => heroes != null && heroes.heroes.Count > 0 ? heroes.heroes[Wrap(i, heroes.heroes.Count)] : null;
         string HeroName(int i)
         {
             if (heroes == null || heroes.heroes.Count == 0) return "주인공";
@@ -188,10 +190,10 @@ namespace Samkuk.Field
         }
 
         /// <summary>"이름 ◀ 값 ▶" 한 줄. 값은 바뀔 때마다 다시 읽는다.</summary>
-        void Row(RectTransform parent, string label, Func<string> value, Action<int> delta)
+        void Row(RectTransform parent, string label, Func<string> value, Action<int> delta, float height = 50f)
         {
             var row = NewRect(label, parent);
-            row.gameObject.AddComponent<LayoutElement>().preferredHeight = 54f;
+            row.gameObject.AddComponent<LayoutElement>().preferredHeight = height;
             var name = NewText("Name", row, 30, TextAnchor.MiddleLeft, label);
             Anchor(name.rectTransform, new Vector2(0f, 0f), new Vector2(0.45f, 1f));
             var left = NewButton("Left", row, "◀", new Vector2(70f, 50f), 30);
@@ -199,7 +201,7 @@ namespace Samkuk.Field
             lrt.anchorMin = lrt.anchorMax = new Vector2(0.47f, 0.5f);
             lrt.pivot = new Vector2(0f, 0.5f);
             lrt.anchoredPosition = Vector2.zero;
-            var val = NewText("Value", row, 30, TextAnchor.MiddleCenter, value());
+            var val = NewText("Value", row, height > 60f ? 22 : 30, TextAnchor.MiddleCenter, value());
             Anchor(val.rectTransform, new Vector2(0.55f, 0f), new Vector2(0.86f, 1f));
             var right = NewButton("Right", row, "▶", new Vector2(70f, 50f), 30);
             var rrt = right.GetComponent<RectTransform>();
@@ -218,7 +220,7 @@ namespace Samkuk.Field
             var setup = BuildSetup();
             FieldSession.LastHeroIndex = heroIndex;
             FieldSession.EnemyFormationRandom = enemyFormationChoice == 0;
-            ctrl.StartBattle(setup, terrain);
+            ctrl.StartBattle(setup, terrain, HeroAt(heroIndex));
         }
 
         /// <summary>준비 화면 값으로 시작 조건을 만든다 (적 배치 무작위는 여기서 뽑는다).</summary>
@@ -226,6 +228,7 @@ namespace Samkuk.Field
         {
             var s = Clone(editing);
             s.playerGeneralName = HeroName(heroIndex);
+            FieldHeroLink.Apply(s, HeroAt(heroIndex));   // 장수 개성: 피해·이동·병사 수 배율
             s.enemyGeneralName = "적장";
             if (enemyFormationChoice == 0)
             {
@@ -531,7 +534,8 @@ namespace Samkuk.Field
                     lastSelectedTarget = selected.TargetId;
                     var target = model.Find(selected.TargetId);
                     string order = FieldNames.Order(selected.Order) + (target != null && selected.Order == UnitOrder.Advance ? " → " + target.Name : "");
-                    infoText.text = $"{selected.Name}  ({(selected.IsGeneral ? "장수 부대·기병" : FieldNames.Class(selected.Class))})\n병사 {lastSelectedSoldiers} / {selected.MaxSoldiers}\n명령: {order}" + (selected.Alive ? "" : "\n(무너짐)");
+                    infoText.text = $"{selected.Name}  ({(selected.IsGeneral ? "장수 부대·기병" : FieldNames.Class(selected.Class))})\n병사 {lastSelectedSoldiers} / {selected.MaxSoldiers}\n명령: {order}" + (selected.Alive ? "" : "\n(무너짐)")
+                                  + (selected.IsGeneral && ctrl.Hero != null ? "\n" + FieldHeroLink.Summary(ctrl.Hero) : "");
                 }
             }
         }

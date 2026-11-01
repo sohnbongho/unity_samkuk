@@ -50,6 +50,8 @@ namespace Samkuk.Field
         public FieldUnit Selected { get; private set; }
         public FieldBattleUI Ui { get; private set; }
         public CastleTerrain Terrain { get; private set; }
+        /// <summary>이번 야전의 장수 (없으면 개성 없음).</summary>
+        public HeroData Hero { get; private set; }
         public Camera Cam => cam;
         public IReadOnlyList<FieldUnitView> Views => views;
         public int TileCount => tiles.Count;
@@ -108,7 +110,7 @@ namespace Samkuk.Field
             if (FieldSession.StartImmediately && FieldSession.LastSetup != null)
             {
                 FieldSession.StartImmediately = false;
-                StartBattle(FieldSession.LastSetup, FieldSession.LastTerrain);
+                StartBattle(FieldSession.LastSetup, FieldSession.LastTerrain, FieldSession.LastHero);
             }
             else ShowPrep();
         }
@@ -148,13 +150,16 @@ namespace Samkuk.Field
             Ui.ShowPrep();
         }
 
-        /// <summary>준비 화면 값으로 야전을 시작한다. 모든 부대는 대기, 정지 상태에서 시작해 명령을 준 뒤 Space 로 연다.</summary>
-        public void StartBattle(FieldSetup setup, CastleTerrain terrain)
+        /// <summary>준비 화면 값으로 야전을 시작한다. 모든 부대는 대기, 정지 상태에서 시작해 명령을 준 뒤 Space 로 연다. hero 는 장수 개성(무기 연출), 없어도 된다.</summary>
+        public void StartBattle(FieldSetup setup, CastleTerrain terrain, HeroData hero = null)
         {
             ClearField();
+            if (hero != null) FieldHeroLink.Apply(setup, hero);   // 장수 개성: 어디서 불려도 능력치가 함께 간다 (출진 흐름 대비)
             FieldSession.LastSetup = setup;
             FieldSession.LastTerrain = terrain;
+            FieldSession.LastHero = hero;
             Terrain = terrain;
+            Hero = hero;
             Selected = null;
             Mode = KeyMode.List;
             finishClock = 0f;
@@ -162,7 +167,7 @@ namespace Samkuk.Field
             Model = new FieldBattleModel(setup, rulesData != null ? rulesData.rules : null);
             Model.AutoPaused += OnAutoPaused;
             Model.FinishedEvent += OnFinished;
-            fx.Bind(Model);
+            fx.Bind(Model, hero != null ? hero.startingWeapon : null);
 
             BuildTiles(terrain);
             foreach (var u in Model.Units) views.Add(CreateView(u));
@@ -630,7 +635,7 @@ namespace Samkuk.Field
         public void Restart()
         {
             if (FieldSession.LastSetup == null) { ShowPrep(); return; }
-            StartBattle(FieldSession.LastSetup, FieldSession.LastTerrain);
+            StartBattle(FieldSession.LastSetup, FieldSession.LastTerrain, FieldSession.LastHero);
         }
 
         public void BackToPrep() => ShowPrep();
