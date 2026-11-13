@@ -28,7 +28,7 @@ namespace Samkuk.Compat
             {
                 var canvas = GetComponent<UI.Canvas>();
                 Vector2 size;
-                if (canvas != null && parent == null) size = UI.CanvasScaler.ReferenceOf(gameObject);
+                if (canvas != null && (parent == null || parent.GetComponentInParent<UI.Canvas>() == null)) size = UI.CanvasScaler.ReferenceOf(gameObject);
                 else
                 {
                     var ps = ParentSize;

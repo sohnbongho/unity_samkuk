@@ -91,7 +91,8 @@ namespace Samkuk.Game
             {
                 if (!go.activeInHierarchy) continue;
                 var canvas = go.GetComponent<Canvas>();
-                if (canvas != null && canvas.enabled && go.transform.parent == null) canvases.Add(canvas);
+                // 맨 위 캔버스만 (다른 오브젝트의 자식이어도 된다. 캔버스 안의 캔버스는 바깥 것이 그린다)
+                if (canvas != null && canvas.enabled && (go.transform.parent == null || go.transform.parent.GetComponentInParent<Canvas>() == null)) canvases.Add(canvas);
             }
             canvases.Sort((a, b) => a.sortingOrder.CompareTo(b.sortingOrder));
 
@@ -125,10 +126,13 @@ namespace Samkuk.Game
             }
 
             var rect = ToScreen(rt.screenRect, scale);
+            // 자기 회전(내정 지도의 길처럼 기울인 띠): 피벗을 중심으로. 화면은 y 가 아래라 방향이 반대다
+            float turn = -rt.localEulerAngles.z * Mathf.Deg2Rad;
+            var pivot = new GVec2(rt.pivot.x, 1f - rt.pivot.y);
             foreach (var c in go.components)
             {
-                if (c is Image image) { if (image.enabled) SyncImage(image, rect, scale, alpha, interactive); }
-                else if (c is Text text) { if (text.enabled) SyncText(text, rect, scale, alpha, interactive); }
+                if (c is Image image) { if (image.enabled) { SyncImage(image, rect, scale, alpha, interactive); Turn(image, turn, pivot); } }
+                else if (c is Text text) { if (text.enabled) { SyncText(text, rect, scale, alpha, interactive); Turn(text, turn, pivot); } }
                 else if (c is InputField field) { if (field.enabled) SyncField(field, rect, scale); }
             }
             for (int i = 0; i < rt.childCount; i++)
@@ -136,6 +140,15 @@ namespace Samkuk.Game
                 var child = (RectTransform)rt.GetChild(i);
                 if (child.gameObject.activeSelf) Walk(child, scale, alpha, interactive);
             }
+        }
+
+        void Turn(Compat.Object key, float radians, GVec2 pivot)
+        {
+            if (!views.TryGetValue(key, out var view)) return;
+            var node = view.node;
+            if (radians == 0f && node.Rotation == 0f) return;
+            node.PivotOffset = new GVec2(node.Size.X * pivot.X, node.Size.Y * pivot.Y);
+            node.Rotation = radians;
         }
 
         Rect2 ToScreen(CRect r, float scale) => new Rect2(r.x * scale, screenHeight - (r.y + r.height) * scale, r.width * scale, r.height * scale);

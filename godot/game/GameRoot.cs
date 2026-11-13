@@ -16,18 +16,21 @@ namespace Samkuk.Game
     ///
     /// 명령줄(점검용, `--` 뒤): --scene=BattleScene (시작 씬), --frames=N (N 프레임 뒤 끝냄), --shot=경로.png (끝낼 때 화면 저장),
     /// --smoke (= --frames=120 + 상태 출력), --keys=d,space (그 키를 누른 채로 — 자동 점검에서 움직여 보기),
-    /// --press=40:digit1;90:enter (그 프레임에 키를 잠깐 누름 — 장수 고르기 같은 선택을 자동으로).
+    /// --press=40:digit1;90:enter (그 프레임에 키를 잠깐 누름 — 장수 고르기 같은 선택을 자동으로),
+    /// --castle=Chengdu (그 성으로 출진한 전투 맵), --click=40:640,360 (그 프레임에 화면의 그 점을 마우스로 누른다).
     /// </summary>
     public partial class GameRoot : Node
     {
         WorldMirror world;
         UiMirror ui;
+        ScreenFx screenFx;
         AudioOut audio;
         int frames, quitAfter = -1;
         string shotPath;
         string[] heldKeys = new string[0];
         readonly List<(int frame, string key)> presses = new List<(int, string)>();   // --press=40:digit1;90:enter (그 프레임에 두 프레임 동안 누름)
         readonly List<string> down = new List<string>();
+        readonly List<(int frame, Godot.Vector2 at)> clicks = new List<(int, Godot.Vector2)>();   // --click=40:640,360 (그 프레임에 그 화면 점을 누르고 다음 프레임에 뗀다)
         bool failed;
 
         public override void _Ready()
@@ -46,6 +49,8 @@ namespace Samkuk.Game
 
             world = new WorldMirror { Name = "World" };
             AddChild(world);
+            screenFx = new ScreenFx { Name = "ScreenFx" };
+            AddChild(screenFx);
             ui = new UiMirror { Name = "Ui" };
             AddChild(ui);
             audio = new AudioOut { Name = "Audio" };
@@ -67,6 +72,20 @@ namespace Samkuk.Game
                     {
                         string[] pair = item.Split(':');
                         if (pair.Length == 2 && int.TryParse(pair[0], out int at)) presses.Add((at, pair[1]));
+                    }
+                else if (arg.StartsWith("--castle="))
+                {
+                    // 그 성으로 출진한 것처럼 (성의 지형·시간대로 전투 맵이 만들어진다)
+                    var castle = CastleCatalog.Load()?.Find(arg.Substring(9));
+                    if (castle == null) GD.PushWarning("[Samkuk] 그런 성이 없습니다: " + arg.Substring(9));
+                    Samkuk.Core.GameSession.SortieCastle = castle;
+                }
+                else if (arg.StartsWith("--click="))
+                    foreach (string item in arg.Substring(8).Split(';', StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        string[] pair = item.Split(':');
+                        string[] xy = pair.Length == 2 ? pair[1].Split(',') : new string[0];
+                        if (xy.Length == 2 && int.TryParse(pair[0], out int at) && float.TryParse(xy[0], out float cx) && float.TryParse(xy[1], out float cy)) clicks.Add((at, new Godot.Vector2(cx, cy)));
                     }
                 else if (arg == "--smoke") quitAfter = 120;
             }
@@ -92,12 +111,16 @@ namespace Samkuk.Game
             try
             {
                 UpdateScreen();
+                foreach (var (at, point) in clicks)
+                    if (frames == at || frames == at + 1)
+                        Input.ParseInputEvent(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = frames == at, Position = point, GlobalPosition = point });
                 down.Clear();
                 down.AddRange(heldKeys);
                 foreach (var (at, key) in presses) if (frames == at || frames == at + 1) down.Add(key);
                 InputFeed.Poll(GetViewport(), down);
                 SceneRuntime.Tick((float)Math.Min(delta, 0.1));   // 창을 끌거나 멈췄다 돌아와도 한 번에 너무 멀리 가지 않게
                 world.Sync();
+                screenFx.Sync(world.Environment, GetViewport().GetVisibleRect().Size.Y);
                 ui.Sync(GetViewport().GetVisibleRect().Size);
             }
             catch (Exception e)

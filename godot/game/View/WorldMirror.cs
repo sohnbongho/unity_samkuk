@@ -51,7 +51,10 @@ namespace Samkuk.Game
         WorldEnvironment environment;
         int frame;
 
+        CColor standLight = CColor.white, sunLight = new CColor(0f, 0f, 0f, 0f);
+
         public Camera3D Camera => camera;
+        public Godot.Environment Environment => environment.Environment;
         public int SpriteCount { get; private set; }
 
         public override void _Ready()
@@ -120,6 +123,11 @@ namespace Samkuk.Game
 
             SyncCamera(mainCamera);
             SyncEnvironment(mainCamera);
+
+            // 다음 프레임의 서 있는 그림이 쓸 빛 색: 환경광 + 이번 프레임의 햇빛 (빛이 없는 장면은 그림 색 그대로)
+            var ambient = RenderSettings.ambientLight;
+            standLight = lights.Count > 0 ? new CColor(ambient.r + sunLight.r, ambient.g + sunLight.g, ambient.b + sunLight.b, 1f) : CColor.white;
+            sunLight = new CColor(0f, 0f, 0f, 0f);
         }
 
         // 이번 프레임에 안 보인 것: 파괴됐으면 노드를 치우고, 꺼졌으면 숨긴다
@@ -192,7 +200,11 @@ namespace Samkuk.Game
                 node.Position = new GVec3(pos.x, -pos.z + lift, -pos.y + toward);
                 float angle = t.rotation.eulerAngles.z * Mathf.Deg2Rad;
                 node.Basis = new Basis(GVec3.Back, angle).Scaled(new GVec3(scale.x, vertical, 1f));
-                node.Shaded = true;
+                // 서 있는 그림은 면의 방향과 무관하게 밝힌다(유니티 셰이더도 그랬다): 수직인 면은 위에서 오는 햇빛을 비스듬히 받아
+                // 바닥보다 어둡게 나오므로, 빛 계산을 끄고 그 자리의 빛 색(환경광 + 햇빛)을 직접 곱한다. 그림자는 드리우지만 받지는 않는다
+                node.Shaded = false;
+                var lit = sr.color * standLight;
+                node.Modulate = new GColor(lit.r, lit.g, lit.b, sr.color.a);
                 node.AlphaCut = cutout ? SpriteBase3D.AlphaCutMode.Discard : SpriteBase3D.AlphaCutMode.Disabled;
                 node.CastShadow = cutout ? GeometryInstance3D.ShadowCastingSetting.DoubleSided : GeometryInstance3D.ShadowCastingSetting.Off;
                 node.RenderPriority = cutout ? 0 : 100;
@@ -267,6 +279,7 @@ namespace Samkuk.Game
             n.ShadowEnabled = light.shadows != LightShadows.None;
             if (directional)
             {
+                sunLight = sunLight + light.color * light.intensity;
                 var dir = light.direction.sqrMagnitude > 1e-8f ? light.direction.normalized : light.transform.rotation * CVec3.forward;
                 var g = Map(dir).Normalized();
                 var up = Mathf.Abs(g.Y) > 0.99f ? GVec3.Forward : GVec3.Up;
@@ -318,7 +331,10 @@ namespace Samkuk.Game
                 arrays[(int)Godot.Mesh.ArrayType.Vertex] = verts;
                 arrays[(int)Godot.Mesh.ArrayType.TexUV] = uvs;
                 arrays[(int)Godot.Mesh.ArrayType.Color] = colors;
-                arrays[(int)Godot.Mesh.ArrayType.Index] = tris.ToArray();
+                // 좌표를 옮기며 좌우가 뒤집히므로 삼각형의 감김도 뒤집는다 (법선이 바깥·위를 향해야 햇빛을 받는다)
+                var index = tris.ToArray();
+                for (int k = 0; k + 2 < index.Length; k += 3) (index[k + 1], index[k + 2]) = (index[k + 2], index[k + 1]);
+                arrays[(int)Godot.Mesh.ArrayType.Index] = index;
                 var st = new SurfaceTool();
                 array.AddSurfaceFromArrays(Godot.Mesh.PrimitiveType.Triangles, arrays);
                 int surface = array.GetSurfaceCount() - 1;
