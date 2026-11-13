@@ -124,12 +124,17 @@ namespace Samkuk.Compat
     }
 
     /// <summary>원 충돌체의 수치 (반지름만 쓴다. 겹침 판정은 규칙 코드가 한다).</summary>
-    public class CircleCollider2D : Component
+    public class Collider2D : Component
     {
-        public float radius = 0.5f;
         public bool isTrigger;
         public bool enabled = true;
         public Vector2 offset;
+    }
+
+    /// <summary>원 충돌체의 수치 (반지름만 쓴다).</summary>
+    public class CircleCollider2D : Collider2D
+    {
+        public float radius = 0.5f;
 
         internal override void CopyStateFrom(Component source)
         {

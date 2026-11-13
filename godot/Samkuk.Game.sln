@@ -13,6 +13,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samkuk.Tests", "tests\Samkuk.Tests.csproj", "{D91A3E43-2102-4741-8C0C-4482847C9630}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "exporter", "exporter", "{699A7FC1-5C72-8EFA-8126-A71B28896BE1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samkuk.Exporter", "exporter\Samkuk.Exporter.csproj", "{209212AA-C34D-4590-BFF4-1E10D631BDAB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,6 +63,18 @@ Global
 		{D91A3E43-2102-4741-8C0C-4482847C9630}.Release|x64.Build.0 = Release|Any CPU
 		{D91A3E43-2102-4741-8C0C-4482847C9630}.Release|x86.ActiveCfg = Release|Any CPU
 		{D91A3E43-2102-4741-8C0C-4482847C9630}.Release|x86.Build.0 = Release|Any CPU
+		{209212AA-C34D-4590-BFF4-1E10D631BDAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{209212AA-C34D-4590-BFF4-1E10D631BDAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{209212AA-C34D-4590-BFF4-1E10D631BDAB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{209212AA-C34D-4590-BFF4-1E10D631BDAB}.Debug|x64.Build.0 = Debug|Any CPU
+		{209212AA-C34D-4590-BFF4-1E10D631BDAB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{209212AA-C34D-4590-BFF4-1E10D631BDAB}.Debug|x86.Build.0 = Debug|Any CPU
+		{209212AA-C34D-4590-BFF4-1E10D631BDAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{209212AA-C34D-4590-BFF4-1E10D631BDAB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{209212AA-C34D-4590-BFF4-1E10D631BDAB}.Release|x64.ActiveCfg = Release|Any CPU
+		{209212AA-C34D-4590-BFF4-1E10D631BDAB}.Release|x64.Build.0 = Release|Any CPU
+		{209212AA-C34D-4590-BFF4-1E10D631BDAB}.Release|x86.ActiveCfg = Release|Any CPU
+		{209212AA-C34D-4590-BFF4-1E10D631BDAB}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -66,5 +82,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{F675ABEC-4518-4376-90FD-C97A7BCE4EFF} = {FBF56CC3-7AE6-AD2D-3F14-7F97FD322CD6}
 		{D91A3E43-2102-4741-8C0C-4482847C9630} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{209212AA-C34D-4590-BFF4-1E10D631BDAB} = {699A7FC1-5C72-8EFA-8126-A71B28896BE1}
 	EndGlobalSection
 EndGlobal

@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using NUnit.Framework;
 using Samkuk.Compat;
 using Samkuk.Data;
@@ -86,5 +87,37 @@ namespace Samkuk.Tests
         }
 
         static string ToDisk(string resPath) => Path.Combine(AssetDatabase.GodotRoot, resPath.Substring("res://".Length));
+    }
+}
+
+namespace Samkuk.Tests
+{
+    /// <summary>서버 데이터 내보내기(Step 15-2 의 Godot 판): godot/data 에서 서버용 JSON 을 만든다.</summary>
+    public class ServerDataExporterTests
+    {
+        [Test]
+        public void Export_WritesTheTenServerFiles_WithIdsAndEnumNames()
+        {
+            Samkuk.Data.GameData.Clear();
+            AssetDatabase.EnsureLoaded();
+            string dir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "samkuk_export_" + System.Guid.NewGuid().ToString("N"));
+            try
+            {
+                var files = Samkuk.Data.ServerDataExporter.Export(dir);
+                Assert.AreEqual(10, files.Count);
+                string enemies = System.IO.File.ReadAllText(System.IO.Path.Combine(dir, "enemies.json"));
+                StringAssert.Contains("\"id\": \"Enemy_Soldier\"", enemies, "id 는 데이터 이름");
+                string weapons = System.IO.File.ReadAllText(System.IO.Path.Combine(dir, "weapons.json"));
+                StringAssert.Contains("\"type\": \"Halberd\"", weapons, "열거형은 이름 문자열");
+                string balance = System.IO.File.ReadAllText(System.IO.Path.Combine(dir, "balance.json"));
+                StringAssert.Contains("\"playerMaxHp\": 100", balance, "전투 씬·프리팹의 값을 읽는다");
+                StringAssert.Contains("\"spawnRingRadius\"", balance);
+                Assert.AreEqual(0, Samkuk.Compat.SceneRuntime.Objects.Count(o => o.name == "Player"), "값을 읽으려고 만든 오브젝트는 남기지 않는다");
+            }
+            finally
+            {
+                if (System.IO.Directory.Exists(dir)) System.IO.Directory.Delete(dir, true);
+            }
+        }
     }
 }

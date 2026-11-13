@@ -130,7 +130,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(5, cx); Assert.AreEqual(0, cy);
         }
 
-        [Ignore("확인 필요: 옮긴 코드에서 실패한다. 유니티 Test Runner 에서 통과하던 테스트인지 확인할 것 (godot/PORTING.md)")]
+        [Ignore("원본에서도 실패: 엔진과 무관한 계산이고, 유니티의 Mono 로 돌려도, 이 테스트가 쓰인 커밋의 코드로 돌려도 같은 결과다. 테스트 기대를 고칠 것 (godot/PORTING.md 보류 테스트 판정)")]
         [Test]
         public void Map_HeightAt_UsesCustomHeights_AndRampInterpolates()
         {
@@ -161,7 +161,7 @@ namespace Samkuk.Tests
             }
         }
 
-        [Ignore("확인 필요: 옮긴 코드에서 실패한다. 유니티 Test Runner 에서 통과하던 테스트인지 확인할 것 (godot/PORTING.md)")]
+        [Ignore("원본에서도 실패: 엔진과 무관한 계산이고, 유니티의 Mono 로 돌려도, 이 테스트가 쓰인 커밋의 코드로 돌려도 같은 결과다. 테스트 기대를 고칠 것 (godot/PORTING.md 보류 테스트 판정)")]
         [Test]
         public void Auto_MountainsHaveHills_PlainsHaveFew_AndRiversStayFlat()
         {
@@ -226,7 +226,7 @@ namespace Samkuk.Tests
             Assert.Greater(ramps, 0, "산악 맵에는 경사로가 생긴다");
         }
 
-        [Ignore("확인 필요: 옮긴 코드에서 실패한다. 유니티 Test Runner 에서 통과하던 테스트인지 확인할 것 (godot/PORTING.md)")]
+        [Ignore("원본에서도 실패: 엔진과 무관한 계산이고, 유니티의 Mono 로 돌려도, 이 테스트가 쓰인 커밋의 코드로 돌려도 같은 결과다. 테스트 기대를 고칠 것 (godot/PORTING.md 보류 테스트 판정)")]
         [Test]
         public void Auto_StarterHill_IsNearTheStart_WithARamp_AndOffTheRiver()
         {
@@ -296,7 +296,6 @@ namespace Samkuk.Tests
             Assert.AreEqual(6, b.WallQuads, "둘 사이 가장자리에는 벽이 없다 (3 + 3)");
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Cliffs_MakeMeshesOnlyUnderTilt_AndRebuildAChunk()
         {
@@ -325,7 +324,6 @@ namespace Samkuk.Tests
             TiltView.SetReady(false);
             Assert.IsFalse(cliffs.Visible);
         }
-#endif
 
         [Test]
         public void CliffArt_IsRepeatingPixelTexture_PerTerrain()

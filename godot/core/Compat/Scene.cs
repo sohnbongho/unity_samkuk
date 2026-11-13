@@ -465,6 +465,8 @@ namespace Samkuk.Compat
         }
 
         public static Quaternion Inverse(Quaternion q) => new Quaternion(-q.x, -q.y, -q.z, q.w);
+        public static float Dot(Quaternion a, Quaternion b) => a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+        public static float Angle(Quaternion a, Quaternion b) => Mathf.Acos(Mathf.Min(Mathf.Abs(Dot(a, b)), 1f)) * 2f * Mathf.Rad2Deg;
 
         /// <summary>forward 를 바라보고 위쪽이 up 에 가깝게 되는 회전.</summary>
         public static Quaternion LookRotation(Vector3 forward, Vector3 up)

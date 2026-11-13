@@ -32,6 +32,7 @@ Unity 프로젝트(저장소 루트의 `Assets/`)를 Godot 4.7.2 .NET 으로 옮
 | `godot/core/` | `Samkuk.Core` (net8.0) | 순수 로직 + 장면 모형. 폴더는 유니티 `Assets/Scripts/<영역>/` 과 같다 |
 | `godot/game/`, `godot/scenes/Main.tscn` | `Samkuk.Game` (Godot.NET.Sdk) | 화면 층. 씬 파일은 `Main.tscn` 하나(`GameRoot`)뿐이고 나머지는 실행 중에 비춘다 |
 | `godot/tests/` | `Samkuk.Tests` (NUnit) | 유니티 PlayMode 테스트 42개 파일 + `GameDataTests` |
+| `godot/exporter/` | `Samkuk.Exporter` (콘솔) | 서버 데이터 내보내기 (유니티 메뉴 `Samkuk > Export Server Data` 의 자리) |
 | `godot/data/` | | 데이터 JSON 132건, 씬 4개·프리팹 5개, `project.json`(레이어·씬 순서), `sprites.json`(그림 색인) |
 | `godot/sprites/` | | 그림 146장 |
 | `tools/godot_port/` | | 옮길 때 쓰는 도구 |
@@ -83,12 +84,12 @@ GODOT=/d/01-AgentLegion/tools/godot/Godot_v4.7.2-stable_mono_win64/Godot_v4.7.2-
   `GameData.Get<T>(이름)`/`All<T>()`, `Resources.Load<T>(이름)` 도 이 창고에서 찾는다. 문제는 `GameData.Problems` 에 쌓이고 `GameDataTests` 가 비어 있는지 본다.
 - **값 고치기**: 이제 `godot/data/*.json` 을 직접 고친다(변환 도구를 다시 돌리면 덮어쓴다).
 
-## 테스트 현황 (G3)
+## 테스트 현황
 
-`dotnet test`: **통과 587, 보류 25, 실패 0**. 유니티 테스트 42개 파일을 전부 옮겼다. 아직 컴파일되지 않아 `#if GAME_PORT` 로 미룬 블록이 52개 남았다
-(대부분 UI 를 직접 누르거나 에디터 전용 API 를 쓰는 테스트: Title, UiTheme, 상점, 빌드 설정).
+`dotnet test`: **통과 594, 보류 25, 실패 0**. 유니티 테스트 42개 파일을 전부 옮겼고 Godot 판에서 더한 테스트(`GameDataTests`, `ServerDataExporterTests`)가 있다.
+아직 컴파일되지 않아 `#if GAME_PORT` 로 미룬 블록이 46개 남았다(대부분 UI 를 직접 누르거나 에디터 전용 API 를 쓰는 테스트: Title, UiTheme, 상점, 빌드 설정).
 
-보류 25개는 두 종류다(`[Ignore]` 에 이유가 적혀 있다).
+보류 25개는 **전부 유니티 원본에서도 맞지 않는 테스트**다(`[Ignore]` 에 이유가 적혀 있다). 옮기면서 깨진 것은 없다.
 
 ### 원본 데이터·문구와 어긋난 테스트 (6) — 값이 정해져 있어 유니티에서도 맞지 않는다
 
@@ -99,36 +100,40 @@ GODOT=/d/01-AgentLegion/tools/godot/Godot_v4.7.2-stable_mono_win64/Godot_v4.7.2-
 | `TerrainTests.RealCatalog_HasAllTerrainsWithArt` | 바닥 타일은 Step 14-3 에서 128x128 이 됐는데 테스트는 256 을 기대한다 |
 | `StrategyTests.Ui_TargetPanel_ShowsMessage_WhenNoTargets` | 화면 문구는 "공격할 수 있는 성이 없습니다" 인데 테스트는 "공격할 수 없습니다" 를 찾는다 |
 
-### 확인 필요 (19) — 유니티 Test Runner 에서 통과하던 테스트인가
+### 보류 테스트 판정 (19) — 유니티 원본 코드와 비교한 결과: 원래 실패하던 테스트
 
-옮긴 코드에서 실패한다. 로직은 원본과 같으므로 **유니티에서도 실패하고 있었을 가능성이 높지만 확인하지 못했다**
-(Test Runner 결과 파일이 남아 있지 않다). 유니티 에디터에서 Test Runner 로 아래를 돌린 결과가 있으면
-"원래 실패하던 테스트(테스트를 고친다)" 인지 "옮기면서 달라진 것(장면 모형을 고친다)" 인지 가른다. **그때까지 보류로 둔다.**
+처음에는 "옮기면서 달라진 것인지" 알 수 없어 확인 필요로 두었던 19개다. 유니티 에디터의 Test Runner 는 명령줄로 돌리지 못했다
+(`-batchmode -runTests` 가 "Play From Title Scene" 설정 때문에 타이틀 씬에서 멈춘다. 그 설정과 Unity 원본은 건드리지 않았다). 대신 두 가지로 가렸다.
 
-명령줄로는 확인하지 못했다(2026-11-13): `Unity.exe -batchmode -runTests -testPlatform PlayMode` 는 Play 에 들어가면서 테스트 씬이 아니라
-`TitleScene` 을 열고 멈춘다 — 에디터를 열 때마다 켜지는 "Play From Title Scene"(`Step9TitleSetup.EnsurePlayFromTitle`, `playModeStartScene`)이
-테스트 러너의 시작 씬을 덮어쓰기 때문이다. 그 실행이 남긴 것(`ProjectSettings.asset` 한 줄, `Assets/InitTestScene*.unity`)은 되돌렸다.
-그 설정을 끄면 돌릴 수 있지만 Unity 원본과 사용자 에디터 설정은 건드리지 않기로 해 하지 않았다.
+1. **유니티의 Mono 로 실행** (`tools/godot_port/mono_check.sh`): 옮긴 로직과 테스트를 .NET Framework 용으로 빌드해 유니티에 들어 있는 `MonoBleedingEdge/bin/mono.exe` 로 돌린다.
+   유니티와 같은 런타임이라 실수 계산(Mono 는 float 연산을 배정밀도로 한다)과 `System.Random` 수열이 유니티와 같다. 결과: 612개 중 585 통과, 실패 27 = 보류 25개 전부 + 2개.
+   → 19개는 .NET 8 과 Mono 의 차이 때문에 실패하는 것이 아니다. (`System.Random` 수열은 두 런타임이 같다는 것도 따로 확인했다 — 자동 생성 맵은 유니티와 같게 나온다.)
+2. **테스트가 쓰인 커밋의 코드로 실행** (`tools/godot_port/old_snapshot.sh`): 그 테스트가 마지막으로 고쳐진 커밋의 스크립트를 지금의 장면 모형 위에 올려 같은 테스트를 돌린다.
+   결과: 19개 모두 그때 코드로도 실패한다. → 나중의 코드 변경으로 깨진 것도 아니다. 처음부터 맞지 않았다.
 
-| 테스트 | 증상 | 추정 |
+로직 파일은 원본과 줄 단위로 같다(`diff` 0줄; `TerrainHeights.cs`, `TerrainMap.cs` 만 1~2줄 다름).
+
+| 테스트 | 판정 | 근거 |
 |---|---|---|
-| `TerrainHeightTests.Map_HeightAt_UsesCustomHeights_AndRampInterpolates` | 기대 1 ± 0.001, 실제 0.995 | y = 5.99 는 셀의 99.5% 지점이라 계산상 0.995 가 맞다. 테스트 허용 오차 |
-| `CoopBattleTests.CoopBattleModel_Expire_HidesUnseenEnemies_KeepsFloorGems` | 1.3초에 적 2 가 이미 숨겨짐 | 코드는 "마지막으로 본 때"(0초)부터 0.5초, 테스트는 "빠진 스냅샷"(1초)부터 0.5초를 기대 |
-| `NetLoginTests.LoginFlow_HappyPath_LoginServer_ThenGameServer_ThenKeepAlive` | 2.9초 틱 뒤 연결 유지가 이미 1번 | 접속 완료가 된 틱의 0.1초가 더해져 딱 3.0 이 됨 |
-| `TiltViewTests.Preset_Up_IsPerpendicularToForward_AndRisesFromGround` | (0, -0.00000004, 1) ≠ (0, 0, 1) | cos(90°) 가 실수 계산에서 정확히 0 이 아님. 정확 비교 |
-| `TerrainCollisionTests.Resolve_RemovesInwardComponent_KeepsTangent` | (-3, 2) 와 아주 조금 다름 | 정확 비교 (경계에 딱 붙은 위치) |
-| `TerrainCollisionTests.Resolve_HeadOn_PlayerStops_EnemyDeflects` | 접선 방향이 반대 | 미확인 |
-| `WeaponSwingTests.Slash_HeldSprite_ShowsWhileSwinging_AndHidesAfter`, `Thrust_HeldSpear_MovesForwardAlongTheThrust_ThenHides`, `Halberd_HeldSprite_LungesWhenThrusting_AndTurnsWhenSweeping`, `Halberd_AlternatesThrustAndSweep` | 한 프레임 뒤 무기 그림이 아직 안 보임 | 코드는 한 Update 안에서 "그림 갱신 → 휘두르기 시작" 순서라 그림은 다음 프레임에 켜진다. 테스트는 한 프레임 뒤를 본다. **프레임 세는 방식이 유니티와 다를 가능성도 있다** |
-| `WeaponExpansionTests.Thrust_KnocksEnemiesAway` | 0.5초 뒤 넉백 속도 0.38 (기대 0.2 이하) | 찌르기가 들어간 뒤 감쇠 시간이 0.4초쯤이라 계산상 0.33 안팎 |
-| `WaterRippleTests.Wader_InWater_MakesRipplesAndOneSplash_ThenStopsOnLand` | 물결 수 1 (기대 2 이상) | 미확인 (프레임 수에 따른 결과) |
-| `BalanceTests.Evolution_IsReachableWithinOneStage_ForFocusedPlay_ButNotGuaranteed` | 집중 육성 진화 도달 49% (기대 55% 이상) | 실제 카탈로그로 도는 확률 시험. 카탈로그가 바뀐 뒤(진화 12종) 다시 맞추지 않았을 수 있다 |
-| `Hd2dLightingTests.Spawner_NoLights_WhenLightingDisabled` | 소품 2 기대, 31 | 이웃 칸의 자동 생성 얼룩까지 센다. 미확인 |
-| `TerrainTests.Spawner_ReusedPoolObjects_ResetRotationAndScale` | 소품에 회전이 남음 | 미확인 |
-| `MapEditorTests.EraseCircle_RemovesOnlyInsideAndRespectsFilter`, `FindNearest_PrefersPropsOverPatches_AndMissesFarAway` | 먼 곳에 자동 생성 물건이 있다 | 유니티에서 비어 있었다면 **자동 생성 결과가 런타임마다 다르다는 뜻** |
-| `TerrainHeightTests.Auto_MountainsHaveHills_PlainsHaveFew_AndRiversStayFlat`, `Auto_StarterHill_IsNearTheStart_WithARamp_AndOffTheRiver` | 시드에 따른 결과가 기대와 다름 | 위와 같음 |
+| `TerrainHeightTests.Map_HeightAt_UsesCustomHeights_AndRampInterpolates` | 원래 실패 (확정) | y = 5.99 는 셀의 99.5% 지점이라 높이 0.995. 기대는 1 ± 0.001 |
+| `CoopBattleTests.CoopBattleModel_Expire_HidesUnseenEnemies_KeepsFloorGems` | 원래 실패 (확정) | 코드는 "마지막으로 본 때"(0초)부터 0.5초, 테스트는 "빠진 스냅샷"(1초)부터 0.5초를 기대 |
+| `NetLoginTests.LoginFlow_HappyPath_LoginServer_ThenGameServer_ThenKeepAlive` | 원래 실패 (확정) | 접속 완료가 된 틱의 0.1초가 더해져 2.9초 틱에서 딱 3.0 이 된다 |
+| `TiltViewTests.Preset_Up_IsPerpendicularToForward_AndRisesFromGround` | 원래 실패 (확정) | cos(90°) 가 정확히 0 이 아닌데 정확 비교한다 (Mono 1.2e-8, .NET -4.4e-8) |
+| `TerrainCollisionTests.Resolve_RemovesInwardComponent_KeepsTangent`, `Resolve_HeadOn_PlayerStops_EnemyDeflects` | 원래 실패 (확정) | 경계에 딱 붙인 위치에서의 정확 비교·방향 기대가 코드와 다르다 |
+| `MapEditorTests.EraseCircle_RemovesOnlyInsideAndRespectsFilter`, `FindNearest_PrefersPropsOverPatches_AndMissesFarAway` | 원래 실패 (확정) | "먼 곳"으로 고른 자리에 자동 생성 물건(얼룩 포함)이 있다 |
+| `TerrainHeightTests.Auto_MountainsHaveHills_PlainsHaveFew_AndRiversStayFlat`, `Auto_StarterHill_IsNearTheStart_WithARamp_AndOffTheRiver` | 원래 실패 (확정) | 시드로 정해지는 결과가 기대와 다르다 (언덕 셀 7, 기대 8 등) |
+| `BalanceTests.Evolution_IsReachableWithinOneStage_ForFocusedPlay_ButNotGuaranteed` | 원래 실패 (확정) | 실제 카탈로그로 도는 확률 시험: Mono 에서 6번 돌려 6번 모두 기준(55%) 미달 |
+| `Hd2dLightingTests.Spawner_NoLights_WhenLightingDisabled` | 원래 실패 (거의 확실) | 소품 2 를 기대하지만 이웃 칸의 자동 생성 얼룩까지 세어 31 |
+| `TerrainTests.Spawner_ReusedPoolObjects_ResetRotationAndScale` | 원래 실패 (거의 확실) | 풀에서 돌려 쓴 그림에 회전이 남는다 |
+| `WeaponSwingTests.Slash_HeldSprite_ShowsWhileSwinging_AndHidesAfter`, `Thrust_HeldSpear_MovesForwardAlongTheThrust_ThenHides`, `Halberd_HeldSprite_LungesWhenThrusting_AndTurnsWhenSweeping`, `Halberd_AlternatesThrustAndSweep` | 원래 실패 (거의 확실) | 코드는 한 Update 안에서 "그림 갱신 → 휘두르기 시작" 순서라 무기 그림·타격이 다음 프레임에 나온다. 테스트는 한 프레임 뒤를 본다 |
+| `WeaponExpansionTests.Thrust_KnocksEnemiesAway` | 원래 실패 (거의 확실) | 넉백 8 이 0.2 밑으로 줄려면 0.46초가 필요한데 찌르기가 들어간 뒤 남는 시간은 0.4초쯤 |
+| `WaterRippleTests.Wader_InWater_MakesRipplesAndOneSplash_ThenStopsOnLand` | 원래 실패 (추정) | 물결이 하나씩 차례로 생겨 "만든 수 2 이상"이 안 된다. 유니티의 실제 프레임 시간에 따라 달라질 수 있어 가장 약한 판정 |
 
-자동 생성 관련 넷이 유니티에서 통과했다면 Godot 판의 자동 생성 맵(소품·언덕 위치)이 유니티와 다르게 나온다는 뜻이다
-(시드 → `System.Random` 수열 또는 실수 반올림 차이). 맵 편집기로 고친 칸은 저장 파일 그대로다. 맞추려면 난수를 직접 구현한 것으로 바꾼다.
+"확정"은 엔진과 무관한 계산이라 유니티에서도 같은 결과가 나온다. "거의 확실"·"추정"은 게임 오브젝트의 프레임 순서를 장면 모형이 흉내 낸 결과라, 유니티 에디터에서 한 번 돌려 보면 확정된다.
+이 25개는 테스트의 기대를 코드에 맞게 고치거나(대부분) 코드를 테스트에 맞게 고칠지(Expire, 연결 유지 간격) 정해 정리해야 한다.
+
+Mono 에서만 더 실패한 2개: `TitleTests.SceneNames_MatchTheSceneAssets`(작업 폴더에 Assets 가 없어서 — 도구의 한계), `TiltViewTests.View_StandScale_IsTheSameEverywhere_UnderOrthographicTilt`
+(벡터 정확 비교가 Mono 의 배정밀도 계산에서 어긋난다 — .NET 8 에서는 통과하지만 **유니티에서는 실패할 수 있는 테스트**다).
 
 ## 내보내기 (G11)
 
@@ -161,12 +166,12 @@ tools/godot_port/build_windows.sh     # Builds/godot/Samkuk.exe + Builds/Samkuk-
 | 초상화·걷기 애니메이션 (10-5~10-7) | 테스트 | 화면 | |
 | 내정: 지도·성 화면·시작 성·출진·정복 (12-1~12-5) | 테스트 | 화면 | 출진 → 클리어 → "정복 성공" → 지도에 보유 성 반영 |
 | 전투 맵·지형 이동·물결 (12-6, 12-7) | 테스트 | 화면 | |
-| 맵 편집기 (13) | 테스트 | 화면 | 그림 고르기·마우스로 놓기 확인. 선택·이동·지우개·높이 도구·저장은 화면으로 보지 못함 |
+| 맵 편집기 (13) | 테스트 | 화면 | 그림 고르기·놓기, 선택 후 끌어 옮기기, 지우개, 높이 올리기(덮개·벽 선), 저장 → 다시 열기까지 화면으로 확인. 회전·크기·복제·실행 취소·전투 테스트는 테스트만 |
 | 조명·후처리·틸트 시프트·그림자 (14) | 테스트 | 화면 | 2D 조명·픽셀 퍼펙트 카메라·가짜 그림자는 옮기지 않음(결정) |
 | 겹친 소품 반투명 (14-6) | 테스트 | 화면 | |
 | 2.5D 틸트·언덕·절벽·흙길 (16) | 테스트 | 화면 | F10 으로 끄는 탑다운 경로는 그리지 않음(결정) |
 | 로그인·협동 방·협동 전투 (15) | 테스트 | 서버 | 1인으로 로그인 → 방 → 시작 → 서버 전투. 2인 이상은 미확인 |
-| 서버 데이터 내보내기 (15-2) | — | — | **옮기지 않음**: 유니티 에디터 메뉴였다. 서버의 `GameServer/Data/*.json` 은 유니티가 내보낸 그대로 쓰고 있다. 이제 원본이 `godot/data` 이므로 값을 바꾸면 서버용 JSON 을 다시 만드는 도구가 필요하다 |
+| 서버 데이터 내보내기 (15-2) | 테스트 | — | `dotnet run --project godot/exporter` (기본 출력 `csharpServer/GameServer/Data`, 인자로 다른 폴더). `godot/data` 에서 만든 9개 파일이 서버의 현재 파일과 글자 하나까지 같다(`export_info.json` 만 다름) |
 | Windows 빌드 (11) | — | 화면 | `tools/godot_port/build_windows.sh` |
 | 디버그 키 F1~F10 | — | 화면 | F7(도트 격자)·F10(틸트 끄기)은 값만 바뀌고 화면은 그대로 |
 

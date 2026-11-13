@@ -133,7 +133,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(1f, col.SpeedFactor(new Vector2(5f, 5f)));
         }
 
-        [Ignore("확인 필요: 옮긴 코드에서 실패한다. 유니티 Test Runner 에서 통과하던 테스트인지 확인할 것 (godot/PORTING.md)")]
+        [Ignore("원본에서도 실패: 엔진과 무관한 계산이고, 유니티의 Mono 로 돌려도, 이 테스트가 쓰인 커밋의 코드로 돌려도 같은 결과다. 테스트 기대를 고칠 것 (godot/PORTING.md 보류 테스트 판정)")]
         [Test]
         public void Resolve_RemovesInwardComponent_KeepsTangent()
         {
@@ -153,7 +153,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(new Vector2(3f, 2f), col.Resolve(new Vector2(3f, 5f), Body, new Vector2(3f, 2f), 0.02f));
         }
 
-        [Ignore("확인 필요: 옮긴 코드에서 실패한다. 유니티 Test Runner 에서 통과하던 테스트인지 확인할 것 (godot/PORTING.md)")]
+        [Ignore("원본에서도 실패: 엔진과 무관한 계산이고, 유니티의 Mono 로 돌려도, 이 테스트가 쓰인 커밋의 코드로 돌려도 같은 결과다. 테스트 기대를 고칠 것 (godot/PORTING.md 보류 테스트 판정)")]
         [Test]
         public void Resolve_HeadOn_PlayerStops_EnemyDeflects()
         {

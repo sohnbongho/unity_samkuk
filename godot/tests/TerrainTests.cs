@@ -520,7 +520,6 @@ namespace Samkuk.Tests
         }
 
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Spawner_PropsAreDecoration_BehindEverythingElse()
         {
@@ -535,7 +534,6 @@ namespace Samkuk.Tests
                 Assert.IsNull(sr.GetComponent<Collider2D>(), "충돌이 없는 장식");
             }
         }
-#endif
 
         [Test]
         public void Spawner_MovingFar_DespawnsOldChunks_AndReusesPool()
@@ -681,7 +679,7 @@ namespace Samkuk.Tests
             Assert.IsTrue(water.All(s => s.sortingOrder == TerrainMap.OrderWater));
         }
 
-        [Ignore("확인 필요: 옮긴 코드에서 실패한다. 유니티 Test Runner 에서 통과하던 테스트인지 확인할 것 (godot/PORTING.md)")]
+        [Ignore("원본에서도 실패로 판단: 이 테스트가 쓰인 커밋의 코드로도, 유니티의 Mono 로도 실패한다. 프레임 순서를 흉내 낸 장면 모형 위의 결과라 유니티 에디터에서 한 번 돌려 보면 확정된다 (godot/PORTING.md 보류 테스트 판정)")]
         [UnityTest]
         public IEnumerator Spawner_ReusedPoolObjects_ResetRotationAndScale()
         {

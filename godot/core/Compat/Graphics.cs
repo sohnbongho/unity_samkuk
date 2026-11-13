@@ -45,6 +45,19 @@ namespace Samkuk.Compat
             pixels = new Color32[width * height];
         }
 
+        static Texture2D white;
+        /// <summary>흰색 4x4 그림 (유니티 Texture2D.whiteTexture 자리).</summary>
+        public static Texture2D whiteTexture
+        {
+            get
+            {
+                if (white != null) return white;
+                white = new Texture2D(4, 4) { name = "white" };
+                for (int i = 0; i < white.pixels.Length; i++) white.pixels[i] = new Color32(255, 255, 255, 255);
+                return white;
+            }
+        }
+
         public void SetPixels32(Color32[] colors) { Array.Copy(colors, pixels, Math.Min(colors.Length, pixels.Length)); version++; }
         public void SetPixels(Color[] colors)
         {

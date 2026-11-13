@@ -52,7 +52,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(1f, Vector3.Dot(rot * Vector3.up, TiltPreset.Up(TiltPreset.Pitch)), 1e-4f, "카메라 위쪽 = 서 있는 그림의 위쪽");
         }
 
-        [Ignore("확인 필요: 옮긴 코드에서 실패한다. 유니티 Test Runner 에서 통과하던 테스트인지 확인할 것 (godot/PORTING.md)")]
+        [Ignore("원본에서도 실패: 엔진과 무관한 계산이고, 유니티의 Mono 로 돌려도, 이 테스트가 쓰인 커밋의 코드로 돌려도 같은 결과다. 테스트 기대를 고칠 것 (godot/PORTING.md 보류 테스트 판정)")]
         [Test]
         public void Preset_Up_IsPerpendicularToForward_AndRisesFromGround()
         {
@@ -282,7 +282,6 @@ namespace Samkuk.Tests
 
         // ───────────────────────── 틸트일 때 비켜 주는 것들 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void CameraFollow_Tilt_PlacesCameraBehindAndAbove_AndRestoresTopDown()
         {
@@ -307,7 +306,6 @@ namespace Samkuk.Tests
             Assert.AreEqual(new Vector3(3f, 4f, -10f), camGo.transform.position);
             Assert.AreEqual(Quaternion.identity, camGo.transform.rotation);
         }
-#endif
 
         [Test]
         public void PixelCamera_IsForcedOff_UnderTilt()
@@ -329,7 +327,6 @@ namespace Samkuk.Tests
             Assert.IsTrue(pc.IsEnabled);
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void CastShadow_IsHidden_UnderTilt()
         {
@@ -347,7 +344,6 @@ namespace Samkuk.Tests
             shadow.Sync();
             Assert.IsFalse(shadow.Renderer.enabled, "3D 빛이 진짜 그림자를 드리우므로 가짜 그림자는 숨긴다");
         }
-#endif
 
         [Test]
         public void EnemySpawnRadius_UnderTilt_IsBeyondTheGroundFootprint()

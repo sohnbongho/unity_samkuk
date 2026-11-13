@@ -28,9 +28,9 @@
 | G6 | 타이틀·메타: 화면으로 확인 — 타이틀(로그인 창, 메인, 설정 버튼, [맵 편집기]·[협동] 버튼), 영구 강화 상점(크기·색 꼬리표는 RichTextLabel), 일시정지, 결과, UI 스킨. 해상도·창 모드는 `GameRoot.ApplyDisplay`, 소리는 `AudioOut`(들어 보지는 못함), 개발용 표시(`DebugOverlay`: FPS·F 키)와 맵 테스트 안내는 `GameRoot.SyncNotes`, 시작 훅(`RuntimeInitializers`) | 완료 |
 | G7 | 지형: 규칙은 G1·G3 에서 옮겨졌고 화면으로 확인 — 소품(서 있는 것·눕힌 것), 연못, 강(부드러운 가장자리), 흙길, 언덕·절벽, 소품 횃불. 아직 화면으로 못 본 것: 물결, 겹친 소품 반투명 | 완료 (화면 일부 미확인) |
 | G8 | 내정: 화면으로 확인 — 전략 지도(성 46곳, 기울인 길), 성 선택, [이 성에서 시작], 성 화면, [출진] → 대상 선택 → 전투 → 클리어 → "정복 성공" → [내정으로] → 지도에 보유 성 반영 | 완료 |
-| G9 | 맵 편집기: 패널 배치(`UiLayout` 의 최소↔선호 줄이기), 그림 목록의 스크롤·가리기(`UiMirror` 의 ClipContents 상자), 그림 고르기 → 마우스로 놓기 확인. 선택·이동·지우개·높이 도구·저장은 테스트만 통과(화면 미확인) | 완료 (화면 일부 미확인) |
+| G9 | 맵 편집기: 패널 배치(`UiLayout` 의 최소↔선호 줄이기), 그림 목록의 스크롤·가리기(`UiMirror` 의 ClipContents 상자). 화면으로 확인: 그림 고르기·놓기, 선택 후 끌어 옮기기, 지우개, 높이 올리기, 저장 → 다시 열기 | 완료 |
 | G10 | 로그인·협동: csharpServer(LoginServer 9100, GameServer 9101)를 로컬에서 띄워 확인 — 로그인 → 게임 서버 인증 → 협동 방 입장(방장) → [시작] → 서버 시뮬레이션 전투 표시·이동(부활 남음, 타이머, 적). 2인 이상은 미확인. 점검용 `--login=아이디:비밀번호` | 완료 (1인) |
-| G11 | Windows 내보내기: `tools/godot_port/build_windows.sh` → `Builds/godot/Samkuk.exe` + `Builds/Samkuk-godot-win64.zip`(템플릿은 `tools/godot/templates`, SHA512 확인, `godot/export_presets.cfg`). 내보낸 실행 파일로 전투 확인. 유니티와 기능 대조표는 `godot/PORTING.md`. **옮기지 않은 것**: 서버 데이터 내보내기 메뉴(15-2) | 완료 |
+| G11 | Windows 내보내기: `tools/godot_port/build_windows.sh` → `Builds/godot/Samkuk.exe` + `Builds/Samkuk-godot-win64.zip`(템플릿은 `tools/godot/templates`, SHA512 확인, `godot/export_presets.cfg`). 내보낸 실행 파일로 전투 확인. 유니티와 기능 대조표는 `godot/PORTING.md`. **서버 데이터 내보내기(15-2)**: `dotnet run --project godot/exporter` (`ServerDataExporter` 를 순수 로직으로 옮김, 출력이 유니티 판과 같음을 확인) | 완료 |
 
 ### Godot 전환 작업 규칙
 
@@ -46,7 +46,7 @@
 
 ### Godot 전환 알려진 이슈
 
-- **보류 테스트 25개**(확인 필요 19 + 원본 데이터·문구와 어긋남 6): 옮긴 코드에서 실패해 `[Ignore]` 로 두었다. 유니티에서도 실패하던 테스트인지, 옮기면서 달라진 것인지 가르지 못했다(유니티 Test Runner 결과가 필요). 그중 4개는 자동 생성 맵이 유니티와 다르게 나온다는 신호일 수 있다. 목록·추정은 `godot/PORTING.md` "확인 필요".
+- **보류 테스트 25개는 전부 유니티 원본에서도 맞지 않는 테스트**다(`[Ignore]`). 6개는 원본 데이터·문구와 어긋나고, 19개는 유니티의 Mono 로 돌려도·테스트가 쓰인 커밋의 코드로 돌려도 실패한다(`tools/godot_port/mono_check.sh`, `old_snapshot.sh`). 판정과 근거는 `godot/PORTING.md` "보류 테스트 판정". 테스트 기대를 고칠지 코드를 고칠지 정해 정리하는 일이 남았다. 현재 `dotnet test`: 통과 594, 보류 25, 실패 0, 미룬 블록 46.
 - `.gitignore` 의 Unity 규칙(`*.csproj`, `*.sln`)에 `godot/` 예외를 두었다. `godot/.godot/`, `bin/`, `obj/` 는 제외.
 - .NET 10 SDK 의 `dotnet new sln` 은 `.slnx` 를 만든다. Godot 은 `Samkuk.Game.sln` 을 찾으므로 `--format sln` 으로 만든다.
 

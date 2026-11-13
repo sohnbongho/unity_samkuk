@@ -18,7 +18,9 @@ namespace Samkuk.Game
     /// --smoke (= --frames=120 + 상태 출력), --keys=d,space (그 키를 누른 채로 — 자동 점검에서 움직여 보기),
     /// --press=40:digit1;90:enter (그 프레임에 키를 잠깐 누름 — 장수 고르기 같은 선택을 자동으로),
     /// --castle=Chengdu (그 성으로 출진한 전투 맵), --click=40:640,360 (그 프레임에 화면의 그 점을 마우스로 누른다),
-    /// --save=경로 (저장 파일을 그 경로로 — 자동 점검은 이것을 써서 실제 저장을 건드리지 않는다).
+    /// --save=경로 (저장 파일을 그 경로로 — 자동 점검은 이것을 써서 실제 저장을 건드리지 않는다), --maps=폴더 (맵 편집기 저장 폴더),
+    /// --hold=s:100-160 (그 프레임 구간 동안 키를 누름), --drag=60:500,300>600,340:30 (마우스를 누른 채 끌기),
+    /// --login=아이디:비밀번호 (로그인 창을 채우고 누름), --shot-when=evolve (레벨업에 진화가 나오면 화면 저장).
     /// </summary>
     public partial class GameRoot : Node
     {
@@ -27,6 +29,7 @@ namespace Samkuk.Game
         ScreenFx screenFx;
         Label notes;
         string[] autoLogin;
+        readonly List<(int frame, Godot.Vector2 from, Godot.Vector2 to, int length)> drags = new List<(int, Godot.Vector2, Godot.Vector2, int)>();   // --drag=60:500,300>600,340:30
         bool waitEvolve, frozen;   // --shot-when=evolve: 레벨업 선택지에 진화가 나오면 입력을 멈추고 곧 화면을 저장한다
         AudioOut audio;
         int frames, quitAfter = -1;
@@ -98,6 +101,17 @@ namespace Samkuk.Game
                         string[] pair = item.Split(':');
                         string[] range = pair.Length == 2 ? pair[1].Split('-') : new string[0];
                         if (range.Length == 2 && int.TryParse(range[0], out int from) && int.TryParse(range[1], out int to)) holds.Add((pair[0], from, to));
+                    }
+                else if (arg.StartsWith("--maps=")) Samkuk.World.MapStore.PathOverride = arg.Substring(7);   // 맵 편집기 저장 폴더 (점검이 실제 맵 파일을 건드리지 않게)
+                else if (arg.StartsWith("--drag="))
+                    foreach (string item in arg.Substring(7).Split(';', StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        // 프레임:x1,y1>x2,y2:걸리는 프레임
+                        string[] part = item.Split(':');
+                        string[] ends = part.Length == 3 ? part[1].Split('>') : new string[0];
+                        if (ends.Length != 2) continue;
+                        string[] a = ends[0].Split(','), b = ends[1].Split(',');
+                        drags.Add((int.Parse(part[0]), new Godot.Vector2(float.Parse(a[0]), float.Parse(a[1])), new Godot.Vector2(float.Parse(b[0]), float.Parse(b[1])), int.Parse(part[2])));
                     }
                 else if (arg == "--shot-when=evolve") waitEvolve = true;
                 else if (arg.StartsWith("--login=")) autoLogin = arg.Substring(8).Split(':');   // --login=아이디:비밀번호 (20번째 프레임에 로그인)
@@ -196,6 +210,14 @@ namespace Samkuk.Game
                         // 규칙 코드가 직접 읽는 마우스(맵 편집기)에도 같은 눌림을 넣는다
                         InputFeed.OverrideMouse = point;
                         InputFeed.OverrideLeft = frames == at;
+                    }
+                foreach (var (at, from, to, length) in drags)
+                    if (frames >= at && frames <= at + length + 1)
+                    {
+                        // 누른 채 끌기: 마지막 프레임에 뗀다
+                        float t = Mathf.Clamp01((frames - at) / (float)Math.Max(1, length));
+                        InputFeed.OverrideMouse = from + (to - from) * t;
+                        InputFeed.OverrideLeft = frames <= at + length;
                     }
                 foreach (var (at, point) in clicks)
                     if (frames == at || frames == at + 1)
