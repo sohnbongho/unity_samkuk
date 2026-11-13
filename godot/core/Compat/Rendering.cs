@@ -219,12 +219,32 @@ namespace Samkuk.Compat
     }
 
     public enum RuntimeInitializeLoadType { AfterSceneLoad, BeforeSceneLoad, AfterAssembliesLoaded, BeforeSplashScreen, SubsystemRegistration }
-    /// <summary>유니티에서 실행 시작 때 정적 상태를 지우던 표시. 여기서는 프로세스가 새로 뜨므로 아무 일도 하지 않는다.</summary>
+    /// <summary>게임이 시작할 때 한 번 불리는 정적 메서드 표시 (씬 로드 알림에 자기를 걸어 두는 데 쓴다: 협동 드라이버, 타이틀의 추가 버튼).</summary>
     [AttributeUsage(AttributeTargets.Method)]
     public sealed class RuntimeInitializeOnLoadMethodAttribute : Attribute
     {
-        public RuntimeInitializeOnLoadMethodAttribute() { }
-        public RuntimeInitializeOnLoadMethodAttribute(RuntimeInitializeLoadType type) { }
+        public readonly RuntimeInitializeLoadType loadType;
+        public RuntimeInitializeOnLoadMethodAttribute() { loadType = RuntimeInitializeLoadType.AfterSceneLoad; }
+        public RuntimeInitializeOnLoadMethodAttribute(RuntimeInitializeLoadType type) { loadType = type; }
+    }
+
+    /// <summary>
+    /// 시작 표시가 붙은 정적 메서드를 부른다. 게임이 첫 씬을 읽기 전에 <c>Run(false)</c>, 읽은 뒤에 <c>Run(true)</c> 를 한 번씩 부른다
+    /// (유니티가 실행 시작 때 하던 일). 테스트는 부르지 않는다 — 필요한 연결은 테스트가 직접 한다.
+    /// </summary>
+    public static class RuntimeInitializers
+    {
+        public static void Run(bool afterSceneLoad)
+        {
+            const System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.DeclaredOnly;
+            foreach (var type in typeof(RuntimeInitializers).Assembly.GetTypes())
+                foreach (var method in type.GetMethods(flags))
+                {
+                    var attr = (RuntimeInitializeOnLoadMethodAttribute)Attribute.GetCustomAttribute(method, typeof(RuntimeInitializeOnLoadMethodAttribute));
+                    if (attr == null || method.GetParameters().Length != 0) continue;
+                    if ((attr.loadType == RuntimeInitializeLoadType.AfterSceneLoad) == afterSceneLoad) method.Invoke(null, null);
+                }
+        }
     }
 
     public enum LoadSceneMode { Single, Additive }

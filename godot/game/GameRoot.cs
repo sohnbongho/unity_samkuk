@@ -26,6 +26,7 @@ namespace Samkuk.Game
         UiMirror ui;
         ScreenFx screenFx;
         Label notes;
+        string[] autoLogin;
         bool waitEvolve, frozen;   // --shot-when=evolve: 레벨업 선택지에 진화가 나오면 입력을 멈추고 곧 화면을 저장한다
         AudioOut audio;
         int frames, quitAfter = -1;
@@ -99,6 +100,7 @@ namespace Samkuk.Game
                         if (range.Length == 2 && int.TryParse(range[0], out int from) && int.TryParse(range[1], out int to)) holds.Add((pair[0], from, to));
                     }
                 else if (arg == "--shot-when=evolve") waitEvolve = true;
+                else if (arg.StartsWith("--login=")) autoLogin = arg.Substring(8).Split(':');   // --login=아이디:비밀번호 (20번째 프레임에 로그인)
                 else if (arg.StartsWith("--save=")) Samkuk.Meta.SaveSystem.PathOverride = arg.Substring(7);   // 점검이 실제 저장을 건드리지 않게
                 else if (arg == "--smoke") quitAfter = 120;
             }
@@ -108,7 +110,9 @@ namespace Samkuk.Game
             Compat.Screen.currentResolution = new Compat.Screen.Resolution { width = DisplayServer.ScreenGetSize().X, height = DisplayServer.ScreenGetSize().Y };
 
             UpdateScreen();
+            RuntimeInitializers.Run(false);
             SceneManager.LoadScene(scene);
+            RuntimeInitializers.Run(true);
             foreach (string problem in SceneFile.Problems) GD.PushWarning("[Samkuk] 씬: " + problem);
             GD.Print($"[Samkuk] 시작: 씬 {scene}, 데이터 {GameData.Count}건, 오브젝트 {SceneRuntime.Objects.Count}");
         }
@@ -170,6 +174,21 @@ namespace Samkuk.Game
             try
             {
                 UpdateScreen();
+                if (autoLogin != null && autoLogin.Length == 2 && frames == 20)
+                {
+                    // 사람이 하듯: 로그인 창의 두 칸을 채우고 [로그인] 을 누른다
+                    var panel = Compat.Object.FindAnyObjectByType<Samkuk.UI.LoginPanel>();
+                    var fields = panel != null ? panel.GetComponentsInChildren<Compat.UI.InputField>() : null;
+                    var buttons = panel != null ? panel.GetComponentsInChildren<Compat.UI.Button>() : null;
+                    if (fields != null && fields.Length >= 2 && buttons.Length >= 1)
+                    {
+                        fields[0].text = autoLogin[0];
+                        fields[1].text = autoLogin[1];
+                        buttons[0].Press();
+                    }
+                    else Samkuk.Net.NetClient.GetOrCreate().Login(autoLogin[0], autoLogin[1]);
+                    autoLogin = null;
+                }
                 InputFeed.OverrideMouse = null;
                 foreach (var (at, point) in clicks)
                     if (frames == at || frames == at + 1)
@@ -215,6 +234,8 @@ namespace Samkuk.Game
         void Finish()
         {
             quitAfter = -1;
+            var net = Samkuk.Net.NetClient.Instance;
+            if (net != null) GD.Print($"[Samkuk] 네트워크: {net.Phase} {net.Message}");
             GD.Print($"[Samkuk] {frames} 프레임: 씬 {SceneManager.GetActiveScene().name}, 오브젝트 {SceneRuntime.Objects.Count}, 보이는 그림 {world.SpriteCount}, 시간 {Compat.Time.time:0.00}초, FPS {Engine.GetFramesPerSecond():0}");
             if (!string.IsNullOrEmpty(shotPath))
             {
