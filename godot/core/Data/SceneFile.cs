@@ -17,10 +17,10 @@ namespace Samkuk.Data
         /// <summary>읽다가 생긴 문제 (모르는 컴포넌트, 없는 참조). 옮기지 않기로 한 것은 <see cref="Ignored"/> 로 걸러진다.</summary>
         public static readonly List<string> Problems = new List<string>();
 
-        /// <summary>일부러 만들지 않는 컴포넌트: 에디터 전용 입력 설정, 디버그 표시(화면 층이 따로 그린다).</summary>
+        /// <summary>일부러 만들지 않는 컴포넌트: 에디터 전용 입력 설정.</summary>
         static readonly HashSet<string> Ignored = new HashSet<string>
         {
-            "", "UnityEngine.InputSystem.InputActionReference", "UnityEngine.InputSystem.InputActionAsset", "Samkuk.Core.DebugOverlay", "CanvasRenderer",
+            "", "UnityEngine.InputSystem.InputActionReference", "UnityEngine.InputSystem.InputActionAsset", "CanvasRenderer",
         };
 
         static readonly Dictionary<string, Type> typeCache = new Dictionary<string, Type>();

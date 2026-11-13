@@ -13,21 +13,30 @@ uniform float vignette_intensity = 0.0;
 uniform float vignette_smoothness = 0.45;
 uniform vec3 balance = vec3(1.0);    // 색온도·기울기를 RGB 배율로
 
-const vec2 TAPS[12] = vec2[12](
-	vec2(1.0, 0.0), vec2(0.5, 0.866), vec2(-0.5, 0.866), vec2(-1.0, 0.0), vec2(-0.5, -0.866), vec2(0.5, -0.866),
-	vec2(0.433, 0.25), vec2(0.0, 0.5), vec2(-0.433, 0.25), vec2(-0.433, -0.25), vec2(0.0, -0.5), vec2(0.433, -0.25));
-
 void fragment() {
 	vec2 uv = SCREEN_UV;
 	// 화면 좌표는 위가 0 이므로 초점 높이를 뒤집는다
-	float d = abs(uv.y - (1.0 - tilt_focus));
-	float t = clamp((d - tilt_band) / max(0.0001, 0.5 - tilt_band), 0.0, 1.0);
+	float d = abs(uv.y - (1.0 - tilt_focus)) - tilt_band;
+	float t = clamp(d / max(0.001, 0.5 - tilt_band), 0.0, 1.0);
 	float radius = tilt_radius * tilt_amount * t * t;   // 띠 밖으로 갈수록 2차 곡선으로 흐려진다
 	vec3 col = texture(screen_tex, uv).rgb;
-	if (radius > 0.25) {
+	if (radius >= 0.5) {
+		// 유니티 판과 같은 13탭: 가운데 x2, 안쪽 고리 4탭(반지름 절반), 바깥 고리 8탭
 		vec2 px = SCREEN_PIXEL_SIZE * radius;
-		for (int i = 0; i < 12; i++) col += texture(screen_tex, uv + TAPS[i] * px).rgb;
-		col /= 13.0;
+		vec3 sum = col * 2.0;
+		sum += texture(screen_tex, uv + vec2(0.5, 0.0) * px).rgb;
+		sum += texture(screen_tex, uv + vec2(-0.5, 0.0) * px).rgb;
+		sum += texture(screen_tex, uv + vec2(0.0, 0.5) * px).rgb;
+		sum += texture(screen_tex, uv + vec2(0.0, -0.5) * px).rgb;
+		sum += texture(screen_tex, uv + vec2(1.0, 0.0) * px).rgb;
+		sum += texture(screen_tex, uv + vec2(-1.0, 0.0) * px).rgb;
+		sum += texture(screen_tex, uv + vec2(0.0, 1.0) * px).rgb;
+		sum += texture(screen_tex, uv + vec2(0.0, -1.0) * px).rgb;
+		sum += texture(screen_tex, uv + vec2(0.707, 0.707) * px).rgb;
+		sum += texture(screen_tex, uv + vec2(-0.707, 0.707) * px).rgb;
+		sum += texture(screen_tex, uv + vec2(0.707, -0.707) * px).rgb;
+		sum += texture(screen_tex, uv + vec2(-0.707, -0.707) * px).rgb;
+		col = sum / 14.0;
 	}
 	col *= balance;
 	if (vignette_intensity > 0.0) {
