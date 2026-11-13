@@ -453,7 +453,7 @@ namespace Samkuk.Tests
 
         // ───────────────────────── 실제 에셋 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
+        [Ignore("원본 데이터와 테스트가 어긋난다: 장팔사모는 찌르기로 바뀌었지만 진화형 비룡사모는 화살형 그대로다 (Step 10-9 결정). 테스트 기대를 고칠지 정할 것 (godot/PORTING.md)")]
         [Test]
         public void CatalogAsset_HasWellFormedEvolutions()
         {
@@ -502,6 +502,5 @@ namespace Samkuk.Tests
                 Assert.AreNotEqual(b.displayName, e.displayName);
             }
         }
-#endif
     }
 }

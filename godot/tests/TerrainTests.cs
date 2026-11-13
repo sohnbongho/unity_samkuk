@@ -791,7 +791,7 @@ namespace Samkuk.Tests
 
         // ───────────────────────── 실제 에셋 (Step 12-6 셋업 뒤) ─────────────────────────
 
-        [Ignore("G2: 데이터 변환(.asset -> Godot 데이터) 뒤에 되살린다")]
+        [Ignore("원본 데이터와 테스트가 어긋난다: 바닥 타일은 Step 14-3 에서 128x128 이 됐는데 테스트는 256 을 기대한다. 테스트 기대를 고칠지 정할 것 (godot/PORTING.md)")]
         [Test]
         public void RealCatalog_HasAllTerrainsWithArt()
         {
@@ -825,12 +825,11 @@ namespace Samkuk.Tests
             Assert.IsNotNull(catalog.banner.sprite, "깃발 그림");
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void RealCatalog_EveryCastleGetsAMap()
         {
             var catalog = Resources.Load<TerrainThemeCatalog>(TerrainThemeCatalog.ResourceName);
-            var castles = UnityEditor.AssetDatabase.LoadAssetAtPath<CastleCatalog>("Assets/ScriptableObjects/CastleCatalog.asset");
+            var castles = AssetDatabase.LoadAssetAtPath<CastleCatalog>("Assets/ScriptableObjects/CastleCatalog.asset");
             Assert.IsNotNull(catalog);
             Assert.IsNotNull(castles);
 
@@ -845,6 +844,5 @@ namespace Samkuk.Tests
             var tints = castles.castles.Select(c => TerrainMap.Create(c, catalog).GroundTint).Distinct().Count();
             Assert.Greater(tints, 30, "성마다 바닥 색조가 거의 다 달라야 한다");
         }
-#endif
     }
 }

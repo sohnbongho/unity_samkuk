@@ -1,0 +1,17 @@
+{
+  "$type": "Samkuk.Data.CastleData",
+  "name": "Castle_Yongchang",
+  "id": "Yongchang",
+  "displayName": "영창",
+  "hanja": "永昌",
+  "region": 9,
+  "terrain": 4,
+  "size": 0,
+  "hasWater": 0,
+  "mapPosition": { "x": 0.05, "y": 0.79 },
+  "neighbors": [
+    { "$ref": "Castle_Chengdu" },
+    { "$ref": "Castle_Jianning" }
+  ],
+  "background": { "$sprite": "res://sprites/Castles/Castle_Yongchang.png", "w": 1920, "h": 1080, "ppu": 100, "pivot": [0.5, 0.5] }
+}

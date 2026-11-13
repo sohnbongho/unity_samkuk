@@ -1,0 +1,20 @@
+{
+  "$type": "Samkuk.Data.CastleData",
+  "name": "Castle_Changsha",
+  "id": "Changsha",
+  "displayName": "장사",
+  "hanja": "長沙",
+  "region": 10,
+  "terrain": 3,
+  "size": 1,
+  "hasWater": 1,
+  "mapPosition": { "x": 0.53, "y": 0.65 },
+  "neighbors": [
+    { "$ref": "Castle_Xiangyang" },
+    { "$ref": "Castle_Jiangxia" },
+    { "$ref": "Castle_Guiyang" },
+    { "$ref": "Castle_Lingling" },
+    { "$ref": "Castle_Chaisang" }
+  ],
+  "background": { "$sprite": "res://sprites/Castles/Castle_Changsha.png", "w": 1920, "h": 1080, "ppu": 100, "pivot": [0.5, 0.5] }
+}

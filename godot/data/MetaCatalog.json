@@ -1,0 +1,13 @@
+{
+  "$type": "Samkuk.Data.MetaCatalog",
+  "name": "MetaCatalog",
+  "upgrades": [
+    { "$ref": "Meta_Health" },
+    { "$ref": "Meta_Might" },
+    { "$ref": "Meta_Agility" },
+    { "$ref": "Meta_Rations" },
+    { "$ref": "Meta_Virtue" },
+    { "$ref": "Meta_Study" },
+    { "$ref": "Meta_Fortune" }
+  ]
+}

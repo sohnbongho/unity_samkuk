@@ -1,0 +1,17 @@
+{
+  "$type": "Samkuk.Data.CastleData",
+  "name": "Castle_Jianan",
+  "id": "Jianan",
+  "displayName": "건안",
+  "hanja": "建安",
+  "region": 11,
+  "terrain": 2,
+  "size": 0,
+  "hasWater": 0,
+  "mapPosition": { "x": 0.75, "y": 0.69 },
+  "neighbors": [
+    { "$ref": "Castle_Chaisang" },
+    { "$ref": "Castle_Kuaiji" }
+  ],
+  "background": { "$sprite": "res://sprites/Castles/Castle_Jianan.png", "w": 1920, "h": 1080, "ppu": 100, "pivot": [0.5, 0.5] }
+}

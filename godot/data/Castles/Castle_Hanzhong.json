@@ -1,0 +1,19 @@
+{
+  "$type": "Samkuk.Data.CastleData",
+  "name": "Castle_Hanzhong",
+  "id": "Hanzhong",
+  "displayName": "한중",
+  "hanja": "漢中",
+  "region": 9,
+  "terrain": 2,
+  "size": 2,
+  "hasWater": 0,
+  "mapPosition": { "x": 0.27, "y": 0.42 },
+  "neighbors": [
+    { "$ref": "Castle_Changan" },
+    { "$ref": "Castle_Tianshui" },
+    { "$ref": "Castle_Xinye" },
+    { "$ref": "Castle_Zitong" }
+  ],
+  "background": { "$sprite": "res://sprites/Castles/Castle_Hanzhong.png", "w": 1920, "h": 1080, "ppu": 100, "pivot": [0.5, 0.5] }
+}

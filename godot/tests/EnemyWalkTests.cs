@@ -209,7 +209,6 @@ namespace Samkuk.Tests
         }
 #endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void EnemyAssets_HaveWalkSheets_WithFourByFourCells()
         {
@@ -225,6 +224,5 @@ namespace Samkuk.Tests
             }
             Assert.AreEqual(10, count, "적 종류 10종");
         }
-#endif
     }
 }

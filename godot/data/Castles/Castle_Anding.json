@@ -1,0 +1,18 @@
+{
+  "$type": "Samkuk.Data.CastleData",
+  "name": "Castle_Anding",
+  "id": "Anding",
+  "displayName": "안정",
+  "hanja": "安定",
+  "region": 8,
+  "terrain": 5,
+  "size": 0,
+  "hasWater": 0,
+  "mapPosition": { "x": 0.27, "y": 0.27 },
+  "neighbors": [
+    { "$ref": "Castle_Changan" },
+    { "$ref": "Castle_Tianshui" },
+    { "$ref": "Castle_Wuwei" }
+  ],
+  "background": { "$sprite": "res://sprites/Castles/Castle_Anding.png", "w": 1920, "h": 1080, "ppu": 100, "pivot": [0.5, 0.5] }
+}

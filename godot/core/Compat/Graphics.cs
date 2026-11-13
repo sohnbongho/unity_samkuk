@@ -68,6 +68,8 @@ namespace Samkuk.Compat
         public Vector2 pivot;
         public float pixelsPerUnit = 100f;
         public string name;
+        /// <summary>9-슬라이스 테두리(픽셀): 왼쪽, 아래, 오른쪽, 위. 없으면 null (UI 프레임 그림만 쓴다).</summary>
+        public float[] border;
 
         /// <summary>파일 그림이면 그 경로 (코드로 만든 그림은 null).</summary>
         public string path => texture != null ? texture.path : null;

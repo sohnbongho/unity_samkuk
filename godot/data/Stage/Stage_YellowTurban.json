@@ -1,0 +1,111 @@
+{
+  "$type": "Samkuk.Data.StageData",
+  "name": "Stage_YellowTurban",
+  "displayName": "황건적의 난",
+  "duration": 60,
+  "waves": [
+    {
+      "name": "황건적 습격",
+      "startTime": 0,
+      "spawnPerSecond": 1.26,
+      "maxAlive": 34,
+      "enemies": [
+        {
+          "data": { "$ref": "Enemy_Soldier" },
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "name": "황건 척후대",
+      "startTime": 15,
+      "spawnPerSecond": 2.52,
+      "maxAlive": 50,
+      "enemies": [
+        {
+          "data": { "$ref": "Enemy_Soldier" },
+          "weight": 3
+        },
+        {
+          "data": { "$ref": "Enemy_Scout" },
+          "weight": 1
+        },
+        {
+          "data": { "$ref": "Enemy_YellowArcher" },
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "name": "동탁군 출병",
+      "startTime": 30,
+      "spawnPerSecond": 2.52,
+      "maxAlive": 68,
+      "enemies": [
+        {
+          "data": { "$ref": "Enemy_DongzhuoInfantry" },
+          "weight": 3
+        },
+        {
+          "data": { "$ref": "Enemy_XiliangCavalry" },
+          "weight": 1
+        },
+        {
+          "data": { "$ref": "Enemy_Soldier" },
+          "weight": 1
+        },
+        {
+          "data": { "$ref": "Enemy_DongzhuoCrossbow" },
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "name": "여포군 돌격",
+      "startTime": 45,
+      "spawnPerSecond": 2.52,
+      "maxAlive": 92,
+      "enemies": [
+        {
+          "data": { "$ref": "Enemy_LvbuElite" },
+          "weight": 2
+        },
+        {
+          "data": { "$ref": "Enemy_XiliangCavalry" },
+          "weight": 2
+        },
+        {
+          "data": { "$ref": "Enemy_DongzhuoInfantry" },
+          "weight": 2
+        },
+        {
+          "data": { "$ref": "Enemy_LvbuArcher" },
+          "weight": 1
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "time": 20,
+      "enemy": { "$ref": "Enemy_YellowTurbanGeneral" },
+      "count": 1,
+      "isBoss": 0,
+      "message": "황건 장수 출현!"
+    },
+    {
+      "time": 38,
+      "enemy": { "$ref": "Enemy_YellowTurbanGeneral" },
+      "count": 2,
+      "isBoss": 0,
+      "message": "황건 장수 둘이 나타났다!"
+    },
+    {
+      "time": 45,
+      "enemy": { "$ref": "Boss_Lvbu" },
+      "count": 1,
+      "isBoss": 1,
+      "message": "여포 출현!"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "$type": "Samkuk.Data.CastleData",
+  "name": "Castle_Lingling",
+  "id": "Lingling",
+  "displayName": "영릉",
+  "hanja": "零陵",
+  "region": 10,
+  "terrain": 4,
+  "size": 0,
+  "hasWater": 0,
+  "mapPosition": { "x": 0.44, "y": 0.73 },
+  "neighbors": [
+    { "$ref": "Castle_Changsha" },
+    { "$ref": "Castle_Guiyang" }
+  ],
+  "background": { "$sprite": "res://sprites/Castles/Castle_Lingling.png", "w": 1920, "h": 1080, "ppu": 100, "pivot": [0.5, 0.5] }
+}

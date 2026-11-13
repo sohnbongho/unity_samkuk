@@ -1,0 +1,17 @@
+{
+  "$type": "Samkuk.Data.CastleData",
+  "name": "Castle_Zitong",
+  "id": "Zitong",
+  "displayName": "자동",
+  "hanja": "梓潼",
+  "region": 9,
+  "terrain": 2,
+  "size": 0,
+  "hasWater": 0,
+  "mapPosition": { "x": 0.22, "y": 0.47 },
+  "neighbors": [
+    { "$ref": "Castle_Chengdu" },
+    { "$ref": "Castle_Hanzhong" }
+  ],
+  "background": { "$sprite": "res://sprites/Castles/Castle_Zitong.png", "w": 1920, "h": 1080, "ppu": 100, "pivot": [0.5, 0.5] }
+}

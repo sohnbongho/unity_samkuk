@@ -1,0 +1,10 @@
+{
+  "$type": "Samkuk.Data.PassiveData",
+  "name": "Passive_Armor",
+  "displayName": "철갑",
+  "description": "최대 체력이 20 증가하고 그만큼 회복합니다.",
+  "type": 3,
+  "valuePerLevel": 20,
+  "maxLevel": 5,
+  "icon": null
+}

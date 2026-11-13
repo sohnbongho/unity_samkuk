@@ -1,0 +1,17 @@
+{
+  "$type": "Samkuk.Data.CastleData",
+  "name": "Castle_Wuwei",
+  "id": "Wuwei",
+  "displayName": "무위",
+  "hanja": "武威",
+  "region": 8,
+  "terrain": 1,
+  "size": 1,
+  "hasWater": 0,
+  "mapPosition": { "x": 0.1, "y": 0.18 },
+  "neighbors": [
+    { "$ref": "Castle_Tianshui" },
+    { "$ref": "Castle_Anding" }
+  ],
+  "background": { "$sprite": "res://sprites/Castles/Castle_Wuwei.png", "w": 1920, "h": 1080, "ppu": 100, "pivot": [0.5, 0.5] }
+}

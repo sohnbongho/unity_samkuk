@@ -1,0 +1,19 @@
+{
+  "$type": "Samkuk.Data.CastleData",
+  "name": "Castle_Runan",
+  "id": "Runan",
+  "displayName": "여남",
+  "hanja": "汝南",
+  "region": 5,
+  "terrain": 0,
+  "size": 1,
+  "hasWater": 0,
+  "mapPosition": { "x": 0.58, "y": 0.43 },
+  "neighbors": [
+    { "$ref": "Castle_Chenliu" },
+    { "$ref": "Castle_Xuchang" },
+    { "$ref": "Castle_Shouchun" },
+    { "$ref": "Castle_Wan" }
+  ],
+  "background": { "$sprite": "res://sprites/Castles/Castle_Runan.png", "w": 1920, "h": 1080, "ppu": 100, "pivot": [0.5, 0.5] }
+}

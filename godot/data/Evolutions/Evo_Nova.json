@@ -1,0 +1,9 @@
+{
+  "$type": "Samkuk.Data.EvolutionData",
+  "name": "Evo_Nova",
+  "baseWeapon": { "$ref": "Weapon_Nova" },
+  "requiredPassive": { "$ref": "Passive_Virtue" },
+  "evolvedWeapon": { "$ref": "Weapon_Evo_HeavenDrum" },
+  "requiredLevel": 3,
+  "requiredPassiveLevel": 1
+}

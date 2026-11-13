@@ -1,0 +1,20 @@
+{
+  "$type": "Samkuk.Data.CastleData",
+  "name": "Castle_Chaisang",
+  "id": "Chaisang",
+  "displayName": "시상",
+  "hanja": "柴桑",
+  "region": 11,
+  "terrain": 3,
+  "size": 1,
+  "hasWater": 1,
+  "mapPosition": { "x": 0.63, "y": 0.58 },
+  "neighbors": [
+    { "$ref": "Castle_Jiangxia" },
+    { "$ref": "Castle_Changsha" },
+    { "$ref": "Castle_Lujiang" },
+    { "$ref": "Castle_Jianye" },
+    { "$ref": "Castle_Jianan" }
+  ],
+  "background": { "$sprite": "res://sprites/Castles/Castle_Chaisang.png", "w": 1920, "h": 1080, "ppu": 100, "pivot": [0.5, 0.5] }
+}

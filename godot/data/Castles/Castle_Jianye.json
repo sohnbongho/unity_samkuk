@@ -1,0 +1,20 @@
+{
+  "$type": "Samkuk.Data.CastleData",
+  "name": "Castle_Jianye",
+  "id": "Jianye",
+  "displayName": "건업",
+  "hanja": "建業",
+  "region": 11,
+  "terrain": 3,
+  "size": 2,
+  "hasWater": 1,
+  "mapPosition": { "x": 0.78, "y": 0.47 },
+  "neighbors": [
+    { "$ref": "Castle_Xiapi" },
+    { "$ref": "Castle_Shouchun" },
+    { "$ref": "Castle_Chaisang" },
+    { "$ref": "Castle_Wu" },
+    { "$ref": "Castle_Lujiang" }
+  ],
+  "background": { "$sprite": "res://sprites/Castles/Castle_Jianye.png", "w": 1920, "h": 1080, "ppu": 100, "pivot": [0.5, 0.5] }
+}

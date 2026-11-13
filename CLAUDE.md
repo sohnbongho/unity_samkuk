@@ -18,9 +18,9 @@
 
 | 단계 | 내용 | 상태 |
 |---|---|---|
-| G0 | 브랜치, `godot/` 뼈대(프로젝트 3개: `Samkuk.Core`/`Samkuk.Game`/`Samkuk.Tests`, `project.godot`, 첫 화면 `Boot`), Godot 4.7.2 .NET 설치(`D:\01-AgentLegion\tools\godot\`, SHA512 확인), ADR 0004, 옮기는 도구 `tools/godot_port/` | 확인 대기 |
-| G1 | 순수 로직을 `godot/core` 로: 호환 층 `Samkuk.Compat`(유니티와 같은 이름의 `Vector2`/`Mathf`/`Color`/`Rect`/`Sprite`/`Texture2D`/`ScriptableObject`/`Resources`/`JsonUtility`/`Debug`), 데이터 클래스 16개, 밸런스, 지형(맵·충돌·높이·흙길·절벽 메시·맵 편집 규칙·맵 저장), 틸트·조명·그림자·후처리 수치, 협동(방·흐름·전투 모델), 네트워크(프레임·로그인 흐름·`TcpLink`·`Message.cs`), 내정 규칙, 저장, 영구 강화, 무기 동작 규칙(`SwingMotion`/`ThrustMotion`), 코드 생성 그림·소리(`CliffArt`/`PathArt`/`WaveSprites`/`SfxSynth`). 테스트 30개 파일 이전: **통과 183, 보류 24, 실패 0**, 271개는 `#if GAME_PORT` 로 미룸 | 확인 대기 |
-| G2 | 데이터·그림 변환(`.asset` 137개 → Godot 쪽 데이터, PNG 146장 복사·임포트 설정). 형식은 JSON 추천(`godot/PORTING.md`) | |
+| G0 | 브랜치, `godot/` 뼈대(프로젝트 3개: `Samkuk.Core`/`Samkuk.Game`/`Samkuk.Tests`, `project.godot`, 첫 화면 `Boot`), Godot 4.7.2 .NET 설치(`D:\01-AgentLegion\tools\godot\`, SHA512 확인), ADR 0004, 옮기는 도구 `tools/godot_port/` | 완료 (898ad8e) |
+| G1 | 순수 로직을 `godot/core` 로: 호환 층 `Samkuk.Compat`(유니티와 같은 이름의 `Vector2`/`Mathf`/`Color`/`Rect`/`Sprite`/`Texture2D`/`ScriptableObject`/`Resources`/`JsonUtility`/`Debug`), 데이터 클래스 16개, 밸런스, 지형(맵·충돌·높이·흙길·절벽 메시·맵 편집 규칙·맵 저장), 틸트·조명·그림자·후처리 수치, 협동(방·흐름·전투 모델), 네트워크(프레임·로그인 흐름·`TcpLink`·`Message.cs`), 내정 규칙, 저장, 영구 강화, 무기 동작 규칙(`SwingMotion`/`ThrustMotion`), 코드 생성 그림·소리(`CliffArt`/`PathArt`/`WaveSprites`/`SfxSynth`). 테스트 30개 파일 이전: **통과 183, 보류 24, 실패 0**, 271개는 `#if GAME_PORT` 로 미룸 | 완료 (898ad8e) |
+| G2 | 데이터·그림 변환: 유니티 `.asset` 132건 → `godot/data/**/*.json`(`tools/godot_port/convert_data.py`, `$type`/`$ref`/`$sprite`/`$texture` 규칙), 그림 146장 → `godot/sprites/`(임포트 기본값: 무압축·밉맵 없음). 순수 로직 `GameData`(JSON → 데이터 클래스, 참조 두 번에 나눠 잇기, `Resources.Load` 창구, 문제 목록) + `IDataSource`, 화면 층 `GodotDataSource`(res://data)·`Textures`(그림 손잡이 → Godot 텍스처, 코드 그림은 픽셀 → ImageTexture), `UiTheme` 데이터 이전. 테스트 `GameDataTests` + 에셋이 필요하던 테스트 되살림(`tests/AssetDatabase.cs` 가 예전 경로를 창고로 연결): **통과 212, 보류 15, 실패 0**. Godot 헤드리스 임포트·실행으로 데이터 132건·그림 읽기 확인. **이제 데이터의 원본은 `godot/data` 의 JSON**(직접 고친다, 변환 도구를 다시 돌리면 덮어씀) | 완료 |
 | G3 | 전투 한 판: 이동, 적 스폰·추적, 무기 3종, 경험치·레벨업, 결과 | |
 | G4 | 틸트 화면: 직교 카메라 55°, 서 있는 그림 셰이더, 방향광 그림자, 언덕 한 덩이, 후처리 | |
 | 확인 | **화면 품질·성능을 사용자가 확인** (Forward+ 유지 여부, 적 그리기 방식) | |
@@ -40,7 +40,7 @@
 - 옮긴 파일은 원본과 줄 단위로 대조되게 둔다(이름·주석 유지). 유니티와 달라진 점은 `godot/PORTING.md` "유니티에서 달라진 것"에 적는다.
 - 미룬 테스트(`#if GAME_PORT`)는 지우지 않는다. 기능을 옮긴 단계에서 풀어 되살리고, 남은 수를 진행표에 적는다.
 - 탑다운 2D 경로(틸트 끔, Light2D, `CastShadow`, 월드 정렬 축, 픽셀 퍼펙트 카메라)와 에디터 셋업 스크립트는 옮기지 않는다.
-- 단계마다 사용자 확인 뒤 커밋(제목 `Godot G<n>: ...`), 이 표를 같은 커밋에서 갱신한다.
+- **단계마다 테스트(`dotnet test`, Godot 헤드리스 실행)를 통과하면 바로 커밋하고 다음 단계로 이어 간다**(사용자 결정 2026-11-13; 제목 `Godot G<n>: ...`, 이 표를 같은 커밋에서 갱신). 사용자 확인을 기다리지 않는다. 화면 품질처럼 눈으로 봐야 하는 것만 `godot/PORTING.md` "눈으로 확인할 것"에 모아 두었다가 한꺼번에 알린다.
 
 ### Godot 전환 알려진 이슈
 

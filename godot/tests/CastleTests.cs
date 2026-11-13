@@ -11,16 +11,13 @@ namespace Samkuk.Tests
         const string CatalogPath = "Assets/ScriptableObjects/CastleCatalog.asset";
         const int ExpectedCount = 46;
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         CastleCatalog Load()
         {
             var catalog = AssetDatabase.LoadAssetAtPath<CastleCatalog>(CatalogPath);
             Assert.IsNotNull(catalog, "CastleCatalog 가 없습니다. 메뉴 Samkuk > Step 12-1 을 먼저 실행하세요.");
             return catalog;
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Catalog_HasAllCastles_WithUniqueIdsAndNames()
         {
@@ -41,9 +38,7 @@ namespace Samkuk.Tests
             }
             Assert.IsNull(catalog.Find("NoSuchCastle"));
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Castles_HaveBackground_Of16By9()
         {
@@ -54,9 +49,7 @@ namespace Samkuk.Tests
                 Assert.AreEqual(16f / 9f, r.width / r.height, 0.01f, $"{c.displayName}: 배경 비율이 16:9 가 아닙니다 ({r.width}x{r.height})");
             }
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Castles_HaveMapPosition_InsideMap_AndDistinct()
         {
@@ -70,9 +63,7 @@ namespace Samkuk.Tests
                 seen.Add(c.mapPosition);
             }
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Neighbors_AreSymmetric_NotSelf_AndNotEmpty()
         {
@@ -89,9 +80,7 @@ namespace Samkuk.Tests
                 }
             }
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Map_IsFullyConnected()
         {
@@ -105,9 +94,7 @@ namespace Samkuk.Tests
 
             Assert.AreEqual(catalog.castles.Count, seen.Count, "어느 성에서도 닿을 수 없는 성이 있습니다 (연결이 끊긴 지도)");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Capitals_AreLuoyangAndChangan()
         {
@@ -116,6 +103,5 @@ namespace Samkuk.Tests
                 if (c.size == CastleSize.Capital) capitals.Add(c.id);
             CollectionAssert.AreEquivalent(new[] { "Luoyang", "Changan" }, capitals);
         }
-#endif
     }
 }

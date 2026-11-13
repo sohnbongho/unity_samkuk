@@ -1,0 +1,10 @@
+{
+  "$type": "Samkuk.Data.PassiveData",
+  "name": "Passive_Wisdom",
+  "displayName": "지략",
+  "description": "경험치 획득량이 15% 증가합니다.",
+  "type": 5,
+  "valuePerLevel": 0.15,
+  "maxLevel": 5,
+  "icon": null
+}

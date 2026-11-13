@@ -1,0 +1,19 @@
+{
+  "$type": "Samkuk.Data.CastleData",
+  "name": "Castle_Jinyang",
+  "id": "Jinyang",
+  "displayName": "진양",
+  "hanja": "晉陽",
+  "region": 2,
+  "terrain": 5,
+  "size": 2,
+  "hasWater": 0,
+  "mapPosition": { "x": 0.5, "y": 0.19 },
+  "neighbors": [
+    { "$ref": "Castle_Ji" },
+    { "$ref": "Castle_Shangdang" },
+    { "$ref": "Castle_Hedong" },
+    { "$ref": "Castle_Ye" }
+  ],
+  "background": { "$sprite": "res://sprites/Castles/Castle_Jinyang.png", "w": 1920, "h": 1080, "ppu": 100, "pivot": [0.5, 0.5] }
+}

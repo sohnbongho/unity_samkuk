@@ -1,0 +1,11 @@
+{
+  "$type": "Samkuk.Data.MetaUpgradeData",
+  "name": "Meta_Rations",
+  "displayName": "군량 비축",
+  "description": "체력이 서서히 회복된다.",
+  "stat": 3,
+  "valuePerLevel": 0.15,
+  "maxLevel": 5,
+  "baseCost": 100,
+  "costGrowth": 1.7
+}

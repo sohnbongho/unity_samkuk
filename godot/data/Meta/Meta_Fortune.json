@@ -1,0 +1,11 @@
+{
+  "$type": "Samkuk.Data.MetaUpgradeData",
+  "name": "Meta_Fortune",
+  "displayName": "재물운",
+  "description": "판이 끝날 때 얻는 골드가 늘어난다.",
+  "stat": 6,
+  "valuePerLevel": 0.1,
+  "maxLevel": 5,
+  "baseCost": 120,
+  "costGrowth": 1.7
+}

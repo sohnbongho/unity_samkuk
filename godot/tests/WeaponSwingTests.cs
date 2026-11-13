@@ -477,7 +477,6 @@ namespace Samkuk.Tests
         }
 #endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Assets_YitianSword_IsAComboSlash_WithAFlyingTrail()
         {
@@ -496,9 +495,7 @@ namespace Samkuk.Tests
                 Assert.IsTrue(evo.comboSwings);
             }
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Assets_SkyPiercer_IsAHalberd()
         {
@@ -510,9 +507,7 @@ namespace Samkuk.Tests
             var evo = AssetDatabase.LoadAssetAtPath<WeaponData>("Assets/ScriptableObjects/Weapons/Weapon_Evo_PeerlessHalberd.asset");
             if (evo != null) Assert.AreEqual(WeaponType.Halberd, evo.type, "천하무쌍극도 극 (Step 10-9)");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Assets_SerpentSpear_IsAThrustWeapon_WithAFlyingTrail()
         {
@@ -522,7 +517,6 @@ namespace Samkuk.Tests
             Assert.Greater(w.trailTravel, 3f, "장팔사모 검기는 멀리 날아간다 (Step 10-9)");
             Assert.Greater(w.trailDamageRatio, 0f);
         }
-#endif
 
 #if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         class FakeLook : MonoBehaviour, ILookOverride

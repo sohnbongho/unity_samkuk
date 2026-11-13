@@ -1,0 +1,16 @@
+{
+  "$type": "Samkuk.Data.SkillData",
+  "name": "Skill_Scheme",
+  "displayName": "간웅의 책략",
+  "description": "8초간 공격력 +50%, 쿨다운 -30%.",
+  "type": 3,
+  "cooldown": 30,
+  "radius": 5,
+  "damage": 50,
+  "power": 0.5,
+  "power2": 0.3,
+  "duration": 8,
+  "tickInterval": 0.25,
+  "effectSprite": { "$sprite": "res://sprites/Slash.png", "w": 128, "h": 128, "ppu": 64, "pivot": [0.5, 0.5] },
+  "effectColor": { "r": 0.4, "g": 0.6, "b": 1, "a": 1 }
+}

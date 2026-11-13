@@ -1,0 +1,25 @@
+{
+  "$type": "Samkuk.Data.HeroData",
+  "name": "Hero_ZhangFei",
+  "displayName": "장비",
+  "title": "만인지적",
+  "description": "강인한 체력으로 적진 한가운데서 버틴다.",
+  "tint": { "r": 0.4, "g": 0.4, "b": 0.6, "a": 1 },
+  "portrait": { "$sprite": "res://sprites/Heroes/Hero_ZhangFei.png", "w": 512, "h": 640, "ppu": 100, "pivot": [0.5, 0.5] },
+  "walkSheet": { "$texture": "res://sprites/HeroWalk/Hero_ZhangFei_Walk.png", "w": 192, "h": 192 },
+  "walkPixelsPerUnit": 32,
+  "maxHpBonus": 50,
+  "damageMultiplier": 1.05,
+  "moveSpeedMultiplier": 1,
+  "expMultiplier": 1,
+  "pickupRadiusMultiplier": 1,
+  "startingWeapon": { "$ref": "Weapon_SerpentSpear" },
+  "skill": { "$ref": "Skill_Roar" },
+  "weapons": [
+    { "$ref": "Weapon_Thrust" },
+    { "$ref": "Weapon_Axe" },
+    { "$ref": "Weapon_Nova" },
+    { "$ref": "Weapon_Knives" },
+    { "$ref": "Weapon_Sword" }
+  ]
+}

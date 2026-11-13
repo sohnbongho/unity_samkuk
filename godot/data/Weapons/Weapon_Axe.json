@@ -1,0 +1,23 @@
+{
+  "$type": "Samkuk.Data.WeaponData",
+  "name": "Weapon_Axe",
+  "displayName": "회전 도끼",
+  "description": "플레이어 주위를 도는 도끼가 적을 베어냅니다.",
+  "type": 2,
+  "sprite": { "$sprite": "res://sprites/Blade.png", "w": 48, "h": 48, "ppu": 64, "pivot": [0.5, 0.5] },
+  "tint": { "r": 1, "g": 1, "b": 1, "a": 1 },
+  "damage": 6,
+  "cooldown": 1,
+  "range": 1.8,
+  "count": 2,
+  "projectileSpeed": 10,
+  "pierce": 1,
+  "duration": 2,
+  "size": 0.45,
+  "rotateSpeed": 200,
+  "tickInterval": 0.3,
+  "maxLevel": 8,
+  "damagePerLevel": 0.2,
+  "cooldownReductionPerLevel": 0.05,
+  "levelsPerExtraCount": 2
+}

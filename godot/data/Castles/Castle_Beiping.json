@@ -1,0 +1,17 @@
+{
+  "$type": "Samkuk.Data.CastleData",
+  "name": "Castle_Beiping",
+  "id": "Beiping",
+  "displayName": "북평",
+  "hanja": "北平",
+  "region": 0,
+  "terrain": 1,
+  "size": 1,
+  "hasWater": 0,
+  "mapPosition": { "x": 0.76, "y": 0.09 },
+  "neighbors": [
+    { "$ref": "Castle_Xiangping" },
+    { "$ref": "Castle_Ji" }
+  ],
+  "background": { "$sprite": "res://sprites/Castles/Castle_Beiping.png", "w": 1920, "h": 1080, "ppu": 100, "pivot": [0.5, 0.5] }
+}

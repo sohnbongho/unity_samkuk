@@ -400,7 +400,6 @@ namespace Samkuk.Tests
 
         // ───────────────────────── 실제 스테이지 에셋 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void StageAsset_IsWellFormed()
         {
@@ -434,6 +433,5 @@ namespace Samkuk.Tests
             }
             Assert.AreEqual(1, bosses, "보스 이벤트는 정확히 하나");
         }
-#endif
     }
 }

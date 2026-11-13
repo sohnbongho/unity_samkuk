@@ -1,0 +1,11 @@
+{
+  "$type": "Samkuk.Data.MetaUpgradeData",
+  "name": "Meta_Agility",
+  "displayName": "경공",
+  "description": "이동 속도가 빨라진다.",
+  "stat": 2,
+  "valuePerLevel": 0.03,
+  "maxLevel": 5,
+  "baseCost": 70,
+  "costGrowth": 1.5
+}

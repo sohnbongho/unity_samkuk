@@ -1,0 +1,11 @@
+{
+  "$type": "Samkuk.Data.MetaUpgradeData",
+  "name": "Meta_Might",
+  "displayName": "무예 단련",
+  "description": "모든 공격력이 늘어난다.",
+  "stat": 1,
+  "valuePerLevel": 0.04,
+  "maxLevel": 5,
+  "baseCost": 80,
+  "costGrowth": 1.6
+}

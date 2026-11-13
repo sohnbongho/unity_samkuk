@@ -1,0 +1,9 @@
+{
+  "$type": "Samkuk.Data.EvolutionData",
+  "name": "Evo_SkyPiercer",
+  "baseWeapon": { "$ref": "Weapon_SkyPiercer" },
+  "requiredPassive": { "$ref": "Passive_Haste" },
+  "evolvedWeapon": { "$ref": "Weapon_Evo_PeerlessHalberd" },
+  "requiredLevel": 3,
+  "requiredPassiveLevel": 1
+}

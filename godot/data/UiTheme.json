@@ -1,0 +1,22 @@
+{
+  "$type": "Samkuk.UI.UiTheme",
+  "name": "UiTheme",
+  "fill": { "$sprite": "res://sprites/UI/UiFill.png", "w": 32, "h": 32, "ppu": 100, "pivot": [0.5, 0.5], "border": [10, 10, 10, 10] },
+  "frame": { "$sprite": "res://sprites/UI/UiFrame.png", "w": 64, "h": 64, "ppu": 100, "pivot": [0.5, 0.5], "border": [24, 24, 24, 24] },
+  "frameThin": { "$sprite": "res://sprites/UI/UiFrameThin.png", "w": 32, "h": 32, "ppu": 100, "pivot": [0.5, 0.5], "border": [10, 10, 10, 10] },
+  "divider": { "$sprite": "res://sprites/UI/UiDivider.png", "w": 256, "h": 16, "ppu": 100, "pivot": [0.5, 0.5] },
+  "font": null,
+  "panel": { "r": 0.09, "g": 0.07, "b": 0.07, "a": 0.98 },
+  "card": { "r": 0.17, "g": 0.12, "b": 0.11, "a": 1 },
+  "button": { "r": 0.32, "g": 0.2, "b": 0.14, "a": 1 },
+  "primaryButton": { "r": 0.55, "g": 0.16, "b": 0.14, "a": 1 },
+  "mutedButton": { "r": 0.24, "g": 0.18, "b": 0.16, "a": 1 },
+  "gold": { "r": 1, "g": 0.85, "b": 0.4, "a": 1 },
+  "positive": { "r": 0.2, "g": 0.42, "b": 0.28, "a": 1 },
+  "disabled": { "r": 0.28, "g": 0.24, "b": 0.22, "a": 1 },
+  "newWeapon": { "r": 0.4, "g": 0.12, "b": 0.14, "a": 1 },
+  "weaponUp": { "r": 0.12, "g": 0.3, "b": 0.34, "a": 1 },
+  "passive": { "r": 0.13, "g": 0.32, "b": 0.2, "a": 1 },
+  "heal": { "r": 0.32, "g": 0.16, "b": 0.27, "a": 1 },
+  "evolve": { "r": 0.62, "g": 0.46, "b": 0.1, "a": 1 }
+}

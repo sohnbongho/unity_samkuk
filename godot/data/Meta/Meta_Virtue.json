@@ -1,0 +1,11 @@
+{
+  "$type": "Samkuk.Data.MetaUpgradeData",
+  "name": "Meta_Virtue",
+  "displayName": "인덕 쌓기",
+  "description": "경험치를 끌어당기는 범위가 넓어진다.",
+  "stat": 4,
+  "valuePerLevel": 0.1,
+  "maxLevel": 5,
+  "baseCost": 60,
+  "costGrowth": 1.5
+}

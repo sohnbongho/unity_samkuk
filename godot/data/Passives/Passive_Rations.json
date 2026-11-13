@@ -1,0 +1,10 @@
+{
+  "$type": "Samkuk.Data.PassiveData",
+  "name": "Passive_Rations",
+  "displayName": "군량",
+  "description": "초당 체력이 0.5 회복됩니다.",
+  "type": 6,
+  "valuePerLevel": 0.5,
+  "maxLevel": 5,
+  "icon": null
+}

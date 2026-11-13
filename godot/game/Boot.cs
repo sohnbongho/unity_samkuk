@@ -1,4 +1,5 @@
 using Godot;
+using Samkuk.Data;
 using Samkuk.Player;
 using Samkuk.World;
 
@@ -25,6 +26,14 @@ namespace Samkuk.Game
             // 순수 로직이 실제로 붙었는지: 경험치 곡선과 틸트 기하를 한 번 불러 본다
             var forward = TiltPreset.Forward(TiltPreset.Pitch);
             GD.Print($"[Samkuk] Core 연결 확인: 2레벨 필요 경험치 {ExperienceCurve.RequiredFor(1)}, 카메라 방향 {forward}, 저장 폴더 {Compat.Application.persistentDataPath}");
+
+            // 데이터 창고: res://data 의 JSON 을 전부 읽는다. 문제가 있으면(없는 참조 등) 경고로 남긴다
+            GameData.Load(new GodotDataSource());
+            foreach (string problem in GameData.Problems) GD.PushWarning("[Samkuk] 데이터: " + problem);
+            var tree = GameData.Get<TerrainTheme>("Theme_Plain")?.props.Find(p => p.name == "Prop_Plain_Tree");
+            var treeTexture = Textures.Of(tree?.sprite);
+            var blob = Textures.Of(Samkuk.World.TerrainDecals.SoftBlob);
+            GD.Print($"[Samkuk] 데이터 {GameData.Count}건 (문제 {GameData.Problems.Count}), 나무 그림 {treeTexture?.GetSize()}, 코드 그림 {blob?.GetSize()}");
 
             foreach (string arg in OS.GetCmdlineUserArgs())
                 if (arg == "--smoke") { GetTree().Quit(); return; }

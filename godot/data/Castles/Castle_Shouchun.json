@@ -1,0 +1,20 @@
+{
+  "$type": "Samkuk.Data.CastleData",
+  "name": "Castle_Shouchun",
+  "id": "Shouchun",
+  "displayName": "수춘",
+  "hanja": "壽春",
+  "region": 11,
+  "terrain": 3,
+  "size": 1,
+  "hasWater": 1,
+  "mapPosition": { "x": 0.67, "y": 0.45 },
+  "neighbors": [
+    { "$ref": "Castle_Xiaopei" },
+    { "$ref": "Castle_Xiapi" },
+    { "$ref": "Castle_Runan" },
+    { "$ref": "Castle_Lujiang" },
+    { "$ref": "Castle_Jianye" }
+  ],
+  "background": { "$sprite": "res://sprites/Castles/Castle_Shouchun.png", "w": 1920, "h": 1080, "ppu": 100, "pivot": [0.5, 0.5] }
+}

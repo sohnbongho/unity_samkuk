@@ -1,0 +1,9 @@
+{
+  "$type": "Samkuk.Data.EvolutionData",
+  "name": "Evo_Thrust",
+  "baseWeapon": { "$ref": "Weapon_Thrust" },
+  "requiredPassive": { "$ref": "Passive_Rations" },
+  "evolvedWeapon": { "$ref": "Weapon_Evo_DragonSpear" },
+  "requiredLevel": 3,
+  "requiredPassiveLevel": 1
+}

@@ -1,0 +1,16 @@
+{
+  "$type": "Samkuk.Data.SkillData",
+  "name": "Skill_Blessing",
+  "displayName": "인덕의 가호",
+  "description": "체력을 40% 회복하고 경험치를 모두 끌어당긴다.",
+  "type": 0,
+  "cooldown": 25,
+  "radius": 3,
+  "damage": 50,
+  "power": 0.4,
+  "power2": 0,
+  "duration": 3,
+  "tickInterval": 0.25,
+  "effectSprite": { "$sprite": "res://sprites/Slash.png", "w": 128, "h": 128, "ppu": 64, "pivot": [0.5, 0.5] },
+  "effectColor": { "r": 0.6, "g": 1, "b": 0.6, "a": 1 }
+}

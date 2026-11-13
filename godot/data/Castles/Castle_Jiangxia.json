@@ -1,0 +1,19 @@
+{
+  "$type": "Samkuk.Data.CastleData",
+  "name": "Castle_Jiangxia",
+  "id": "Jiangxia",
+  "displayName": "강하",
+  "hanja": "江夏",
+  "region": 10,
+  "terrain": 3,
+  "size": 1,
+  "hasWater": 1,
+  "mapPosition": { "x": 0.58, "y": 0.54 },
+  "neighbors": [
+    { "$ref": "Castle_Xiangyang" },
+    { "$ref": "Castle_Chaisang" },
+    { "$ref": "Castle_Changsha" },
+    { "$ref": "Castle_Lujiang" }
+  ],
+  "background": { "$sprite": "res://sprites/Castles/Castle_Jiangxia.png", "w": 1920, "h": 1080, "ppu": 100, "pivot": [0.5, 0.5] }
+}

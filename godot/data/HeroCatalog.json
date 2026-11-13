@@ -1,0 +1,11 @@
+{
+  "$type": "Samkuk.Data.HeroCatalog",
+  "name": "HeroCatalog",
+  "heroes": [
+    { "$ref": "Hero_LiuBei" },
+    { "$ref": "Hero_GuanYu" },
+    { "$ref": "Hero_ZhangFei" },
+    { "$ref": "Hero_CaoCao" },
+    { "$ref": "Hero_LvBu" }
+  ]
+}

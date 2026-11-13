@@ -1,0 +1,18 @@
+{
+  "$type": "Samkuk.Data.CastleData",
+  "name": "Castle_Shangdang",
+  "id": "Shangdang",
+  "displayName": "상당",
+  "hanja": "上黨",
+  "region": 2,
+  "terrain": 2,
+  "size": 0,
+  "hasWater": 0,
+  "mapPosition": { "x": 0.48, "y": 0.28 },
+  "neighbors": [
+    { "$ref": "Castle_Jinyang" },
+    { "$ref": "Castle_Ye" },
+    { "$ref": "Castle_Henei" }
+  ],
+  "background": { "$sprite": "res://sprites/Castles/Castle_Shangdang.png", "w": 1920, "h": 1080, "ppu": 100, "pivot": [0.5, 0.5] }
+}

@@ -1,0 +1,18 @@
+{
+  "$type": "Samkuk.Data.CastleData",
+  "name": "Castle_Guiyang",
+  "id": "Guiyang",
+  "displayName": "계양",
+  "hanja": "桂陽",
+  "region": 10,
+  "terrain": 4,
+  "size": 0,
+  "hasWater": 0,
+  "mapPosition": { "x": 0.53, "y": 0.76 },
+  "neighbors": [
+    { "$ref": "Castle_Changsha" },
+    { "$ref": "Castle_Lingling" },
+    { "$ref": "Castle_Nanhai" }
+  ],
+  "background": { "$sprite": "res://sprites/Castles/Castle_Guiyang.png", "w": 1920, "h": 1080, "ppu": 100, "pivot": [0.5, 0.5] }
+}

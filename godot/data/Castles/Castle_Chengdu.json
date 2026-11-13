@@ -1,0 +1,19 @@
+{
+  "$type": "Samkuk.Data.CastleData",
+  "name": "Castle_Chengdu",
+  "id": "Chengdu",
+  "displayName": "성도",
+  "hanja": "成都",
+  "region": 9,
+  "terrain": 0,
+  "size": 2,
+  "hasWater": 0,
+  "mapPosition": { "x": 0.16, "y": 0.52 },
+  "neighbors": [
+    { "$ref": "Castle_Jiangzhou" },
+    { "$ref": "Castle_Zitong" },
+    { "$ref": "Castle_Yongchang" },
+    { "$ref": "Castle_Jianning" }
+  ],
+  "background": { "$sprite": "res://sprites/Castles/Castle_Chengdu.png", "w": 1920, "h": 1080, "ppu": 100, "pivot": [0.5, 0.5] }
+}

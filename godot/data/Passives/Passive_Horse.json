@@ -1,0 +1,10 @@
+{
+  "$type": "Samkuk.Data.PassiveData",
+  "name": "Passive_Horse",
+  "displayName": "적토마",
+  "description": "이동 속도가 10% 증가합니다.",
+  "type": 2,
+  "valuePerLevel": 0.1,
+  "maxLevel": 5,
+  "icon": null
+}

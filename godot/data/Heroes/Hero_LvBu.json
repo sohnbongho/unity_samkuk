@@ -1,0 +1,25 @@
+{
+  "$type": "Samkuk.Data.HeroData",
+  "name": "Hero_LvBu",
+  "displayName": "여포",
+  "title": "천하무쌍",
+  "description": "최강의 무력을 지녔지만 몸이 약하다.",
+  "tint": { "r": 1, "g": 0.55, "b": 0.3, "a": 1 },
+  "portrait": { "$sprite": "res://sprites/Heroes/Hero_LvBu.png", "w": 512, "h": 640, "ppu": 100, "pivot": [0.5, 0.5] },
+  "walkSheet": { "$texture": "res://sprites/HeroWalk/Hero_LvBu_Walk.png", "w": 192, "h": 192 },
+  "walkPixelsPerUnit": 32,
+  "maxHpBonus": -20,
+  "damageMultiplier": 1.2,
+  "moveSpeedMultiplier": 1.1,
+  "expMultiplier": 1,
+  "pickupRadiusMultiplier": 1,
+  "startingWeapon": { "$ref": "Weapon_SkyPiercer" },
+  "skill": { "$ref": "Skill_Warrior" },
+  "weapons": [
+    { "$ref": "Weapon_Bow" },
+    { "$ref": "Weapon_Thrust" },
+    { "$ref": "Weapon_Axe" },
+    { "$ref": "Weapon_Knives" },
+    { "$ref": "Weapon_Sword" }
+  ]
+}

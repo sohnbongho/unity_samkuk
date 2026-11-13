@@ -932,7 +932,6 @@ namespace Samkuk.Tests
 
         // ───────────────────────── 실제 에셋 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void MetaCatalogAsset_IsWellFormed()
         {
@@ -957,6 +956,5 @@ namespace Samkuk.Tests
             }
             Assert.GreaterOrEqual(stats.Count, 5, "서로 다른 스탯 5종 이상");
         }
-#endif
     }
 }

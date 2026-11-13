@@ -1,0 +1,42 @@
+{
+  "$type": "Samkuk.Data.UpgradeCatalog",
+  "name": "UpgradeCatalog",
+  "weapons": [
+    { "$ref": "Weapon_Bow" },
+    { "$ref": "Weapon_Sword" },
+    { "$ref": "Weapon_Axe" },
+    { "$ref": "Weapon_Thrust" },
+    { "$ref": "Weapon_FireZone" },
+    { "$ref": "Weapon_Lightning" },
+    { "$ref": "Weapon_Rain" },
+    { "$ref": "Weapon_Nova" },
+    { "$ref": "Weapon_Crossbow" },
+    { "$ref": "Weapon_Knives" }
+  ],
+  "passives": [
+    { "$ref": "Passive_Strategy" },
+    { "$ref": "Passive_Haste" },
+    { "$ref": "Passive_Horse" },
+    { "$ref": "Passive_Armor" },
+    { "$ref": "Passive_Rations" },
+    { "$ref": "Passive_Virtue" },
+    { "$ref": "Passive_Wisdom" }
+  ],
+  "evolutions": [
+    { "$ref": "Evo_Sword" },
+    { "$ref": "Evo_Bow" },
+    { "$ref": "Evo_Axe" },
+    { "$ref": "Evo_FireZone" },
+    { "$ref": "Evo_Lightning" },
+    { "$ref": "Evo_Thrust" },
+    { "$ref": "Evo_Nova" },
+    { "$ref": "Evo_TwinSwords" },
+    { "$ref": "Evo_GreenDragon" },
+    { "$ref": "Evo_SerpentSpear" },
+    { "$ref": "Evo_YitianSword" },
+    { "$ref": "Evo_SkyPiercer" }
+  ],
+  "weaponLevelUpWeight": 4,
+  "passiveWeight": 2,
+  "newWeaponWeight": 1
+}

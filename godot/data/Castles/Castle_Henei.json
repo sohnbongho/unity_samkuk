@@ -1,0 +1,19 @@
+{
+  "$type": "Samkuk.Data.CastleData",
+  "name": "Castle_Henei",
+  "id": "Henei",
+  "displayName": "하내",
+  "hanja": "河內",
+  "region": 7,
+  "terrain": 0,
+  "size": 0,
+  "hasWater": 0,
+  "mapPosition": { "x": 0.53, "y": 0.31 },
+  "neighbors": [
+    { "$ref": "Castle_Shangdang" },
+    { "$ref": "Castle_Ye" },
+    { "$ref": "Castle_Hedong" },
+    { "$ref": "Castle_Luoyang" }
+  ],
+  "background": { "$sprite": "res://sprites/Castles/Castle_Henei.png", "w": 1920, "h": 1080, "ppu": 100, "pivot": [0.5, 0.5] }
+}

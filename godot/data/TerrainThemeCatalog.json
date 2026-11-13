@@ -1,0 +1,44 @@
+{
+  "$type": "Samkuk.Data.TerrainThemeCatalog",
+  "name": "TerrainThemeCatalog",
+  "themes": [
+    { "$ref": "Theme_Plain" },
+    { "$ref": "Theme_Steppe" },
+    { "$ref": "Theme_Mountain" },
+    { "$ref": "Theme_River" },
+    { "$ref": "Theme_Jungle" },
+    { "$ref": "Theme_Loess" }
+  ],
+  "pond": {
+    "name": "Prop_Pond",
+    "sprite": { "$sprite": "res://sprites/Terrain/Prop_Pond.png", "w": 144, "h": 96, "ppu": 32, "pivot": [0.5, 0.5] },
+    "weight": 1,
+    "scaleMin": 0.8,
+    "scaleMax": 1.5,
+    "standing": 0,
+    "blockRadius": 0,
+    "slowRadius": 1.4,
+    "slowFactor": 0.5,
+    "lightColor": { "r": 0.55, "g": 0.8, "b": 1, "a": 1 },
+    "lightRadius": 2.4,
+    "lightIntensity": 0.35,
+    "lightFlicker": 0.08,
+    "lightHeight": 0
+  },
+  "banner": {
+    "name": "Prop_Banner",
+    "sprite": { "$sprite": "res://sprites/Terrain/Prop_Banner.png", "w": 28, "h": 72, "ppu": 32, "pivot": [0.5, 0.041667] },
+    "weight": 1,
+    "scaleMin": 0.95,
+    "scaleMax": 1.1,
+    "standing": 1,
+    "blockRadius": 0.15,
+    "slowRadius": 0,
+    "slowFactor": 1,
+    "lightColor": { "r": 1, "g": 0.72, "b": 0.42, "a": 1 },
+    "lightRadius": 2.8,
+    "lightIntensity": 0.9,
+    "lightFlicker": 0.35,
+    "lightHeight": 1.6
+  }
+}

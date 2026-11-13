@@ -1,0 +1,9 @@
+{
+  "$type": "Samkuk.Data.EvolutionData",
+  "name": "Evo_SerpentSpear",
+  "baseWeapon": { "$ref": "Weapon_SerpentSpear" },
+  "requiredPassive": { "$ref": "Passive_Armor" },
+  "evolvedWeapon": { "$ref": "Weapon_Evo_FlyingSpear" },
+  "requiredLevel": 3,
+  "requiredPassiveLevel": 1
+}

@@ -1,0 +1,9 @@
+{
+  "$type": "Samkuk.Data.EvolutionData",
+  "name": "Evo_FireZone",
+  "baseWeapon": { "$ref": "Weapon_FireZone" },
+  "requiredPassive": { "$ref": "Passive_Wisdom" },
+  "evolvedWeapon": { "$ref": "Weapon_Evo_RedCliff" },
+  "requiredLevel": 3,
+  "requiredPassiveLevel": 1
+}

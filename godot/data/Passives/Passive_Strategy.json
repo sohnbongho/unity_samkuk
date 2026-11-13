@@ -1,0 +1,10 @@
+{
+  "$type": "Samkuk.Data.PassiveData",
+  "name": "Passive_Strategy",
+  "displayName": "병법서",
+  "description": "모든 무기의 공격력이 15% 증가합니다.",
+  "type": 0,
+  "valuePerLevel": 0.15,
+  "maxLevel": 5,
+  "icon": null
+}

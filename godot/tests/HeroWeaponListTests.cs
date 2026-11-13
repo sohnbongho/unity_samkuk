@@ -209,7 +209,6 @@ namespace Samkuk.Tests
 
         // ───────────────────────── 에셋 검사 (셋업 결과) ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Assets_EveryHeroHasEnoughCommonWeapons_AndNoExclusiveInList()
         {
@@ -233,9 +232,7 @@ namespace Samkuk.Tests
                 Assert.AreEqual(h.weapons.Count, new HashSet<WeaponData>(h.weapons).Count, $"{h.displayName} 목록에 중복이 있습니다");
             }
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Assets_EveryCommonWeaponIsInSomeHeroList()
         {
@@ -254,6 +251,5 @@ namespace Samkuk.Tests
                 Assert.IsTrue(used.Contains(w), $"공용 무기 {w.displayName} 을 쓰는 장수가 없습니다 (어떤 장수도 얻을 수 없음)");
             }
         }
-#endif
     }
 }

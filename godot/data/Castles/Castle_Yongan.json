@@ -1,0 +1,17 @@
+{
+  "$type": "Samkuk.Data.CastleData",
+  "name": "Castle_Yongan",
+  "id": "Yongan",
+  "displayName": "영안",
+  "hanja": "永安",
+  "region": 9,
+  "terrain": 2,
+  "size": 0,
+  "hasWater": 1,
+  "mapPosition": { "x": 0.38, "y": 0.52 },
+  "neighbors": [
+    { "$ref": "Castle_Xiangyang" },
+    { "$ref": "Castle_Jiangzhou" }
+  ],
+  "background": { "$sprite": "res://sprites/Castles/Castle_Yongan.png", "w": 1920, "h": 1080, "ppu": 100, "pivot": [0.5, 0.5] }
+}

@@ -1,0 +1,19 @@
+{
+  "$type": "Samkuk.Data.CastleData",
+  "name": "Castle_Lujiang",
+  "id": "Lujiang",
+  "displayName": "여강",
+  "hanja": "廬江",
+  "region": 11,
+  "terrain": 3,
+  "size": 1,
+  "hasWater": 1,
+  "mapPosition": { "x": 0.68, "y": 0.51 },
+  "neighbors": [
+    { "$ref": "Castle_Shouchun" },
+    { "$ref": "Castle_Jiangxia" },
+    { "$ref": "Castle_Chaisang" },
+    { "$ref": "Castle_Jianye" }
+  ],
+  "background": { "$sprite": "res://sprites/Castles/Castle_Lujiang.png", "w": 1920, "h": 1080, "ppu": 100, "pivot": [0.5, 0.5] }
+}

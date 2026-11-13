@@ -1,0 +1,18 @@
+{
+  "$type": "Samkuk.Data.CastleData",
+  "name": "Castle_Xiaopei",
+  "id": "Xiaopei",
+  "displayName": "소패",
+  "hanja": "小沛",
+  "region": 6,
+  "terrain": 0,
+  "size": 0,
+  "hasWater": 0,
+  "mapPosition": { "x": 0.73, "y": 0.35 },
+  "neighbors": [
+    { "$ref": "Castle_Chenliu" },
+    { "$ref": "Castle_Xiapi" },
+    { "$ref": "Castle_Shouchun" }
+  ],
+  "background": { "$sprite": "res://sprites/Castles/Castle_Xiaopei.png", "w": 1920, "h": 1080, "ppu": 100, "pivot": [0.5, 0.5] }
+}

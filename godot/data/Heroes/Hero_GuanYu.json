@@ -1,0 +1,25 @@
+{
+  "$type": "Samkuk.Data.HeroData",
+  "name": "Hero_GuanYu",
+  "displayName": "관우",
+  "title": "미염공",
+  "description": "청룡언월도를 휘두르는 무신. 공격력이 높다.",
+  "tint": { "r": 0.2, "g": 0.6, "b": 0.3, "a": 1 },
+  "portrait": { "$sprite": "res://sprites/Heroes/Hero_GuanYu.png", "w": 512, "h": 640, "ppu": 100, "pivot": [0.5, 0.5] },
+  "walkSheet": { "$texture": "res://sprites/HeroWalk/Hero_GuanYu_Walk.png", "w": 192, "h": 192 },
+  "walkPixelsPerUnit": 32,
+  "maxHpBonus": 0,
+  "damageMultiplier": 1.15,
+  "moveSpeedMultiplier": 0.95,
+  "expMultiplier": 1,
+  "pickupRadiusMultiplier": 1,
+  "startingWeapon": { "$ref": "Weapon_GreenDragon" },
+  "skill": { "$ref": "Skill_GreenDragon" },
+  "weapons": [
+    { "$ref": "Weapon_Sword" },
+    { "$ref": "Weapon_Thrust" },
+    { "$ref": "Weapon_Lightning" },
+    { "$ref": "Weapon_Nova" },
+    { "$ref": "Weapon_Axe" }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "$type": "Samkuk.Data.MetaUpgradeData",
+  "name": "Meta_Study",
+  "displayName": "병법 연구",
+  "description": "경험치 획득량이 늘어난다.",
+  "stat": 5,
+  "valuePerLevel": 0.05,
+  "maxLevel": 5,
+  "baseCost": 90,
+  "costGrowth": 1.6
+}

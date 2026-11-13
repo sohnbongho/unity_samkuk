@@ -10,6 +10,8 @@ Unity 프로젝트(저장소 루트의 `Assets/`)를 Godot 4.7.2 .NET 으로 옮
 | `godot/core/` | `Samkuk.Core` (net8.0) | 엔진 참조 없는 순수 로직. 폴더는 유니티 `Assets/Scripts/<영역>/` 과 같게 둔다. `Compat/` 가 호환 층 |
 | `godot/game/`, `godot/scenes/` | `Samkuk.Game` (Godot.NET.Sdk) | 노드, 화면, 입력, 소리. `Boot.cs` 가 순수 로직에 로그·저장 폴더를 꽂는다 |
 | `godot/tests/` | `Samkuk.Tests` (NUnit) | 엔진 없이 도는 테스트 |
+| `godot/data/` | | 게임 데이터 JSON 132건 (유니티 `.asset` 에서 변환). 이제 이쪽이 원본이다 |
+| `godot/sprites/` | | 그림 146장 (유니티 `Assets/Sprites` 와 같은 하위 폴더) |
 | `tools/godot_port/` | | 옮길 때 쓰는 도구 |
 
 `core/` 와 `tests/` 에는 `.gdignore` 가 있어 Godot 이 훑지 않는다(자기 프로젝트에서 컴파일).
@@ -47,23 +49,49 @@ GODOT=/d/01-AgentLegion/tools/godot/Godot_v4.7.2-stable_mono_win64/Godot_v4.7.2-
   - `Mathf.PerlinNoise`: 유니티와 값이 같지 않다(연출용이라 범위·연속성만 맞춤).
   - `UpgradeGenerator` 는 아직 안 옮겼다(`WeaponController`/`PlayerStats` 에 기댄다, G3).
 
-## 테스트 현황 (G1)
+## 데이터 (G2)
 
-`dotnet test`: **통과 183, 보류 24, 실패 0**. 유니티 테스트 42개 파일 중 30개를 옮겼고 그 안의 테스트 표시 478개 가운데 271개는 미뤄 두었다
-(게임 오브젝트·컨트롤러·씬·에셋에 기댄다). 아직 안 옮긴 12개 파일(전부 게임 오브젝트 테스트): Ally, Build, Combat, EnemyRole, Enemy, Feedback, Hero,
+- **형식**: 데이터 한 건이 JSON 파일 하나(`godot/data/<종류>/<이름>.json`). `$type`(클래스 전체 이름) + `name` + 필드.
+  다른 데이터는 `{"$ref": "Weapon_Bow"}`, 그림은 `{"$sprite": "res://sprites/...", w, h, ppu, pivot}` / `{"$texture": ...}`, 빈 참조는 `null`.
+  열거형은 숫자, 참/거짓은 `0`/`1`(유니티에서 온 그대로) 또는 `true`/`false`.
+- **읽기**: `GameData.Load(IDataSource)`(순수 로직)가 전부 읽어 데이터 클래스로 만든다. 게임은 `GodotDataSource`(res://data), 테스트는 `DirectoryDataSource`.
+  `GameData.Get<T>(이름)`/`All<T>()`, 예전 `Resources.Load<T>(이름)` 도 이 창고에서 찾는다. 클래스에 없는 항목은 무시, JSON 에 없는 필드는 기본값.
+  문제(모르는 형식, 없는 참조, 겹친 이름)는 `GameData.Problems` 에 쌓이고 `GameDataTests` 가 비어 있는지 확인한다.
+- **그림**: 순수 로직의 `Sprite`/`Texture2D` 는 경로·크기·피벗만 든다. 화면 층의 `Textures.Of(...)` 가 Godot 텍스처로 바꾼다(코드로 만든 그림은 픽셀 → `ImageTexture`).
+  임포트는 프로젝트 기본값(`project.godot` `[importer_defaults]`)으로 무압축·밉맵 없음·3D 감지 압축 끔(도트가 뭉개지지 않게).
+- **값 고치기**: 이제 `godot/data/*.json` 을 직접 고친다. `tools/godot_port/convert_data.py` 는 유니티 에셋에서 다시 만드는 도구라 **돌리면 덮어쓴다**.
+  유니티 쪽 값이 바뀌어 다시 가져와야 할 때만 쓰고 `git diff godot/data` 로 확인한다.
+- **옮기지 않은 것**: URP 설정 에셋 5개(`Assets/Settings`), 프리팹, 씬. 맵 편집기로 고친 맵(`Assets/Resources/Maps`)은 원본에 없었다.
+
+## 테스트 현황 (G2)
+
+`dotnet test`: **통과 212, 보류 15, 실패 0**. 유니티 테스트 42개 파일 중 30개를 옮겼고(+ 새 `GameDataTests`), 게임 오브젝트·컨트롤러·씬에 기대는
+테스트는 `#if GAME_PORT` 로 미뤄 두었다(블록 338개). 아직 안 옮긴 12개 파일(전부 게임 오브젝트 테스트): Ally, Build, Combat, EnemyRole, Enemy, Feedback, Hero,
 PlayerMovement, Title, UiTheme, WaterRipple, WeaponExpansion.
 
-보류 24개는 두 종류다(`[Ignore]` 에 이유가 적혀 있다).
+기능을 옮긴 뒤 미룬 테스트를 다시 시도하려면 `python tools/godot_port/undefer_tests.py && python tools/godot_port/defer_tests.py`
+(전부 풀고, 아직 컴파일되지 않는 것만 다시 감싼다).
 
-### G2 뒤에 되살릴 것 (14)
+보류 15개는 두 종류다(`[Ignore]` 에 이유가 적혀 있다).
 
-데이터 에셋이 있어야 도는 테스트: `BalanceTests` 13개, `TerrainTests.RealCatalog_HasAllTerrainsWithArt`.
+### 원본 데이터와 어긋난 테스트 (5) — 실제 데이터로 돌려 보니 원본에서도 맞지 않는다
+
+| 테스트 | 내용 |
+|---|---|
+| `BalanceTests.Levels_AtClear_ArePacedForAOneMinuteStage`, `Pressure_FollowsTheIntendedDifficultyCurve`, `Pressure_IsPlayableForEveryHero_AtEveryWave` | `CLAUDE.md` 에 적힌 대로다: 타격감 집중 기간에 적 수를 줄여 둬 밸런스 범위를 벗어나 있다. 적 수를 되돌리거나 곡선을 다시 맞출 때 되살린다 |
+| `EvolutionTests.CatalogAsset_HasWellFormedEvolutions` | 장팔사모는 찌르기가 됐지만 진화형 비룡사모는 화살형 그대로(Step 10-9 결정)인데 테스트는 "진화해도 같은 계열"을 기대한다 |
+| `TerrainTests.RealCatalog_HasAllTerrainsWithArt` | 바닥 타일은 Step 14-3 에서 128x128 이 됐는데 테스트는 256 을 기대한다 |
 
 ### 확인 필요 (10) — 유니티 Test Runner 에서 통과하던 테스트인가
 
 옮긴 코드에서 실패한다. 로직은 원본과 같으므로 **유니티에서도 실패하고 있었을 가능성이 높지만 확인하지 못했다**
-(이 환경에서 유니티를 실행하지 못하고, Test Runner 결과 파일도 남아 있지 않다). 사용자가 유니티 Test Runner 에서 아래 10개의 결과를 알려 주면
-"원래 실패하던 테스트(테스트를 고친다)" 인지 "옮기면서 달라진 것(호환 층을 고친다)" 인지 가른다.
+(Test Runner 결과 파일이 남아 있지 않다). 유니티 에디터에서 Test Runner 로 아래 10개를 돌린 결과가 있으면
+"원래 실패하던 테스트(테스트를 고친다)" 인지 "옮기면서 달라진 것(호환 층을 고친다)" 인지 가른다. **그때까지 보류로 둔다.**
+
+명령줄로는 확인하지 못했다(2026-11-13): `Unity.exe -batchmode -runTests -testPlatform PlayMode` 는 Play 에 들어가면서 테스트 씬이 아니라
+`TitleScene` 을 열고 멈춘다 — 에디터를 열 때마다 켜지는 "Play From Title Scene"(`Step9TitleSetup.EnsurePlayFromTitle`, `playModeStartScene`)이
+테스트 러너의 시작 씬을 덮어쓰기 때문이다. 5분 넘게 진행이 없어 끝냈고, 그 실행이 남긴 것(`ProjectSettings.asset` 한 줄, `Assets/InitTestScene*.unity`)은 되돌렸다.
+명령줄로 돌리려면 그 설정을 꺼야 하는데(메뉴 `Samkuk > Play From Title Scene`, 프로젝트별 에디터 설정) Unity 원본과 사용자 에디터 설정은 건드리지 않기로 해 하지 않았다.
 
 | 테스트 | 증상 | 추정 |
 |---|---|---|

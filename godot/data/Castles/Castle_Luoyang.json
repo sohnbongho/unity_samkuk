@@ -1,0 +1,19 @@
+{
+  "$type": "Samkuk.Data.CastleData",
+  "name": "Castle_Luoyang",
+  "id": "Luoyang",
+  "displayName": "낙양",
+  "hanja": "洛陽",
+  "region": 7,
+  "terrain": 0,
+  "size": 3,
+  "hasWater": 0,
+  "mapPosition": { "x": 0.5, "y": 0.35 },
+  "neighbors": [
+    { "$ref": "Castle_Henei" },
+    { "$ref": "Castle_Hongnong" },
+    { "$ref": "Castle_Xuchang" },
+    { "$ref": "Castle_Wan" }
+  ],
+  "background": { "$sprite": "res://sprites/Castles/Castle_Luoyang.png", "w": 1920, "h": 1080, "ppu": 100, "pivot": [0.5, 0.5] }
+}

@@ -1,0 +1,18 @@
+{
+  "$type": "Samkuk.Data.CastleData",
+  "name": "Castle_Puyang",
+  "id": "Puyang",
+  "displayName": "복양",
+  "hanja": "濮陽",
+  "region": 4,
+  "terrain": 0,
+  "size": 0,
+  "hasWater": 0,
+  "mapPosition": { "x": 0.66, "y": 0.29 },
+  "neighbors": [
+    { "$ref": "Castle_Pingyuan" },
+    { "$ref": "Castle_Ye" },
+    { "$ref": "Castle_Chenliu" }
+  ],
+  "background": { "$sprite": "res://sprites/Castles/Castle_Puyang.png", "w": 1920, "h": 1080, "ppu": 100, "pivot": [0.5, 0.5] }
+}

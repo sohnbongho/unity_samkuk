@@ -1,0 +1,18 @@
+{
+  "$type": "Samkuk.Data.CastleData",
+  "name": "Castle_Hongnong",
+  "id": "Hongnong",
+  "displayName": "홍농",
+  "hanja": "弘農",
+  "region": 7,
+  "terrain": 2,
+  "size": 0,
+  "hasWater": 0,
+  "mapPosition": { "x": 0.4, "y": 0.37 },
+  "neighbors": [
+    { "$ref": "Castle_Hedong" },
+    { "$ref": "Castle_Luoyang" },
+    { "$ref": "Castle_Changan" }
+  ],
+  "background": { "$sprite": "res://sprites/Castles/Castle_Hongnong.png", "w": 1920, "h": 1080, "ppu": 100, "pivot": [0.5, 0.5] }
+}

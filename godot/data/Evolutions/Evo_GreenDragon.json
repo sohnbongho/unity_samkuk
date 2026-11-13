@@ -1,0 +1,9 @@
+{
+  "$type": "Samkuk.Data.EvolutionData",
+  "name": "Evo_GreenDragon",
+  "baseWeapon": { "$ref": "Weapon_GreenDragon" },
+  "requiredPassive": { "$ref": "Passive_Horse" },
+  "evolvedWeapon": { "$ref": "Weapon_Evo_MoonDragon" },
+  "requiredLevel": 3,
+  "requiredPassiveLevel": 1
+}

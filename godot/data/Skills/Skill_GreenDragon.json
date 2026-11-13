@@ -1,0 +1,16 @@
+{
+  "$type": "Samkuk.Data.SkillData",
+  "name": "Skill_GreenDragon",
+  "displayName": "청룡참",
+  "description": "주변의 적에게 큰 피해를 준다.",
+  "type": 1,
+  "cooldown": 20,
+  "radius": 6,
+  "damage": 90,
+  "power": 0.4,
+  "power2": 0,
+  "duration": 3,
+  "tickInterval": 0.25,
+  "effectSprite": { "$sprite": "res://sprites/Slash.png", "w": 128, "h": 128, "ppu": 64, "pivot": [0.5, 0.5] },
+  "effectColor": { "r": 0.3, "g": 1, "b": 0.5, "a": 1 }
+}

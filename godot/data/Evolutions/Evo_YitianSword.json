@@ -1,0 +1,9 @@
+{
+  "$type": "Samkuk.Data.EvolutionData",
+  "name": "Evo_YitianSword",
+  "baseWeapon": { "$ref": "Weapon_YitianSword" },
+  "requiredPassive": { "$ref": "Passive_Strategy" },
+  "evolvedWeapon": { "$ref": "Weapon_Evo_OverlordSword" },
+  "requiredLevel": 3,
+  "requiredPassiveLevel": 1
+}

@@ -1,0 +1,19 @@
+{
+  "$type": "Samkuk.Data.CastleData",
+  "name": "Castle_Chenliu",
+  "id": "Chenliu",
+  "displayName": "진류",
+  "hanja": "陳留",
+  "region": 4,
+  "terrain": 0,
+  "size": 1,
+  "hasWater": 0,
+  "mapPosition": { "x": 0.63, "y": 0.34 },
+  "neighbors": [
+    { "$ref": "Castle_Puyang" },
+    { "$ref": "Castle_Xuchang" },
+    { "$ref": "Castle_Xiaopei" },
+    { "$ref": "Castle_Runan" }
+  ],
+  "background": { "$sprite": "res://sprites/Castles/Castle_Chenliu.png", "w": 1920, "h": 1080, "ppu": 100, "pivot": [0.5, 0.5] }
+}

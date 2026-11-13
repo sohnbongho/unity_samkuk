@@ -1,0 +1,25 @@
+{
+  "$type": "Samkuk.Data.HeroData",
+  "name": "Hero_CaoCao",
+  "displayName": "조조",
+  "title": "난세의 간웅",
+  "description": "책략으로 전황을 뒤집는다.",
+  "tint": { "r": 0.4, "g": 0.55, "b": 1, "a": 1 },
+  "portrait": { "$sprite": "res://sprites/Heroes/Hero_CaoCao.png", "w": 512, "h": 640, "ppu": 100, "pivot": [0.5, 0.5] },
+  "walkSheet": { "$texture": "res://sprites/HeroWalk/Hero_CaoCao_Walk.png", "w": 192, "h": 192 },
+  "walkPixelsPerUnit": 32,
+  "maxHpBonus": 0,
+  "damageMultiplier": 1,
+  "moveSpeedMultiplier": 1.05,
+  "expMultiplier": 1.1,
+  "pickupRadiusMultiplier": 1,
+  "startingWeapon": { "$ref": "Weapon_YitianSword" },
+  "skill": { "$ref": "Skill_Scheme" },
+  "weapons": [
+    { "$ref": "Weapon_Crossbow" },
+    { "$ref": "Weapon_FireZone" },
+    { "$ref": "Weapon_Rain" },
+    { "$ref": "Weapon_Knives" },
+    { "$ref": "Weapon_Lightning" }
+  ]
+}

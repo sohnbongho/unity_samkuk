@@ -1,0 +1,16 @@
+{
+  "$type": "Samkuk.Data.CastleData",
+  "name": "Castle_Xiangping",
+  "id": "Xiangping",
+  "displayName": "양평",
+  "hanja": "襄平",
+  "region": 0,
+  "terrain": 1,
+  "size": 1,
+  "hasWater": 0,
+  "mapPosition": { "x": 0.92, "y": 0.05 },
+  "neighbors": [
+    { "$ref": "Castle_Beiping" }
+  ],
+  "background": { "$sprite": "res://sprites/Castles/Castle_Xiangping.png", "w": 1920, "h": 1080, "ppu": 100, "pivot": [0.5, 0.5] }
+}

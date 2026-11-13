@@ -1,0 +1,17 @@
+{
+  "$type": "Samkuk.Data.CastleData",
+  "name": "Castle_Jiaozhi",
+  "id": "Jiaozhi",
+  "displayName": "교지",
+  "hanja": "交趾",
+  "region": 12,
+  "terrain": 4,
+  "size": 1,
+  "hasWater": 0,
+  "mapPosition": { "x": 0.23, "y": 0.94 },
+  "neighbors": [
+    { "$ref": "Castle_Jianning" },
+    { "$ref": "Castle_Nanhai" }
+  ],
+  "background": { "$sprite": "res://sprites/Castles/Castle_Jiaozhi.png", "w": 1920, "h": 1080, "ppu": 100, "pivot": [0.5, 0.5] }
+}

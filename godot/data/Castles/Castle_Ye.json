@@ -1,0 +1,22 @@
+{
+  "$type": "Samkuk.Data.CastleData",
+  "name": "Castle_Ye",
+  "id": "Ye",
+  "displayName": "업",
+  "hanja": "鄴",
+  "region": 1,
+  "terrain": 0,
+  "size": 2,
+  "hasWater": 0,
+  "mapPosition": { "x": 0.58, "y": 0.25 },
+  "neighbors": [
+    { "$ref": "Castle_Ji" },
+    { "$ref": "Castle_Nanpi" },
+    { "$ref": "Castle_Pingyuan" },
+    { "$ref": "Castle_Jinyang" },
+    { "$ref": "Castle_Shangdang" },
+    { "$ref": "Castle_Henei" },
+    { "$ref": "Castle_Puyang" }
+  ],
+  "background": { "$sprite": "res://sprites/Castles/Castle_Ye.png", "w": 1920, "h": 1080, "ppu": 100, "pivot": [0.5, 0.5] }
+}

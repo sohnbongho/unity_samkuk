@@ -1,0 +1,10 @@
+{
+  "$type": "Samkuk.Data.PassiveData",
+  "name": "Passive_Haste",
+  "displayName": "신속",
+  "description": "무기 쿨다운이 8% 감소합니다.",
+  "type": 1,
+  "valuePerLevel": 0.08,
+  "maxLevel": 5,
+  "icon": null
+}

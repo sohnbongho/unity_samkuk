@@ -1,0 +1,18 @@
+{
+  "$type": "Samkuk.Data.CastleData",
+  "name": "Castle_Xinye",
+  "id": "Xinye",
+  "displayName": "신야",
+  "hanja": "新野",
+  "region": 10,
+  "terrain": 0,
+  "size": 0,
+  "hasWater": 0,
+  "mapPosition": { "x": 0.44, "y": 0.47 },
+  "neighbors": [
+    { "$ref": "Castle_Wan" },
+    { "$ref": "Castle_Xiangyang" },
+    { "$ref": "Castle_Hanzhong" }
+  ],
+  "background": { "$sprite": "res://sprites/Castles/Castle_Xinye.png", "w": 1920, "h": 1080, "ppu": 100, "pivot": [0.5, 0.5] }
+}

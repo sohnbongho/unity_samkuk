@@ -33,10 +33,10 @@ namespace Samkuk.Tests
         [SetUp]
         public void SetUp()
         {
-            // (미룸) stage = AssetDatabase.LoadAssetAtPath<StageData>(StagePath);
-            // (미룸) heroes = AssetDatabase.LoadAssetAtPath<HeroCatalog>(HeroCatalogPath);
-            // (미룸) upgrades = AssetDatabase.LoadAssetAtPath<UpgradeCatalog>(UpgradeCatalogPath);
-            // (미룸) meta = AssetDatabase.LoadAssetAtPath<MetaCatalog>(MetaCatalogPath);
+            stage = AssetDatabase.LoadAssetAtPath<StageData>(StagePath);
+            heroes = AssetDatabase.LoadAssetAtPath<HeroCatalog>(HeroCatalogPath);
+            upgrades = AssetDatabase.LoadAssetAtPath<UpgradeCatalog>(UpgradeCatalogPath);
+            meta = AssetDatabase.LoadAssetAtPath<MetaCatalog>(MetaCatalogPath);
             Assert.IsNotNull(stage, "스테이지 에셋이 없습니다. Samkuk > Run All Setup 을 실행하세요.");
             Assert.IsNotNull(heroes, "HeroCatalog 가 없습니다.");
             Assert.IsNotNull(upgrades, "UpgradeCatalog 가 없습니다.");
@@ -83,7 +83,7 @@ namespace Samkuk.Tests
         }
 #endif
 
-        [Ignore("G2: 데이터 변환(.asset -> Godot 데이터) 뒤에 되살린다")]
+        [Ignore("원본과 같은 상태: 타격감 집중 기간에 적 수를 줄여 두어 밸런스 범위에서 벗어나 있다 (CLAUDE.md '[임시] 타격감 집중 기간의 적 수'). 적 수를 되돌리거나 곡선을 다시 맞출 때 되살린다")]
         [Test]
         public void Levels_AtClear_ArePacedForAOneMinuteStage()
         {
@@ -95,7 +95,6 @@ namespace Samkuk.Tests
             Assert.LessOrEqual(finalLevel, 14, $"1분에 도달하는 레벨이 너무 높음 ({finalLevel})");
         }
 
-        [Ignore("G2: 데이터 변환(.asset -> Godot 데이터) 뒤에 되살린다")]
         [Test]
         public void LevelUps_StartEarly_AndKeepASteadyPace()
         {
@@ -109,7 +108,6 @@ namespace Samkuk.Tests
             Assert.GreaterOrEqual(times[times.Count - 1], stage.duration * 0.7f, "후반에도 레벨업이 이어져야 함");
         }
 
-        [Ignore("G2: 데이터 변환(.asset -> Godot 데이터) 뒤에 되살린다")]
         [Test]
         public void Levels_WithStrongestExpBonuses_DoNotExplode()
         {
@@ -122,7 +120,7 @@ namespace Samkuk.Tests
 
         // ───────────────────────── 전투 압박 ─────────────────────────
 
-        [Ignore("G2: 데이터 변환(.asset -> Godot 데이터) 뒤에 되살린다")]
+        [Ignore("원본과 같은 상태: 타격감 집중 기간에 적 수를 줄여 두어 밸런스 범위에서 벗어나 있다 (CLAUDE.md '[임시] 타격감 집중 기간의 적 수'). 적 수를 되돌리거나 곡선을 다시 맞출 때 되살린다")]
         [Test]
         public void Pressure_FollowsTheIntendedDifficultyCurve()
         {
@@ -145,7 +143,7 @@ namespace Samkuk.Tests
                 Assert.LessOrEqual(ratios[i], ratios[i - 1] + 0.05f, $"웨이브 {i + 1}는 앞 웨이브보다 쉬워지면 안 됨 (난이도가 계단식으로 오름)");
         }
 
-        [Ignore("G2: 데이터 변환(.asset -> Godot 데이터) 뒤에 되살린다")]
+        [Ignore("원본과 같은 상태: 타격감 집중 기간에 적 수를 줄여 두어 밸런스 범위에서 벗어나 있다 (CLAUDE.md '[임시] 타격감 집중 기간의 적 수'). 적 수를 되돌리거나 곡선을 다시 맞출 때 되살린다")]
         [Test]
         public void Pressure_IsPlayableForEveryHero_AtEveryWave()
         {
@@ -163,7 +161,6 @@ namespace Samkuk.Tests
             }
         }
 
-        [Ignore("G2: 데이터 변환(.asset -> Godot 데이터) 뒤에 되살린다")]
         [Test]
         public void HeroStartingWeapons_HaveComparablePower()
         {
@@ -180,7 +177,6 @@ namespace Samkuk.Tests
             Assert.LessOrEqual(max / min, 1.6f, $"시작 무기 화력 편차가 큼: {maxName} {max:0.0} vs {minName} {min:0.0}");
         }
 
-        [Ignore("G2: 데이터 변환(.asset -> Godot 데이터) 뒤에 되살린다")]
         [Test]
         public void EvolvedWeapons_ArePowerfulButNotAbsurd()
         {
@@ -196,7 +192,6 @@ namespace Samkuk.Tests
             }
         }
 
-        [Ignore("G2: 데이터 변환(.asset -> Godot 데이터) 뒤에 되살린다")]
         [Test]
         public void ArrowWeapons_AreFast_AndReachTheirTargetingRange()
         {
@@ -219,7 +214,6 @@ namespace Samkuk.Tests
             Assert.GreaterOrEqual(checkedCount, 5, "화살 계열 무기를 충분히 검사 (활·쇠뇌·비도·연노·비룡사모. 의천검·패왕의천검은 연속 베기로 바뀜)");
         }
 
-        [Ignore("G2: 데이터 변환(.asset -> Godot 데이터) 뒤에 되살린다")]
         [Test]
         public void EnemyArrows_AreSlowEnoughToDodge_AndStillReachTheShootingDistance()
         {
@@ -248,7 +242,6 @@ namespace Samkuk.Tests
 
         // ───────────────────────── 생존 ─────────────────────────
 
-        [Ignore("G2: 데이터 변환(.asset -> Godot 데이터) 뒤에 되살린다")]
         [Test]
         public void Enemies_NeverShredThePlayerQuickly()
         {
@@ -274,7 +267,6 @@ namespace Samkuk.Tests
 
         // ───────────────────────── 골드 ─────────────────────────
 
-        [Ignore("G2: 데이터 변환(.asset -> Godot 데이터) 뒤에 되살린다")]
         [Test]
         public void Gold_FirstPurchaseIsReachable_AndFullProgressionTakesManyRuns()
         {
@@ -288,7 +280,6 @@ namespace Samkuk.Tests
             Assert.That(runsToMax, Is.InRange(25f, 80f), $"클리어 판({clearRun}G) 기준으로 전부 최대까지 {runsToMax:0}판");
         }
 
-        [Ignore("G2: 데이터 변환(.asset -> Godot 데이터) 뒤에 되살린다")]
         [Test]
         public void MetaUpgrades_TotalEffect_IsMeaningfulButNotAStomp()
         {
@@ -309,7 +300,6 @@ namespace Samkuk.Tests
 
         // ───────────────────────── 레벨업 선택지와 진화 ─────────────────────────
 
-        [Ignore("G2: 데이터 변환(.asset -> Godot 데이터) 뒤에 되살린다")]
         [Test]
         public void UpgradeWeights_FavorUpgradingWhatYouOwn()
         {
