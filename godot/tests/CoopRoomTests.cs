@@ -446,5 +446,52 @@ namespace Samkuk.Tests
                 Object.Destroy(canvas);
             }
         }
+
+        // 대기방 배치 (Godot 판에서 더한 테스트): 안내 문구가 버튼과 겹치지 않고, 시작 못 하는 이유는 버튼 글자가 아니라 따로 한 줄로.
+        [UnityTest]
+        public IEnumerator RoomPanel_RoomView_TextsDoNotOverlapButtons_AndStartReasonIsOutsideTheButton()
+        {
+            var rec = new Recorder();
+            var flow = new CoopFlow(rec.Send, "me");
+            var canvas = new GameObject("Canvas", typeof(RectTransform));
+            try
+            {
+                var panel = RoomPanel.Create(canvas.transform, flow);
+                panel.SelectHero("Hero_LiuBei");
+                panel.WorldId = "Castle_Luoyang";
+                panel.EnterRoom();
+                var room = Room("ABC123", 0, "Stage_YellowTurban", ("me", 0, "Hero_LiuBei", false), ("friend", 1, "Hero_GuanYu", false));
+                room.WorldId = "Castle_Luoyang";
+                flow.Handle(new MessageWrapper { RoomEnterResponse = new RoomEnterResponse { Success = true, Room = room } });
+                yield return null;
+
+                var box = panel.transform.Find("Box");
+                var roomGroup = box.Find("Room");
+                var start = roomGroup.Find("StartButton");
+                var hint = roomGroup.Find("StartHint").GetComponent<Samkuk.Compat.UI.Text>();
+                Assert.AreEqual("시작", start.Find("Label").GetComponent<Samkuk.Compat.UI.Text>().text, "버튼 글자는 짧게 둔다 (버튼 밖으로 넘치지 않게)");
+                Assert.AreEqual("아직 준비하지 않은 사람이 있습니다", hint.text);
+
+                // 가운데 기준 배치라 y ± 높이/2 로 세로 범위를 본다: 위에서 아래로 겹침 없이 놓여야 한다
+                var order = new[] { roomGroup.Find("Slot3"), hint.transform, start, box.Find("Status"), roomGroup.Find("LeaveButton"), box.Find("CloseButton") };
+                for (int i = 0; i + 1 < order.Length; i++)
+                {
+                    var a = (RectTransform)order[i]; var b = (RectTransform)order[i + 1];
+                    float aBottom = a.anchoredPosition.y - a.sizeDelta.y * 0.5f, bTop = b.anchoredPosition.y + b.sizeDelta.y * 0.5f;
+                    Assert.GreaterOrEqual(aBottom, bTop, $"{a.name} 아래 끝이 {b.name} 위 끝보다 위에 있어야 한다");
+                }
+                var close = (RectTransform)box.Find("CloseButton");
+                Assert.GreaterOrEqual(close.anchoredPosition.y - close.sizeDelta.y * 0.5f, -((RectTransform)box).sizeDelta.y * 0.5f, "닫기 버튼이 창 안에 있다");
+
+                room.Members[1].Ready = true;
+                flow.Handle(State(room));
+                yield return null;
+                Assert.AreEqual("", hint.text, "시작할 수 있으면 이유 줄은 비운다");
+            }
+            finally
+            {
+                Object.Destroy(canvas);
+            }
+        }
     }
 }

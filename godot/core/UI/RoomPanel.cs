@@ -27,7 +27,7 @@ namespace Samkuk.UI
         static readonly Color HeroPicked = new Color(0.6f, 0.45f, 0.15f);
 
         CoopFlow flow;
-        Text codeText, status, castleText;
+        Text codeText, status, castleText, startHint;
         readonly Text[] memberTexts = new Text[CoopSettings.MaxMembers];
         Button enterButton, prevCastleButton, nextCastleButton, readyButton, startButton, leaveButton, closeButton;
         readonly List<Button> heroButtons = new List<Button>();
@@ -138,18 +138,23 @@ namespace Samkuk.UI
                 memberTexts[i] = UiBuild.Text("Text", slotBg.transform, font, 26, TextAnchor.MiddleLeft, "");
                 UiBuild.Stretch(memberTexts[i].rectTransform, 18f);
             }
-            readyButton = UiBuild.Button("ReadyButton", roomGroup.transform, font, "준비", -210f, -170f, new Vector2(300f, 70f), new Color(0.2f, 0.45f, 0.25f));
-            startButton = UiBuild.Button("StartButton", roomGroup.transform, font, "시작", 210f, -170f, new Vector2(300f, 70f), new Color(0.55f, 0.2f, 0.18f));
-            leaveButton = UiBuild.Button("LeaveButton", roomGroup.transform, font, "나가기", 0f, -250f, new Vector2(240f, 56f), new Color(0.25f, 0.25f, 0.3f));
+            // 세로 배치(가운데 기준 y): 구성원 칸(아래 끝 -93) → 시작 못 하는 이유 -112 → 준비/시작 -165 → 안내 문구 -222 → 나가기 -272 → 닫기 -326.
+            // 예전에는 안내 문구(-230, 높이 60)가 나가기 버튼(-250)과 겹쳤고, 시작 못 하는 이유를 시작 버튼 글자에 붙여 버튼 밖으로 넘쳤다.
+            startHint = UiBuild.Text("StartHint", roomGroup.transform, font, 22, TextAnchor.MiddleCenter, "");
+            UiBuild.Place(startHint.rectTransform, 0f, -112f, 900f, 32f);
+            startHint.color = new Color(1f, 0.7f, 0.55f);
+            readyButton = UiBuild.Button("ReadyButton", roomGroup.transform, font, "준비", -210f, -165f, new Vector2(300f, 66f), new Color(0.2f, 0.45f, 0.25f));
+            startButton = UiBuild.Button("StartButton", roomGroup.transform, font, "시작", 210f, -165f, new Vector2(300f, 66f), new Color(0.55f, 0.2f, 0.18f));
+            leaveButton = UiBuild.Button("LeaveButton", roomGroup.transform, font, "나가기", 0f, -272f, new Vector2(240f, 50f), new Color(0.25f, 0.25f, 0.3f));
             readyButton.onClick.AddListener(() => { AudioManager.Play(SfxId.Click); ToggleReady(); });
             startButton.onClick.AddListener(() => { AudioManager.Play(SfxId.Click); StartBattle(); });
             leaveButton.onClick.AddListener(() => { AudioManager.Play(SfxId.Click); LeaveRoom(); });
 
             status = UiBuild.Text("Status", box.transform, font, 24, TextAnchor.MiddleCenter, "");
-            UiBuild.Place(status.rectTransform, 0f, -230f, 900f, 60f);
+            UiBuild.Place(status.rectTransform, 0f, -222f, 900f, 40f);
             status.color = new Color(1f, 0.85f, 0.6f);
 
-            closeButton = UiBuild.Button("CloseButton", box.transform, font, "닫기", 0f, -310f, new Vector2(240f, 56f), new Color(0.25f, 0.25f, 0.3f));
+            closeButton = UiBuild.Button("CloseButton", box.transform, font, "닫기", 0f, -326f, new Vector2(240f, 50f), new Color(0.25f, 0.25f, 0.3f));
             closeButton.onClick.AddListener(() => { AudioManager.Play(SfxId.Click); Close(); });
 
             // 처음 고른 장수: 마지막으로 전투한 장수, 없으면 첫 장수
@@ -267,7 +272,8 @@ namespace Samkuk.UI
                 UiBuild.SetLabel(readyButton, room.MyReady ? "준비 취소" : "준비");
                 readyButton.interactable = !busy && !battle && !room.InBattle;
                 startButton.interactable = !busy && !battle && room.CanStart;
-                UiBuild.SetLabel(startButton, room.CanStart || busy ? "시작" : "시작 (" + room.StartBlockReason + ")");
+                // 시작 못 하는 이유는 버튼 글자가 아니라 버튼 위의 한 줄로 (버튼 폭 300 에 긴 문구가 들어가지 않는다)
+                startHint.text = host && !room.CanStart && !busy && !battle ? room.StartBlockReason : "";
                 leaveButton.interactable = !battle;
             }
             closeButton.interactable = !battle;

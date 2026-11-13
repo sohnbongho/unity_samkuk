@@ -34,6 +34,8 @@ namespace Samkuk.Game
         AudioOut audio;
         int frames, quitAfter = -1;
         string shotPath;
+        string watchCoop, watchKey = "";   // --watch-coop
+        int watchShotAt = -1, watchCount;
         string[] heldKeys = new string[0];
         readonly List<(int frame, string key)> presses = new List<(int, string)>();   // --press=40:digit1;90:enter (그 프레임에 두 프레임 동안 누름)
         readonly List<string> down = new List<string>();
@@ -116,6 +118,7 @@ namespace Samkuk.Game
                 else if (arg == "--shot-when=evolve") waitEvolve = true;
                 else if (arg.StartsWith("--login=")) autoLogin = arg.Substring(8).Split(':');   // --login=아이디:비밀번호 (20번째 프레임에 로그인)
                 else if (arg.StartsWith("--save=")) Samkuk.Meta.SaveSystem.PathOverride = arg.Substring(7);   // 점검이 실제 저장을 건드리지 않게
+                else if (arg.StartsWith("--watch-coop=")) watchCoop = arg.Substring(13);   // 협동 전투의 상태(레벨·선택 중·사망·결과 창)가 바뀔 때마다 기록하고 화면을 저장한다 (파일 이름 머리)
                 else if (arg == "--smoke") quitAfter = 120;
             }
 
@@ -251,8 +254,33 @@ namespace Samkuk.Game
                 return;
             }
 
+            if (watchCoop != null) WatchCoop();
             frames++;
             if (quitAfter >= 0 && frames >= quitAfter) Finish();
+        }
+
+        /// <summary>점검용: 협동 전투에서 내 상태가 바뀌면 한 줄 적고 20프레임 뒤(창이 뜬 다음) 화면을 저장한다. 레벨업 선택은 1초 뒤 첫 카드를 고른다.</summary>
+        void WatchCoop()
+        {
+            var driver = Compat.Object.FindAnyObjectByType<Samkuk.Coop.CoopBattleDriver>();
+            var me = driver != null && driver.Model != null ? driver.Model.Me : null;
+            bool result = Compat.Object.FindAnyObjectByType<Samkuk.UI.CoopResultPanel>() != null;
+            string key = SceneManager.GetActiveScene().name
+                + (me != null && me.Seen ? $" lv{me.State.Level}{(me.Choosing ? " choosing" : "")}{(me.Dead ? " dead" : "")}" : "")
+                + (driver != null && driver.Model != null ? $" revives{driver.Model.Stage.RevivesLeft}" : "")
+                + (result ? " result" : "");
+            if (key != watchKey)
+            {
+                if (me != null && me.Choosing && !watchKey.Contains("choosing")) presses.Add((frames + 60, "digit1"));
+                watchKey = key;
+                watchShotAt = frames + 20;
+                GD.Print($"[Samkuk] 협동 {frames}: {key}" + (me != null ? $" hp {me.State.Hp}/{me.State.MaxHp} 처치 {me.State.Kills}" : ""));
+            }
+            if (frames == watchShotAt)
+            {
+                string file = $"{watchCoop}_{watchCount++:00}_{watchKey.Replace(' ', '_')}.png";
+                GetViewport().GetTexture().GetImage().SavePng(file);
+            }
         }
 
         void Finish()

@@ -71,6 +71,7 @@ GODOT=/d/01-AgentLegion/tools/godot/Godot_v4.7.2-stable_mono_win64/Godot_v4.7.2-
   후처리 볼륨·틸트 시프트·렌더러 번호도 값만 있고 화면 층이 읽는다(G4).
 - `BattleTiltCamera.OnBeginCamera`: 컬링 범위를 넓히던 코드를 뺐다(Godot 이 그림의 실제 범위로 컬링한다).
 - `MapTestReturn`, `DebugOverlay`: `OnGUI` 로 그리던 글자는 화면 층(`GameRoot.SyncNotes`)이 그린다.
+- **협동 대기방 배치**(`RoomPanel`): 안내 문구(y -230, 높이 60)가 [나가기] 버튼(y -250)과 겹치고, 시작 못 하는 이유를 [시작] 버튼 글자에 붙여 버튼 밖으로 넘치던 것을 고쳤다. 이유는 버튼 위의 한 줄(`StartHint`)로 옮기고 준비/시작 → 안내 → 나가기 → 닫기를 겹치지 않게 다시 놓았다. 유니티 원본도 같은 좌표라 같은 겹침이 있을 것이다(확인하지 못함). 테스트 `RoomPanel_RoomView_TextsDoNotOverlapButtons_...`.
 - **씬 로드 뒤 훅**(`[RuntimeInitializeOnLoadMethod(AfterSceneLoad)]`: 타이틀의 [맵 편집기]·[협동] 버튼, 맵 테스트 안내)을 씬이 읽힐 때마다 부른다. 유니티는 실행 시작 때 한 번만 불러서, 전투에서 타이틀로 돌아오면 그 버튼들이 없고 맵 편집기에서 시작한 시험 전투에 안내·M 키가 붙지 않았다(코드는 매번 불리는 것을 전제로 쓰여 있다). 의도대로 고친 것이다.
 - `Mathf.PerlinNoise`: 유니티와 값이 같지 않다(연출용이라 범위·연속성만 맞춤).
 - 프레임 순서: 컴포넌트는 만든 순서대로 돈다(유니티는 스크립트 실행 순서를 따로 정하지 않으면 보장이 없었다).
@@ -87,7 +88,7 @@ GODOT=/d/01-AgentLegion/tools/godot/Godot_v4.7.2-stable_mono_win64/Godot_v4.7.2-
 
 ## 테스트 현황
 
-`dotnet test`: **통과 656, 보류 4, 실패 0, 미룬 것 0**. 유니티 PlayMode 테스트 42개 파일의 테스트가 전부 돈다(+ Godot 판에서 더한 `GameDataTests`, `ServerDataExporterTests`).
+`dotnet test`: **통과 657, 보류 4, 실패 0, 미룬 것 0**. 유니티 PlayMode 테스트 42개 파일의 테스트가 전부 돈다(+ Godot 판에서 더한 `GameDataTests`, `ServerDataExporterTests`).
 유니티의 Mono 런타임으로 돌려도 같다(`tools/godot_port/mono_check.sh`: 보류 4개와, 작업 폴더에 `Assets/` 가 없어 실패하는 `SceneNames_MatchTheSceneAssets` 만 실패).
 
 테스트 도우미(`godot/tests`): `UnityTestSupport.cs`(프레임을 넘기는 `[UnityTest]`, 입력 흉내, 테스트 사이 프레임 경계), `AssetDatabase.cs`(예전 에셋 경로 → 데이터 창고·프리팹),
@@ -165,7 +166,7 @@ tools/godot_port/build_windows.sh     # Builds/godot/Samkuk.exe + Builds/Samkuk-
 | 조명·후처리·틸트 시프트·그림자 (14) | 테스트 | 화면 | 2D 조명·픽셀 퍼펙트 카메라·가짜 그림자는 옮기지 않음(결정) |
 | 겹친 소품 반투명 (14-6) | 테스트 | 화면 | |
 | 2.5D 틸트·언덕·절벽·흙길 (16) | 테스트 | 화면 | F10 으로 끄는 탑다운 경로는 그리지 않음(결정) |
-| 로그인·협동 방·협동 전투 (15) | 테스트 | 서버 | 내보낸 실행 파일 두 개를 계정 둘로 띄워 확인: 로그인 → 같은 성의 방에 입장(방장·손님) → 손님 장수 바꾸기·[준비] → 방장 [시작] → 서버 전투에서 서로의 장수가 보이고 각자 움직임. 3~4인, 레벨업·부활·결과 화면의 2인 흐름은 미확인. 대기방에서 안내 글이 [나가기] 버튼과 겹치고 긴 [시작] 문구가 버튼 밖으로 넘친다(글자 폭·줄 높이 맞추기에 포함) |
+| 로그인·협동 방·협동 전투 (15) | 테스트 | 서버 | 내보낸 실행 파일 두 개를 계정 둘로 띄워 확인: 로그인 → 같은 성의 방에 입장(방장·손님) → 손님 장수 바꾸기·[준비] → 방장 [시작] → 서버 전투에서 서로의 장수가 보임 → 레벨업 카드(고른 사람만 멈춤) → 쓰러짐("10초 뒤 부활") → 부활("2초 무적", 부활 남음 3 → 1) → 다시 쓰러짐 → 결과 창(두 사람의 처치·레벨·골드). 3~4인과 [방으로 돌아가기] 뒤 다음 판은 미확인 |
 | 서버 데이터 내보내기 (15-2) | 테스트 | — | `dotnet run --project godot/exporter` (기본 출력 `csharpServer/GameServer/Data`, 인자로 다른 폴더). `godot/data` 에서 만든 9개 파일이 서버의 현재 파일과 글자 하나까지 같다(`export_info.json` 만 다름) |
 | Windows 빌드 (11) | — | 화면 | `tools/godot_port/build_windows.sh` |
 | 디버그 키 F1~F10 | — | 화면 | F7(도트 격자)·F10(틸트 끄기)은 값만 바뀌고 화면은 그대로 |
