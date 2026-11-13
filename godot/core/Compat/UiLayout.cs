@@ -174,11 +174,30 @@ namespace Samkuk.Compat.UI
             return Mathf.Max(0f, own);
         }
 
+        // 최소 크기: 배치 요소가 정했으면 그 값, 아니면 자기 배치 그룹의 최소(격자는 칸이 고정이라 선호 크기와 같다), 그 밖에는 0
         static float Min(RectTransform rt, bool horizontal)
         {
             var le = rt.GetComponent<LayoutElement>();
-            if (le == null || !le.enabled) return 0f;
-            return Mathf.Max(0f, horizontal ? le.minWidth : le.minHeight);
+            if (le != null && le.enabled)
+            {
+                float m = horizontal ? le.minWidth : le.minHeight;
+                if (m >= 0f) return m;
+            }
+            var group = rt.GetComponent<LayoutGroup>();
+            if (group == null || !group.enabled) return 0f;
+            if (group is GridLayoutGroup) return GroupPreferred(rt, group, horizontal, horizontal ? rt.screenRect.height : rt.screenRect.width);
+            var hv = (HorizontalOrVerticalLayoutGroup)group;
+            bool control = horizontal ? hv.childControlWidth : hv.childControlHeight;
+            bool along = (group is HorizontalLayoutGroup) == horizontal;
+            var children = ActiveChildren(rt);
+            float total = 0f;
+            foreach (var c in children)
+            {
+                float m = control ? Min(c, horizontal) : Mathf.Max(0f, horizontal ? c.sizeDelta.x : c.sizeDelta.y);
+                total = along ? total + m : Mathf.Max(total, m);
+            }
+            if (along && children.Count > 1) total += hv.spacing * (children.Count - 1);
+            return total + (horizontal ? group.padding.horizontal : group.padding.vertical);
         }
 
         static float Flexible(RectTransform rt, bool horizontal)
@@ -282,9 +301,13 @@ namespace Samkuk.Compat.UI
             }
             else if (extra < 0f && controlMain)
             {
-                float sum = 0f;
-                for (int i = 0; i < n; i++) sum += main[i];
-                if (sum > 0f) for (int i = 0; i < n; i++) main[i] = Mathf.Max(Min(children[i], horizontalLine), main[i] + extra * main[i] / sum);
+                // 자리가 모자라면 유니티처럼 모든 자식을 "최소 ↔ 선호" 사이의 같은 비율로 줄인다
+                float totalMin = 0f, totalPref = 0f;
+                var mins = new float[n];
+                for (int i = 0; i < n; i++) { mins[i] = Mathf.Min(Min(children[i], horizontalLine), main[i]); totalMin += mins[i]; totalPref += main[i]; }
+                float room = innerMain - group.spacing * (n - 1);
+                float k = totalPref > totalMin ? Mathf.Clamp01((room - totalMin) / (totalPref - totalMin)) : 0f;
+                for (int i = 0; i < n; i++) main[i] = mins[i] + (main[i] - mins[i]) * k;
             }
 
             int align = (int)group.childAlignment;

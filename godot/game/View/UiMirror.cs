@@ -57,6 +57,13 @@ namespace Samkuk.Game
         Selectable hovered;
         GVec2 mouse;
         float screenHeight;
+        // 가리기(스크롤 영역): 가려지는 자식은 ClipContents 를 켠 상자 안에 넣는다. container = 지금 넣을 부모, origin = 그 부모의 화면 위치
+        Control container;
+        GVec2 origin;
+        Rect2 clip;
+        bool clipped;
+        readonly Dictionary<Control, int> order = new Dictionary<Control, int>();
+        float wheel;
 
         public override void _Ready()
         {
@@ -74,6 +81,9 @@ namespace Samkuk.Game
             return new CVec2(size.X + 2f, size.Y * Mathf.Max(0.5f, text.lineSpacing));
         }
 
+        static readonly Regex SizeAny = new Regex("<size=(\\d+)>", RegexOptions.Compiled);
+        static readonly Regex ColorAny = new Regex("<color=([^>]+)>", RegexOptions.Compiled);
+        static readonly Regex SizeTag = new Regex("^<size=(\\d+)>", RegexOptions.Compiled);
         static readonly Regex Tags = new Regex("</?(color|size|b|i)(=[^>]*)?>", RegexOptions.Compiled);
         /// <summary>유니티 리치 텍스트 꼬리표를 떼어 낸다 (색·크기 꼬리표는 한 군데뿐이라 글자만 남긴다).</summary>
         static string Plain(string s) => s.IndexOf('<') < 0 ? s : Tags.Replace(s, "");
@@ -82,6 +92,10 @@ namespace Samkuk.Game
         {
             frame++;
             drawIndex = 0;
+            order.Clear();
+            container = root;
+            origin = GVec2.Zero;
+            clipped = false;
             screenHeight = screen.Y;
             hits.Clear();
             mouse = GetViewport().GetMousePosition();
@@ -113,6 +127,7 @@ namespace Samkuk.Game
             foreach (var k in dead) views.Remove(k);
 
             UpdateHover();
+            wheel = 0f;
         }
 
         void Walk(RectTransform rt, float scale, float alpha, bool interactive)
@@ -125,7 +140,19 @@ namespace Samkuk.Game
                 interactive &= group.blocksRaycasts;
             }
 
-            var rect = ToScreen(rt.screenRect, scale);
+            var abs = ToScreen(rt.screenRect, scale);
+            var rect = new Rect2(abs.Position - origin, abs.Size);   // 지금 부모 상자 안에서의 자리
+
+            // 스크롤 영역: 마우스가 위에 있을 때 휠로 내용을 위아래로 민다 (내용이 보이는 칸보다 클 때만)
+            var scroll = go.GetComponent<ScrollRect>();
+            if (scroll != null && scroll.enabled && scroll.vertical && scroll.content != null && wheel != 0f && abs.HasPoint(mouse))
+            {
+                var view = scroll.viewport != null ? scroll.viewport : rt;
+                float max = Mathf.Max(0f, scroll.content.screenRect.height - view.screenRect.height);
+                var p = scroll.content.anchoredPosition;
+                scroll.content.anchoredPosition = new CVec2(p.x, Mathf.Clamp(p.y - wheel * 60f * Mathf.Max(0.1f, scroll.scrollSensitivity) / 10f, 0f, max));
+            }
+
             // 자기 회전(내정 지도의 길처럼 기울인 띠): 피벗을 중심으로. 화면은 y 가 아래라 방향이 반대다
             float turn = -rt.localEulerAngles.z * Mathf.Deg2Rad;
             var pivot = new GVec2(rt.pivot.x, 1f - rt.pivot.y);
@@ -135,11 +162,34 @@ namespace Samkuk.Game
                 else if (c is Text text) { if (text.enabled) { SyncText(text, rect, scale, alpha, interactive); Turn(text, turn, pivot); } }
                 else if (c is InputField field) { if (field.enabled) SyncField(field, rect, scale); }
             }
+            // 가리는 상자(RectMask2D, Mask): 자식을 이 사각형 안에서만 보이게
+            var mask = (Compat.Object)go.GetComponent<RectMask2D>() ?? go.GetComponent<Mask>();
+            var saved = (container, origin, clip, clipped);
+            if (mask != null)
+            {
+                var box = Acquire<Control>(mask).node;
+                box.ClipContents = true;
+                box.Position = rect.Position;
+                box.Size = rect.Size;
+                clip = clipped ? clip.Intersection(abs) : abs;
+                clipped = true;
+                container = box;
+                origin = abs.Position;
+            }
             for (int i = 0; i < rt.childCount; i++)
             {
                 var child = (RectTransform)rt.GetChild(i);
                 if (child.gameObject.activeSelf) Walk(child, scale, alpha, interactive);
             }
+            (container, origin, clip, clipped) = saved;
+        }
+
+        // 눌림 판정에 쓸 화면 사각형 (가려진 부분은 뺀다)
+        void AddHit(Graphic graphic, Rect2 local)
+        {
+            var area = new Rect2(local.Position + origin, local.Size);
+            if (clipped) area = area.Intersection(clip);
+            if (area.Size.X > 0f && area.Size.Y > 0f) hits.Add(new Hit { rect = area, graphic = graphic });
         }
 
         void Turn(Compat.Object key, float radians, GVec2 pivot)
@@ -159,15 +209,23 @@ namespace Samkuk.Game
             {
                 view?.node.QueueFree();
                 view = new View { node = new T { MouseFilter = Control.MouseFilterEnum.Ignore } };
-                root.AddChild(view.node);
+                container.AddChild(view.node);
                 views[key] = view;
             }
             view.seen = frame;
             view.node.Visible = true;
-            // 그리는 순서 = 이번 프레임에 만난 순서
-            if (view.node.GetIndex() != drawIndex) root.MoveChild(view.node, Mathf.Min(drawIndex, root.GetChildCount() - 1));
-            drawIndex++;
+            Place(view.node);
             return view;
+        }
+
+        // 지금 부모 상자 안에, 이번 프레임에 만난 순서대로 (그리는 순서)
+        void Place(Control node)
+        {
+            if (node.GetParent() != container) node.Reparent(container, false);
+            order.TryGetValue(container, out int index);
+            if (node.GetIndex() != index) container.MoveChild(node, Mathf.Min(index, container.GetChildCount() - 1));
+            order[container] = index + 1;
+            drawIndex++;
         }
 
         // 버튼 상태에 따른 색 배율 (보통/올림/누름/못 누름)
@@ -186,7 +244,7 @@ namespace Samkuk.Game
 
         void SyncImage(Image image, Rect2 rect, float scale, float alpha, bool interactive)
         {
-            if (interactive && image.raycastTarget) hits.Add(new Hit { rect = rect, graphic = image });
+            if (interactive && image.raycastTarget) AddHit(image, rect);
             var color = Tint(image, alpha);
             var sprite = image.sprite;
             var texture = sprite != null ? Textures.Of(sprite) : null;
@@ -230,7 +288,12 @@ namespace Samkuk.Game
 
         void SyncText(Text text, Rect2 rect, float scale, float alpha, bool interactive)
         {
-            if (interactive && text.raycastTarget) hits.Add(new Hit { rect = rect, graphic = text });
+            if (interactive && text.raycastTarget) AddHit(text, rect);
+            if (text.supportRichText && text.text != null && (text.text.Contains("<size=") || text.text.Contains("<color=")))
+            {
+                SyncRichText(text, rect, scale, alpha);
+                return;
+            }
             var view = Acquire<Label>(text);
             var label = (Label)view.node;
             if (view.label == null)
@@ -244,7 +307,14 @@ namespace Samkuk.Game
             label.Position = rect.Position;
             label.Size = rect.Size;
             var settings = view.label;
-            int size = Mathf.Max(1, Mathf.RoundToInt(text.fontSize * scale));
+            // 글 전체를 감싼 크기 꼬리표(<size=22>)가 있으면 그 크기로 (상점 설명)
+            int baseSize = text.fontSize;
+            if (text.supportRichText && s.Length > 0 && s[0] == '<')
+            {
+                var m = SizeTag.Match(s);
+                if (m.Success && int.TryParse(m.Groups[1].Value, out int tagged)) baseSize = tagged;
+            }
+            int size = Mathf.Max(1, Mathf.RoundToInt(baseSize * scale));
             if (settings.FontSize != size) settings.FontSize = size;
             settings.FontColor = Tint(text, alpha);
             settings.LineSpacing = (text.lineSpacing - 1f) * size;
@@ -269,6 +339,34 @@ namespace Samkuk.Game
             label.ClipContents = text.verticalOverflow == VerticalWrapMode.Truncate;   // 칸을 넘는 줄은 자른다 (유니티의 Truncate)
         }
 
+        // 크기·색 꼬리표가 섞인 글(상점 설명): 꼬리표를 BBCode 로 바꿔 RichTextLabel 로 그린다
+        void SyncRichText(Text text, Rect2 rect, float scale, float alpha)
+        {
+            var view = Acquire<RichTextLabel>(text);
+            var label = (RichTextLabel)view.node;
+            int size = Mathf.Max(1, Mathf.RoundToInt(text.fontSize * scale));
+            string key = text.text + "|" + size;
+            if (view.textCache != key)
+            {
+                view.textCache = key;
+                string bb = SizeAny.Replace(text.text, m => "[font_size=" + Mathf.Max(1, Mathf.RoundToInt(int.Parse(m.Groups[1].Value) * scale)) + "]");
+                bb = bb.Replace("</size>", "[/font_size]").Replace("</color>", "[/color]").Replace("<b>", "[b]").Replace("</b>", "[/b]");
+                bb = ColorAny.Replace(bb, "[color=$1]");
+                label.BbcodeEnabled = true;
+                label.ScrollActive = false;
+                label.AddThemeFontOverride("normal_font", Fonts.Default);
+                label.AddThemeFontSizeOverride("normal_font_size", size);
+                label.Text = bb;
+            }
+            label.Position = rect.Position;
+            label.Size = rect.Size;
+            label.Modulate = Tint(text, alpha);
+            int a = (int)text.alignment;
+            label.VerticalAlignment = (a / 3) == 0 ? VerticalAlignment.Top : (a / 3) == 1 ? VerticalAlignment.Center : VerticalAlignment.Bottom;
+            label.HorizontalAlignment = (a % 3) == 0 ? HorizontalAlignment.Left : (a % 3) == 1 ? HorizontalAlignment.Center : HorizontalAlignment.Right;
+            label.AutowrapMode = text.horizontalOverflow == HorizontalWrapMode.Wrap ? TextServer.AutowrapMode.WordSmart : TextServer.AutowrapMode.Off;
+        }
+
         void SyncField(InputField field, Rect2 rect, float scale)
         {
             if (!views.TryGetValue(field, out var view))
@@ -278,14 +376,13 @@ namespace Samkuk.Game
                 edit.TextChanged += t => field.text = t;
                 edit.TextSubmitted += t => { field.onSubmit.Invoke(t); field.onEndEdit.Invoke(t); };
                 view = new View { node = edit };
-                root.AddChild(edit);
+                container.AddChild(edit);
                 views[field] = view;
             }
             view.seen = frame;
             var node = (LineEdit)view.node;
             node.Visible = true;
-            if (node.GetIndex() != drawIndex) root.MoveChild(node, Mathf.Min(drawIndex, root.GetChildCount() - 1));
-            drawIndex++;
+            Place(node);
             node.Position = rect.Position;
             node.Size = rect.Size;
             node.Editable = field.interactable;
@@ -322,6 +419,11 @@ namespace Samkuk.Game
 
         public override void _Input(InputEvent e)
         {
+            if (e is InputEventMouseButton w && w.Pressed && (w.ButtonIndex == MouseButton.WheelUp || w.ButtonIndex == MouseButton.WheelDown))
+            {
+                wheel += w.ButtonIndex == MouseButton.WheelUp ? 1f : -1f;
+                return;
+            }
             if (!(e is InputEventMouseButton mb) || mb.ButtonIndex != MouseButton.Left) return;
             var target = Pick(mb.Position, out _);
             if (mb.Pressed) { pressed = target; return; }

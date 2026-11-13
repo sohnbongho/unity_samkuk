@@ -170,6 +170,14 @@ namespace Samkuk.Game
             try
             {
                 UpdateScreen();
+                InputFeed.OverrideMouse = null;
+                foreach (var (at, point) in clicks)
+                    if (frames == at || frames == at + 1)
+                    {
+                        // 규칙 코드가 직접 읽는 마우스(맵 편집기)에도 같은 눌림을 넣는다
+                        InputFeed.OverrideMouse = point;
+                        InputFeed.OverrideLeft = frames == at;
+                    }
                 foreach (var (at, point) in clicks)
                     if (frames == at || frames == at + 1)
                         Input.ParseInputEvent(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = frames == at, Position = point, GlobalPosition = point });
@@ -251,6 +259,9 @@ namespace Samkuk.Game
         }
 
         public static void AddScroll(float amount) => pendingScroll += amount;
+        /// <summary>자동 점검용: 실제 마우스 대신 이 화면 점과 왼쪽 버튼 상태를 쓴다.</summary>
+        public static Godot.Vector2? OverrideMouse;
+        public static bool OverrideLeft;
 
         public static void Poll(Viewport viewport, List<string> heldKeys)
         {
@@ -260,11 +271,11 @@ namespace Samkuk.Game
                 InputState.SetKey(name, !typing && (Input.IsKeyPressed(key) || heldKeys.Contains(name)));
 
             var size = viewport.GetVisibleRect().Size;
-            var m = viewport.GetMousePosition();
+            var m = OverrideMouse ?? viewport.GetMousePosition();
             var pos = new CVec2(m.X, size.Y - m.Y);   // 로직은 왼쪽 아래가 (0, 0)
             InputState.SetMouse(pos, pos - lastMouse);
             lastMouse = pos;
-            InputState.SetMouseButton(0, Input.IsMouseButtonPressed(MouseButton.Left));
+            InputState.SetMouseButton(0, OverrideMouse.HasValue ? OverrideLeft : Input.IsMouseButtonPressed(MouseButton.Left));
             InputState.SetMouseButton(1, Input.IsMouseButtonPressed(MouseButton.Right));
             InputState.SetMouseButton(2, Input.IsMouseButtonPressed(MouseButton.Middle));
             if (pendingScroll != 0f) { InputState.AddScroll(new CVec2(0f, pendingScroll * 120f)); pendingScroll = 0f; }
