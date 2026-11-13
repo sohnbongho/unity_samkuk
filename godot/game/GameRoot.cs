@@ -17,7 +17,8 @@ namespace Samkuk.Game
     /// 명령줄(점검용, `--` 뒤): --scene=BattleScene (시작 씬), --frames=N (N 프레임 뒤 끝냄), --shot=경로.png (끝낼 때 화면 저장),
     /// --smoke (= --frames=120 + 상태 출력), --keys=d,space (그 키를 누른 채로 — 자동 점검에서 움직여 보기),
     /// --press=40:digit1;90:enter (그 프레임에 키를 잠깐 누름 — 장수 고르기 같은 선택을 자동으로),
-    /// --castle=Chengdu (그 성으로 출진한 전투 맵), --click=40:640,360 (그 프레임에 화면의 그 점을 마우스로 누른다).
+    /// --castle=Chengdu (그 성으로 출진한 전투 맵), --click=40:640,360 (그 프레임에 화면의 그 점을 마우스로 누른다),
+    /// --save=경로 (저장 파일을 그 경로로 — 자동 점검은 이것을 써서 실제 저장을 건드리지 않는다).
     /// </summary>
     public partial class GameRoot : Node
     {
@@ -87,13 +88,38 @@ namespace Samkuk.Game
                         string[] xy = pair.Length == 2 ? pair[1].Split(',') : new string[0];
                         if (xy.Length == 2 && int.TryParse(pair[0], out int at) && float.TryParse(xy[0], out float cx) && float.TryParse(xy[1], out float cy)) clicks.Add((at, new Godot.Vector2(cx, cy)));
                     }
+                else if (arg.StartsWith("--save=")) Samkuk.Meta.SaveSystem.PathOverride = arg.Substring(7);   // 점검이 실제 저장을 건드리지 않게
                 else if (arg == "--smoke") quitAfter = 120;
             }
+
+            // 해상도·창 모드: 타이틀이 저장된 설정을 적용할 때 실제 창을 바꾼다 (자동 점검 중에는 창을 건드리지 않는다)
+            if (quitAfter < 0) Samkuk.Core.DisplaySettings.ApplyAction = ApplyDisplay;
+            Compat.Screen.currentResolution = new Compat.Screen.Resolution { width = DisplayServer.ScreenGetSize().X, height = DisplayServer.ScreenGetSize().Y };
 
             UpdateScreen();
             SceneManager.LoadScene(scene);
             foreach (string problem in SceneFile.Problems) GD.PushWarning("[Samkuk] 씬: " + problem);
             GD.Print($"[Samkuk] 시작: 씬 {scene}, 데이터 {GameData.Count}건, 오브젝트 {SceneRuntime.Objects.Count}");
+        }
+
+        static void ApplyDisplay(int width, int height, FullScreenMode mode)
+        {
+            switch (mode)
+            {
+                case FullScreenMode.Windowed:
+                    DisplayServer.WindowSetMode(DisplayServer.WindowMode.Windowed);
+                    DisplayServer.WindowSetSize(new Vector2I(width, height));
+                    // 화면 가운데로
+                    var screen = DisplayServer.ScreenGetSize();
+                    DisplayServer.WindowSetPosition(new Vector2I(Math.Max(0, (screen.X - width) / 2), Math.Max(0, (screen.Y - height) / 2)));
+                    break;
+                case FullScreenMode.ExclusiveFullScreen:
+                    DisplayServer.WindowSetMode(DisplayServer.WindowMode.ExclusiveFullscreen);
+                    break;
+                default:
+                    DisplayServer.WindowSetMode(DisplayServer.WindowMode.Fullscreen);   // 테두리 없는 전체화면 (바탕화면 해상도)
+                    break;
+            }
         }
 
         void UpdateScreen()
