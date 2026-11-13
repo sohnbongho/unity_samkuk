@@ -5,9 +5,9 @@ using NUnit.Framework;
 using Samkuk.Core;
 using Samkuk.Meta;
 using Samkuk.Strategy;
-// (미룸) using Samkuk.UI;
+using Samkuk.UI;
 using Samkuk.Compat;
-// (미룸) using UnityEngine.UI;
+using Samkuk.Compat.UI;
 
 namespace Samkuk.Tests
 {
@@ -31,7 +31,7 @@ namespace Samkuk.Tests
         public void TearDown()
         {
             DisplaySettings.ResetForTests();
-            // (미룸) Audio.AudioManager.DestroyInstance();
+            Audio.AudioManager.DestroyInstance();
             SaveSystem.Delete();
             SaveSystem.PathOverride = null;
             SaveSystem.ResetCache();
@@ -40,7 +40,6 @@ namespace Samkuk.Tests
             toDestroy.Clear();
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         TitleController MakeTitle()
         {
             var go = new GameObject("TitleDisplayTest");
@@ -48,7 +47,6 @@ namespace Samkuk.Tests
             toDestroy.Add(go);
             return go.AddComponent<TitleController>();
         }
-#endif
 
         // ───────────────────────── 목록 / 순환 ─────────────────────────
 
@@ -149,7 +147,6 @@ namespace Samkuk.Tests
             Assert.AreEqual(DisplaySettings.ModeBorderless, old.windowMode);
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Title_CycleWindowMode_SavesAndApplies()
         {
@@ -164,9 +161,7 @@ namespace Samkuk.Tests
             SaveSystem.ResetCache(); // 파일에서 다시 읽어도 유지되어야 한다
             Assert.AreEqual(DisplaySettings.ModeExclusive, SaveSystem.Current.windowMode);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Title_CycleResolution_IgnoredInBorderless_ButWorksInWindowed()
         {
@@ -187,11 +182,9 @@ namespace Samkuk.Tests
             Assert.AreEqual(1280, SaveSystem.Current.displayWidth);
             Assert.AreEqual(2, applyCount);
         }
-#endif
 
         // ───────────────────────── 내정 화면 기준 해상도 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void StrategyUi_SetsCanvasScalerToItsReferenceResolution()
         {
@@ -211,6 +204,5 @@ namespace Samkuk.Tests
             Assert.AreEqual(1440f, scaler.referenceResolution.y);
             Assert.AreEqual(CanvasScaler.ScreenMatchMode.Expand, scaler.screenMatchMode, "비율이 달라도 화면 전체가 보여야 한다");
         }
-#endif
     }
 }

@@ -10,15 +10,20 @@ namespace Samkuk.Compat
     public enum TextureWrapMode { Repeat, Clamp }
     public enum FullScreenMode { ExclusiveFullScreen, FullScreenWindow, MaximizedWindow, Windowed }
     public enum SpriteMeshType { FullRect, Tight }
-    [Flags] public enum HideFlags { None = 0, HideAndDontSave = 61 }
+    [Flags] public enum HideFlags { None = 0, DontSave = 52, HideAndDontSave = 61 }
 
     /// <summary>
     /// 텍스처: 파일 그림이면 <see cref="path"/>(res://...)와 크기만, 코드로 만든 그림이면 <see cref="pixels"/>(왼쪽 아래부터 가로줄 순서, 유니티와 같음)를 든다.
     /// </summary>
-    public sealed class Texture2D : Object
+    /// <summary>텍스처의 바탕 (이름만).</summary>
+    public class Texture : Object
+    {
+        public string name;
+    }
+
+    public sealed class Texture2D : Texture
     {
         public string path;
-        public string name;
         public int width, height;
         public FilterMode filterMode = FilterMode.Bilinear;
         public TextureWrapMode wrapMode = TextureWrapMode.Clamp;

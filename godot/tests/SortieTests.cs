@@ -4,9 +4,9 @@ using NUnit.Framework;
 using Samkuk.Core;
 using Samkuk.Data;
 using Samkuk.Meta;
-// (미룸) using Samkuk.UI;
+using Samkuk.UI;
 using Samkuk.Compat;
-// (미룸) using UnityEngine.UI;
+using Samkuk.Compat.UI;
 
 namespace Samkuk.Tests
 {
@@ -29,7 +29,7 @@ namespace Samkuk.Tests
             GameSession.SortieCastle = null;
             GameSession.SortieOrigin = null;
             TerrainThemeCatalog.Disabled = false;
-            // (미룸) Audio.AudioManager.DestroyInstance();
+            Audio.AudioManager.DestroyInstance();
             foreach (var o in toDestroy) if (o != null) Object.Destroy(o);
             toDestroy.Clear();
         }
@@ -65,7 +65,6 @@ namespace Samkuk.Tests
             Assert.AreEqual(BattleTerrain.Overlay(CastleTerrain.Loess), BattleTerrain.ForCurrentSortie());
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         GameObject MakeBackground(out InfiniteBackground bg)
         {
             var go = new GameObject("TestBg", typeof(SpriteRenderer));
@@ -73,9 +72,7 @@ namespace Samkuk.Tests
             bg = go.AddComponent<InfiniteBackground>(); // Awake 에서 출진한 성의 지형을 반영한다
             return go;
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator InfiniteBackground_AddsOverlay_OnlyWhenSortieCastleExists()
         {
@@ -91,9 +88,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(go.GetComponent<SpriteRenderer>().sortingOrder + 1, sr.sortingOrder, "배경 바로 위");
             yield return null;
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator InfiniteBackground_ApplyOverlay_ReplacesOrRemovesExisting()
         {
@@ -108,11 +103,9 @@ namespace Samkuk.Tests
             yield return null; // Destroy 는 한 프레임 뒤
             Assert.IsNull(go.transform.Find("TerrainOverlay"));
         }
-#endif
 
         // ───────────────────────── 결과 화면 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void ResultUI_Format_ShowsCastleOnlyWhenSortied()
         {
@@ -123,9 +116,7 @@ namespace Samkuk.Tests
             StringAssert.Contains("공격 성", sortied);
             StringAssert.Contains("낙양", sortied);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void ResultUI_Format_ShowsConquestOrRetreat()
         {
@@ -142,7 +133,6 @@ namespace Samkuk.Tests
             StringAssert.DoesNotContain("정복", replay, "이미 차지한 성을 다시 이겨도 정복 문구는 없다");
             StringAssert.DoesNotContain("퇴각", replay);
         }
-#endif
 
 #if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
@@ -187,7 +177,6 @@ namespace Samkuk.Tests
 
         // ───────────────────────── 타이틀 시작 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Title_Start_ClearsSortieCastle()
         {
@@ -205,6 +194,5 @@ namespace Samkuk.Tests
             Assert.IsNull(GameSession.SortieOrigin);
             Assert.AreEqual(GameManager.BattleSceneName, loaded);
         }
-#endif
     }
 }

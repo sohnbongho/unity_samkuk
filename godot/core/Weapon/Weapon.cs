@@ -1,0 +1,181 @@
+using System.Collections.Generic;
+using Samkuk.Core;
+using Samkuk.Data;
+using Samkuk.Enemies;
+using Samkuk.Player;
+using Samkuk.Compat;
+
+namespace Samkuk.Weapons
+{
+    /// <summary>무기 공통 기반. 레벨과 패시브(PlayerStats)에 따른 능력치 계산을 제공한다.</summary>
+    public abstract class Weapon : MonoBehaviour
+    {
+        public WeaponData Data { get; private set; }
+        public int Level { get; private set; } = 1;
+
+        /// <summary>무기를 든 쪽(플레이어 또는 아군)의 Transform.</summary>
+        protected Transform Owner { get; private set; }
+        protected EnemyManager Enemies { get; private set; }
+        protected WeaponController Controller { get; private set; }
+        protected IWeaponStats Stats { get; private set; }
+
+        /// <summary>일회성 이펙트 재생기 (없을 수 있음).</summary>
+        protected WeaponFx Fx => Controller != null ? Controller.Fx : null;
+
+        public float Damage =>
+            Data.damage * (1f + Data.damagePerLevel * (Level - 1)) * (Stats != null ? Stats.DamageMultiplier : 1f);
+
+        public float Cooldown =>
+            Data.cooldown * Mathf.Max(0.3f, 1f - Data.cooldownReductionPerLevel * (Level - 1))
+                          * (Stats != null ? Stats.CooldownMultiplier : 1f);
+
+        public int Count =>
+            Data.count + (Data.levelsPerExtraCount > 0 ? (Level - 1) / Data.levelsPerExtraCount : 0);
+
+        public bool IsMaxLevel => Level >= Data.maxLevel;
+
+        /// <summary>
+        /// controller 는 이펙트(Fx)와 투사체 풀을 빌려 주는 쪽이다. 아군의 무기는 플레이어의 WeaponController 를 함께 쓴다.
+        /// </summary>
+        public void Initialize(WeaponData data, WeaponController controller, Transform owner, IWeaponStats stats, EnemyManager enemies)
+        {
+            Data = data;
+            Controller = controller;
+            Owner = owner;
+            Enemies = enemies;
+            Stats = stats;
+            Level = 1;
+            OnInitialized();
+        }
+
+        public bool LevelUp()
+        {
+            if (IsMaxLevel) return false;
+            Level++;
+            OnLevelChanged();
+            return true;
+        }
+
+        /// <summary>다음 레벨에서 좋아지는 점을 설명하는 문자열 (레벨업 선택지용).</summary>
+        public string NextLevelDescription()
+        {
+            var parts = new List<string>();
+            if (Data.damagePerLevel > 0f)
+                parts.Add($"공격력 +{Data.damagePerLevel * 100f:0}%");
+            if (Data.cooldownReductionPerLevel > 0f && Data.type != WeaponType.Orbit)
+                parts.Add($"쿨다운 -{Data.cooldownReductionPerLevel * 100f:0}%");
+            if (Data.levelsPerExtraCount > 0 && Level % Data.levelsPerExtraCount == 0)
+                parts.Add("수량 +1");
+            return string.Join("\n", parts);
+        }
+
+        /// <summary>적 매니저를 지연 연결할 수 있도록 갱신.</summary>
+        internal void SetEnemies(EnemyManager enemies) => Enemies = enemies;
+
+        protected virtual void OnInitialized() { }
+        protected virtual void OnLevelChanged() { }
+
+        protected Vector2 OwnerPosition => Owner.position;
+
+        /// <summary>공격이 발동할 때 무기 종류에 맞는 효과음을 낸다.</summary>
+        protected void PlayAttackSound() => Audio.AudioManager.PlayWeapon(Data.type);
+        /// <summary>다른 종류의 소리를 낸다 (극은 찌를 때 창 소리, 휩쓸 때 베기 소리).</summary>
+        protected void PlayAttackSound(WeaponType asType) => Audio.AudioManager.PlayWeapon(asType);
+
+        /// <summary>월드 각도(도)를 단위 벡터로.</summary>
+        protected static Vector2 DirectionOf(float angleDegrees) =>
+            new Vector2(Mathf.Cos(angleDegrees * Mathf.Deg2Rad), Mathf.Sin(angleDegrees * Mathf.Deg2Rad));
+
+        /// <summary>
+        /// 무기 자식으로 숨겨진 이펙트 렌더러(Effect 정렬 레이어)를 만든다. 휘두르는 무기 그림/검기에 쓴다.
+        /// <paramref name="held"/>(손에 든 무기 그림)면 2.5D 틸트에서 몸과 같은 평면에 서는 그림(<see cref="Samkuk.World.StandingSprite"/>)이 된다. 검기는 바닥에 눕힌 채 둔다.
+        /// </summary>
+        protected SpriteRenderer MakeEffectRenderer(string name, Sprite sprite, int sortingOrder, bool held = false)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(transform, false);
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = sprite;
+            sr.sortingLayerName = GameLayers.Sorting.Effect;
+            sr.sortingOrder = sortingOrder;
+            sr.enabled = false;
+            if (held) Samkuk.World.StandingSprite.Attach(go, 0f, Samkuk.World.TiltPreset.HeldToward);
+            return sr;
+        }
+
+        readonly List<Enemy> strikeHits = new List<Enemy>(64);
+
+        /// <summary>원 안의 적 전부에게 피해 + knockOrigin 반대쪽으로 넉백(배율). 베기와 극의 휩쓸기가 쓴다.</summary>
+        protected int StrikeCircle(Vector2 center, float radius, Vector2 knockOrigin, float damage, float knockScale = 1f)
+        {
+            strikeHits.Clear();
+            Enemies.OverlapCircle(center, radius, strikeHits);
+            for (int i = 0; i < strikeHits.Count; i++)
+            {
+                strikeHits[i].TakeDamage(damage);
+                Knock(strikeHits[i], knockOrigin, knockScale);
+            }
+            return strikeHits.Count;
+        }
+
+        /// <summary>origin 에서 dir 방향 길이 length·반폭 halfWidth 의 직선 위 적 전부에게 피해 + 넉백. 찌르기와 극의 찌르기가 쓴다.</summary>
+        protected int StrikeLine(Vector2 origin, Vector2 dir, float length, float halfWidth, float damage)
+        {
+            strikeHits.Clear();
+            Enemies.OverlapCircle(origin + dir * (length * 0.5f), length * 0.5f + halfWidth, strikeHits);
+            int hit = 0;
+            for (int i = 0; i < strikeHits.Count; i++)
+            {
+                Enemy e = strikeHits[i];
+                Vector2 rel = e.Position - origin;
+                float along = Vector2.Dot(rel, dir);
+                float side = Mathf.Abs(rel.x * dir.y - rel.y * dir.x);
+
+                if (along < -e.Radius || along > length + e.Radius) continue;
+                if (side > halfWidth + e.Radius) continue;
+
+                e.TakeDamage(damage);
+                Knock(e, origin);
+                hit++;
+            }
+            return hit;
+        }
+
+        readonly List<Enemy> trailHits = new List<Enemy>(32);
+
+        /// <summary>
+        /// 검기를 한 틱 밀고, 무기의 검기 피해 비율이 있으면 지나치는 적에게 피해(무기 피해 x 비율, 적마다 한 번)와 살짝 넉백.
+        /// 검기는 손 높이에서 날지만 적 위치는 발 높이이므로 손 높이만큼 내려서 본다.
+        /// </summary>
+        protected void TickTrail(WeaponTrail trail)
+        {
+            if (trail == null || !trail.Active) return;
+            trail.Tick(Time.deltaTime, Data.tint);
+            if (Data.trailDamageRatio <= 0f || Enemies == null) return;
+
+            Vector2 center = trail.Position - new Vector2(0f, SlashWeapon.HandHeight);
+            trailHits.Clear();
+            Enemies.OverlapCircle(center, trail.HitRadius, trailHits);
+            float dmg = Damage * Data.trailDamageRatio;
+            var already = trail.AlreadyHit;
+            for (int k = 0; k < trailHits.Count; k++)
+            {
+                var e = trailHits[k];
+                if (already.Contains(e)) continue;
+                already.Add(e);
+                e.TakeDamage(dmg);
+                Knock(e, center - trail.Direction);
+            }
+        }
+
+        /// <summary>무기 데이터의 넉백 값이 있으면 origin 반대 방향으로 적을 민다 (살아있는 적만). scale 로 세기를 조절한다.</summary>
+        protected void Knock(Enemy enemy, Vector2 origin, float scale = 1f)
+        {
+            if (Data.knockback <= 0f || !enemy.Alive) return;
+
+            Vector2 away = enemy.Position - origin;
+            if (away.sqrMagnitude < 1e-6f) away = Vector2.right;
+            enemy.Knockback(away.normalized * (Data.knockback * scale));
+        }
+    }
+}

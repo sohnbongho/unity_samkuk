@@ -4,7 +4,6 @@ using Samkuk.Core;
 using Samkuk.Data;
 using Samkuk.World;
 using Samkuk.Compat;
-// (미룸) using UnityEngine.Rendering;
 
 namespace Samkuk.Tests
 {
@@ -20,7 +19,7 @@ namespace Samkuk.Tests
             TerrainCollision.Active = null;
             TerrainThemeCatalog.Use(null);
             Hd2dSettings.TiltOverride = true;
-            // (미룸) TiltView.ResetForTests();   // 준비 안 됨 = 꺼짐. 켜는 테스트는 SetReady(true)
+            TiltView.ResetForTests();   // 준비 안 됨 = 꺼짐. 켜는 테스트는 SetReady(true)
         }
 
         [TearDown]
@@ -28,7 +27,7 @@ namespace Samkuk.Tests
         {
             foreach (var o in toDestroy) if (o != null) Object.DestroyImmediate(o);
             toDestroy.Clear();
-            // (미룸) TiltView.ResetForTests();
+            TiltView.ResetForTests();
             Hd2dSettings.ResetOverrides();
             MapStore.Disabled = false;
             TerrainCollision.Active = null;
@@ -37,7 +36,6 @@ namespace Samkuk.Tests
 
         // ───────────────────────── 기하 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Preset_CameraPose_LooksAtTargetFromSouthAbove()
         {
@@ -53,9 +51,8 @@ namespace Samkuk.Tests
             Assert.AreEqual(1f, Vector3.Dot(forward, toLook), 1e-4f, "회전이 바라보는 점을 향한다");
             Assert.AreEqual(1f, Vector3.Dot(rot * Vector3.up, TiltPreset.Up(TiltPreset.Pitch)), 1e-4f, "카메라 위쪽 = 서 있는 그림의 위쪽");
         }
-#endif
 
-        [Ignore("확인 필요: 옮긴 코드에서 실패한다. 유니티 Test Runner 에서 통과하던 테스트인지 먼저 확인할 것 (godot/PORTING.md)")]
+        [Ignore("확인 필요: 옮긴 코드에서 실패한다. 유니티 Test Runner 에서 통과하던 테스트인지 확인할 것 (godot/PORTING.md)")]
         [Test]
         public void Preset_Up_IsPerpendicularToForward_AndRisesFromGround()
         {
@@ -106,7 +103,6 @@ namespace Samkuk.Tests
 
         // ───────────────────────── 상태 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void View_IsInactive_WithoutBattleCamera_EvenIfSettingIsOn()
         {
@@ -117,9 +113,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(Quaternion.identity, TiltView.StandingRotation);
             Assert.AreEqual(0.5f, TiltView.GroundZ(0.5f));
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void View_Active_FollowsSetting_AndRaisesChanged()
         {
@@ -146,9 +140,7 @@ namespace Samkuk.Tests
             }
             finally { TiltView.Changed -= OnChanged; }
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void View_StandScale_IsTheSameEverywhere_UnderOrthographicTilt()
         {
@@ -161,9 +153,7 @@ namespace Samkuk.Tests
             Hd2dSettings.TiltOverride = false;
             Assert.AreEqual(1f, TiltView.StandScaleAt(new Vector2(0f, -5f)), "틸트가 꺼지면 1");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void View_LookPoint_IsOnGround_InFrontOfCamera()
         {
@@ -177,11 +167,9 @@ namespace Samkuk.Tests
             Assert.AreEqual(7f, look.y, 1e-4f);
             Assert.AreEqual(0f, look.z, 1e-4f);
         }
-#endif
 
         // ───────────────────────── 재질 / 서 있는 그림 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Materials_CutoutWritesDepthAndCastsShadow_TranslucentDoesNot()
         {
@@ -202,9 +190,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(0f, ground.GetFloat("_Stand"), "바닥은 눕힌 채");
             Assert.AreEqual((int)RenderQueue.Transparent, ground.renderQueue);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void StandingSprite_SwapsMaterial_WhileTiltIsActive_AndRestores()
         {
@@ -238,7 +224,6 @@ namespace Samkuk.Tests
             Assert.AreSame(original, sr.sharedMaterial, "끄면 원래 재질로");
             Assert.AreEqual(ShadowCastingMode.Off, sr.shadowCastingMode);
         }
-#endif
 
 #if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
@@ -258,7 +243,6 @@ namespace Samkuk.Tests
         }
 #endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void StandingSprite_LiftHeight_MovesAlongBillboardUp()
         {
@@ -273,9 +257,7 @@ namespace Samkuk.Tests
             TiltView.SetReady(false);
             Assert.AreEqual(new Vector3(0f, 1.4f, 0f), bar.transform.localPosition);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void StandingSprite_Release_RestoresAndStaysOff_UntilAttachedAgain()
         {
@@ -297,7 +279,6 @@ namespace Samkuk.Tests
             Assert.AreSame(TiltView.StandingMaterial(PixelArt.PropFootUnits, 0f, false, TiltPreset.PropStretch), sr.sharedMaterial);
             Assert.AreEqual(TiltPreset.PropStretch, sr.sharedMaterial.GetFloat("_StretchScale"), 1e-5f, "서 있는 소품은 세로를 덜 늘린다");
         }
-#endif
 
         // ───────────────────────── 틸트일 때 비켜 주는 것들 ─────────────────────────
 
@@ -328,7 +309,6 @@ namespace Samkuk.Tests
         }
 #endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void PixelCamera_IsForcedOff_UnderTilt()
         {
@@ -348,7 +328,6 @@ namespace Samkuk.Tests
             pc.Apply(true);
             Assert.IsTrue(pc.IsEnabled);
         }
-#endif
 
 #if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
@@ -370,7 +349,6 @@ namespace Samkuk.Tests
         }
 #endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void EnemySpawnRadius_UnderTilt_IsBeyondTheGroundFootprint()
         {
@@ -379,11 +357,9 @@ namespace Samkuk.Tests
             var foot = TiltView.GroundFootprint(16f / 9f);
             Assert.GreaterOrEqual(r, new Vector2(foot.xMax, foot.yMax).magnitude - 1e-4f);
         }
-#endif
 
         // ───────────────────────── 3D 조명 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void BattleLighting_Tilt_MakesSunAndAmbient_AndRestoresWhenDestroyed()
         {
@@ -417,9 +393,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(originalMode, RenderSettings.ambientMode, "사라질 때 환경광을 되돌린다");
             Assert.AreEqual(originalAmbient, RenderSettings.ambientLight);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void BattleLighting_Tilt_LightingOff_KeepsNeutralSun_WithoutGlow()
         {
@@ -443,9 +417,7 @@ namespace Samkuk.Tests
             lighting.Apply(false);
             Assert.AreEqual(LightShadows.Hard, lighting.Sun.shadows);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void BattleLighting_SwitchesBetween2DAnd3D_WhenTiltChanges()
         {
@@ -466,9 +438,7 @@ namespace Samkuk.Tests
             Assert.IsNull(lighting.Sun);
             Assert.IsNotNull(lighting.PlayerGlow);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Spawner_UnderTilt_Makes3DPointLight_LiftedAlongBillboardUp()
         {
@@ -509,6 +479,5 @@ namespace Samkuk.Tests
             Assert.AreEqual(want.y, lights[0].transform.position.y, 1e-4f, "횃불은 수직으로 올린 자리");
             Assert.AreEqual(want.z, lights[0].transform.position.z, 1e-4f);
         }
-#endif
     }
 }

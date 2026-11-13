@@ -4,7 +4,7 @@ using Messages;
 using NUnit.Framework;
 using Samkuk.Coop;
 using Samkuk.Net;
-// (미룸) using Samkuk.UI;
+using Samkuk.UI;
 using Samkuk.Compat;
 
 namespace Samkuk.Tests
@@ -297,7 +297,6 @@ namespace Samkuk.Tests
 
         // ───────────────────────── NetClient + CoopSession ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator NetClient_CoopSession_RoutesMessages_AndResetsOnLogout()
         {
@@ -338,7 +337,6 @@ namespace Samkuk.Tests
                 NetClient.LinkFactory = (h, p) => new TcpLink(h, p);
             }
         }
-#endif
 
         // ───────────────────────── RoomPanel ─────────────────────────
 
@@ -391,7 +389,6 @@ namespace Samkuk.Tests
             Assert.AreEqual(CoopPhase.InRoom, flow.Phase);
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator RoomPanel_SwitchesLobbyAndRoomViews_AndValidatesInput()
         {
@@ -449,6 +446,5 @@ namespace Samkuk.Tests
                 Object.Destroy(canvas);
             }
         }
-#endif
     }
 }

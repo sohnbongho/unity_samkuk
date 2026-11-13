@@ -20,7 +20,7 @@ namespace Samkuk.Tests
             TerrainCollision.Active = null;
             TerrainThemeCatalog.Use(null);
             Hd2dSettings.TiltOverride = true;
-            // (미룸) TiltView.ResetForTests();
+            TiltView.ResetForTests();
         }
 
         [TearDown]
@@ -28,7 +28,7 @@ namespace Samkuk.Tests
         {
             foreach (var o in toDestroy) if (o != null) Object.DestroyImmediate(o);
             toDestroy.Clear();
-            // (미룸) TiltView.ResetForTests();
+            TiltView.ResetForTests();
             Hd2dSettings.ResetOverrides();
             MapStore.Disabled = false;
             TerrainCollision.Active = null;
@@ -182,7 +182,6 @@ namespace Samkuk.Tests
             Assert.IsTrue(found, "길에서 먼 칸을 하나는 찾는다");
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Paths_MakeMeshesOnlyUnderTilt()
         {
@@ -201,7 +200,6 @@ namespace Samkuk.Tests
             TiltView.SetReady(false);
             Assert.AreEqual(0, go.GetComponentsInChildren<MeshFilter>(false).Length);
         }
-#endif
 
         [Test]
         public void PathArt_IsRepeatingStrip_WithJaggedTransparentEdges()

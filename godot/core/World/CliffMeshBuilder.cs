@@ -122,5 +122,17 @@ namespace Samkuk.World
             b.wallTriangles.Add(i + 1); b.wallTriangles.Add(i + 2); b.wallTriangles.Add(i + 3);
         }
 
+        /// <summary>버퍼를 메시에 넣는다 (서브메시 0 = 윗면, 1 = 옆면).</summary>
+        public static void Apply(Buffers b, Mesh mesh)
+        {
+            mesh.Clear();
+            mesh.SetVertices(b.vertices);
+            mesh.SetUVs(0, b.uvs);
+            mesh.SetColors(b.colors);
+            mesh.subMeshCount = 2;
+            mesh.SetTriangles(b.topTriangles, 0);
+            mesh.SetTriangles(b.wallTriangles, 1);
+            mesh.RecalculateBounds();
+        }
     }
 }

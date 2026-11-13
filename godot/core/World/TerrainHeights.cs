@@ -122,7 +122,7 @@ namespace Samkuk.World
         public static float ZAt(Vector2 pos)
         {
             var c = TerrainCollision.Active;
-            if (c == null || c.Map == null) return 0f;
+            if (c == null || c.Map == null || !TiltView.Active) return 0f;
             return ZOf(c.Map.HeightAt(pos));
         }
 

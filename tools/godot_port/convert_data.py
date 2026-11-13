@@ -192,6 +192,19 @@ def main():
                 shutil.copyfile(os.path.join(base, name), dst)
                 png_count += 1
 
+    # 그림 색인: 데이터가 가리키지 않는 그림(배경, 투사체 등)도 경로만으로 크기·PPU·피벗을 알 수 있게
+    index = {}
+    for base, _, files in os.walk(sprites):
+        for name in sorted(files):
+            if name.endswith('.png'):
+                rel = 'Sprites/' + os.path.relpath(os.path.join(base, name), sprites).replace(os.sep, '/')
+                w, h, ppu, pivot, border = sprite_info(rel)
+                entry = {'w': w, 'h': h, 'ppu': ppu, 'pivot': [round(pivot[0], 6), round(pivot[1], 6)]}
+                if any(border):
+                    entry['border'] = border
+                index[res_path(rel)] = entry
+    write_json(os.path.join(OUT_DATA, 'sprites.json'), dict(sorted(index.items())))
+
     print('데이터 %d건, 맵 %d건, 그림 %d장' % (count, map_count, png_count))
     if conv.missing:
         print('찾지 못한 참조(비워 둠): %s' % ', '.join(sorted(conv.missing)))

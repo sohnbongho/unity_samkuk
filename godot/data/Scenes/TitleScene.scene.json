@@ -1,0 +1,3477 @@
+{
+  "kind": "scene",
+  "name": "TitleScene",
+  "roots": ["1028384403", "456636965", "1371673177"],
+  "objects": [
+    {
+      "id": "18587752",
+      "name": "Label",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "18587753",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": { "$id": "205113012" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 0 },
+            "m_AnchorMax": { "x": 1, "y": 1 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 0, "y": 0 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "18587755",
+          "class": "UnityEngine.UI.Text",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 1, "g": 1, "b": 1, "a": 1 },
+            "m_RaycastTarget": 0,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Text": "효과음: 보통",
+            "m_Font": null,
+            "m_FontSize": 30,
+            "m_FontStyle": 0,
+            "resizeTextForBestFit": 0,
+            "resizeTextMinSize": 10,
+            "resizeTextMaxSize": 40,
+            "m_Alignment": 4,
+            "m_AlignByGeometry": 0,
+            "supportRichText": 1,
+            "m_HorizontalOverflow": 0,
+            "m_VerticalOverflow": 0,
+            "m_LineSpacing": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "38371948",
+      "name": "CloseButton",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "38371949",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [
+              { "$id": "1085802186" }
+            ],
+            "m_Father": { "$id": "256234652" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0.5, "y": 0 },
+            "m_AnchorMax": { "x": 0.5, "y": 0 },
+            "m_AnchoredPosition": { "x": 0, "y": 55 },
+            "m_SizeDelta": { "x": 360, "y": 70 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "38371950",
+          "class": "UnityEngine.UI.Image",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 0.25, "g": 0.3, "b": 0.45, "a": 1 },
+            "m_RaycastTarget": 1,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Sprite": null,
+            "m_Type": 0,
+            "m_PreserveAspect": 0,
+            "m_FillCenter": 1,
+            "m_FillMethod": 4,
+            "m_FillAmount": 1,
+            "m_FillClockwise": 1,
+            "m_FillOrigin": 0,
+            "m_UseSpriteMesh": 0,
+            "m_PixelsPerUnitMultiplier": 1
+          }
+        },
+        {
+          "id": "38371952",
+          "class": "UnityEngine.UI.Button",
+          "data": {
+            "m_Enabled": 1,
+            "m_Navigation": { "m_Mode": 3, "m_WrapAround": 0, "m_SelectOnUp": null, "m_SelectOnDown": null, "m_SelectOnLeft": null, "m_SelectOnRight": null },
+            "m_Transition": 1,
+            "m_Colors": {
+              "m_NormalColor": { "r": 1, "g": 1, "b": 1, "a": 1 },
+              "m_HighlightedColor": { "r": 1.25, "g": 1.25, "b": 1.1, "a": 1 },
+              "m_PressedColor": { "r": 0.8, "g": 0.8, "b": 0.8, "a": 1 },
+              "m_SelectedColor": { "r": 0.9607843, "g": 0.9607843, "b": 0.9607843, "a": 1 },
+              "m_DisabledColor": { "r": 0.78431374, "g": 0.78431374, "b": 0.78431374, "a": 0.5019608 },
+              "m_ColorMultiplier": 1,
+              "m_FadeDuration": 0.1
+            },
+            "m_SpriteState": { "m_HighlightedSprite": null, "m_PressedSprite": null, "m_SelectedSprite": null, "m_DisabledSprite": null },
+            "m_AnimationTriggers": { "m_NormalTrigger": "Normal", "m_HighlightedTrigger": "Highlighted", "m_PressedTrigger": "Pressed", "m_SelectedTrigger": "Selected", "m_DisabledTrigger": "Disabled" },
+            "m_Interactable": 1,
+            "m_TargetGraphic": { "$id": "38371950" },
+            "m_OnClick": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "48080521",
+      "name": "StrategyButton",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "48080522",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [
+              { "$id": "132598964" }
+            ],
+            "m_Father": { "$id": "1879304435" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0.5, "y": 0.455 },
+            "m_AnchorMax": { "x": 0.5, "y": 0.455 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 480, "y": 80 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "48080523",
+          "class": "UnityEngine.UI.Image",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 0.25, "g": 0.3, "b": 0.45, "a": 1 },
+            "m_RaycastTarget": 1,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Sprite": null,
+            "m_Type": 0,
+            "m_PreserveAspect": 0,
+            "m_FillCenter": 1,
+            "m_FillMethod": 4,
+            "m_FillAmount": 1,
+            "m_FillClockwise": 1,
+            "m_FillOrigin": 0,
+            "m_UseSpriteMesh": 0,
+            "m_PixelsPerUnitMultiplier": 1
+          }
+        },
+        {
+          "id": "48080525",
+          "class": "UnityEngine.UI.Button",
+          "data": {
+            "m_Enabled": 1,
+            "m_Navigation": { "m_Mode": 3, "m_WrapAround": 0, "m_SelectOnUp": null, "m_SelectOnDown": null, "m_SelectOnLeft": null, "m_SelectOnRight": null },
+            "m_Transition": 1,
+            "m_Colors": {
+              "m_NormalColor": { "r": 1, "g": 1, "b": 1, "a": 1 },
+              "m_HighlightedColor": { "r": 1.25, "g": 1.25, "b": 1.1, "a": 1 },
+              "m_PressedColor": { "r": 0.8, "g": 0.8, "b": 0.8, "a": 1 },
+              "m_SelectedColor": { "r": 0.9607843, "g": 0.9607843, "b": 0.9607843, "a": 1 },
+              "m_DisabledColor": { "r": 0.78431374, "g": 0.78431374, "b": 0.78431374, "a": 0.5019608 },
+              "m_ColorMultiplier": 1,
+              "m_FadeDuration": 0.1
+            },
+            "m_SpriteState": { "m_HighlightedSprite": null, "m_PressedSprite": null, "m_SelectedSprite": null, "m_DisabledSprite": null },
+            "m_AnimationTriggers": { "m_NormalTrigger": "Normal", "m_HighlightedTrigger": "Highlighted", "m_PressedTrigger": "Pressed", "m_SelectedTrigger": "Selected", "m_DisabledTrigger": "Disabled" },
+            "m_Interactable": 1,
+            "m_TargetGraphic": { "$id": "48080523" },
+            "m_OnClick": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "67475705",
+      "name": "Label",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "67475706",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": { "$id": "525557124" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 0 },
+            "m_AnchorMax": { "x": 1, "y": 1 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 0, "y": 0 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "67475707",
+          "class": "UnityEngine.UI.Text",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 1, "g": 1, "b": 1, "a": 1 },
+            "m_RaycastTarget": 0,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Text": "기록",
+            "m_Font": null,
+            "m_FontSize": 38,
+            "m_FontStyle": 0,
+            "resizeTextForBestFit": 0,
+            "resizeTextMinSize": 10,
+            "resizeTextMaxSize": 40,
+            "m_Alignment": 4,
+            "m_AlignByGeometry": 0,
+            "supportRichText": 1,
+            "m_HorizontalOverflow": 0,
+            "m_VerticalOverflow": 0,
+            "m_LineSpacing": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "90456296",
+      "name": "CloseButton",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "90456297",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [
+              { "$id": "1925010685" }
+            ],
+            "m_Father": { "$id": "2147407994" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0.5, "y": 0 },
+            "m_AnchorMax": { "x": 0.5, "y": 0 },
+            "m_AnchoredPosition": { "x": 0, "y": 55 },
+            "m_SizeDelta": { "x": 360, "y": 70 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "90456298",
+          "class": "UnityEngine.UI.Image",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 0.25, "g": 0.3, "b": 0.45, "a": 1 },
+            "m_RaycastTarget": 1,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Sprite": null,
+            "m_Type": 0,
+            "m_PreserveAspect": 0,
+            "m_FillCenter": 1,
+            "m_FillMethod": 4,
+            "m_FillAmount": 1,
+            "m_FillClockwise": 1,
+            "m_FillOrigin": 0,
+            "m_UseSpriteMesh": 0,
+            "m_PixelsPerUnitMultiplier": 1
+          }
+        },
+        {
+          "id": "90456300",
+          "class": "UnityEngine.UI.Button",
+          "data": {
+            "m_Enabled": 1,
+            "m_Navigation": { "m_Mode": 3, "m_WrapAround": 0, "m_SelectOnUp": null, "m_SelectOnDown": null, "m_SelectOnLeft": null, "m_SelectOnRight": null },
+            "m_Transition": 1,
+            "m_Colors": {
+              "m_NormalColor": { "r": 1, "g": 1, "b": 1, "a": 1 },
+              "m_HighlightedColor": { "r": 1.25, "g": 1.25, "b": 1.1, "a": 1 },
+              "m_PressedColor": { "r": 0.8, "g": 0.8, "b": 0.8, "a": 1 },
+              "m_SelectedColor": { "r": 0.9607843, "g": 0.9607843, "b": 0.9607843, "a": 1 },
+              "m_DisabledColor": { "r": 0.78431374, "g": 0.78431374, "b": 0.78431374, "a": 0.5019608 },
+              "m_ColorMultiplier": 1,
+              "m_FadeDuration": 0.1
+            },
+            "m_SpriteState": { "m_HighlightedSprite": null, "m_PressedSprite": null, "m_SelectedSprite": null, "m_DisabledSprite": null },
+            "m_AnimationTriggers": { "m_NormalTrigger": "Normal", "m_HighlightedTrigger": "Highlighted", "m_PressedTrigger": "Pressed", "m_SelectedTrigger": "Selected", "m_DisabledTrigger": "Disabled" },
+            "m_Interactable": 1,
+            "m_TargetGraphic": { "$id": "90456298" },
+            "m_OnClick": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "91487961",
+      "name": "WindowModeButton",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "91487962",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [
+              { "$id": "1612019239" }
+            ],
+            "m_Father": { "$id": "1879304435" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 1 },
+            "m_AnchorMax": { "x": 0, "y": 1 },
+            "m_AnchoredPosition": { "x": 40, "y": -270 },
+            "m_SizeDelta": { "x": 360, "y": 70 },
+            "m_Pivot": { "x": 0, "y": 1 }
+          }
+        },
+        {
+          "id": "91487963",
+          "class": "UnityEngine.UI.Image",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 0.22, "g": 0.28, "b": 0.4, "a": 1 },
+            "m_RaycastTarget": 1,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Sprite": null,
+            "m_Type": 0,
+            "m_PreserveAspect": 0,
+            "m_FillCenter": 1,
+            "m_FillMethod": 4,
+            "m_FillAmount": 1,
+            "m_FillClockwise": 1,
+            "m_FillOrigin": 0,
+            "m_UseSpriteMesh": 0,
+            "m_PixelsPerUnitMultiplier": 1
+          }
+        },
+        {
+          "id": "91487965",
+          "class": "UnityEngine.UI.Button",
+          "data": {
+            "m_Enabled": 1,
+            "m_Navigation": { "m_Mode": 3, "m_WrapAround": 0, "m_SelectOnUp": null, "m_SelectOnDown": null, "m_SelectOnLeft": null, "m_SelectOnRight": null },
+            "m_Transition": 1,
+            "m_Colors": {
+              "m_NormalColor": { "r": 1, "g": 1, "b": 1, "a": 1 },
+              "m_HighlightedColor": { "r": 1.25, "g": 1.25, "b": 1.1, "a": 1 },
+              "m_PressedColor": { "r": 0.8, "g": 0.8, "b": 0.8, "a": 1 },
+              "m_SelectedColor": { "r": 0.9607843, "g": 0.9607843, "b": 0.9607843, "a": 1 },
+              "m_DisabledColor": { "r": 0.78431374, "g": 0.78431374, "b": 0.78431374, "a": 0.5019608 },
+              "m_ColorMultiplier": 1,
+              "m_FadeDuration": 0.1
+            },
+            "m_SpriteState": { "m_HighlightedSprite": null, "m_PressedSprite": null, "m_SelectedSprite": null, "m_DisabledSprite": null },
+            "m_AnimationTriggers": { "m_NormalTrigger": "Normal", "m_HighlightedTrigger": "Highlighted", "m_PressedTrigger": "Pressed", "m_SelectedTrigger": "Selected", "m_DisabledTrigger": "Disabled" },
+            "m_Interactable": 1,
+            "m_TargetGraphic": { "$id": "91487963" },
+            "m_OnClick": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "129779690",
+      "name": "PostFxButton",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "129779691",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [
+              { "$id": "839406759" }
+            ],
+            "m_Father": { "$id": "1879304435" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 1 },
+            "m_AnchorMax": { "x": 0, "y": 1 },
+            "m_AnchoredPosition": { "x": 40, "y": -430 },
+            "m_SizeDelta": { "x": 360, "y": 70 },
+            "m_Pivot": { "x": 0, "y": 1 }
+          }
+        },
+        {
+          "id": "129779692",
+          "class": "UnityEngine.UI.Image",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 0.22, "g": 0.28, "b": 0.4, "a": 1 },
+            "m_RaycastTarget": 1,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Sprite": null,
+            "m_Type": 0,
+            "m_PreserveAspect": 0,
+            "m_FillCenter": 1,
+            "m_FillMethod": 4,
+            "m_FillAmount": 1,
+            "m_FillClockwise": 1,
+            "m_FillOrigin": 0,
+            "m_UseSpriteMesh": 0,
+            "m_PixelsPerUnitMultiplier": 1
+          }
+        },
+        {
+          "id": "129779694",
+          "class": "UnityEngine.UI.Button",
+          "data": {
+            "m_Enabled": 1,
+            "m_Navigation": { "m_Mode": 3, "m_WrapAround": 0, "m_SelectOnUp": null, "m_SelectOnDown": null, "m_SelectOnLeft": null, "m_SelectOnRight": null },
+            "m_Transition": 1,
+            "m_Colors": {
+              "m_NormalColor": { "r": 1, "g": 1, "b": 1, "a": 1 },
+              "m_HighlightedColor": { "r": 1.25, "g": 1.25, "b": 1.1, "a": 1 },
+              "m_PressedColor": { "r": 0.8, "g": 0.8, "b": 0.8, "a": 1 },
+              "m_SelectedColor": { "r": 0.9607843, "g": 0.9607843, "b": 0.9607843, "a": 1 },
+              "m_DisabledColor": { "r": 0.78431374, "g": 0.78431374, "b": 0.78431374, "a": 0.5019608 },
+              "m_ColorMultiplier": 1,
+              "m_FadeDuration": 0.1
+            },
+            "m_SpriteState": { "m_HighlightedSprite": null, "m_PressedSprite": null, "m_SelectedSprite": null, "m_DisabledSprite": null },
+            "m_AnimationTriggers": { "m_NormalTrigger": "Normal", "m_HighlightedTrigger": "Highlighted", "m_PressedTrigger": "Pressed", "m_SelectedTrigger": "Selected", "m_DisabledTrigger": "Disabled" },
+            "m_Interactable": 1,
+            "m_TargetGraphic": { "$id": "129779692" },
+            "m_OnClick": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "132598963",
+      "name": "Label",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "132598964",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": { "$id": "48080522" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 0 },
+            "m_AnchorMax": { "x": 1, "y": 1 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 0, "y": 0 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "132598965",
+          "class": "UnityEngine.UI.Text",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 1, "g": 1, "b": 1, "a": 1 },
+            "m_RaycastTarget": 0,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Text": "내정",
+            "m_Font": null,
+            "m_FontSize": 38,
+            "m_FontStyle": 0,
+            "resizeTextForBestFit": 0,
+            "resizeTextMinSize": 10,
+            "resizeTextMaxSize": 40,
+            "m_Alignment": 4,
+            "m_AlignByGeometry": 0,
+            "supportRichText": 1,
+            "m_HorizontalOverflow": 0,
+            "m_VerticalOverflow": 0,
+            "m_LineSpacing": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "168264086",
+      "name": "Subtitle",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "168264087",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": { "$id": "1879304435" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0.5, "y": 0.69 },
+            "m_AnchorMax": { "x": 0.5, "y": 0.69 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 1000, "y": 60 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "168264088",
+          "class": "UnityEngine.UI.Text",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 0.85, "g": 0.75, "b": 0.7, "a": 1 },
+            "m_RaycastTarget": 0,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Text": "황건적의 난",
+            "m_Font": null,
+            "m_FontSize": 40,
+            "m_FontStyle": 0,
+            "resizeTextForBestFit": 0,
+            "resizeTextMinSize": 10,
+            "resizeTextMaxSize": 40,
+            "m_Alignment": 4,
+            "m_AlignByGeometry": 0,
+            "supportRichText": 1,
+            "m_HorizontalOverflow": 0,
+            "m_VerticalOverflow": 0,
+            "m_LineSpacing": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "201174860",
+      "name": "Title",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "201174861",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": { "$id": "256234652" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 1 },
+            "m_AnchorMax": { "x": 1, "y": 1 },
+            "m_AnchoredPosition": { "x": 0, "y": -16 },
+            "m_SizeDelta": { "x": 0, "y": 80 },
+            "m_Pivot": { "x": 0.5, "y": 1 }
+          }
+        },
+        {
+          "id": "201174862",
+          "class": "UnityEngine.UI.Text",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 1, "g": 1, "b": 1, "a": 1 },
+            "m_RaycastTarget": 0,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Text": "영구 강화",
+            "m_Font": null,
+            "m_FontSize": 60,
+            "m_FontStyle": 0,
+            "resizeTextForBestFit": 0,
+            "resizeTextMinSize": 10,
+            "resizeTextMaxSize": 40,
+            "m_Alignment": 4,
+            "m_AlignByGeometry": 0,
+            "supportRichText": 1,
+            "m_HorizontalOverflow": 0,
+            "m_VerticalOverflow": 0,
+            "m_LineSpacing": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "205113011",
+      "name": "SoundButton",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "205113012",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [
+              { "$id": "18587753" }
+            ],
+            "m_Father": { "$id": "1879304435" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 1 },
+            "m_AnchorMax": { "x": 0, "y": 1 },
+            "m_AnchoredPosition": { "x": 40, "y": -30 },
+            "m_SizeDelta": { "x": 360, "y": 70 },
+            "m_Pivot": { "x": 0, "y": 1 }
+          }
+        },
+        {
+          "id": "205113013",
+          "class": "UnityEngine.UI.Image",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 0.22, "g": 0.28, "b": 0.4, "a": 1 },
+            "m_RaycastTarget": 1,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Sprite": null,
+            "m_Type": 0,
+            "m_PreserveAspect": 0,
+            "m_FillCenter": 1,
+            "m_FillMethod": 4,
+            "m_FillAmount": 1,
+            "m_FillClockwise": 1,
+            "m_FillOrigin": 0,
+            "m_UseSpriteMesh": 0,
+            "m_PixelsPerUnitMultiplier": 1
+          }
+        },
+        {
+          "id": "205113015",
+          "class": "UnityEngine.UI.Button",
+          "data": {
+            "m_Enabled": 1,
+            "m_Navigation": { "m_Mode": 3, "m_WrapAround": 0, "m_SelectOnUp": null, "m_SelectOnDown": null, "m_SelectOnLeft": null, "m_SelectOnRight": null },
+            "m_Transition": 1,
+            "m_Colors": {
+              "m_NormalColor": { "r": 1, "g": 1, "b": 1, "a": 1 },
+              "m_HighlightedColor": { "r": 1.25, "g": 1.25, "b": 1.1, "a": 1 },
+              "m_PressedColor": { "r": 0.8, "g": 0.8, "b": 0.8, "a": 1 },
+              "m_SelectedColor": { "r": 0.9607843, "g": 0.9607843, "b": 0.9607843, "a": 1 },
+              "m_DisabledColor": { "r": 0.78431374, "g": 0.78431374, "b": 0.78431374, "a": 0.5019608 },
+              "m_ColorMultiplier": 1,
+              "m_FadeDuration": 0.1
+            },
+            "m_SpriteState": { "m_HighlightedSprite": null, "m_PressedSprite": null, "m_SelectedSprite": null, "m_DisabledSprite": null },
+            "m_AnimationTriggers": { "m_NormalTrigger": "Normal", "m_HighlightedTrigger": "Highlighted", "m_PressedTrigger": "Pressed", "m_SelectedTrigger": "Selected", "m_DisabledTrigger": "Disabled" },
+            "m_Interactable": 1,
+            "m_TargetGraphic": { "$id": "205113013" },
+            "m_OnClick": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "256234650",
+      "name": "Box",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "256234652",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [
+              { "$id": "201174861" },
+              { "$id": "1736210897" },
+              { "$id": "256574965" },
+              { "$id": "38371949" }
+            ],
+            "m_Father": { "$id": "665857366" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0.5, "y": 0.5 },
+            "m_AnchorMax": { "x": 0.5, "y": 0.5 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 1100, "y": 1020 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "256234653",
+          "class": "UnityEngine.UI.Image",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 0.1, "g": 0.12, "b": 0.18, "a": 0.98 },
+            "m_RaycastTarget": 1,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Sprite": null,
+            "m_Type": 0,
+            "m_PreserveAspect": 0,
+            "m_FillCenter": 1,
+            "m_FillMethod": 4,
+            "m_FillAmount": 1,
+            "m_FillClockwise": 1,
+            "m_FillOrigin": 0,
+            "m_UseSpriteMesh": 0,
+            "m_PixelsPerUnitMultiplier": 1
+          }
+        },
+        {
+          "id": "256234651",
+          "class": "Samkuk.UI.MetaShopUI",
+          "data": {
+            "m_Enabled": 1,
+            "container": { "$id": "256574965" },
+            "goldLabel": { "$id": "1736210895" }
+          }
+        }
+      ]
+    },
+    {
+      "id": "256574964",
+      "name": "Rows",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "256574965",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": { "$id": "256234652" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 0 },
+            "m_AnchorMax": { "x": 1, "y": 1 },
+            "m_AnchoredPosition": { "x": 0, "y": -20 },
+            "m_SizeDelta": { "x": -60, "y": -280 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "256574966",
+          "class": "UnityEngine.UI.VerticalLayoutGroup",
+          "data": {
+            "m_Enabled": 1,
+            "m_Padding": { "m_Left": 0, "m_Right": 0, "m_Top": 0, "m_Bottom": 0 },
+            "m_ChildAlignment": 1,
+            "m_Spacing": 10,
+            "m_ChildForceExpandWidth": 1,
+            "m_ChildForceExpandHeight": 0,
+            "m_ChildControlWidth": 1,
+            "m_ChildControlHeight": 1,
+            "m_ChildScaleWidth": 0,
+            "m_ChildScaleHeight": 0,
+            "m_ReverseArrangement": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "273202669",
+      "name": "LightingButton",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "273202670",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [
+              { "$id": "747433097" }
+            ],
+            "m_Father": { "$id": "1879304435" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 1 },
+            "m_AnchorMax": { "x": 0, "y": 1 },
+            "m_AnchoredPosition": { "x": 40, "y": -350 },
+            "m_SizeDelta": { "x": 360, "y": 70 },
+            "m_Pivot": { "x": 0, "y": 1 }
+          }
+        },
+        {
+          "id": "273202671",
+          "class": "UnityEngine.UI.Image",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 0.22, "g": 0.28, "b": 0.4, "a": 1 },
+            "m_RaycastTarget": 1,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Sprite": null,
+            "m_Type": 0,
+            "m_PreserveAspect": 0,
+            "m_FillCenter": 1,
+            "m_FillMethod": 4,
+            "m_FillAmount": 1,
+            "m_FillClockwise": 1,
+            "m_FillOrigin": 0,
+            "m_UseSpriteMesh": 0,
+            "m_PixelsPerUnitMultiplier": 1
+          }
+        },
+        {
+          "id": "273202673",
+          "class": "UnityEngine.UI.Button",
+          "data": {
+            "m_Enabled": 1,
+            "m_Navigation": { "m_Mode": 3, "m_WrapAround": 0, "m_SelectOnUp": null, "m_SelectOnDown": null, "m_SelectOnLeft": null, "m_SelectOnRight": null },
+            "m_Transition": 1,
+            "m_Colors": {
+              "m_NormalColor": { "r": 1, "g": 1, "b": 1, "a": 1 },
+              "m_HighlightedColor": { "r": 1.25, "g": 1.25, "b": 1.1, "a": 1 },
+              "m_PressedColor": { "r": 0.8, "g": 0.8, "b": 0.8, "a": 1 },
+              "m_SelectedColor": { "r": 0.9607843, "g": 0.9607843, "b": 0.9607843, "a": 1 },
+              "m_DisabledColor": { "r": 0.78431374, "g": 0.78431374, "b": 0.78431374, "a": 0.5019608 },
+              "m_ColorMultiplier": 1,
+              "m_FadeDuration": 0.1
+            },
+            "m_SpriteState": { "m_HighlightedSprite": null, "m_PressedSprite": null, "m_SelectedSprite": null, "m_DisabledSprite": null },
+            "m_AnimationTriggers": { "m_NormalTrigger": "Normal", "m_HighlightedTrigger": "Highlighted", "m_PressedTrigger": "Pressed", "m_SelectedTrigger": "Selected", "m_DisabledTrigger": "Disabled" },
+            "m_Interactable": 1,
+            "m_TargetGraphic": { "$id": "273202671" },
+            "m_OnClick": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "316696438",
+      "name": "StartButton",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "316696439",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [
+              { "$id": "1400057073" }
+            ],
+            "m_Father": { "$id": "1879304435" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0.5, "y": 0.54 },
+            "m_AnchorMax": { "x": 0.5, "y": 0.54 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 480, "y": 88 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "316696440",
+          "class": "UnityEngine.UI.Image",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 0.55, "g": 0.2, "b": 0.18, "a": 1 },
+            "m_RaycastTarget": 1,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Sprite": null,
+            "m_Type": 0,
+            "m_PreserveAspect": 0,
+            "m_FillCenter": 1,
+            "m_FillMethod": 4,
+            "m_FillAmount": 1,
+            "m_FillClockwise": 1,
+            "m_FillOrigin": 0,
+            "m_UseSpriteMesh": 0,
+            "m_PixelsPerUnitMultiplier": 1
+          }
+        },
+        {
+          "id": "316696442",
+          "class": "UnityEngine.UI.Button",
+          "data": {
+            "m_Enabled": 1,
+            "m_Navigation": { "m_Mode": 3, "m_WrapAround": 0, "m_SelectOnUp": null, "m_SelectOnDown": null, "m_SelectOnLeft": null, "m_SelectOnRight": null },
+            "m_Transition": 1,
+            "m_Colors": {
+              "m_NormalColor": { "r": 1, "g": 1, "b": 1, "a": 1 },
+              "m_HighlightedColor": { "r": 1.25, "g": 1.25, "b": 1.1, "a": 1 },
+              "m_PressedColor": { "r": 0.8, "g": 0.8, "b": 0.8, "a": 1 },
+              "m_SelectedColor": { "r": 0.9607843, "g": 0.9607843, "b": 0.9607843, "a": 1 },
+              "m_DisabledColor": { "r": 0.78431374, "g": 0.78431374, "b": 0.78431374, "a": 0.5019608 },
+              "m_ColorMultiplier": 1,
+              "m_FadeDuration": 0.1
+            },
+            "m_SpriteState": { "m_HighlightedSprite": null, "m_PressedSprite": null, "m_SelectedSprite": null, "m_DisabledSprite": null },
+            "m_AnimationTriggers": { "m_NormalTrigger": "Normal", "m_HighlightedTrigger": "Highlighted", "m_PressedTrigger": "Pressed", "m_SelectedTrigger": "Selected", "m_DisabledTrigger": "Disabled" },
+            "m_Interactable": 1,
+            "m_TargetGraphic": { "$id": "316696440" },
+            "m_OnClick": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "455262641",
+      "name": "ResolutionButton",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "455262642",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [
+              { "$id": "1322302036" }
+            ],
+            "m_Father": { "$id": "1879304435" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 1 },
+            "m_AnchorMax": { "x": 0, "y": 1 },
+            "m_AnchoredPosition": { "x": 40, "y": -190 },
+            "m_SizeDelta": { "x": 360, "y": 70 },
+            "m_Pivot": { "x": 0, "y": 1 }
+          }
+        },
+        {
+          "id": "455262643",
+          "class": "UnityEngine.UI.Image",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 0.22, "g": 0.28, "b": 0.4, "a": 1 },
+            "m_RaycastTarget": 1,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Sprite": null,
+            "m_Type": 0,
+            "m_PreserveAspect": 0,
+            "m_FillCenter": 1,
+            "m_FillMethod": 4,
+            "m_FillAmount": 1,
+            "m_FillClockwise": 1,
+            "m_FillOrigin": 0,
+            "m_UseSpriteMesh": 0,
+            "m_PixelsPerUnitMultiplier": 1
+          }
+        },
+        {
+          "id": "455262645",
+          "class": "UnityEngine.UI.Button",
+          "data": {
+            "m_Enabled": 1,
+            "m_Navigation": { "m_Mode": 3, "m_WrapAround": 0, "m_SelectOnUp": null, "m_SelectOnDown": null, "m_SelectOnLeft": null, "m_SelectOnRight": null },
+            "m_Transition": 1,
+            "m_Colors": {
+              "m_NormalColor": { "r": 1, "g": 1, "b": 1, "a": 1 },
+              "m_HighlightedColor": { "r": 1.25, "g": 1.25, "b": 1.1, "a": 1 },
+              "m_PressedColor": { "r": 0.8, "g": 0.8, "b": 0.8, "a": 1 },
+              "m_SelectedColor": { "r": 0.9607843, "g": 0.9607843, "b": 0.9607843, "a": 1 },
+              "m_DisabledColor": { "r": 0.78431374, "g": 0.78431374, "b": 0.78431374, "a": 0.5019608 },
+              "m_ColorMultiplier": 1,
+              "m_FadeDuration": 0.1
+            },
+            "m_SpriteState": { "m_HighlightedSprite": null, "m_PressedSprite": null, "m_SelectedSprite": null, "m_DisabledSprite": null },
+            "m_AnimationTriggers": { "m_NormalTrigger": "Normal", "m_HighlightedTrigger": "Highlighted", "m_PressedTrigger": "Pressed", "m_SelectedTrigger": "Selected", "m_DisabledTrigger": "Disabled" },
+            "m_Interactable": 1,
+            "m_TargetGraphic": { "$id": "455262643" },
+            "m_OnClick": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "456636965",
+      "name": "EventSystem",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "456636968",
+          "class": "Transform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": null,
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 }
+          }
+        },
+        {
+          "id": "456636967",
+          "class": "UnityEngine.EventSystems.EventSystem",
+          "data": { "m_Enabled": 1, "m_FirstSelected": null, "m_sendNavigationEvents": 1, "m_DragThreshold": 10 }
+        },
+        {
+          "id": "456636966",
+          "class": "UnityEngine.InputSystem.UI.InputSystemUIInputModule",
+          "data": {
+            "m_Enabled": 1,
+            "m_SendPointerHoverToParent": 1,
+            "m_MoveRepeatDelay": 0.5,
+            "m_MoveRepeatRate": 0.1,
+            "m_XRTrackingOrigin": null,
+            "m_ActionsAsset": { "$id": "1217433067" },
+            "m_PointAction": { "$id": "306733120" },
+            "m_MoveAction": { "$id": "875890787" },
+            "m_SubmitAction": { "$id": "366133934" },
+            "m_CancelAction": { "$id": "783189407" },
+            "m_LeftClickAction": { "$id": "527902080" },
+            "m_MiddleClickAction": { "$id": "192239209" },
+            "m_RightClickAction": { "$id": "1605143905" },
+            "m_ScrollWheelAction": { "$id": "1026657066" },
+            "m_TrackedDevicePositionAction": { "$id": "460451059" },
+            "m_TrackedDeviceOrientationAction": { "$id": "1390464432" },
+            "m_DeselectOnBackgroundClick": 1,
+            "m_PointerBehavior": 0,
+            "m_CursorLockBehavior": 0,
+            "m_ScrollDeltaPerTick": 6
+          }
+        }
+      ]
+    },
+    {
+      "id": "458067063",
+      "name": "Title",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "458067064",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": { "$id": "1879304435" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0.5, "y": 0.8 },
+            "m_AnchorMax": { "x": 0.5, "y": 0.8 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 1600, "y": 170 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "458067066",
+          "class": "UnityEngine.UI.Text",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 1, "g": 0.85, "b": 0.35, "a": 1 },
+            "m_RaycastTarget": 0,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Text": "삼국지 서바이버",
+            "m_Font": null,
+            "m_FontSize": 120,
+            "m_FontStyle": 0,
+            "resizeTextForBestFit": 0,
+            "resizeTextMinSize": 10,
+            "resizeTextMaxSize": 40,
+            "m_Alignment": 4,
+            "m_AlignByGeometry": 0,
+            "supportRichText": 1,
+            "m_HorizontalOverflow": 0,
+            "m_VerticalOverflow": 0,
+            "m_LineSpacing": 1
+          }
+        },
+        {
+          "id": "458067065",
+          "class": "UnityEngine.UI.Shadow",
+          "data": {
+            "m_Enabled": 1,
+            "m_EffectColor": { "r": 0, "g": 0, "b": 0, "a": 0.5 },
+            "m_EffectDistance": { "x": 4, "y": -4 },
+            "m_UseGraphicAlpha": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "458805991",
+      "name": "Label",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "458805992",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": { "$id": "1063341066" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 0 },
+            "m_AnchorMax": { "x": 1, "y": 1 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 0, "y": 0 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "458805994",
+          "class": "UnityEngine.UI.Text",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 1, "g": 1, "b": 1, "a": 1 },
+            "m_RaycastTarget": 0,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Text": "그림자: 켬",
+            "m_Font": null,
+            "m_FontSize": 30,
+            "m_FontStyle": 0,
+            "resizeTextForBestFit": 0,
+            "resizeTextMinSize": 10,
+            "resizeTextMaxSize": 40,
+            "m_Alignment": 4,
+            "m_AlignByGeometry": 0,
+            "supportRichText": 1,
+            "m_HorizontalOverflow": 0,
+            "m_VerticalOverflow": 0,
+            "m_LineSpacing": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "525557123",
+      "name": "RecordsButton",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "525557124",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [
+              { "$id": "67475706" }
+            ],
+            "m_Father": { "$id": "1879304435" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0.5, "y": 0.285 },
+            "m_AnchorMax": { "x": 0.5, "y": 0.285 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 480, "y": 80 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "525557125",
+          "class": "UnityEngine.UI.Image",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 0.25, "g": 0.3, "b": 0.45, "a": 1 },
+            "m_RaycastTarget": 1,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Sprite": null,
+            "m_Type": 0,
+            "m_PreserveAspect": 0,
+            "m_FillCenter": 1,
+            "m_FillMethod": 4,
+            "m_FillAmount": 1,
+            "m_FillClockwise": 1,
+            "m_FillOrigin": 0,
+            "m_UseSpriteMesh": 0,
+            "m_PixelsPerUnitMultiplier": 1
+          }
+        },
+        {
+          "id": "525557127",
+          "class": "UnityEngine.UI.Button",
+          "data": {
+            "m_Enabled": 1,
+            "m_Navigation": { "m_Mode": 3, "m_WrapAround": 0, "m_SelectOnUp": null, "m_SelectOnDown": null, "m_SelectOnLeft": null, "m_SelectOnRight": null },
+            "m_Transition": 1,
+            "m_Colors": {
+              "m_NormalColor": { "r": 1, "g": 1, "b": 1, "a": 1 },
+              "m_HighlightedColor": { "r": 1.25, "g": 1.25, "b": 1.1, "a": 1 },
+              "m_PressedColor": { "r": 0.8, "g": 0.8, "b": 0.8, "a": 1 },
+              "m_SelectedColor": { "r": 0.9607843, "g": 0.9607843, "b": 0.9607843, "a": 1 },
+              "m_DisabledColor": { "r": 0.78431374, "g": 0.78431374, "b": 0.78431374, "a": 0.5019608 },
+              "m_ColorMultiplier": 1,
+              "m_FadeDuration": 0.1
+            },
+            "m_SpriteState": { "m_HighlightedSprite": null, "m_PressedSprite": null, "m_SelectedSprite": null, "m_DisabledSprite": null },
+            "m_AnimationTriggers": { "m_NormalTrigger": "Normal", "m_HighlightedTrigger": "Highlighted", "m_PressedTrigger": "Pressed", "m_SelectedTrigger": "Selected", "m_DisabledTrigger": "Disabled" },
+            "m_Interactable": 1,
+            "m_TargetGraphic": { "$id": "525557125" },
+            "m_OnClick": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "658307320",
+      "name": "Label",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "658307321",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": { "$id": "1523143486" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 0 },
+            "m_AnchorMax": { "x": 1, "y": 1 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 0, "y": 0 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "658307323",
+          "class": "UnityEngine.UI.Text",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 1, "g": 1, "b": 1, "a": 1 },
+            "m_RaycastTarget": 0,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Text": "미니어처 흐림: 켬",
+            "m_Font": null,
+            "m_FontSize": 30,
+            "m_FontStyle": 0,
+            "resizeTextForBestFit": 0,
+            "resizeTextMinSize": 10,
+            "resizeTextMaxSize": 40,
+            "m_Alignment": 4,
+            "m_AlignByGeometry": 0,
+            "supportRichText": 1,
+            "m_HorizontalOverflow": 0,
+            "m_VerticalOverflow": 0,
+            "m_LineSpacing": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "665857365",
+      "name": "ShopPanel",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": false,
+      "components": [
+        {
+          "id": "665857366",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [
+              { "$id": "256234652" }
+            ],
+            "m_Father": { "$id": "1371673183" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 0 },
+            "m_AnchorMax": { "x": 1, "y": 1 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 0, "y": 0 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "665857367",
+          "class": "UnityEngine.UI.Image",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 0, "g": 0, "b": 0, "a": 0.88 },
+            "m_RaycastTarget": 1,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Sprite": null,
+            "m_Type": 0,
+            "m_PreserveAspect": 0,
+            "m_FillCenter": 1,
+            "m_FillMethod": 4,
+            "m_FillAmount": 1,
+            "m_FillClockwise": 1,
+            "m_FillOrigin": 0,
+            "m_UseSpriteMesh": 0,
+            "m_PixelsPerUnitMultiplier": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "747433096",
+      "name": "Label",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "747433097",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": { "$id": "273202670" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 0 },
+            "m_AnchorMax": { "x": 1, "y": 1 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 0, "y": 0 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "747433099",
+          "class": "UnityEngine.UI.Text",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 1, "g": 1, "b": 1, "a": 1 },
+            "m_RaycastTarget": 0,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Text": "조명 연출: 켬",
+            "m_Font": null,
+            "m_FontSize": 30,
+            "m_FontStyle": 0,
+            "resizeTextForBestFit": 0,
+            "resizeTextMinSize": 10,
+            "resizeTextMaxSize": 40,
+            "m_Alignment": 4,
+            "m_AlignByGeometry": 0,
+            "supportRichText": 1,
+            "m_HorizontalOverflow": 0,
+            "m_VerticalOverflow": 0,
+            "m_LineSpacing": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "789433339",
+      "name": "ShopButton",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "789433340",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [
+              { "$id": "2140523864" }
+            ],
+            "m_Father": { "$id": "1879304435" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0.5, "y": 0.37 },
+            "m_AnchorMax": { "x": 0.5, "y": 0.37 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 480, "y": 80 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "789433341",
+          "class": "UnityEngine.UI.Image",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 0.25, "g": 0.3, "b": 0.45, "a": 1 },
+            "m_RaycastTarget": 1,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Sprite": null,
+            "m_Type": 0,
+            "m_PreserveAspect": 0,
+            "m_FillCenter": 1,
+            "m_FillMethod": 4,
+            "m_FillAmount": 1,
+            "m_FillClockwise": 1,
+            "m_FillOrigin": 0,
+            "m_UseSpriteMesh": 0,
+            "m_PixelsPerUnitMultiplier": 1
+          }
+        },
+        {
+          "id": "789433343",
+          "class": "UnityEngine.UI.Button",
+          "data": {
+            "m_Enabled": 1,
+            "m_Navigation": { "m_Mode": 3, "m_WrapAround": 0, "m_SelectOnUp": null, "m_SelectOnDown": null, "m_SelectOnLeft": null, "m_SelectOnRight": null },
+            "m_Transition": 1,
+            "m_Colors": {
+              "m_NormalColor": { "r": 1, "g": 1, "b": 1, "a": 1 },
+              "m_HighlightedColor": { "r": 1.25, "g": 1.25, "b": 1.1, "a": 1 },
+              "m_PressedColor": { "r": 0.8, "g": 0.8, "b": 0.8, "a": 1 },
+              "m_SelectedColor": { "r": 0.9607843, "g": 0.9607843, "b": 0.9607843, "a": 1 },
+              "m_DisabledColor": { "r": 0.78431374, "g": 0.78431374, "b": 0.78431374, "a": 0.5019608 },
+              "m_ColorMultiplier": 1,
+              "m_FadeDuration": 0.1
+            },
+            "m_SpriteState": { "m_HighlightedSprite": null, "m_PressedSprite": null, "m_SelectedSprite": null, "m_DisabledSprite": null },
+            "m_AnimationTriggers": { "m_NormalTrigger": "Normal", "m_HighlightedTrigger": "Highlighted", "m_PressedTrigger": "Pressed", "m_SelectedTrigger": "Selected", "m_DisabledTrigger": "Disabled" },
+            "m_Interactable": 1,
+            "m_TargetGraphic": { "$id": "789433341" },
+            "m_OnClick": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "803152717",
+      "name": "Gold",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "803152718",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": { "$id": "1879304435" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 1, "y": 1 },
+            "m_AnchorMax": { "x": 1, "y": 1 },
+            "m_AnchoredPosition": { "x": -40, "y": -30 },
+            "m_SizeDelta": { "x": 600, "y": 60 },
+            "m_Pivot": { "x": 1, "y": 1 }
+          }
+        },
+        {
+          "id": "803152720",
+          "class": "UnityEngine.UI.Text",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 1, "g": 0.9, "b": 0.5, "a": 1 },
+            "m_RaycastTarget": 0,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Text": "보유 골드  0",
+            "m_Font": null,
+            "m_FontSize": 38,
+            "m_FontStyle": 0,
+            "resizeTextForBestFit": 0,
+            "resizeTextMinSize": 10,
+            "resizeTextMaxSize": 40,
+            "m_Alignment": 2,
+            "m_AlignByGeometry": 0,
+            "supportRichText": 1,
+            "m_HorizontalOverflow": 0,
+            "m_VerticalOverflow": 0,
+            "m_LineSpacing": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "839406758",
+      "name": "Label",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "839406759",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": { "$id": "129779691" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 0 },
+            "m_AnchorMax": { "x": 1, "y": 1 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 0, "y": 0 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "839406761",
+          "class": "UnityEngine.UI.Text",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 1, "g": 1, "b": 1, "a": 1 },
+            "m_RaycastTarget": 0,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Text": "화면 효과: 켬",
+            "m_Font": null,
+            "m_FontSize": 30,
+            "m_FontStyle": 0,
+            "resizeTextForBestFit": 0,
+            "resizeTextMinSize": 10,
+            "resizeTextMaxSize": 40,
+            "m_Alignment": 4,
+            "m_AlignByGeometry": 0,
+            "supportRichText": 1,
+            "m_HorizontalOverflow": 0,
+            "m_VerticalOverflow": 0,
+            "m_LineSpacing": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "902334217",
+      "name": "Label",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "902334218",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": { "$id": "1804474483" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 0 },
+            "m_AnchorMax": { "x": 1, "y": 1 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 0, "y": 0 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "902334219",
+          "class": "UnityEngine.UI.Text",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 1, "g": 1, "b": 1, "a": 1 },
+            "m_RaycastTarget": 0,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Text": "종료",
+            "m_Font": null,
+            "m_FontSize": 28,
+            "m_FontStyle": 0,
+            "resizeTextForBestFit": 0,
+            "resizeTextMinSize": 10,
+            "resizeTextMaxSize": 40,
+            "m_Alignment": 4,
+            "m_AlignByGeometry": 0,
+            "supportRichText": 1,
+            "m_HorizontalOverflow": 0,
+            "m_VerticalOverflow": 0,
+            "m_LineSpacing": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "927657355",
+      "name": "Label",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "927657356",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": { "$id": "1971628432" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 0 },
+            "m_AnchorMax": { "x": 1, "y": 1 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 0, "y": 0 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "927657358",
+          "class": "UnityEngine.UI.Text",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 1, "g": 1, "b": 1, "a": 1 },
+            "m_RaycastTarget": 0,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Text": "저장 초기화",
+            "m_Font": null,
+            "m_FontSize": 28,
+            "m_FontStyle": 0,
+            "resizeTextForBestFit": 0,
+            "resizeTextMinSize": 10,
+            "resizeTextMaxSize": 40,
+            "m_Alignment": 4,
+            "m_AlignByGeometry": 0,
+            "supportRichText": 1,
+            "m_HorizontalOverflow": 0,
+            "m_VerticalOverflow": 0,
+            "m_LineSpacing": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "940529549",
+      "name": "Title",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "940529550",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": { "$id": "2147407994" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 1 },
+            "m_AnchorMax": { "x": 1, "y": 1 },
+            "m_AnchoredPosition": { "x": 0, "y": -16 },
+            "m_SizeDelta": { "x": 0, "y": 80 },
+            "m_Pivot": { "x": 0.5, "y": 1 }
+          }
+        },
+        {
+          "id": "940529551",
+          "class": "UnityEngine.UI.Text",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 1, "g": 1, "b": 1, "a": 1 },
+            "m_RaycastTarget": 0,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Text": "기록",
+            "m_Font": null,
+            "m_FontSize": 60,
+            "m_FontStyle": 0,
+            "resizeTextForBestFit": 0,
+            "resizeTextMinSize": 10,
+            "resizeTextMaxSize": 40,
+            "m_Alignment": 4,
+            "m_AlignByGeometry": 0,
+            "supportRichText": 1,
+            "m_HorizontalOverflow": 0,
+            "m_VerticalOverflow": 0,
+            "m_LineSpacing": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "1028384403",
+      "name": "Main Camera",
+      "layer": 0,
+      "tag": "MainCamera",
+      "active": true,
+      "components": [
+        {
+          "id": "1028384406",
+          "class": "Transform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": -10 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": null,
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 }
+          }
+        },
+        {
+          "id": "1028384405",
+          "class": "Camera",
+          "data": {
+            "m_Enabled": 1,
+            "m_ClearFlags": 2,
+            "m_BackGroundColor": { "r": 0.07, "g": 0.05, "b": 0.09, "a": 1 },
+            "m_projectionMatrixMode": 1,
+            "m_GateFitMode": 2,
+            "m_FOVAxisMode": 0,
+            "m_Iso": 200,
+            "m_ShutterSpeed": 0.005,
+            "m_Aperture": 16,
+            "m_FocusDistance": 10,
+            "m_FocalLength": 50,
+            "m_BladeCount": 5,
+            "m_Curvature": { "x": 2, "y": 11 },
+            "m_BarrelClipping": 0.25,
+            "m_Anamorphism": 0,
+            "m_SensorSize": { "x": 36, "y": 24 },
+            "m_LensShift": { "x": 0, "y": 0 },
+            "m_NormalizedViewPortRect": { "serializedVersion": 2, "x": 0, "y": 0, "width": 1, "height": 1 },
+            "near clip plane": 0.3,
+            "far clip plane": 1000,
+            "field of view": 60,
+            "orthographic": 1,
+            "orthographic size": 5,
+            "m_Depth": 0,
+            "m_CullingMask": { "serializedVersion": 2, "m_Bits": 4294967295 },
+            "m_RenderingPath": -1,
+            "m_TargetTexture": null,
+            "m_TargetDisplay": 0,
+            "m_TargetEye": 3,
+            "m_HDR": 1,
+            "m_AllowMSAA": 1,
+            "m_AllowDynamicResolution": 0,
+            "m_ForceIntoRT": 0,
+            "m_OcclusionCulling": 1,
+            "m_StereoConvergence": 10,
+            "m_StereoSeparation": 0.022
+          }
+        },
+        {
+          "id": "1028384404",
+          "class": "AudioListener",
+          "data": { "m_Enabled": 1 }
+        }
+      ]
+    },
+    {
+      "id": "1063341065",
+      "name": "ShadowButton",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "1063341066",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [
+              { "$id": "458805992" }
+            ],
+            "m_Father": { "$id": "1879304435" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 1 },
+            "m_AnchorMax": { "x": 0, "y": 1 },
+            "m_AnchoredPosition": { "x": 40, "y": -590 },
+            "m_SizeDelta": { "x": 360, "y": 70 },
+            "m_Pivot": { "x": 0, "y": 1 }
+          }
+        },
+        {
+          "id": "1063341067",
+          "class": "UnityEngine.UI.Image",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 0.22, "g": 0.28, "b": 0.4, "a": 1 },
+            "m_RaycastTarget": 1,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Sprite": null,
+            "m_Type": 0,
+            "m_PreserveAspect": 0,
+            "m_FillCenter": 1,
+            "m_FillMethod": 4,
+            "m_FillAmount": 1,
+            "m_FillClockwise": 1,
+            "m_FillOrigin": 0,
+            "m_UseSpriteMesh": 0,
+            "m_PixelsPerUnitMultiplier": 1
+          }
+        },
+        {
+          "id": "1063341069",
+          "class": "UnityEngine.UI.Button",
+          "data": {
+            "m_Enabled": 1,
+            "m_Navigation": { "m_Mode": 3, "m_WrapAround": 0, "m_SelectOnUp": null, "m_SelectOnDown": null, "m_SelectOnLeft": null, "m_SelectOnRight": null },
+            "m_Transition": 1,
+            "m_Colors": {
+              "m_NormalColor": { "r": 1, "g": 1, "b": 1, "a": 1 },
+              "m_HighlightedColor": { "r": 1.25, "g": 1.25, "b": 1.1, "a": 1 },
+              "m_PressedColor": { "r": 0.8, "g": 0.8, "b": 0.8, "a": 1 },
+              "m_SelectedColor": { "r": 0.9607843, "g": 0.9607843, "b": 0.9607843, "a": 1 },
+              "m_DisabledColor": { "r": 0.78431374, "g": 0.78431374, "b": 0.78431374, "a": 0.5019608 },
+              "m_ColorMultiplier": 1,
+              "m_FadeDuration": 0.1
+            },
+            "m_SpriteState": { "m_HighlightedSprite": null, "m_PressedSprite": null, "m_SelectedSprite": null, "m_DisabledSprite": null },
+            "m_AnimationTriggers": { "m_NormalTrigger": "Normal", "m_HighlightedTrigger": "Highlighted", "m_PressedTrigger": "Pressed", "m_SelectedTrigger": "Selected", "m_DisabledTrigger": "Disabled" },
+            "m_Interactable": 1,
+            "m_TargetGraphic": { "$id": "1063341067" },
+            "m_OnClick": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "1085802185",
+      "name": "Label",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "1085802186",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": { "$id": "38371949" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 0 },
+            "m_AnchorMax": { "x": 1, "y": 1 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 0, "y": 0 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "1085802187",
+          "class": "UnityEngine.UI.Text",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 1, "g": 1, "b": 1, "a": 1 },
+            "m_RaycastTarget": 0,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Text": "닫기  [ESC]",
+            "m_Font": null,
+            "m_FontSize": 38,
+            "m_FontStyle": 0,
+            "resizeTextForBestFit": 0,
+            "resizeTextMinSize": 10,
+            "resizeTextMaxSize": 40,
+            "m_Alignment": 4,
+            "m_AlignByGeometry": 0,
+            "supportRichText": 1,
+            "m_HorizontalOverflow": 0,
+            "m_VerticalOverflow": 0,
+            "m_LineSpacing": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "1087971793",
+      "name": "Divider",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "1087971794",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": { "$id": "1879304435" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0.5, "y": 0.635 },
+            "m_AnchorMax": { "x": 0.5, "y": 0.635 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 760, "y": 24 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "1087971795",
+          "class": "UnityEngine.UI.Image",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 1, "g": 1, "b": 1, "a": 1 },
+            "m_RaycastTarget": 0,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Sprite": { "$sprite": "res://sprites/UI/UiDivider.png", "w": 256, "h": 16, "ppu": 100, "pivot": [0.5, 0.5] },
+            "m_Type": 0,
+            "m_PreserveAspect": 0,
+            "m_FillCenter": 1,
+            "m_FillMethod": 4,
+            "m_FillAmount": 1,
+            "m_FillClockwise": 1,
+            "m_FillOrigin": 0,
+            "m_UseSpriteMesh": 0,
+            "m_PixelsPerUnitMultiplier": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "1095855612",
+      "name": "RecordsPanel",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": false,
+      "components": [
+        {
+          "id": "1095855613",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [
+              { "$id": "2147407994" }
+            ],
+            "m_Father": { "$id": "1371673183" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 0 },
+            "m_AnchorMax": { "x": 1, "y": 1 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 0, "y": 0 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "1095855614",
+          "class": "UnityEngine.UI.Image",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 0, "g": 0, "b": 0, "a": 0.88 },
+            "m_RaycastTarget": 1,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Sprite": null,
+            "m_Type": 0,
+            "m_PreserveAspect": 0,
+            "m_FillCenter": 1,
+            "m_FillMethod": 4,
+            "m_FillAmount": 1,
+            "m_FillClockwise": 1,
+            "m_FillOrigin": 0,
+            "m_UseSpriteMesh": 0,
+            "m_PixelsPerUnitMultiplier": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "1149265611",
+      "name": "Text",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "1149265614",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": { "$id": "2147407994" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 0 },
+            "m_AnchorMax": { "x": 1, "y": 1 },
+            "m_AnchoredPosition": { "x": 15, "y": 5 },
+            "m_SizeDelta": { "x": -150, "y": -250 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "1149265612",
+          "class": "UnityEngine.UI.Text",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 1, "g": 1, "b": 1, "a": 1 },
+            "m_RaycastTarget": 0,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Text": null,
+            "m_Font": null,
+            "m_FontSize": 34,
+            "m_FontStyle": 0,
+            "resizeTextForBestFit": 0,
+            "resizeTextMinSize": 10,
+            "resizeTextMaxSize": 40,
+            "m_Alignment": 0,
+            "m_AlignByGeometry": 0,
+            "supportRichText": 1,
+            "m_HorizontalOverflow": 0,
+            "m_VerticalOverflow": 0,
+            "m_LineSpacing": 1.25
+          }
+        }
+      ]
+    },
+    {
+      "id": "1255315779",
+      "name": "ShakeButton",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "1255315780",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [
+              { "$id": "1355620534" }
+            ],
+            "m_Father": { "$id": "1879304435" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 1 },
+            "m_AnchorMax": { "x": 0, "y": 1 },
+            "m_AnchoredPosition": { "x": 40, "y": -110 },
+            "m_SizeDelta": { "x": 360, "y": 70 },
+            "m_Pivot": { "x": 0, "y": 1 }
+          }
+        },
+        {
+          "id": "1255315781",
+          "class": "UnityEngine.UI.Image",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 0.22, "g": 0.28, "b": 0.4, "a": 1 },
+            "m_RaycastTarget": 1,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Sprite": null,
+            "m_Type": 0,
+            "m_PreserveAspect": 0,
+            "m_FillCenter": 1,
+            "m_FillMethod": 4,
+            "m_FillAmount": 1,
+            "m_FillClockwise": 1,
+            "m_FillOrigin": 0,
+            "m_UseSpriteMesh": 0,
+            "m_PixelsPerUnitMultiplier": 1
+          }
+        },
+        {
+          "id": "1255315783",
+          "class": "UnityEngine.UI.Button",
+          "data": {
+            "m_Enabled": 1,
+            "m_Navigation": { "m_Mode": 3, "m_WrapAround": 0, "m_SelectOnUp": null, "m_SelectOnDown": null, "m_SelectOnLeft": null, "m_SelectOnRight": null },
+            "m_Transition": 1,
+            "m_Colors": {
+              "m_NormalColor": { "r": 1, "g": 1, "b": 1, "a": 1 },
+              "m_HighlightedColor": { "r": 1.25, "g": 1.25, "b": 1.1, "a": 1 },
+              "m_PressedColor": { "r": 0.8, "g": 0.8, "b": 0.8, "a": 1 },
+              "m_SelectedColor": { "r": 0.9607843, "g": 0.9607843, "b": 0.9607843, "a": 1 },
+              "m_DisabledColor": { "r": 0.78431374, "g": 0.78431374, "b": 0.78431374, "a": 0.5019608 },
+              "m_ColorMultiplier": 1,
+              "m_FadeDuration": 0.1
+            },
+            "m_SpriteState": { "m_HighlightedSprite": null, "m_PressedSprite": null, "m_SelectedSprite": null, "m_DisabledSprite": null },
+            "m_AnimationTriggers": { "m_NormalTrigger": "Normal", "m_HighlightedTrigger": "Highlighted", "m_PressedTrigger": "Pressed", "m_SelectedTrigger": "Selected", "m_DisabledTrigger": "Disabled" },
+            "m_Interactable": 1,
+            "m_TargetGraphic": { "$id": "1255315781" },
+            "m_OnClick": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "1298010392",
+      "name": "TiltViewButton",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "1298010393",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [
+              { "$id": "1306343448" }
+            ],
+            "m_Father": { "$id": "1879304435" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 1 },
+            "m_AnchorMax": { "x": 0, "y": 1 },
+            "m_AnchoredPosition": { "x": 40, "y": -750 },
+            "m_SizeDelta": { "x": 360, "y": 70 },
+            "m_Pivot": { "x": 0, "y": 1 }
+          }
+        },
+        {
+          "id": "1298010394",
+          "class": "UnityEngine.UI.Image",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 0.22, "g": 0.28, "b": 0.4, "a": 1 },
+            "m_RaycastTarget": 1,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Sprite": null,
+            "m_Type": 0,
+            "m_PreserveAspect": 0,
+            "m_FillCenter": 1,
+            "m_FillMethod": 4,
+            "m_FillAmount": 1,
+            "m_FillClockwise": 1,
+            "m_FillOrigin": 0,
+            "m_UseSpriteMesh": 0,
+            "m_PixelsPerUnitMultiplier": 1
+          }
+        },
+        {
+          "id": "1298010396",
+          "class": "UnityEngine.UI.Button",
+          "data": {
+            "m_Enabled": 1,
+            "m_Navigation": { "m_Mode": 3, "m_WrapAround": 0, "m_SelectOnUp": null, "m_SelectOnDown": null, "m_SelectOnLeft": null, "m_SelectOnRight": null },
+            "m_Transition": 1,
+            "m_Colors": {
+              "m_NormalColor": { "r": 1, "g": 1, "b": 1, "a": 1 },
+              "m_HighlightedColor": { "r": 1.25, "g": 1.25, "b": 1.1, "a": 1 },
+              "m_PressedColor": { "r": 0.8, "g": 0.8, "b": 0.8, "a": 1 },
+              "m_SelectedColor": { "r": 0.9607843, "g": 0.9607843, "b": 0.9607843, "a": 1 },
+              "m_DisabledColor": { "r": 0.78431374, "g": 0.78431374, "b": 0.78431374, "a": 0.5019608 },
+              "m_ColorMultiplier": 1,
+              "m_FadeDuration": 0.1
+            },
+            "m_SpriteState": { "m_HighlightedSprite": null, "m_PressedSprite": null, "m_SelectedSprite": null, "m_DisabledSprite": null },
+            "m_AnimationTriggers": { "m_NormalTrigger": "Normal", "m_HighlightedTrigger": "Highlighted", "m_PressedTrigger": "Pressed", "m_SelectedTrigger": "Selected", "m_DisabledTrigger": "Disabled" },
+            "m_Interactable": 1,
+            "m_TargetGraphic": { "$id": "1298010394" },
+            "m_OnClick": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "1306343445",
+      "name": "Label",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "1306343448",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": { "$id": "1298010393" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 0 },
+            "m_AnchorMax": { "x": 1, "y": 1 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 0, "y": 0 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "1306343446",
+          "class": "UnityEngine.UI.Text",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 1, "g": 1, "b": 1, "a": 1 },
+            "m_RaycastTarget": 0,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Text": "2.5D 시점: 켬",
+            "m_Font": null,
+            "m_FontSize": 30,
+            "m_FontStyle": 0,
+            "resizeTextForBestFit": 0,
+            "resizeTextMinSize": 10,
+            "resizeTextMaxSize": 40,
+            "m_Alignment": 4,
+            "m_AlignByGeometry": 0,
+            "supportRichText": 1,
+            "m_HorizontalOverflow": 0,
+            "m_VerticalOverflow": 0,
+            "m_LineSpacing": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "1322302035",
+      "name": "Label",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "1322302036",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": { "$id": "455262642" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 0 },
+            "m_AnchorMax": { "x": 1, "y": 1 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 0, "y": 0 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "1322302038",
+          "class": "UnityEngine.UI.Text",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 1, "g": 1, "b": 1, "a": 1 },
+            "m_RaycastTarget": 0,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Text": "해상도: 자동",
+            "m_Font": null,
+            "m_FontSize": 30,
+            "m_FontStyle": 0,
+            "resizeTextForBestFit": 0,
+            "resizeTextMinSize": 10,
+            "resizeTextMaxSize": 40,
+            "m_Alignment": 4,
+            "m_AlignByGeometry": 0,
+            "supportRichText": 1,
+            "m_HorizontalOverflow": 0,
+            "m_VerticalOverflow": 0,
+            "m_LineSpacing": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "1355620533",
+      "name": "Label",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "1355620534",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": { "$id": "1255315780" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 0 },
+            "m_AnchorMax": { "x": 1, "y": 1 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 0, "y": 0 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "1355620536",
+          "class": "UnityEngine.UI.Text",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 1, "g": 1, "b": 1, "a": 1 },
+            "m_RaycastTarget": 0,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Text": "화면 흔들림: 켬",
+            "m_Font": null,
+            "m_FontSize": 30,
+            "m_FontStyle": 0,
+            "resizeTextForBestFit": 0,
+            "resizeTextMinSize": 10,
+            "resizeTextMaxSize": 40,
+            "m_Alignment": 4,
+            "m_AlignByGeometry": 0,
+            "supportRichText": 1,
+            "m_HorizontalOverflow": 0,
+            "m_VerticalOverflow": 0,
+            "m_LineSpacing": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "1371673177",
+      "name": "TitleCanvas",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "1371673183",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 0, "y": 0, "z": 0 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [
+              { "$id": "1371738989" },
+              { "$id": "1879304435" },
+              { "$id": "665857366" },
+              { "$id": "1095855613" }
+            ],
+            "m_Father": null,
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 0 },
+            "m_AnchorMax": { "x": 0, "y": 0 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 0, "y": 0 },
+            "m_Pivot": { "x": 0, "y": 0 }
+          }
+        },
+        {
+          "id": "1371673182",
+          "class": "Canvas",
+          "data": { "m_Enabled": 1, "m_RenderMode": 0, "m_Camera": null, "m_PlaneDistance": 100, "m_PixelPerfect": 0, "m_ReceivesEvents": 1, "m_OverrideSorting": 0, "m_OverridePixelPerfect": 0, "m_SortingBucketNormalizedSize": 0, "m_VertexColorAlwaysGammaSpace": 0, "m_UseReflectionProbes": 0, "m_AdditionalShaderChannelsFlag": 0, "m_UpdateRectTransformForStandalone": 0, "m_SortingLayerID": 0, "m_SortingOrder": 0, "m_TargetDisplay": 0, "sortingLayerName": "Default" }
+        },
+        {
+          "id": "1371673181",
+          "class": "UnityEngine.UI.GraphicRaycaster",
+          "data": {
+            "m_Enabled": 1,
+            "m_IgnoreReversedGraphics": 1,
+            "m_BlockingObjects": 0,
+            "m_BlockingMask": { "serializedVersion": 2, "m_Bits": 4294967295 }
+          }
+        },
+        {
+          "id": "1371673180",
+          "class": "UnityEngine.UI.CanvasScaler",
+          "data": {
+            "m_Enabled": 1,
+            "m_UiScaleMode": 1,
+            "m_ReferencePixelsPerUnit": 100,
+            "m_ScaleFactor": 1,
+            "m_ReferenceResolution": { "x": 1920, "y": 1080 },
+            "m_ScreenMatchMode": 0,
+            "m_MatchWidthOrHeight": 0.5,
+            "m_PhysicalUnit": 3,
+            "m_FallbackScreenDPI": 96,
+            "m_DefaultSpriteDPI": 96,
+            "m_DynamicPixelsPerUnit": 1,
+            "m_PresetInfoIsWorld": 0
+          }
+        },
+        {
+          "id": "1371673179",
+          "class": "Samkuk.UI.UiSkin",
+          "data": { "m_Enabled": 1 }
+        },
+        {
+          "id": "1371673178",
+          "class": "Samkuk.UI.TitleController",
+          "data": {
+            "m_Enabled": 1,
+            "mainPanel": { "$id": "1879304434" },
+            "shopPanel": { "$id": "665857365" },
+            "recordsPanel": { "$id": "1095855612" },
+            "startButton": { "$id": "316696442" },
+            "strategyButton": { "$id": "48080525" },
+            "shopButton": { "$id": "789433343" },
+            "recordsButton": { "$id": "525557127" },
+            "resetButton": { "$id": "1971628435" },
+            "quitButton": { "$id": "1804474486" },
+            "soundButton": { "$id": "205113015" },
+            "shakeButton": { "$id": "1255315783" },
+            "resolutionButton": { "$id": "455262645" },
+            "windowModeButton": { "$id": "91487965" },
+            "lightingButton": { "$id": "273202673" },
+            "postFxButton": { "$id": "129779694" },
+            "pixelButton": { "$id": "1872391260" },
+            "shadowButton": { "$id": "1063341069" },
+            "tiltShiftButton": { "$id": "1523143489" },
+            "tiltButton": { "$id": "1298010396" },
+            "shopCloseButton": { "$id": "38371952" },
+            "recordsCloseButton": { "$id": "90456300" },
+            "shopUi": { "$id": "256234651" },
+            "recordsText": { "$id": "1149265612" },
+            "goldLabel": { "$id": "803152720" },
+            "resetLabel": { "$id": "927657358" },
+            "soundLabel": { "$id": "18587755" },
+            "shakeLabel": { "$id": "1355620536" },
+            "resolutionLabel": { "$id": "1322302038" },
+            "windowModeLabel": { "$id": "1612019241" },
+            "lightingLabel": { "$id": "747433099" },
+            "postFxLabel": { "$id": "839406761" },
+            "pixelLabel": { "$id": "2145032232" },
+            "shadowLabel": { "$id": "458805994" },
+            "tiltShiftLabel": { "$id": "658307323" },
+            "tiltLabel": { "$id": "1306343446" },
+            "catalog": { "$ref": "MetaCatalog" },
+            "resetConfirmSeconds": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "1371738988",
+      "name": "Background",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "1371738989",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": { "$id": "1371673183" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 0 },
+            "m_AnchorMax": { "x": 1, "y": 1 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 0, "y": 0 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "1371738990",
+          "class": "UnityEngine.UI.Image",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 0.1, "g": 0.07, "b": 0.12, "a": 1 },
+            "m_RaycastTarget": 0,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Sprite": null,
+            "m_Type": 0,
+            "m_PreserveAspect": 0,
+            "m_FillCenter": 1,
+            "m_FillMethod": 4,
+            "m_FillAmount": 1,
+            "m_FillClockwise": 1,
+            "m_FillOrigin": 0,
+            "m_UseSpriteMesh": 0,
+            "m_PixelsPerUnitMultiplier": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "1400057072",
+      "name": "Label",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "1400057073",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": { "$id": "316696439" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 0 },
+            "m_AnchorMax": { "x": 1, "y": 1 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 0, "y": 0 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "1400057074",
+          "class": "UnityEngine.UI.Text",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 1, "g": 1, "b": 1, "a": 1 },
+            "m_RaycastTarget": 0,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Text": "시작",
+            "m_Font": null,
+            "m_FontSize": 38,
+            "m_FontStyle": 0,
+            "resizeTextForBestFit": 0,
+            "resizeTextMinSize": 10,
+            "resizeTextMaxSize": 40,
+            "m_Alignment": 4,
+            "m_AlignByGeometry": 0,
+            "supportRichText": 1,
+            "m_HorizontalOverflow": 0,
+            "m_VerticalOverflow": 0,
+            "m_LineSpacing": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "1523143485",
+      "name": "TiltShiftButton",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "1523143486",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [
+              { "$id": "658307321" }
+            ],
+            "m_Father": { "$id": "1879304435" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 1 },
+            "m_AnchorMax": { "x": 0, "y": 1 },
+            "m_AnchoredPosition": { "x": 40, "y": -670 },
+            "m_SizeDelta": { "x": 360, "y": 70 },
+            "m_Pivot": { "x": 0, "y": 1 }
+          }
+        },
+        {
+          "id": "1523143487",
+          "class": "UnityEngine.UI.Image",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 0.22, "g": 0.28, "b": 0.4, "a": 1 },
+            "m_RaycastTarget": 1,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Sprite": null,
+            "m_Type": 0,
+            "m_PreserveAspect": 0,
+            "m_FillCenter": 1,
+            "m_FillMethod": 4,
+            "m_FillAmount": 1,
+            "m_FillClockwise": 1,
+            "m_FillOrigin": 0,
+            "m_UseSpriteMesh": 0,
+            "m_PixelsPerUnitMultiplier": 1
+          }
+        },
+        {
+          "id": "1523143489",
+          "class": "UnityEngine.UI.Button",
+          "data": {
+            "m_Enabled": 1,
+            "m_Navigation": { "m_Mode": 3, "m_WrapAround": 0, "m_SelectOnUp": null, "m_SelectOnDown": null, "m_SelectOnLeft": null, "m_SelectOnRight": null },
+            "m_Transition": 1,
+            "m_Colors": {
+              "m_NormalColor": { "r": 1, "g": 1, "b": 1, "a": 1 },
+              "m_HighlightedColor": { "r": 1.25, "g": 1.25, "b": 1.1, "a": 1 },
+              "m_PressedColor": { "r": 0.8, "g": 0.8, "b": 0.8, "a": 1 },
+              "m_SelectedColor": { "r": 0.9607843, "g": 0.9607843, "b": 0.9607843, "a": 1 },
+              "m_DisabledColor": { "r": 0.78431374, "g": 0.78431374, "b": 0.78431374, "a": 0.5019608 },
+              "m_ColorMultiplier": 1,
+              "m_FadeDuration": 0.1
+            },
+            "m_SpriteState": { "m_HighlightedSprite": null, "m_PressedSprite": null, "m_SelectedSprite": null, "m_DisabledSprite": null },
+            "m_AnimationTriggers": { "m_NormalTrigger": "Normal", "m_HighlightedTrigger": "Highlighted", "m_PressedTrigger": "Pressed", "m_SelectedTrigger": "Selected", "m_DisabledTrigger": "Disabled" },
+            "m_Interactable": 1,
+            "m_TargetGraphic": { "$id": "1523143487" },
+            "m_OnClick": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "1612019238",
+      "name": "Label",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "1612019239",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": { "$id": "91487962" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 0 },
+            "m_AnchorMax": { "x": 1, "y": 1 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 0, "y": 0 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "1612019241",
+          "class": "UnityEngine.UI.Text",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 1, "g": 1, "b": 1, "a": 1 },
+            "m_RaycastTarget": 0,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Text": "화면: 전체화면",
+            "m_Font": null,
+            "m_FontSize": 30,
+            "m_FontStyle": 0,
+            "resizeTextForBestFit": 0,
+            "resizeTextMinSize": 10,
+            "resizeTextMaxSize": 40,
+            "m_Alignment": 4,
+            "m_AlignByGeometry": 0,
+            "supportRichText": 1,
+            "m_HorizontalOverflow": 0,
+            "m_VerticalOverflow": 0,
+            "m_LineSpacing": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "1736210894",
+      "name": "Gold",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "1736210897",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": { "$id": "256234652" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 1 },
+            "m_AnchorMax": { "x": 1, "y": 1 },
+            "m_AnchoredPosition": { "x": 0, "y": -96 },
+            "m_SizeDelta": { "x": 0, "y": 50 },
+            "m_Pivot": { "x": 0.5, "y": 1 }
+          }
+        },
+        {
+          "id": "1736210895",
+          "class": "UnityEngine.UI.Text",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 1, "g": 0.9, "b": 0.5, "a": 1 },
+            "m_RaycastTarget": 0,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Text": "보유 골드  0",
+            "m_Font": null,
+            "m_FontSize": 36,
+            "m_FontStyle": 0,
+            "resizeTextForBestFit": 0,
+            "resizeTextMinSize": 10,
+            "resizeTextMaxSize": 40,
+            "m_Alignment": 4,
+            "m_AlignByGeometry": 0,
+            "supportRichText": 1,
+            "m_HorizontalOverflow": 0,
+            "m_VerticalOverflow": 0,
+            "m_LineSpacing": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "1804474482",
+      "name": "QuitButton",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "1804474483",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [
+              { "$id": "902334218" }
+            ],
+            "m_Father": { "$id": "1879304435" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0.5, "y": 0.13 },
+            "m_AnchorMax": { "x": 0.5, "y": 0.13 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 480, "y": 66 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "1804474484",
+          "class": "UnityEngine.UI.Image",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 0.25, "g": 0.3, "b": 0.45, "a": 1 },
+            "m_RaycastTarget": 1,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Sprite": null,
+            "m_Type": 0,
+            "m_PreserveAspect": 0,
+            "m_FillCenter": 1,
+            "m_FillMethod": 4,
+            "m_FillAmount": 1,
+            "m_FillClockwise": 1,
+            "m_FillOrigin": 0,
+            "m_UseSpriteMesh": 0,
+            "m_PixelsPerUnitMultiplier": 1
+          }
+        },
+        {
+          "id": "1804474486",
+          "class": "UnityEngine.UI.Button",
+          "data": {
+            "m_Enabled": 1,
+            "m_Navigation": { "m_Mode": 3, "m_WrapAround": 0, "m_SelectOnUp": null, "m_SelectOnDown": null, "m_SelectOnLeft": null, "m_SelectOnRight": null },
+            "m_Transition": 1,
+            "m_Colors": {
+              "m_NormalColor": { "r": 1, "g": 1, "b": 1, "a": 1 },
+              "m_HighlightedColor": { "r": 1.25, "g": 1.25, "b": 1.1, "a": 1 },
+              "m_PressedColor": { "r": 0.8, "g": 0.8, "b": 0.8, "a": 1 },
+              "m_SelectedColor": { "r": 0.9607843, "g": 0.9607843, "b": 0.9607843, "a": 1 },
+              "m_DisabledColor": { "r": 0.78431374, "g": 0.78431374, "b": 0.78431374, "a": 0.5019608 },
+              "m_ColorMultiplier": 1,
+              "m_FadeDuration": 0.1
+            },
+            "m_SpriteState": { "m_HighlightedSprite": null, "m_PressedSprite": null, "m_SelectedSprite": null, "m_DisabledSprite": null },
+            "m_AnimationTriggers": { "m_NormalTrigger": "Normal", "m_HighlightedTrigger": "Highlighted", "m_PressedTrigger": "Pressed", "m_SelectedTrigger": "Selected", "m_DisabledTrigger": "Disabled" },
+            "m_Interactable": 1,
+            "m_TargetGraphic": { "$id": "1804474484" },
+            "m_OnClick": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "1872391256",
+      "name": "PixelButton",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "1872391257",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [
+              { "$id": "2145032230" }
+            ],
+            "m_Father": { "$id": "1879304435" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 1 },
+            "m_AnchorMax": { "x": 0, "y": 1 },
+            "m_AnchoredPosition": { "x": 40, "y": -510 },
+            "m_SizeDelta": { "x": 360, "y": 70 },
+            "m_Pivot": { "x": 0, "y": 1 }
+          }
+        },
+        {
+          "id": "1872391258",
+          "class": "UnityEngine.UI.Image",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 0.22, "g": 0.28, "b": 0.4, "a": 1 },
+            "m_RaycastTarget": 1,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Sprite": null,
+            "m_Type": 0,
+            "m_PreserveAspect": 0,
+            "m_FillCenter": 1,
+            "m_FillMethod": 4,
+            "m_FillAmount": 1,
+            "m_FillClockwise": 1,
+            "m_FillOrigin": 0,
+            "m_UseSpriteMesh": 0,
+            "m_PixelsPerUnitMultiplier": 1
+          }
+        },
+        {
+          "id": "1872391260",
+          "class": "UnityEngine.UI.Button",
+          "data": {
+            "m_Enabled": 1,
+            "m_Navigation": { "m_Mode": 3, "m_WrapAround": 0, "m_SelectOnUp": null, "m_SelectOnDown": null, "m_SelectOnLeft": null, "m_SelectOnRight": null },
+            "m_Transition": 1,
+            "m_Colors": {
+              "m_NormalColor": { "r": 1, "g": 1, "b": 1, "a": 1 },
+              "m_HighlightedColor": { "r": 1.25, "g": 1.25, "b": 1.1, "a": 1 },
+              "m_PressedColor": { "r": 0.8, "g": 0.8, "b": 0.8, "a": 1 },
+              "m_SelectedColor": { "r": 0.9607843, "g": 0.9607843, "b": 0.9607843, "a": 1 },
+              "m_DisabledColor": { "r": 0.78431374, "g": 0.78431374, "b": 0.78431374, "a": 0.5019608 },
+              "m_ColorMultiplier": 1,
+              "m_FadeDuration": 0.1
+            },
+            "m_SpriteState": { "m_HighlightedSprite": null, "m_PressedSprite": null, "m_SelectedSprite": null, "m_DisabledSprite": null },
+            "m_AnimationTriggers": { "m_NormalTrigger": "Normal", "m_HighlightedTrigger": "Highlighted", "m_PressedTrigger": "Pressed", "m_SelectedTrigger": "Selected", "m_DisabledTrigger": "Disabled" },
+            "m_Interactable": 1,
+            "m_TargetGraphic": { "$id": "1872391258" },
+            "m_OnClick": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "1879304434",
+      "name": "MainPanel",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "1879304435",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [
+              { "$id": "458067064" },
+              { "$id": "168264087" },
+              { "$id": "1087971794" },
+              { "$id": "803152718" },
+              { "$id": "316696439" },
+              { "$id": "48080522" },
+              { "$id": "789433340" },
+              { "$id": "525557124" },
+              { "$id": "1971628432" },
+              { "$id": "1804474483" },
+              { "$id": "205113012" },
+              { "$id": "1255315780" },
+              { "$id": "455262642" },
+              { "$id": "91487962" },
+              { "$id": "273202670" },
+              { "$id": "129779691" },
+              { "$id": "1872391257" },
+              { "$id": "1063341066" },
+              { "$id": "1523143486" },
+              { "$id": "1298010393" }
+            ],
+            "m_Father": { "$id": "1371673183" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 0 },
+            "m_AnchorMax": { "x": 1, "y": 1 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 0, "y": 0 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        }
+      ]
+    },
+    {
+      "id": "1925010684",
+      "name": "Label",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "1925010685",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": { "$id": "90456297" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 0 },
+            "m_AnchorMax": { "x": 1, "y": 1 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 0, "y": 0 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "1925010686",
+          "class": "UnityEngine.UI.Text",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 1, "g": 1, "b": 1, "a": 1 },
+            "m_RaycastTarget": 0,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Text": "닫기  [ESC]",
+            "m_Font": null,
+            "m_FontSize": 38,
+            "m_FontStyle": 0,
+            "resizeTextForBestFit": 0,
+            "resizeTextMinSize": 10,
+            "resizeTextMaxSize": 40,
+            "m_Alignment": 4,
+            "m_AlignByGeometry": 0,
+            "supportRichText": 1,
+            "m_HorizontalOverflow": 0,
+            "m_VerticalOverflow": 0,
+            "m_LineSpacing": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "1971628431",
+      "name": "ResetButton",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "1971628432",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [
+              { "$id": "927657356" }
+            ],
+            "m_Father": { "$id": "1879304435" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0.5, "y": 0.205 },
+            "m_AnchorMax": { "x": 0.5, "y": 0.205 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 480, "y": 66 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "1971628433",
+          "class": "UnityEngine.UI.Image",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 0.3, "g": 0.22, "b": 0.22, "a": 1 },
+            "m_RaycastTarget": 1,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Sprite": null,
+            "m_Type": 0,
+            "m_PreserveAspect": 0,
+            "m_FillCenter": 1,
+            "m_FillMethod": 4,
+            "m_FillAmount": 1,
+            "m_FillClockwise": 1,
+            "m_FillOrigin": 0,
+            "m_UseSpriteMesh": 0,
+            "m_PixelsPerUnitMultiplier": 1
+          }
+        },
+        {
+          "id": "1971628435",
+          "class": "UnityEngine.UI.Button",
+          "data": {
+            "m_Enabled": 1,
+            "m_Navigation": { "m_Mode": 3, "m_WrapAround": 0, "m_SelectOnUp": null, "m_SelectOnDown": null, "m_SelectOnLeft": null, "m_SelectOnRight": null },
+            "m_Transition": 1,
+            "m_Colors": {
+              "m_NormalColor": { "r": 1, "g": 1, "b": 1, "a": 1 },
+              "m_HighlightedColor": { "r": 1.25, "g": 1.25, "b": 1.1, "a": 1 },
+              "m_PressedColor": { "r": 0.8, "g": 0.8, "b": 0.8, "a": 1 },
+              "m_SelectedColor": { "r": 0.9607843, "g": 0.9607843, "b": 0.9607843, "a": 1 },
+              "m_DisabledColor": { "r": 0.78431374, "g": 0.78431374, "b": 0.78431374, "a": 0.5019608 },
+              "m_ColorMultiplier": 1,
+              "m_FadeDuration": 0.1
+            },
+            "m_SpriteState": { "m_HighlightedSprite": null, "m_PressedSprite": null, "m_SelectedSprite": null, "m_DisabledSprite": null },
+            "m_AnimationTriggers": { "m_NormalTrigger": "Normal", "m_HighlightedTrigger": "Highlighted", "m_PressedTrigger": "Pressed", "m_SelectedTrigger": "Selected", "m_DisabledTrigger": "Disabled" },
+            "m_Interactable": 1,
+            "m_TargetGraphic": { "$id": "1971628433" },
+            "m_OnClick": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "2140523863",
+      "name": "Label",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "2140523864",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": { "$id": "789433340" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 0 },
+            "m_AnchorMax": { "x": 1, "y": 1 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 0, "y": 0 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "2140523865",
+          "class": "UnityEngine.UI.Text",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 1, "g": 1, "b": 1, "a": 1 },
+            "m_RaycastTarget": 0,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Text": "영구 강화",
+            "m_Font": null,
+            "m_FontSize": 38,
+            "m_FontStyle": 0,
+            "resizeTextForBestFit": 0,
+            "resizeTextMinSize": 10,
+            "resizeTextMaxSize": 40,
+            "m_Alignment": 4,
+            "m_AlignByGeometry": 0,
+            "supportRichText": 1,
+            "m_HorizontalOverflow": 0,
+            "m_VerticalOverflow": 0,
+            "m_LineSpacing": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "2145032229",
+      "name": "Label",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "2145032230",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": { "$id": "1872391257" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0, "y": 0 },
+            "m_AnchorMax": { "x": 1, "y": 1 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 0, "y": 0 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "2145032232",
+          "class": "UnityEngine.UI.Text",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 1, "g": 1, "b": 1, "a": 1 },
+            "m_RaycastTarget": 0,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Text": "도트 화면: 켬",
+            "m_Font": null,
+            "m_FontSize": 30,
+            "m_FontStyle": 0,
+            "resizeTextForBestFit": 0,
+            "resizeTextMinSize": 10,
+            "resizeTextMaxSize": 40,
+            "m_Alignment": 4,
+            "m_AlignByGeometry": 0,
+            "supportRichText": 1,
+            "m_HorizontalOverflow": 0,
+            "m_VerticalOverflow": 0,
+            "m_LineSpacing": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "2147407993",
+      "name": "Box",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "2147407994",
+          "class": "RectTransform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [
+              { "$id": "940529550" },
+              { "$id": "1149265614" },
+              { "$id": "90456297" }
+            ],
+            "m_Father": { "$id": "1095855613" },
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 },
+            "m_AnchorMin": { "x": 0.5, "y": 0.5 },
+            "m_AnchorMax": { "x": 0.5, "y": 0.5 },
+            "m_AnchoredPosition": { "x": 0, "y": 0 },
+            "m_SizeDelta": { "x": 900, "y": 720 },
+            "m_Pivot": { "x": 0.5, "y": 0.5 }
+          }
+        },
+        {
+          "id": "2147407995",
+          "class": "UnityEngine.UI.Image",
+          "data": {
+            "m_Enabled": 1,
+            "m_Material": null,
+            "m_Color": { "r": 0.1, "g": 0.12, "b": 0.18, "a": 0.98 },
+            "m_RaycastTarget": 1,
+            "m_RaycastPadding": { "x": 0, "y": 0, "z": 0, "w": 0 },
+            "m_Maskable": 1,
+            "m_OnCullStateChanged": {
+              "m_PersistentCalls": { "m_Calls": [] }
+            },
+            "m_Sprite": null,
+            "m_Type": 0,
+            "m_PreserveAspect": 0,
+            "m_FillCenter": 1,
+            "m_FillMethod": 4,
+            "m_FillAmount": 1,
+            "m_FillClockwise": 1,
+            "m_FillOrigin": 0,
+            "m_UseSpriteMesh": 0,
+            "m_PixelsPerUnitMultiplier": 1
+          }
+        }
+      ]
+    }
+  ],
+  "prefabInstances": []
+}

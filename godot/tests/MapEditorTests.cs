@@ -6,7 +6,7 @@ using Samkuk.Core;
 using Samkuk.Data;
 using Samkuk.World;
 using Samkuk.Compat;
-// (미룸) using UnityEngine.EventSystems;
+using Samkuk.Compat.UI;
 
 namespace Samkuk.Tests
 {
@@ -26,7 +26,7 @@ namespace Samkuk.Tests
             TerrainThemeCatalog.Use(null);
             GameSession.SortieCastle = null;
             GameSession.MapTest = false;
-            // (미룸) DestroyLeftoverProps();
+            DestroyLeftoverProps();
         }
 
         [TearDown]
@@ -38,21 +38,19 @@ namespace Samkuk.Tests
             TerrainThemeCatalog.Use(null);
             GameSession.SortieCastle = null;
             GameSession.MapTest = false;
-            // (미룸) MapEditorSession.LastCastleId = null;
-            // (미룸) Audio.AudioManager.DestroyInstance();
+            MapEditorSession.LastCastleId = null;
+            Audio.AudioManager.DestroyInstance();
             foreach (var o in toDestroy) if (o != null) Object.DestroyImmediate(o);
             toDestroy.Clear();
-            // (미룸) DestroyLeftoverProps();
+            DestroyLeftoverProps();
             if (Directory.Exists(tempDir)) Directory.Delete(tempDir, true);
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         static void DestroyLeftoverProps()
         {
             foreach (var s in Object.FindObjectsByType<TerrainPropSpawner>())
                 Object.DestroyImmediate(s.gameObject);
         }
-#endif
 
         // ───────────────────────── 헬퍼 ─────────────────────────
 
@@ -270,7 +268,6 @@ namespace Samkuk.Tests
             Assert.IsTrue(TerrainMap.CreateFreeBattle(catalog).HasCustom, "성 없이 시작한 판도 고친 맵을 쓴다");
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Background_ApplyMap_ShowsTheGivenMap()
         {
@@ -290,9 +287,7 @@ namespace Samkuk.Tests
             Assert.AreSame(map.Theme.groundTile, sr.sprite);
             Assert.IsTrue(bg.Props.Map.IsCustom(TerrainMap.ChunkOf(new Vector2(20f, 20f))));
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Spawner_ShowsCustomChunks_AndRebuildsAChangedChunk()
         {
@@ -320,7 +315,6 @@ namespace Samkuk.Tests
             spawner.RebuildChunk(new Vector2Int(500, 500));   // 활성이 아닌 칸은 무시
             Assert.AreEqual(spawner.ActivePropCount, spawner.GetComponentsInChildren<SpriteRenderer>(false).Length);
         }
-#endif
 
         // ───────────────────────── 편집 규칙 ─────────────────────────
 
@@ -388,7 +382,7 @@ namespace Samkuk.Tests
             Assert.IsFalse(model.TryGet(ItemRef.None, out _));
         }
 
-        [Ignore("확인 필요: 옮긴 코드에서 실패한다. 유니티 Test Runner 에서 통과하던 테스트인지 먼저 확인할 것 (godot/PORTING.md)")]
+        [Ignore("확인 필요: 옮긴 코드에서 실패한다. 유니티 Test Runner 에서 통과하던 테스트인지 확인할 것 (godot/PORTING.md)")]
         [Test]
         public void FindNearest_PrefersPropsOverPatches_AndMissesFarAway()
         {
@@ -406,7 +400,7 @@ namespace Samkuk.Tests
             Assert.IsFalse(model.FindNearest(new Vector2(900f, 900f), out _));
         }
 
-        [Ignore("확인 필요: 옮긴 코드에서 실패한다. 유니티 Test Runner 에서 통과하던 테스트인지 먼저 확인할 것 (godot/PORTING.md)")]
+        [Ignore("확인 필요: 옮긴 코드에서 실패한다. 유니티 Test Runner 에서 통과하던 테스트인지 확인할 것 (godot/PORTING.md)")]
         [Test]
         public void EraseCircle_RemovesOnlyInsideAndRespectsFilter()
         {
@@ -567,7 +561,6 @@ namespace Samkuk.Tests
 
         // ───────────────────────── 편집기 화면 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         MapEditorController MakeController(out List<string> loaded)
         {
             var catalog = MakeCatalog();
@@ -588,9 +581,7 @@ namespace Samkuk.Tests
             if (es != null) toDestroy.Add(es.gameObject);
             return controller;
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Controller_Opens_FreeBattleMap_WithPaletteAndTools()
         {
@@ -603,9 +594,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(1f, Time.timeScale);
             Assert.IsFalse(GameSession.MapTest);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Controller_PlaceSelectModifyUndoSave()
         {
@@ -643,9 +632,7 @@ namespace Samkuk.Tests
             Assert.IsFalse(c.Model.Unsaved);
             Assert.IsNotNull(MapStore.Load(MapStore.FreeBattleId));
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Controller_DeleteAndEraseTargets()
         {
@@ -668,9 +655,7 @@ namespace Samkuk.Tests
             c.ChangeBrush(-100f);
             Assert.AreEqual(0.5f, c.BrushRadius);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Controller_Snap_And_Terrain_Cycle()
         {
@@ -690,9 +675,7 @@ namespace Samkuk.Tests
             for (int i = 0; i < 5; i++) c.CycleTerrain();
             Assert.IsNull(c.TerrainOverride, "한 바퀴 돌면 성의 원래 지형으로");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Controller_ChangeTerrain_KeepsEditedChunks_AndSavesOverride()
         {
@@ -705,9 +688,7 @@ namespace Samkuk.Tests
             Assert.IsTrue(c.Save());
             Assert.AreEqual("Jungle", MapStore.Load(MapStore.FreeBattleId).terrain);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Controller_Save_WithNothingChanged_DeletesTheFile()
         {
@@ -716,9 +697,7 @@ namespace Samkuk.Tests
             Assert.IsTrue(c.Save());
             Assert.IsNull(MapStore.Load(MapStore.FreeBattleId), "고친 내용이 없으면 자동 생성 맵 그대로 둔다");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Controller_TestBattle_SavesAndStartsBattleInMapTestMode()
         {
@@ -738,9 +717,7 @@ namespace Samkuk.Tests
             Assert.IsFalse(GameSession.MapTest);
             Assert.AreEqual(GameManager.TitleSceneName, loaded.Last());
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Controller_ResetAll_IsUndoable_AndReloadDropsUnsavedChanges()
         {
@@ -756,6 +733,5 @@ namespace Samkuk.Tests
             Assert.IsFalse(c.Map.HasCustom, "저장본이 없으니 자동 생성");
             Assert.IsFalse(c.Model.Unsaved);
         }
-#endif
     }
 }

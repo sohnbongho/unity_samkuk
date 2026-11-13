@@ -1,0 +1,395 @@
+using System;
+using System.Collections.Generic;
+using Samkuk.Player;
+using Samkuk.World;
+using Samkuk.Compat;
+
+namespace Samkuk.Enemies
+{
+    /// <summary>
+    /// 모든 활성 적의 추적 이동, 겹침 방지, 접촉 피해를 한 곳에서 처리한다.
+    /// 개별 Update 대신 FixedUpdate 한 번에 처리하고, 해시 그리드로 이웃 탐색을 O(n)에 가깝게 유지한다.
+    /// 같은 그리드로 무기용 범위 질의(OverlapCircle)와 최근접 탐색(FindNearest)도 제공한다.
+    /// 전투 맵의 지형 충돌(<see cref="TerrainCollision.Active"/>)이 있으면 나무/바위를 돌아가고 강물에서 느려진다.
+    /// </summary>
+    public class EnemyManager : MonoBehaviour
+    {
+        const int BucketCount = 4096; // 2의 거듭제곱 (비트 마스크용)
+
+        [SerializeField] Transform target;
+        [SerializeField, Tooltip("겹친 적을 밀어내는 힘")] float separationStrength = 3f;
+        [SerializeField, Tooltip("겹침 방지로 더해지는 최대 속도")] float maxSeparationSpeed = 3f;
+        [SerializeField, Tooltip("이 거리보다 멀어진 적은 EnemyTooFar 이벤트로 재배치된다")] float tooFarDistance = 25f;
+        [SerializeField, Tooltip("플레이어 반지름: 이 거리까지 접근하면 멈춤")] float playerRadius = 0.4f;
+        [SerializeField, Tooltip("해시 그리드 셀 크기. 가장 큰 적의 지름 이상이어야 함")] float cellSize = 1.5f;
+        [SerializeField, Tooltip("접촉 판정에 더해지는 여유 거리")] float contactPadding = 0.15f;
+
+        readonly List<Enemy> enemies = new List<Enemy>(512);
+        readonly List<IEnemyTarget> extraTargets = new List<IEnemyTarget>(4);
+        readonly int[] head = new int[BucketCount];
+        readonly int[] visited = new int[9];
+        int[] next = new int[512];
+        Vector2[] positions = new Vector2[512];
+        float[] nearestDist = new float[16];
+        bool gridBuilt;
+        bool gridDirty = true;
+        int queryStamp;
+        float maxEnemyRadius;
+
+        PlayerHealth playerHealth;
+        EnemyProjectileSystem projectiles;
+        Transform healthLookupTarget;
+
+        public Transform Target { get => target; set => target = value; }
+        /// <summary>궁병이 쏘는 투사체를 처리하는 시스템 (없으면 궁병은 쏘지 못함).</summary>
+        public EnemyProjectileSystem Projectiles { get => projectiles; set => projectiles = value; }
+        public int Count => enemies.Count;
+        /// <summary>플레이어 외에 적이 노릴 수 있는 대상(아군).</summary>
+        public IReadOnlyList<IEnemyTarget> ExtraTargets => extraTargets;
+        public IReadOnlyList<Enemy> Active => enemies;
+
+        /// <summary>플레이어에게서 너무 멀어진 적이 있을 때 호출된다 (재배치/제거는 구독자가 결정).</summary>
+        public event Action<Enemy> EnemyTooFar;
+
+        void Awake() => Array.Fill(head, -1);
+
+        void Start()
+        {
+            if (projectiles == null) projectiles = FindAnyObjectByType<EnemyProjectileSystem>();
+            if (target == null)
+            {
+                var pc = FindAnyObjectByType<PlayerController>();
+                if (pc != null) target = pc.transform;
+            }
+        }
+
+        public void RegisterTarget(IEnemyTarget t)
+        {
+            if (t != null && !extraTargets.Contains(t)) extraTargets.Add(t);
+        }
+
+        public void UnregisterTarget(IEnemyTarget t) => extraTargets.Remove(t);
+
+        public void Register(Enemy e)
+        {
+            if (e.ManagerIndex >= 0) return;
+            e.ManagerIndex = enemies.Count;
+            enemies.Add(e);
+            gridDirty = true;
+            if (e.Radius > maxEnemyRadius) maxEnemyRadius = e.Radius;
+        }
+
+        public void Unregister(Enemy e)
+        {
+            int idx = e.ManagerIndex;
+            if (idx < 0) return;
+            int last = enemies.Count - 1;
+            var moved = enemies[last];
+            enemies[idx] = moved;
+            moved.ManagerIndex = idx;
+            enemies.RemoveAt(last);
+            gridDirty = true;
+            e.ManagerIndex = -1;
+        }
+
+        // ───────────────────────── 시뮬레이션 ─────────────────────────
+
+        void FixedUpdate()
+        {
+            int n = enemies.Count;
+            if (n == 0 || target == null) return;
+
+            if (healthLookupTarget != target)
+            {
+                healthLookupTarget = target;
+                playerHealth = target.GetComponent<PlayerHealth>();
+            }
+
+            EnsureCapacity(n);
+            Array.Fill(head, -1);
+
+            // 1) 위치 캐시 + 해시 그리드 구성
+            float invCell = 1f / cellSize;
+            for (int i = 0; i < n; i++)
+            {
+                Vector2 p = enemies[i].Body.position;
+                positions[i] = p;
+                int b = Bucket(Mathf.FloorToInt(p.x * invCell), Mathf.FloorToInt(p.y * invCell));
+                next[i] = head[b];
+                head[b] = i;
+            }
+            gridBuilt = true;
+            gridDirty = false;
+
+            Vector2 tp = target.position;
+            float dt = Time.fixedDeltaTime;
+            float tooFarSqr = tooFarDistance * tooFarDistance;
+            bool canHurtPlayer = playerHealth != null && playerHealth.CanTakeContactDamage;
+            var terrain = TerrainCollision.Active;
+
+            // 2) 추적 + 겹침 방지 + 접촉 피해
+            for (int i = 0; i < n; i++)
+            {
+                Enemy e = enemies[i];
+                Vector2 p = positions[i];
+                float r = e.Radius;
+
+                float playerDistSqr = (tp - p).sqrMagnitude;
+
+                if (playerDistSqr > tooFarSqr)
+                {
+                    EnemyTooFar?.Invoke(e);
+                    continue;
+                }
+
+                // 목표: 플레이어, 또는 그보다 가까운 (쓰러지지 않은) 아군
+                IEnemyTarget ally = null;
+                Vector2 targetPos = tp;
+                float targetRadius = playerRadius;
+                float distSqr = playerDistSqr;
+                for (int t = 0; t < extraTargets.Count; t++)
+                {
+                    IEnemyTarget cand = extraTargets[t];
+                    if (!cand.IsTargetable) continue;
+
+                    float ds = (cand.Position - p).sqrMagnitude;
+                    if (ds >= distSqr) continue;
+
+                    distSqr = ds;
+                    ally = cand;
+                    targetPos = cand.Position;
+                    targetRadius = cand.Radius;
+                }
+
+                Vector2 toTarget = targetPos - p;
+                float stop = targetRadius + r;
+                bool stunned = e.TickStun(dt);
+
+                if (!stunned) // 기절한 적은 접촉 피해를 주지 못한다
+                {
+                    float contact = stop + contactPadding;
+                    if (distSqr <= contact * contact)
+                    {
+                        if (ally != null)
+                        {
+                            ally.TryContactDamage(e.Data.contactDamage);
+                        }
+                        else if (canHurtPlayer)
+                        {
+                            playerHealth.TryContactDamage(e.Data.contactDamage);
+                            canHurtPlayer = playerHealth.CanTakeContactDamage;
+                        }
+                    }
+                }
+
+                Vector2 desired = Vector2.zero;
+                Vector2 dirToTarget = distSqr > 1e-6f ? toTarget / Mathf.Sqrt(distSqr) : Vector2.right;
+
+                if (stunned)
+                    desired = Vector2.zero; // 기절 중: 제자리 (겹침 방지 밀림만 받음)
+                else if (e.Data.chargeInterval > 0f && e.TickCharge(dt, dirToTarget, out Vector2 chargeVelocity))
+                    desired = chargeVelocity; // 돌진 패턴이 이동을 지배 (예고 중에는 정지)
+                else if (e.Data.attackRange > 0f)
+                    desired = MoveAsArcher(e, dirToTarget, distSqr, dt, targetPos);
+                else if (distSqr > stop * stop)
+                    desired = dirToTarget * e.Data.moveSpeed;
+
+                Vector2 push = ComputePush(i, p, r);
+                Vector2 sep = Vector2.ClampMagnitude(push * separationStrength, maxSeparationSpeed);
+
+                Vector2 velocity;
+                if (terrain != null)
+                {
+                    // 물에서는 스스로 가는 속도만 느려진다 (겹침 밀림/넉백은 그대로). 나무/바위는 넉백도 막는다
+                    float factor = terrain.SpeedFactor(p);
+                    if (factor < 1f) desired *= factor;
+                    velocity = terrain.Resolve(p, r, desired + sep + e.TickKnockback(dt), dt, deflect: true, side: e.SteerSide);
+                }
+                else velocity = desired + sep + e.TickKnockback(dt);
+
+                e.Body.linearVelocity = velocity;
+                e.SetGroundZ(TerrainHeight.ZAt(p));   // 언덕 위면 올라선다 (틸트가 아니면 0)
+                if (e.HasWalkSheet)
+                    e.TickAnimation(dirToTarget, desired.sqrMagnitude > 0.0025f, dt); // 목표를 바라보며 걷는다 (궁병이 물러날 때도 정면)
+                else if (desired.x > 0.05f) e.SetFacing(false);
+                else if (desired.x < -0.05f) e.SetFacing(true);
+            }
+        }
+
+        /// <summary>
+        /// 궁병 이동: 사정거리보다 멀면 접근, 너무 가까우면(사정거리의 65% 안) 물러나며, 그 사이에서는 멈춰 쏜다.
+        /// 사격 타이머도 여기서 진행하며 간격이 차면 투사체를 발사한다.
+        /// </summary>
+        Vector2 MoveAsArcher(Enemy e, Vector2 dirToTarget, float distSqr, float dt, Vector2 targetPos)
+        {
+            float range = e.Data.attackRange;
+            float dist = Mathf.Sqrt(distSqr);
+
+            if (e.TickShoot(dt, dist <= range * 1.15f) && projectiles != null)
+                projectiles.Fire(e.Body.position, dirToTarget, e.Data);
+
+            if (dist > range) return dirToTarget * e.Data.moveSpeed;
+            if (dist < range * 0.65f) return -dirToTarget * (e.Data.moveSpeed * 0.7f);
+            return Vector2.zero;
+        }
+
+        Vector2 ComputePush(int self, Vector2 p, float r)
+        {
+            float invCell = 1f / cellSize;
+            int cx = Mathf.FloorToInt(p.x * invCell);
+            int cy = Mathf.FloorToInt(p.y * invCell);
+
+            Vector2 push = Vector2.zero;
+            int visitedCount = 0;
+
+            for (int dy = -1; dy <= 1; dy++)
+            {
+                for (int dx = -1; dx <= 1; dx++)
+                {
+                    int b = Bucket(cx + dx, cy + dy);
+
+                    // 해시 충돌로 같은 버킷을 두 번 방문하지 않도록 방지
+                    bool seen = false;
+                    for (int v = 0; v < visitedCount; v++)
+                    {
+                        if (visited[v] == b) { seen = true; break; }
+                    }
+                    if (seen) continue;
+                    visited[visitedCount++] = b;
+
+                    for (int j = head[b]; j >= 0; j = next[j])
+                    {
+                        if (j == self) continue;
+
+                        Vector2 d = p - positions[j];
+                        float minDist = r + enemies[j].Radius;
+                        float dSqr = d.sqrMagnitude;
+                        if (dSqr >= minDist * minDist) continue;
+
+                        if (dSqr < 1e-6f)
+                        {
+                            // 완전히 같은 위치: 인덱스 기반의 결정적 방향으로 분리
+                            float a = (self * 2.399963f) + (j * 0.618f);
+                            push += new Vector2(Mathf.Cos(a), Mathf.Sin(a));
+                        }
+                        else
+                        {
+                            float dist = Mathf.Sqrt(dSqr);
+                            push += d / dist * ((minDist - dist) / minDist);
+                        }
+                    }
+                }
+            }
+            return push;
+        }
+
+        // ───────────────────────── 질의 (무기용) ─────────────────────────
+
+        /// <summary>
+        /// 원 안에 (적 반지름을 포함해) 걸치는 살아있는 적을 results에 추가한다.
+        /// 그리드는 마지막 FixedUpdate 시점 기준이며, 거리 판정은 현재 위치로 한다.
+        /// results는 호출 전에 비우지 않는다.
+        /// </summary>
+        public void OverlapCircle(Vector2 center, float radius, List<Enemy> results)
+        {
+            // 그리드가 아직 없거나, 마지막 구성 이후 적이 등록/해제되어 낡았다면 전수 검색으로 정확성을 보장한다.
+            if (!gridBuilt || gridDirty)
+            {
+                OverlapLinear(center, radius, results);
+                return;
+            }
+
+            int stamp = ++queryStamp;
+            float invCell = 1f / cellSize;
+            float pad = Mathf.Max(maxEnemyRadius, 0.01f); // 지금까지 등록된 가장 큰 적(보스 등)의 반지름
+            int x0 = Mathf.FloorToInt((center.x - radius - pad) * invCell);
+            int x1 = Mathf.FloorToInt((center.x + radius + pad) * invCell);
+            int y0 = Mathf.FloorToInt((center.y - radius - pad) * invCell);
+            int y1 = Mathf.FloorToInt((center.y + radius + pad) * invCell);
+            int count = enemies.Count;
+
+            for (int cy = y0; cy <= y1; cy++)
+            {
+                for (int cx = x0; cx <= x1; cx++)
+                {
+                    for (int j = head[Bucket(cx, cy)]; j >= 0; j = next[j])
+                    {
+                        if (j >= count) continue; // 그리드 구성 후 목록이 줄어든 경우
+                        Enemy e = enemies[j];
+                        if (e.QueryStamp == stamp || !e.Alive) continue;
+
+                        float reach = radius + e.Radius;
+                        if ((e.Body.position - center).sqrMagnitude > reach * reach) continue;
+
+                        e.QueryStamp = stamp;
+                        results.Add(e);
+                    }
+                }
+            }
+        }
+
+        void OverlapLinear(Vector2 center, float radius, List<Enemy> results)
+        {
+            for (int i = 0; i < enemies.Count; i++)
+            {
+                Enemy e = enemies[i];
+                if (!e.Alive) continue;
+
+                float reach = radius + e.Radius;
+                if ((e.Body.position - center).sqrMagnitude <= reach * reach) results.Add(e);
+            }
+        }
+
+        /// <summary>
+        /// range 안에서 from에 가까운 순으로 최대 results.Length 마리를 results에 채우고 개수를 반환한다.
+        /// </summary>
+        public int FindNearest(Vector2 from, float range, Enemy[] results)
+        {
+            int max = results.Length;
+            if (max == 0) return 0;
+            if (nearestDist.Length < max) nearestDist = new float[max];
+
+            float rangeSqr = range * range;
+            int found = 0;
+
+            for (int i = 0; i < enemies.Count; i++)
+            {
+                Enemy e = enemies[i];
+                if (!e.Alive) continue;
+
+                float d = (e.Body.position - from).sqrMagnitude;
+                if (d > rangeSqr) continue;
+                if (found == max && d >= nearestDist[max - 1]) continue;
+
+                // 삽입 정렬로 상위 max개 유지
+                int pos = found < max ? found : max - 1;
+                while (pos > 0 && nearestDist[pos - 1] > d)
+                {
+                    nearestDist[pos] = nearestDist[pos - 1];
+                    results[pos] = results[pos - 1];
+                    pos--;
+                }
+                nearestDist[pos] = d;
+                results[pos] = e;
+                if (found < max) found++;
+            }
+            return found;
+        }
+
+        static int Bucket(int x, int y)
+        {
+            unchecked
+            {
+                return (x * 73856093 ^ y * 19349663) & (BucketCount - 1);
+            }
+        }
+
+        void EnsureCapacity(int n)
+        {
+            if (next.Length >= n) return;
+            int size = Mathf.NextPowerOfTwo(n);
+            Array.Resize(ref next, size);
+            Array.Resize(ref positions, size);
+        }
+    }
+}

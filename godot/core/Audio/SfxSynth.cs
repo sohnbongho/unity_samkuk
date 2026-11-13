@@ -129,6 +129,17 @@ namespace Samkuk.Audio
             return buffer;
         }
 
+        /// <summary>합성한 샘플로 AudioClip을 만든다. 레시피가 없으면 null.</summary>
+        public static AudioClip CreateClip(SfxId id)
+        {
+            var samples = Generate(id);
+            if (samples.Length == 0) return null;
+
+            var clip = AudioClip.Create($"sfx_{id}", samples.Length, 1, SampleRate, false);
+            clip.SetData(samples, 0);
+            return clip;
+        }
+
         /// <summary>고정 시드 잡음(xorshift) -1~1. 합성 결과가 항상 같도록 UnityEngine.Random을 쓰지 않는다.</summary>
         static float NextNoise(ref uint seed)
         {

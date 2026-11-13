@@ -10,6 +10,9 @@ namespace Samkuk.Tests
     /// 유니티 테스트의 <c>AssetDatabase.LoadAssetAtPath</c> 자리 (Godot 전환 G2). 옮긴 테스트가 예전 에셋 경로를 그대로 쓰도록,
     /// 경로의 파일 이름으로 <see cref="GameData"/>(<c>godot/data</c> 의 JSON)에서 찾아 준다. 그림 경로는 <c>godot/sprites</c> 의 같은 파일.
     /// </summary>
+    /// <summary>씬 파일이 있다는 표시 (유니티 SceneAsset 자리).</summary>
+    public sealed class SceneAsset { public string name; }
+
     public static class AssetDatabase
     {
         static string godotRoot;
@@ -47,10 +50,20 @@ namespace Samkuk.Tests
                 ReadPngSize(file, out int w, out int h);
                 string res = "res://sprites/" + rel;
                 if (typeof(T) == typeof(Texture2D)) return new Texture2D(res, w, h) as T;
-                return Sprite.FromFile(res, w, h, 100f, new Vector2(0.5f, 0.5f)) as T;
+                EnsureLoaded();
+                return (GameData.SpriteAt(res) ?? Sprite.FromFile(res, w, h, 100f, new Vector2(0.5f, 0.5f))) as T;
             }
 
             EnsureLoaded();
+            if (path.EndsWith(".prefab"))
+            {
+                // 프리팹: 원형 오브젝트, 또는 그 컴포넌트 (LoadAssetAtPath<Enemy>)
+                var prefab = Prefabs.Get(name);
+                if (prefab == null) return null;
+                return typeof(T) == typeof(GameObject) ? prefab as T : prefab.GetComponent<T>();
+            }
+            if (path.EndsWith(".unity"))
+                return GameData.ReadText("Scenes/" + name + Prefabs.Extension) != null ? new SceneAsset { name = name } as T : null;
             return Resources.Load<T>(name);
         }
 

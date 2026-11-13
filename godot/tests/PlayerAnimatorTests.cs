@@ -4,11 +4,10 @@ using NUnit.Framework;
 using Samkuk.Data;
 using Samkuk.Player;
 using Samkuk.Compat;
-// (미룸) using UnityEngine.InputSystem;
+using Samkuk.Compat.InputSystem;
 
 namespace Samkuk.Tests
 {
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
     /// <summary>장수 걷기 애니메이션: 시트 자르기, 방향 선택, 프레임 재생.</summary>
     public class PlayerAnimatorTests : InputTestFixture
     {
@@ -245,5 +244,4 @@ namespace Samkuk.Tests
             Assert.AreEqual(5, count, "장수 5명");
         }
     }
-#endif
 }

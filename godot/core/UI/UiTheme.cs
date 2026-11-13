@@ -18,8 +18,8 @@ namespace Samkuk.UI
         [Tooltip("얇은 금빛 테두리 (버튼/바)")] public Sprite frameThin;
         [Tooltip("가운데 장식이 있는 가로 구분선")] public Sprite divider;
 
-        [Header("폰트")]
-        [Tooltip("폰트 파일 경로 (res://...ttf). 비워 두면 OS의 한글 폰트")] public string font;
+        [Header("폰트 (비워 두면 OS의 한글 폰트)")]
+        public Font font;
 
         [Header("바탕색")]
         public Color panel = new Color(0.09f, 0.07f, 0.07f, 0.98f);
@@ -62,5 +62,7 @@ namespace Samkuk.UI
         /// <summary>캐시를 버리고 다음 접근 때 다시 불러온다 (테스트/에셋 교체용).</summary>
         public static void ResetCache() => cached = null;
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics() => cached = null;
     }
 }

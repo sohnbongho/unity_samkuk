@@ -3,7 +3,6 @@ using NUnit.Framework;
 using Samkuk.Core;
 using Samkuk.World;
 using Samkuk.Compat;
-// (미룸) using UnityEngine.Rendering.Universal;
 
 namespace Samkuk.Tests
 {
@@ -33,7 +32,6 @@ namespace Samkuk.Tests
             Assert.AreEqual(8f, TiltShiftPreset.RadiusFor(1440), 1e-4f);
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Preset_Apply_WritesMaterialValues()
         {
@@ -45,7 +43,6 @@ namespace Samkuk.Tests
             Assert.AreEqual(TiltShiftPreset.Band, mat.GetFloat(TiltShiftPreset.BandId));
             Assert.AreEqual(TiltShiftPreset.RadiusFor(1440), mat.GetFloat(TiltShiftPreset.RadiusId), 1e-4f);
         }
-#endif
 
 #if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         BattleTiltShift MakeCamera(out FullScreenPassRendererFeature feature, out Material mat)

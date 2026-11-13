@@ -5,7 +5,7 @@ using Samkuk.Core;
 using Samkuk.Data;
 using Samkuk.Enemies;
 using Samkuk.Player;
-// (미룸) using Samkuk.Stages;
+using Samkuk.Stages;
 using Samkuk.Compat;
 
 namespace Samkuk.Tests
@@ -15,67 +15,53 @@ namespace Samkuk.Tests
         const string EnemyPrefabPath = "Assets/Prefabs/Enemy.prefab";
         const string StageAssetPath = "Assets/ScriptableObjects/Stage/Stage_YellowTurban.asset";
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         GameObject root;
-#endif
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         GameObject playerGo;
-#endif
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         GameObject camGo;
-#endif
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         EnemyManager manager;
-#endif
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         EnemySpawner spawner;
-#endif
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         StageController stage;
-#endif
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         PlayerHealth health;
-#endif
         readonly List<Object> toDestroy = new List<Object>();
 
         [SetUp]
         public void SetUp()
         {
-            // (미룸) var enemyPrefab = AssetDatabase.LoadAssetAtPath<Enemy>(EnemyPrefabPath);
-            // (미룸) Assert.IsNotNull(enemyPrefab, "Enemy 프리팹이 없습니다. Step 3 를 먼저 실행하세요.");
+            var enemyPrefab = AssetDatabase.LoadAssetAtPath<Enemy>(EnemyPrefabPath);
+            Assert.IsNotNull(enemyPrefab, "Enemy 프리팹이 없습니다. Step 3 를 먼저 실행하세요.");
 
-            // (미룸) playerGo = new GameObject("TestPlayer");
-            // (미룸) health = playerGo.AddComponent<PlayerHealth>();
+            playerGo = new GameObject("TestPlayer");
+            health = playerGo.AddComponent<PlayerHealth>();
 
-            // (미룸) camGo = new GameObject("TestCam", typeof(Camera));
-            // (미룸) var cam = camGo.GetComponent<Camera>();
-            // (미룸) cam.orthographic = true;
-            // (미룸) cam.orthographicSize = 6f;
-            // (미룸) cam.aspect = 16f / 9f;
-            // (미룸) camGo.transform.position = new Vector3(0f, 0f, -10f);
+            camGo = new GameObject("TestCam", typeof(Camera));
+            var cam = camGo.GetComponent<Camera>();
+            cam.orthographic = true;
+            cam.orthographicSize = 6f;
+            cam.aspect = 16f / 9f;
+            camGo.transform.position = new Vector3(0f, 0f, -10f);
 
-            // (미룸) root = new GameObject("TestSystems");
-            // (미룸) root.SetActive(false);
-            // (미룸) manager = root.AddComponent<EnemyManager>();
-            // (미룸) spawner = root.AddComponent<EnemySpawner>();
-            // (미룸) stage = root.AddComponent<StageController>();
-            // (미룸) manager.Target = playerGo.transform;
-            // (미룸) spawner.Manager = manager;
-            // (미룸) spawner.Cam = cam;
-            // (미룸) spawner.EnemyPrefab = enemyPrefab;
-            // (미룸) spawner.autoSpawn = false;
-            // (미룸) stage.Spawner = spawner;
-            // (미룸) stage.Health = health;
-            // (미룸) root.SetActive(true);
+            root = new GameObject("TestSystems");
+            root.SetActive(false);
+            manager = root.AddComponent<EnemyManager>();
+            spawner = root.AddComponent<EnemySpawner>();
+            stage = root.AddComponent<StageController>();
+            manager.Target = playerGo.transform;
+            spawner.Manager = manager;
+            spawner.Cam = cam;
+            spawner.EnemyPrefab = enemyPrefab;
+            spawner.autoSpawn = false;
+            stage.Spawner = spawner;
+            stage.Health = health;
+            root.SetActive(true);
         }
 
         [TearDown]
         public void TearDown()
         {
-            // (미룸) Time.timeScale = 1f;
-            // (미룸) if (root != null) Object.Destroy(root);
-            // (미룸) if (playerGo != null) Object.Destroy(playerGo);
-            // (미룸) if (camGo != null) Object.Destroy(camGo);
+            Time.timeScale = 1f;
+            if (root != null) Object.Destroy(root);
+            if (playerGo != null) Object.Destroy(playerGo);
+            if (camGo != null) Object.Destroy(camGo);
             foreach (var o in toDestroy) if (o != null) Object.Destroy(o);
         }
 
@@ -112,7 +98,6 @@ namespace Samkuk.Tests
 
         // ───────────────────────── 웨이브 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Wave_AppliesFirstWaveAtStart()
         {
@@ -128,9 +113,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(1, spawner.SpawnTable.Count);
             Assert.AreSame(a, spawner.SpawnTable[0].data);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Wave_ChangesAtStartTime_AndFiresEventOnce()
         {
@@ -152,9 +135,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(2, spawner.SpawnTable.Count);
             CollectionAssert.AreEqual(new[] { 1, 2 }, changes, "웨이브 전환마다 한 번씩만 알림");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Wave_BigTimeJump_SkipsToLatestWave()
         {
@@ -165,11 +146,9 @@ namespace Samkuk.Tests
 
             Assert.AreEqual(2, stage.WaveNumber);
         }
-#endif
 
         // ───────────────────────── 이벤트 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Event_Elite_SpawnsCountOutsideView_WithoutBossSignal()
         {
@@ -190,9 +169,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(0, bossSignals);
             Assert.IsNull(stage.Boss);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Event_Boss_SpawnsOnce_AndIsReported()
         {
@@ -210,9 +187,7 @@ namespace Samkuk.Tests
             Assert.AreSame(boss, reported.Data);
             Assert.AreEqual(1, manager.Count, "보스 이벤트는 한 번만");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Events_AreProcessedInTimeOrder_OnBigJump()
         {
@@ -225,11 +200,9 @@ namespace Samkuk.Tests
 
             CollectionAssert.AreEqual(new[] { "엘리트!", "보스!" }, order);
         }
-#endif
 
         // ───────────────────────── 클리어/정지 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Clear_FiresOnce_AtDuration_AndStopsSpawning()
         {
@@ -251,9 +224,7 @@ namespace Samkuk.Tests
             Assert.IsFalse(spawner.autoSpawn, "클리어 후에는 스폰 중지");
             Assert.AreEqual(0f, stage.Remaining);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Timer_StopsWhenPlayerIsDead()
         {
@@ -267,9 +238,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(5f, stage.Elapsed, 0.001f);
             Assert.IsFalse(stage.IsCleared);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void NoStage_DoesNothing()
         {
@@ -277,9 +246,7 @@ namespace Samkuk.Tests
             Assert.DoesNotThrow(() => stage.Tick(10f));
             Assert.AreEqual(0, stage.WaveNumber);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Timer_AdvancesWithGameTime_NotWhilePaused()
         {
@@ -298,7 +265,6 @@ namespace Samkuk.Tests
 
             Assert.AreEqual(frozen, stage.Elapsed, 0.05f, "일시정지 중에는 시간이 흐르지 않음");
         }
-#endif
 
         // ───────────────────────── 게임 매니저 ─────────────────────────
 
@@ -333,7 +299,6 @@ namespace Samkuk.Tests
 
         // ───────────────────────── 돌진 패턴/큰 적 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Charge_Pattern_WindsUpThenDashesFasterThanNormal()
         {
@@ -359,9 +324,7 @@ namespace Samkuk.Tests
             Assert.Less(speedDuringWindup, 0.5f, "예고 중에는 멈춰 있음");
             Assert.Greater(maxSpeed, 6f, $"돌진 속도 = 2 × 4 = 8 (관측 {maxSpeed})");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator NoChargeInterval_NeverCharges()
         {
@@ -379,9 +342,7 @@ namespace Samkuk.Tests
             }
             Assert.IsFalse(charged);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator BigEnemy_IsFoundByOverlapCircle_NearItsEdge()
         {
@@ -396,7 +357,6 @@ namespace Samkuk.Tests
 
             Assert.AreEqual(1, results.Count, "큰 적의 가장자리에 닿은 투사체도 명중해야 함");
         }
-#endif
 
         // ───────────────────────── 실제 스테이지 에셋 ─────────────────────────
 

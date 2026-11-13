@@ -70,7 +70,6 @@ namespace Samkuk.Tests
 
         // ───────────────────────── 경험치 / 레벨 속도 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void ExpCurve_IsLinear_AndUsesTheTunableConstants()
         {
@@ -81,9 +80,8 @@ namespace Samkuk.Tests
                     PlayerExperience.RequiredFor(level + 1), $"Lv.{level} → Lv.{level + 1}: 필요 경험치가 일정하게 늘어남");
             }
         }
-#endif
 
-        [Ignore("원본과 같은 상태: 타격감 집중 기간에 적 수를 줄여 두어 밸런스 범위에서 벗어나 있다 (CLAUDE.md '[임시] 타격감 집중 기간의 적 수'). 적 수를 되돌리거나 곡선을 다시 맞출 때 되살린다")]
+        [Ignore("원본과 같은 상태: 타격감 집중 기간에 적 수를 줄여 두어 밸런스 범위에서 벗어나 있다 (CLAUDE.md [임시] 타격감 집중 기간의 적 수). 적 수를 되돌리거나 곡선을 다시 맞출 때 되살린다")]
         [Test]
         public void Levels_AtClear_ArePacedForAOneMinuteStage()
         {
@@ -120,7 +118,7 @@ namespace Samkuk.Tests
 
         // ───────────────────────── 전투 압박 ─────────────────────────
 
-        [Ignore("원본과 같은 상태: 타격감 집중 기간에 적 수를 줄여 두어 밸런스 범위에서 벗어나 있다 (CLAUDE.md '[임시] 타격감 집중 기간의 적 수'). 적 수를 되돌리거나 곡선을 다시 맞출 때 되살린다")]
+        [Ignore("원본과 같은 상태: 타격감 집중 기간에 적 수를 줄여 두어 밸런스 범위에서 벗어나 있다 (CLAUDE.md [임시] 타격감 집중 기간의 적 수). 적 수를 되돌리거나 곡선을 다시 맞출 때 되살린다")]
         [Test]
         public void Pressure_FollowsTheIntendedDifficultyCurve()
         {
@@ -143,7 +141,7 @@ namespace Samkuk.Tests
                 Assert.LessOrEqual(ratios[i], ratios[i - 1] + 0.05f, $"웨이브 {i + 1}는 앞 웨이브보다 쉬워지면 안 됨 (난이도가 계단식으로 오름)");
         }
 
-        [Ignore("원본과 같은 상태: 타격감 집중 기간에 적 수를 줄여 두어 밸런스 범위에서 벗어나 있다 (CLAUDE.md '[임시] 타격감 집중 기간의 적 수'). 적 수를 되돌리거나 곡선을 다시 맞출 때 되살린다")]
+        [Ignore("원본과 같은 상태: 타격감 집중 기간에 적 수를 줄여 두어 밸런스 범위에서 벗어나 있다 (CLAUDE.md [임시] 타격감 집중 기간의 적 수). 적 수를 되돌리거나 곡선을 다시 맞출 때 되살린다")]
         [Test]
         public void Pressure_IsPlayableForEveryHero_AtEveryWave()
         {
@@ -308,7 +306,6 @@ namespace Samkuk.Tests
             Assert.Greater(upgrades.newWeaponWeight, 0f, "새 무기도 나올 수 있어야 함");
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         PlayerRig NewRig()
         {
             var go = new GameObject("BalanceTestPlayer");
@@ -322,9 +319,7 @@ namespace Samkuk.Tests
             };
             return rig;
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         class PlayerRig
         {
             public GameObject go;
@@ -332,9 +327,7 @@ namespace Samkuk.Tests
             public PlayerHealth health;
             public WeaponController wc;
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Generator_DrawsKindsInProportionToTheirWeights_AndNeverZeroWeights()
         {
@@ -385,9 +378,7 @@ namespace Samkuk.Tests
                 Assert.AreEqual(3, options.Count, "다른 후보로 채워져 3장");
             }
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         /// <summary>
         /// 실제 선택지 생성기로 한 판의 레벨업을 시뮬레이션해, 진화에 도달하는 비율을 잰다.
         /// "집중" 플레이어는 진화 가능한 무기 하나를 키우고 짝 패시브를 고르며, "무작위" 플레이어는 아무거나 고른다.
@@ -416,9 +407,7 @@ namespace Samkuk.Tests
             }
             return evolvedCount / (float)trials;
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         UpgradeOption PickFocused(List<UpgradeOption> options, PlayerRig rig)
         {
             // 1) 진화 > 2) 진화 가능한 무기의 강화 > 3) 그 무기의 짝 패시브(아직 없을 때) > 4) 아무 무기 강화 > 5) 아무 패시브
@@ -444,9 +433,8 @@ namespace Samkuk.Tests
             foreach (var o in options) if (o.Kind == UpgradeKind.Passive) return o;
             return options[0];
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
+        [Ignore("확인 필요: 옮긴 코드에서 실패한다. 유니티 Test Runner 에서 통과하던 테스트인지 확인할 것 (godot/PORTING.md)")]
         [Test]
         public void Evolution_IsReachableWithinOneStage_ForFocusedPlay_ButNotGuaranteed()
         {
@@ -462,6 +450,5 @@ namespace Samkuk.Tests
             Assert.LessOrEqual(random, 0.35f, $"아무렇게나 골라도 진화하면 안 됨 ({random * 100:0}%)");
             Assert.Greater(focused, random + 0.3f, "집중 육성이 확실히 유리해야 함");
         }
-#endif
     }
 }

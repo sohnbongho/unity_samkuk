@@ -95,7 +95,10 @@ namespace Samkuk.Core
             ApplyAction = DefaultApply;
         }
 
-        // 순수 로직은 창을 모른다: 게임이 시작할 때 ApplyAction 에 실제 창 설정을 꽂는다.
-        static void DefaultApply(int width, int height, FullScreenMode mode) { }
+        static void DefaultApply(int width, int height, FullScreenMode mode)
+        {
+            if (Application.isEditor) return;
+            Screen.SetResolution(width, height, mode);
+        }
     }
 }

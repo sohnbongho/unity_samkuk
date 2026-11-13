@@ -55,6 +55,10 @@ namespace Samkuk.Data
         static IDataSource source;
 
         public static bool Loaded => source != null;
+        /// <summary>씬·프리팹 파일을 읽는 동안 같은 파일 안의 객체/프리팹 참조를 풀어 주는 곳 (<see cref="SceneFile"/> 이 꽂는다).</summary>
+        internal static Func<JsonElement, Type, string, object> ObjectResolver;
+        /// <summary>데이터 폴더의 글 파일 하나 (씬·프리팹·맵). 없으면 null.</summary>
+        public static string ReadText(string relativePath) => source?.Read(relativePath);
         public static int Count => byName.Count;
         /// <summary>읽다가 생긴 문제 (모르는 형식, 없는 참조). 비어 있어야 정상이며 테스트가 확인한다.</summary>
         public static readonly List<string> Problems = new List<string>();
@@ -96,10 +100,59 @@ namespace Samkuk.Data
             }
 
             Resources.Loader = LoadResource;
+            LoadProject(from);
+            LoadSpriteIndex(from);
+        }
+
+        static void LoadSpriteIndex(IDataSource from)
+        {
+            string text = from.Read("sprites.json");
+            if (text == null) return;
+            using var doc = JsonDocument.Parse(text);
+            foreach (var entry in doc.RootElement.EnumerateObject())
+            {
+                if (sprites.ContainsKey(entry.Name)) continue;
+                using var one = JsonDocument.Parse("{\"$sprite\":" + JsonSerializer.Serialize(entry.Name) + "," + entry.Value.GetRawText().TrimStart().Substring(1));
+                ToSprite(one.RootElement, entry.Name);
+            }
+        }
+
+        /// <summary>그림 파일 경로(res://sprites/...)의 스프라이트 손잡이. 색인에 없으면 null.</summary>
+        public static Sprite SpriteAt(string resPath) => resPath != null && sprites.TryGetValue(resPath, out var s) ? s : null;
+
+        /// <summary>프로젝트 설정(레이어 이름, 정렬 레이어, 씬 순서)을 읽고 씬 파일을 씬 전환에 등록한다.</summary>
+        static void LoadProject(IDataSource from)
+        {
+            string text = from.Read("project.json");
+            if (text == null) return;
+            using var doc = JsonDocument.Parse(text);
+            var root = doc.RootElement;
+            if (root.TryGetProperty("layers", out var layers))
+            {
+                LayerMask.Names.Clear();
+                foreach (var l in layers.EnumerateArray()) LayerMask.Names.Add(l.GetString() ?? "");
+            }
+            if (root.TryGetProperty("sortingLayers", out var sorting))
+            {
+                SortingLayer.Names.Clear();
+                foreach (var s in sorting.EnumerateArray()) SortingLayer.Names.Add(s.GetString());
+            }
+            if (root.TryGetProperty("scenes", out var scenes))
+                foreach (var s in scenes.EnumerateArray())
+                {
+                    string name = s.GetString();
+                    SceneManager.Register(name, () =>
+                    {
+                        string json = ReadText("Scenes/" + name + Prefabs.Extension);
+                        if (json != null) SceneFile.LoadScene(json);
+                        else Debug.LogWarning($"[Samkuk] 씬 파일이 없습니다: {name}");
+                    });
+                }
         }
 
         public static void Clear()
         {
+            Prefabs.Clear();
             byName.Clear();
             sprites.Clear();
             textures.Clear();
@@ -138,17 +191,25 @@ namespace Samkuk.Data
             foreach (var prop in obj.EnumerateObject())
             {
                 if (prop.Name.StartsWith("$") || prop.Name == "name" && target is ScriptableObject) continue;
-                var field = type.GetField(prop.Name, BindingFlags.Public | BindingFlags.Instance);
-                if (field == null || field.IsInitOnly) continue;
+                // 이름 그대로, 없으면 유니티 내장 표기(m_NormalColor → normalColor)로. 직렬화 표시가 붙은 private 필드도 채운다
+                var field = SceneFile.FindField(type, prop.Name);
+                if (field == null || field.IsInitOnly || field.IsLiteral) continue;
+                if (!field.IsPublic && !field.IsDefined(typeof(SerializeFieldAttribute))) continue;
                 try { field.SetValue(target, Convert(prop.Value, field.FieldType, where + "." + prop.Name)); }
                 catch (Exception e) { Problems.Add($"{where}.{prop.Name}: {e.Message}"); }
             }
         }
 
-        static object Convert(JsonElement v, Type type, string where)
+        internal static object Convert(JsonElement v, Type type, string where)
         {
             if (v.ValueKind == JsonValueKind.Null)
                 return type.IsValueType ? Activator.CreateInstance(type) : null;
+
+            // 장면 객체(게임 오브젝트, 컴포넌트)나 인터페이스를 가리키는 필드: 씬 파일 안의 참조
+            if (v.ValueKind == JsonValueKind.Object && (v.TryGetProperty("$id", out _) || v.TryGetProperty("$prefab", out _)))
+                return ObjectResolver != null ? ObjectResolver(v, type, where) : null;
+            if (typeof(Compat.Object).IsAssignableFrom(type) && !typeof(ScriptableObject).IsAssignableFrom(type) && type != typeof(Sprite) && type != typeof(Texture2D))
+                return null;   // 옮기지 않은 종류의 참조 (재질, 글꼴): 기본값을 쓴다
 
             if (type == typeof(string)) return v.ValueKind == JsonValueKind.String ? v.GetString() : v.GetRawText();
             if (type == typeof(bool)) return v.ValueKind == JsonValueKind.Number ? v.GetDouble() != 0 : v.GetBoolean();   // 유니티 YAML 의 bool 은 0/1

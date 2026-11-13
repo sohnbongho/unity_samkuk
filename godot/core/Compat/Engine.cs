@@ -6,18 +6,6 @@ namespace Samkuk.Compat
     // 유니티에서 쓰던 이름을 그대로 두고 옮기기 위한 호환 층 (Godot 전환, ADR 0004).
     // 순수 로직(Samkuk.Core)은 엔진을 모른다: 그림은 경로만 든 손잡이이고, 로그·저장 폴더는 게임 쪽이 꽂아 준다.
 
-    /// <summary>
-    /// 엔진 객체의 바탕 (유니티 Object 자리). 순수 로직의 객체는 가비지 컬렉터가 치우므로 Destroy 는 아무것도 하지 않는다 —
-    /// 옮긴 테스트의 정리 코드가 그대로 돌게 하려고 둔다.
-    /// </summary>
-    public class Object
-    {
-        public HideFlags hideFlags;
-        public static void Destroy(object o) { }
-        public static void DestroyImmediate(object o) { }
-        public static implicit operator bool(Object o) => o != null;
-    }
-
     /// <summary>데이터 한 건의 바탕 (유니티 ScriptableObject 자리). <see cref="name"/> 은 데이터 파일 이름 = 아이디.</summary>
     public abstract class ScriptableObject : Object
     {
@@ -38,6 +26,9 @@ namespace Samkuk.Compat
         public static void Log(object message) => Write(Level.Info, message);
         public static void LogWarning(object message) => Write(Level.Warning, message);
         public static void LogError(object message) => Write(Level.Error, message);
+        public static void Log(object message, Object context) => Write(Level.Info, message);
+        public static void LogWarning(object message, Object context) => Write(Level.Warning, message);
+        public static void LogError(object message, Object context) => Write(Level.Error, message);
 
         static void Write(Level level, object message)
         {
@@ -52,6 +43,15 @@ namespace Samkuk.Compat
     {
         public static string persistentDataPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "samkuk");
         public static bool isEditor = false;
+        public static bool isPlaying = true;
+        public static bool runInBackground;
+        public static string version = "0.1.0";
+        /// <summary>게임이 끝날 때 (화면 층이 알린다).</summary>
+        public static event System.Action quitting;
+        /// <summary>끝내기 요청. 화면 층이 실제로 창을 닫는다.</summary>
+        public static System.Action QuitAction;
+        public static void Quit() { quitting?.Invoke(); QuitAction?.Invoke(); }
+        public static bool CanStreamedLevelBeLoaded(string sceneName) => SceneManager.CanLoad(sceneName);
         public static string temporaryCachePath => System.IO.Path.Combine(System.IO.Path.GetTempPath(), "samkuk_cache");
     }
 
@@ -124,5 +124,7 @@ namespace Samkuk.Compat
     {
         public static System.Func<System.Type, string, object> Loader;
         public static T Load<T>(string name) where T : class => Loader?.Invoke(typeof(T), name) as T;
+        /// <summary>엔진 내장 리소스 자리 (기본 글꼴만).</summary>
+        public static T GetBuiltinResource<T>(string name) where T : class => typeof(T) == typeof(Font) ? new Font { name = name } as T : null;
     }
 }

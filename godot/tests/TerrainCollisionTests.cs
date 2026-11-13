@@ -18,9 +18,7 @@ namespace Samkuk.Tests
         const float Body = 0.3f;
 
         readonly List<Object> toDestroy = new List<Object>();
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         readonly List<GameObject> gos = new List<GameObject>();
-#endif
 
         [SetUp]
         public void SetUp()
@@ -36,8 +34,8 @@ namespace Samkuk.Tests
             MapStore.Disabled = false;
             TerrainCollision.Active = null;
             TerrainThemeCatalog.Use(null);
-            // (미룸) foreach (var g in gos) if (g != null) Object.Destroy(g);
-            // (미룸) gos.Clear();
+            foreach (var g in gos) if (g != null) Object.Destroy(g);
+            gos.Clear();
             foreach (var o in toDestroy) if (o != null) Object.Destroy(o);
             toDestroy.Clear();
         }
@@ -135,7 +133,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(1f, col.SpeedFactor(new Vector2(5f, 5f)));
         }
 
-        [Ignore("확인 필요: 옮긴 코드에서 실패한다. 유니티 Test Runner 에서 통과하던 테스트인지 먼저 확인할 것 (godot/PORTING.md)")]
+        [Ignore("확인 필요: 옮긴 코드에서 실패한다. 유니티 Test Runner 에서 통과하던 테스트인지 확인할 것 (godot/PORTING.md)")]
         [Test]
         public void Resolve_RemovesInwardComponent_KeepsTangent()
         {
@@ -155,7 +153,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(new Vector2(3f, 2f), col.Resolve(new Vector2(3f, 5f), Body, new Vector2(3f, 2f), 0.02f));
         }
 
-        [Ignore("확인 필요: 옮긴 코드에서 실패한다. 유니티 Test Runner 에서 통과하던 테스트인지 먼저 확인할 것 (godot/PORTING.md)")]
+        [Ignore("확인 필요: 옮긴 코드에서 실패한다. 유니티 Test Runner 에서 통과하던 테스트인지 확인할 것 (godot/PORTING.md)")]
         [Test]
         public void Resolve_HeadOn_PlayerStops_EnemyDeflects()
         {
@@ -308,7 +306,6 @@ namespace Samkuk.Tests
 
         // ───────────────────────── 실제 이동 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Enemy_GoesAroundTree_InsteadOfStandingInIt()
         {
@@ -348,9 +345,7 @@ namespace Samkuk.Tests
             Assert.Greater(minTreeDist, 0.6f + 0.3f - 0.15f, "나무 밑동 안으로 들어가지 않는다 (약간의 파고듦만 허용)");
             Assert.Less(Vector2.Distance(e.Position, Vector2.zero), 1.2f, "나무를 돌아 플레이어 곁까지 왔다");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Enemy_SpawnRing_AvoidsTrees()
         {
@@ -388,9 +383,7 @@ namespace Samkuk.Tests
                 Assert.IsFalse(TerrainCollision.Active.Overlaps(pos, 0.3f), $"나무 속에 스폰 자리를 고르지 않는다: {pos}");
             }
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Player_IsBlockedByTree_AndSlowedByRiver()
         {
@@ -418,9 +411,7 @@ namespace Samkuk.Tests
             Assert.Greater(rb.position.x, 1f, "나무 앞까지는 간다");
             Assert.AreEqual(1f, pc.TerrainSpeedFactor, "마른 땅");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator PlayerController_SlowsInWater()
         {
@@ -439,9 +430,7 @@ namespace Samkuk.Tests
 
             Assert.AreEqual(0.5f, pc.TerrainSpeedFactor, 0.001f, "연못 안에서는 속도 배율 절반");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Background_PublishesActiveCollision_AndClearsOnReset()
         {
@@ -466,6 +455,5 @@ namespace Samkuk.Tests
             Assert.IsNull(TerrainCollision.Active, "맵을 내리면 지형 효과도 없다 (예전처럼 어디든 걷는다)");
             GameSession.SortieCastle = null;
         }
-#endif
     }
 }

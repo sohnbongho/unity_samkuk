@@ -6,11 +6,11 @@ using Samkuk.Balance;
 using Samkuk.Data;
 using Samkuk.Enemies;
 using Samkuk.Player;
-// (미룸) using Samkuk.UI;
+using Samkuk.UI;
 using Samkuk.Upgrades;
 using Samkuk.Weapons;
 using Samkuk.Compat;
-// (미룸) using UnityEngine.UI;
+using Samkuk.Compat.UI;
 
 namespace Samkuk.Tests
 {
@@ -19,38 +19,28 @@ namespace Samkuk.Tests
         const string CatalogPath = "Assets/ScriptableObjects/UpgradeCatalog.asset";
         const string HeroCatalogPath = "Assets/ScriptableObjects/HeroCatalog.asset";
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         GameObject playerGo;
-#endif
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         PlayerStats stats;
-#endif
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         PlayerHealth health;
-#endif
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         PlayerExperience exp;
-#endif
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         WeaponController wc;
-#endif
         readonly List<Samkuk.Compat.Object> toDestroy = new List<Samkuk.Compat.Object>();
 
         [SetUp]
         public void SetUp()
         {
-            // (미룸) playerGo = new GameObject("TestPlayer");
-            // (미룸) stats = playerGo.AddComponent<PlayerStats>();
-            // (미룸) health = playerGo.AddComponent<PlayerHealth>();
-            // (미룸) exp = playerGo.AddComponent<PlayerExperience>();
-            // (미룸) wc = playerGo.AddComponent<WeaponController>(); // PlayerController 자동 추가
+            playerGo = new GameObject("TestPlayer");
+            stats = playerGo.AddComponent<PlayerStats>();
+            health = playerGo.AddComponent<PlayerHealth>();
+            exp = playerGo.AddComponent<PlayerExperience>();
+            wc = playerGo.AddComponent<WeaponController>(); // PlayerController 자동 추가
         }
 
         [TearDown]
         public void TearDown()
         {
-            // (미룸) Time.timeScale = 1f;
-            // (미룸) if (playerGo != null) Samkuk.Compat.Object.Destroy(playerGo);
+            Time.timeScale = 1f;
+            if (playerGo != null) Samkuk.Compat.Object.Destroy(playerGo);
             foreach (var o in toDestroy) if (o != null) Samkuk.Compat.Object.Destroy(o);
         }
 
@@ -95,7 +85,6 @@ namespace Samkuk.Tests
             return c;
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         /// <summary>무기를 추가하고 목표 레벨까지 올린다.</summary>
         Weapon Give(WeaponData data, int level)
         {
@@ -103,11 +92,9 @@ namespace Samkuk.Tests
             while (w.Level < level) w.LevelUp();
             return w;
         }
-#endif
 
         // ───────────────────────── 진화 조건 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Evolve_IsOffered_WhenWeaponLevelAndPassiveAreMet()
         {
@@ -128,9 +115,7 @@ namespace Samkuk.Tests
             StringAssert.Contains("신속", options[0].Description, "필요한 패시브 이름을 알려줌");
             StringAssert.Contains("연노 설명", options[0].Description, "진화 무기 설명 포함");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Evolve_IsNotOffered_WhenAnyConditionIsMissing()
         {
@@ -160,9 +145,7 @@ namespace Samkuk.Tests
             var options = UpgradeGenerator.Generate(catalog, wc, stats, health, count: 10);
             Assert.AreEqual(UpgradeKind.Evolve, options[0].Kind, "충족했으니 선택지에 포함");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Evolve_RequiredLevelIsClampedToWeaponMaxLevel()
         {
@@ -173,9 +156,7 @@ namespace Samkuk.Tests
 
             Assert.IsTrue(UpgradeGenerator.CanEvolve(evo, wc, stats), "필요 레벨이 최대 레벨보다 크면 최대 레벨에서 진화 가능");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Evolve_InvalidData_IsNeverOffered()
         {
@@ -189,11 +170,9 @@ namespace Samkuk.Tests
             Assert.IsFalse(UpgradeGenerator.CanEvolve(null, wc, stats));
             Assert.IsFalse(UpgradeGenerator.CanEvolve(broken, null, stats));
         }
-#endif
 
         // ───────────────────────── 선택지 구성 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Evolve_IsAlwaysFirst_EvenWithManyOtherCandidates()
         {
@@ -215,9 +194,7 @@ namespace Samkuk.Tests
                 Assert.AreEqual(1, options.FindAll(o => o.Kind == UpgradeKind.Evolve).Count);
             }
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Evolve_MultipleAvailable_TakeTheFirstSlots()
         {
@@ -236,11 +213,9 @@ namespace Samkuk.Tests
             Assert.AreEqual(3, options.Count);
             Assert.AreNotEqual(options[0].Title, options[1].Title);
         }
-#endif
 
         // ───────────────────────── 진화 적용 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Evolve_ReplacesBaseWeapon_WithEvolvedAtLevelOne()
         {
@@ -275,17 +250,13 @@ namespace Samkuk.Tests
             Assert.AreSame(bow, fromEvt);
             Assert.AreSame(evolved, toEvt);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         Weapon FindWeapon(WeaponData data)
         {
             foreach (var w in wc.Weapons) if (w.Data == data) return w;
             return null;
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Evolved_CannotBeOfferedAgain_AndBaseIsNotOfferedAsNewWeapon()
         {
@@ -307,9 +278,7 @@ namespace Samkuk.Tests
             }
             Assert.IsFalse(UpgradeGenerator.CanEvolve(evo, wc, stats));
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Evolve_ReturnsNull_ForInvalidRequests()
         {
@@ -326,9 +295,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(2, wc.Weapons.Count, "실패한 진화는 아무것도 바꾸지 않음");
             Assert.IsTrue(wc.Owns(bow));
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator EvolvedWeapon_CanKeepLevelingUp()
         {
@@ -343,11 +310,9 @@ namespace Samkuk.Tests
             Assert.IsTrue(w.LevelUp()); Assert.IsTrue(w.LevelUp());
             Assert.IsFalse(w.LevelUp(), "진화 무기도 최대 레벨이 있음");
         }
-#endif
 
         // ───────────────────────── 레벨업 흐름 / UI ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         class FakeView : ILevelUpView
         {
             public IReadOnlyList<UpgradeOption> LastOptions;
@@ -355,9 +320,7 @@ namespace Samkuk.Tests
             public void Show(IReadOnlyList<UpgradeOption> options, Action<int> onChosen) { LastOptions = options; IsVisible = true; }
             public void Hide() { IsVisible = false; }
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator LevelUpFlow_OffersAndAppliesEvolution()
         {
@@ -385,7 +348,6 @@ namespace Samkuk.Tests
             Assert.IsFalse(wc.Owns(bow));
             Assert.AreEqual(1f, Time.timeScale, "선택 후 게임 재개");
         }
-#endif
 
 #if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
@@ -453,7 +415,7 @@ namespace Samkuk.Tests
 
         // ───────────────────────── 실제 에셋 ─────────────────────────
 
-        [Ignore("원본 데이터와 테스트가 어긋난다: 장팔사모는 찌르기로 바뀌었지만 진화형 비룡사모는 화살형 그대로다 (Step 10-9 결정). 테스트 기대를 고칠지 정할 것 (godot/PORTING.md)")]
+        [Ignore("원본 데이터와 테스트가 어긋난다: 장팔사모는 찌르기로 바뀌었지만 진화형 비룡사모는 화살형 그대로다 (Step 10-9 결정). godot/PORTING.md")]
         [Test]
         public void CatalogAsset_HasWellFormedEvolutions()
         {

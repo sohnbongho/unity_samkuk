@@ -72,7 +72,6 @@ namespace Samkuk.Tests
             return sprite;
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         TerrainPropSpawner MakeSpawner(Vector2 treeAt, bool allowFx, out TerrainProp tree)
         {
             var c = ScriptableObject.CreateInstance<TerrainThemeCatalog>();
@@ -103,18 +102,14 @@ namespace Samkuk.Tests
             spawner.Initialize(map, follow.transform, null, allowFx);
             return spawner;
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         SpriteRenderer FindTree(TerrainPropSpawner spawner, TerrainProp tree)
         {
             foreach (var sr in spawner.GetComponentsInChildren<SpriteRenderer>())
                 if (sr.sprite == tree.sprite) return sr;
             return null;
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Spawner_FadesTree_WhenPlayerStandsBehindIt()
         {
@@ -138,9 +133,7 @@ namespace Samkuk.Tests
             for (int i = 0; i < 30; i++) spawner.TickFade(0.1f);
             Assert.AreEqual(1f, treeSr.color.a, 1e-3f);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Spawner_NoFade_InMapEditor()
         {
@@ -152,9 +145,7 @@ namespace Samkuk.Tests
             for (int i = 0; i < 30; i++) spawner.TickFade(0.1f);
             Assert.AreEqual(1f, FindTree(spawner, tree).color.a, 1e-3f, "맵 편집기에서는 반투명하지 않다");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Spawner_RestoresAlpha_WhenPropIsReused()
         {
@@ -169,6 +160,5 @@ namespace Samkuk.Tests
             spawner.RebuildChunk(TerrainMap.ChunkOf(new Vector2(3f, 3f)));   // 풀로 보냈다가 다시 꺼낸다
             Assert.AreEqual(1f, FindTree(spawner, tree).color.a, 1e-3f, "다시 놓인 소품은 불투명으로 시작한다");
         }
-#endif
     }
 }

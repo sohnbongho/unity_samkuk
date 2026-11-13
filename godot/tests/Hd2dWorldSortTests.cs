@@ -21,7 +21,7 @@ namespace Samkuk.Tests
             TerrainThemeCatalog.Use(null);
             Hd2dSettings.ShadowsOverride = true;
             Hd2dSettings.LightingOverride = false;
-            // (미룸) CastShadow.SetSettings(ShadowPreset.For(TimeOfDay.Day));
+            CastShadow.SetSettings(ShadowPreset.For(TimeOfDay.Day));
         }
 
         [TearDown]
@@ -31,7 +31,7 @@ namespace Samkuk.Tests
             TerrainCollision.Active = null;
             TerrainThemeCatalog.Use(null);
             Hd2dSettings.ResetOverrides();
-            // (미룸) CastShadow.SetSettings(ShadowPreset.For(TimeOfDay.Day));
+            CastShadow.SetSettings(ShadowPreset.For(TimeOfDay.Day));
             foreach (var o in toDestroy) if (o != null) Object.DestroyImmediate(o);
             toDestroy.Clear();
         }
@@ -103,7 +103,6 @@ namespace Samkuk.Tests
             return sprite;
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         SpriteRenderer MakeBody(out GameObject go)
         {
             go = new GameObject("Body", typeof(SpriteRenderer));
@@ -112,9 +111,7 @@ namespace Samkuk.Tests
             sr.sprite = MakeSprite(new Vector2(0.5f, 0.1f));
             return sr;
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void CastShadow_FollowsSourceSprite_AndLiesOnGround()
         {
@@ -141,9 +138,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(body.sprite, shadow.Renderer.sprite, "스프라이트가 바뀌면 따라온다");
             Assert.IsTrue(shadow.Renderer.flipX);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void CastShadow_SettingsChange_ReshapesAllShadows()
         {
@@ -157,9 +152,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(-s.length, p.y, 1e-3f);
             Assert.AreEqual(s.alpha, shadow.Renderer.color.a, 1e-4f);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void CastShadow_Disabled_HidesRenderer()
         {
@@ -173,9 +166,7 @@ namespace Samkuk.Tests
             shadow.Sync();
             Assert.IsTrue(shadow.Renderer.enabled);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void CastShadow_Blob_IsFlatEllipse()
         {
@@ -188,7 +179,6 @@ namespace Samkuk.Tests
             shadow.Sync();
             Assert.AreSame(CastShadow.BlobSprite, shadow.Renderer.sprite, "발밑 그림자는 원본 스프라이트를 따라가지 않는다");
         }
-#endif
 
         // ───────────────────────── 서 있는 소품 ─────────────────────────
 
@@ -232,7 +222,6 @@ namespace Samkuk.Tests
             return map;
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         TerrainPropSpawner MakeSpawner(TerrainMap map, bool allowFx = true)
         {
             var follow = new GameObject("Follow");
@@ -247,18 +236,14 @@ namespace Samkuk.Tests
             spawner.Initialize(map, follow.transform, reference, allowFx);
             return spawner;
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         static SpriteRenderer FindProp(TerrainPropSpawner spawner, TerrainProp prop)
         {
             foreach (var sr in spawner.GetComponentsInChildren<SpriteRenderer>())
                 if (sr.sprite == prop.sprite && sr.gameObject.name == "Prop") return sr;
             return null;
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Spawner_StandingProp_UsesWorldSorting_NoRotation_WithShadow()
         {
@@ -281,9 +266,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(25f, grassSr.transform.localRotation.eulerAngles.z, 1e-3f);
             Assert.IsNull(grassSr.transform.Find(CastShadow.NodeName), "바닥 장식에는 그림자 없음");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Spawner_PooledStandingProp_ReusedAsFlat_ResetsSortingAndShadow()
         {
@@ -304,9 +287,7 @@ namespace Samkuk.Tests
             var shadowNode = reused.transform.Find(CastShadow.NodeName);
             if (shadowNode != null) Assert.IsFalse(shadowNode.gameObject.activeSelf, "남아 있는 그림자는 꺼진다");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Spawner_NoFx_SkipsShadows()
         {
@@ -316,7 +297,6 @@ namespace Samkuk.Tests
             Assert.IsTrue(WorldSorting.IsConfigured(treeSr), "정렬은 편집기에서도 같다 (가려짐을 보며 놓도록)");
             Assert.IsNull(treeSr.transform.Find(CastShadow.NodeName));
         }
-#endif
 
         // ───────────────────────── 맵 편집기 ─────────────────────────
 
@@ -329,7 +309,6 @@ namespace Samkuk.Tests
             Assert.IsTrue(MapEditModel.CanRotate(new PropPlacement { prop = null }));
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void WorldSorting_Configure_SetsPivotSortPoint()
         {
@@ -340,6 +319,5 @@ namespace Samkuk.Tests
             Assert.AreEqual(0, sr.sortingOrder);
             Assert.AreEqual(WorldSorting.LayerId, sr.sortingLayerID);
         }
-#endif
     }
 }

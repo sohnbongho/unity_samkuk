@@ -63,8 +63,18 @@ namespace Samkuk.World
         /// </summary>
         public static float StandScale(float pitchDeg) => 1f / Mathf.Max(0.2f, Mathf.Cos(pitchDeg * Mathf.Deg2Rad));
 
-        /// <summary>바라보는 점에서 <paramref name="distance"/> 만큼 물러난 카메라 자리. 회전은 화면 층이 <see cref="Forward"/>/<see cref="Up"/> 으로 만든다.</summary>
-        public static Vector3 CameraPosition(Vector3 lookAt, float pitchDeg, float distance) => lookAt - Forward(pitchDeg) * distance;
+        /// <summary>서 있는 그림(트랜스폼을 직접 돌리는 데미지 숫자)의 회전: 위 = -z, 오른쪽 = +x (남쪽 카메라에서 글자가 뒤집히지 않게 앞면은 북쪽).</summary>
+        public static readonly Quaternion StandRotation = Quaternion.LookRotation(Vector3.up, Vector3.back);
+
+        /// <summary>카메라(와 서 있는 그림)의 회전. 유니티 X 오일러는 양수가 아래를 보므로 90 - 기울기 만큼 뒤로 젖힌다.</summary>
+        public static Quaternion Rotation(float pitchDeg) => Quaternion.Euler(pitchDeg - 90f, 0f, 0f);
+
+        /// <summary>바라보는 점에서 <paramref name="distance"/> 만큼 물러난 카메라 자리와 회전.</summary>
+        public static void CameraPose(Vector3 lookAt, float pitchDeg, float distance, out Vector3 position, out Quaternion rotation)
+        {
+            position = lookAt - Forward(pitchDeg) * distance;
+            rotation = Rotation(pitchDeg);
+        }
 
         /// <summary>
         /// 직교 카메라에 보이는 땅(z = 0)의 범위, 바라보는 점 기준 상대 좌표. 폭은 반높이 x 비율, 세로는 화면 반높이가 땅에서 1/sin(기울기)만큼 늘어난다.

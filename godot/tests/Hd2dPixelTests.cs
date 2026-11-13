@@ -4,7 +4,6 @@ using Samkuk.Core;
 using Samkuk.Player;
 using Samkuk.World;
 using Samkuk.Compat;
-// (미룸) using UnityEngine.Rendering.Universal;
 
 namespace Samkuk.Tests
 {
@@ -36,7 +35,6 @@ namespace Samkuk.Tests
             Assert.AreEqual(4f, (float)PixelArt.GroundTile / PixelArt.PPU, "바닥 타일은 4유닛 그대로");
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         BattlePixelCamera MakeCamera()
         {
             var go = new GameObject("Cam", typeof(Camera));
@@ -45,9 +43,7 @@ namespace Samkuk.Tests
             go.GetComponent<Camera>().orthographicSize = PixelArt.DefaultOrthographicSize;
             return go.AddComponent<BattlePixelCamera>();
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void PixelCamera_ConfiguresPixelPerfect_FromPixelArt()
         {
@@ -62,9 +58,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(PixelPerfectCamera.CropFrame.None, ppc.cropFrame, "화면을 자르지 않는다");
             Assert.AreEqual(PixelPerfectCamera.GridSnapping.PixelSnapping, ppc.gridSnapping, "업스케일 렌더 텍스처는 쓰지 않는다 (조명·이펙트는 고해상도)");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void PixelCamera_Toggle_RestoresDefaultSize()
         {
@@ -80,9 +74,7 @@ namespace Samkuk.Tests
             pc.Apply(true);
             Assert.IsTrue(pc.PixelPerfect.enabled);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void PixelCamera_StartsOff_WhenSettingDisabled()
         {
@@ -91,7 +83,6 @@ namespace Samkuk.Tests
             Assert.IsFalse(pc.IsEnabled);
             Assert.IsFalse(pc.PixelPerfect.enabled);
         }
-#endif
 
         [Test]
         public void WalkSheet_PixelCells_SliceTo48_And1_5Units()

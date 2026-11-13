@@ -1,0 +1,251 @@
+{
+  "kind": "scene",
+  "name": "MapEditorScene",
+  "roots": ["646784727", "1738865858", "1394392914", "1063822904"],
+  "objects": [
+    {
+      "id": "646784727",
+      "name": "Main Camera",
+      "layer": 0,
+      "tag": "MainCamera",
+      "active": true,
+      "components": [
+        {
+          "id": "646784730",
+          "class": "Transform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": -10 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": null,
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 }
+          }
+        },
+        {
+          "id": "646784729",
+          "class": "Camera",
+          "data": {
+            "m_Enabled": 1,
+            "m_ClearFlags": 2,
+            "m_BackGroundColor": { "r": 0.07, "g": 0.05, "b": 0.09, "a": 1 },
+            "m_projectionMatrixMode": 1,
+            "m_GateFitMode": 2,
+            "m_FOVAxisMode": 0,
+            "m_Iso": 200,
+            "m_ShutterSpeed": 0.005,
+            "m_Aperture": 16,
+            "m_FocusDistance": 10,
+            "m_FocalLength": 50,
+            "m_BladeCount": 5,
+            "m_Curvature": { "x": 2, "y": 11 },
+            "m_BarrelClipping": 0.25,
+            "m_Anamorphism": 0,
+            "m_SensorSize": { "x": 36, "y": 24 },
+            "m_LensShift": { "x": 0, "y": 0 },
+            "m_NormalizedViewPortRect": { "serializedVersion": 2, "x": 0, "y": 0, "width": 1, "height": 1 },
+            "near clip plane": 0.3,
+            "far clip plane": 1000,
+            "field of view": 60,
+            "orthographic": 1,
+            "orthographic size": 9,
+            "m_Depth": 0,
+            "m_CullingMask": { "serializedVersion": 2, "m_Bits": 4294967295 },
+            "m_RenderingPath": -1,
+            "m_TargetTexture": null,
+            "m_TargetDisplay": 0,
+            "m_TargetEye": 3,
+            "m_HDR": 1,
+            "m_AllowMSAA": 1,
+            "m_AllowDynamicResolution": 0,
+            "m_ForceIntoRT": 0,
+            "m_OcclusionCulling": 1,
+            "m_StereoConvergence": 10,
+            "m_StereoSeparation": 0.022
+          }
+        },
+        {
+          "id": "646784728",
+          "class": "AudioListener",
+          "data": { "m_Enabled": 1 }
+        }
+      ]
+    },
+    {
+      "id": "1063822904",
+      "name": "MapEditor",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "1063822906",
+          "class": "Transform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": null,
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 }
+          }
+        },
+        {
+          "id": "1063822905",
+          "class": "Samkuk.World.MapEditorController",
+          "data": {
+            "m_Enabled": 1,
+            "castleCatalog": { "$ref": "CastleCatalog" }
+          }
+        }
+      ]
+    },
+    {
+      "id": "1394392914",
+      "name": "EventSystem",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "1394392917",
+          "class": "Transform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": null,
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 }
+          }
+        },
+        {
+          "id": "1394392916",
+          "class": "UnityEngine.EventSystems.EventSystem",
+          "data": { "m_Enabled": 1, "m_FirstSelected": null, "m_sendNavigationEvents": 1, "m_DragThreshold": 10 }
+        },
+        {
+          "id": "1394392915",
+          "class": "UnityEngine.InputSystem.UI.InputSystemUIInputModule",
+          "data": {
+            "m_Enabled": 1,
+            "m_SendPointerHoverToParent": 1,
+            "m_MoveRepeatDelay": 0.5,
+            "m_MoveRepeatRate": 0.1,
+            "m_XRTrackingOrigin": null,
+            "m_ActionsAsset": { "$id": "648333898" },
+            "m_PointAction": { "$id": "1504837886" },
+            "m_MoveAction": { "$id": "1887504450" },
+            "m_SubmitAction": { "$id": "996499740" },
+            "m_CancelAction": { "$id": "472676522" },
+            "m_LeftClickAction": { "$id": "1442815152" },
+            "m_MiddleClickAction": { "$id": "1231051251" },
+            "m_RightClickAction": { "$id": "1695046871" },
+            "m_ScrollWheelAction": { "$id": "721185985" },
+            "m_TrackedDevicePositionAction": { "$id": "1786695584" },
+            "m_TrackedDeviceOrientationAction": { "$id": "1546526040" },
+            "m_DeselectOnBackgroundClick": 1,
+            "m_PointerBehavior": 0,
+            "m_CursorLockBehavior": 0,
+            "m_ScrollDeltaPerTick": 6
+          }
+        }
+      ]
+    },
+    {
+      "id": "1738865858",
+      "name": "Global Light 2D",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "1738865860",
+          "class": "Transform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": null,
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 }
+          }
+        },
+        {
+          "id": "1738865859",
+          "class": "UnityEngine.Rendering.Universal.Light2D",
+          "data": {
+            "m_Enabled": 1,
+            "m_ComponentVersion": 4,
+            "m_LightType": 4,
+            "m_BlendStyleIndex": 0,
+            "m_Light2DProvider": { "rid": -2 },
+            "m_SelectionSources": { "rid": 3086046022042386645 },
+            "m_FalloffIntensity": 0.5,
+            "m_Color": { "r": 1, "g": 1, "b": 1, "a": 1 },
+            "m_Intensity": 1,
+            "m_LightVolumeIntensity": 1,
+            "m_LightVolumeEnabled": 0,
+            "m_ApplyToSortingLayers": "00000000e9030000ea030000ef030000eb030000ec030000ed030000ee030000",
+            "m_LightCookieSprite": null,
+            "m_DeprecatedPointLightCookieSprite": null,
+            "m_LightOrder": 0,
+            "m_AlphaBlendOnOverlap": 0,
+            "m_OverlapOperation": 0,
+            "m_NormalMapDistance": 3,
+            "m_NormalMapQuality": 2,
+            "m_UseNormalMap": 0,
+            "m_ShadowsEnabled": 1,
+            "m_ShadowIntensity": 0.75,
+            "m_ShadowSoftness": 0.3,
+            "m_ShadowSoftnessFalloffIntensity": 0.5,
+            "m_ShadowVolumeIntensityEnabled": 0,
+            "m_ShadowVolumeIntensity": 0.75,
+            "m_LocalBounds": {
+              "m_Center": { "x": 0, "y": 0, "z": 0 },
+              "m_Extent": { "x": 0, "y": 0, "z": 0 }
+            },
+            "m_PointLightInnerAngle": 360,
+            "m_PointLightOuterAngle": 360,
+            "m_PointLightInnerRadius": 0,
+            "m_PointLightOuterRadius": 1,
+            "m_ShapeLightParametricSides": 5,
+            "m_ShapeLightParametricAngleOffset": 0,
+            "m_ShapeLightParametricRadius": 1,
+            "m_ShapeLightFalloffSize": 0.5,
+            "m_ShapeLightFalloffOffset": { "x": 0, "y": 0 },
+            "m_ShapePath": [
+              { "x": -0.5, "y": -0.5, "z": 0 },
+              { "x": 0.5, "y": -0.5, "z": 0 },
+              { "x": 0.5, "y": 0.5, "z": 0 },
+              { "x": -0.5, "y": 0.5, "z": 0 }
+            ],
+            "references": {
+              "version": 2,
+              "RefIds": [
+                {
+                  "rid": -2,
+                  "type": { "class": null, "ns": null, "asm": null }
+                },
+                {
+                  "rid": 3086046022042386645,
+                  "type": { "class": "Light2DProviderSources", "ns": "UnityEngine.Rendering.Universal", "asm": "Unity.RenderPipelines.Universal.2D.Runtime" },
+                  "data": {
+                    "m_SelectedHashCode": 4,
+                    "m_SelectedSource": { "rid": -2 },
+                    "m_Provider2DCache": { "rid": -2 }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "prefabInstances": []
+}

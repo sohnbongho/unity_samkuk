@@ -7,9 +7,9 @@ using Messages;
 using NUnit.Framework;
 using Samkuk.Meta;
 using Samkuk.Net;
-// (미룸) using Samkuk.UI;
+using Samkuk.UI;
 using Samkuk.Compat;
-// (미룸) using UnityEngine.UI;
+using Samkuk.Compat.UI;
 
 namespace Samkuk.Tests
 {
@@ -47,17 +47,17 @@ namespace Samkuk.Tests
             savePath = Path.Combine(Application.temporaryCachePath, $"test_net_save_{Guid.NewGuid():N}.json");
             SaveSystem.PathOverride = savePath;
             SaveSystem.ResetCache();
-            // (미룸) NetClient.OfflineChosen = false;
+            NetClient.OfflineChosen = false;
         }
 
         [TearDown]
         public void TearDown()
         {
-            // (미룸) NetClient.DestroyInstance();
-            // (미룸) NetClient.LinkFactory = (h, p) => new TcpLink(h, p);
-            // (미룸) NetClient.OfflineChosen = false;
-            // (미룸) LoginPanel.AutoShow = true;
-            // (미룸) Audio.AudioManager.DestroyInstance();
+            NetClient.DestroyInstance();
+            NetClient.LinkFactory = (h, p) => new TcpLink(h, p);
+            NetClient.OfflineChosen = false;
+            LoginPanel.AutoShow = true;
+            Audio.AudioManager.DestroyInstance();
             SaveSystem.Delete();
             SaveSystem.PathOverride = null;
             SaveSystem.ResetCache();
@@ -141,7 +141,7 @@ namespace Samkuk.Tests
 
         // ───────────────────────── 로그인 흐름 ─────────────────────────
 
-        [Ignore("확인 필요: 옮긴 코드에서 실패한다. 유니티 Test Runner 에서 통과하던 테스트인지 먼저 확인할 것 (godot/PORTING.md)")]
+        [Ignore("확인 필요: 옮긴 코드에서 실패한다. 유니티 Test Runner 에서 통과하던 테스트인지 확인할 것 (godot/PORTING.md)")]
         [Test]
         public void LoginFlow_HappyPath_LoginServer_ThenGameServer_ThenKeepAlive()
         {
@@ -293,7 +293,6 @@ namespace Samkuk.Tests
 
         // ───────────────────────── NetClient ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator NetClient_DrivesFlowEveryFrame_AndSurvivesAsSingleton()
         {
@@ -322,20 +321,16 @@ namespace Samkuk.Tests
             Assert.AreEqual(NetPhase.Offline, client.Phase);
             Assert.IsTrue(net.Links[1].Disposed);
         }
-#endif
 
         // ───────────────────────── 로그인 창 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         LoginPanel MakePanel()
         {
             var canvasGo = new GameObject("Canvas", typeof(RectTransform), typeof(Canvas));
             canvasGo.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
             return LoginPanel.Create(canvasGo.transform);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator LoginPanel_RequiresIdAndPassword_BeforeConnecting()
         {
@@ -362,9 +357,7 @@ namespace Samkuk.Tests
             Samkuk.Compat.Object.Destroy(panel.transform.parent.gameObject);
             yield return null;
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator LoginPanel_ClosesOnSuccess_SavesUserId_AndShowsFailure()
         {
@@ -396,9 +389,7 @@ namespace Samkuk.Tests
             Samkuk.Compat.Object.Destroy(canvas);
             yield return null;
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator LoginPanel_Offline_SkipsLogin_ForThisRun()
         {
@@ -414,9 +405,7 @@ namespace Samkuk.Tests
             Samkuk.Compat.Object.Destroy(canvas);
             yield return null;
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator LoginPanel_ShouldShow_UnlessOnlineOrOffline()
         {
@@ -441,6 +430,5 @@ namespace Samkuk.Tests
             LoginPanel.AutoShow = false;
             Assert.IsFalse(LoginPanel.ShouldShow());
         }
-#endif
     }
 }

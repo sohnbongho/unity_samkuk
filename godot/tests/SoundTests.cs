@@ -9,8 +9,8 @@ using Samkuk.Data;
 using Samkuk.Enemies;
 using Samkuk.Player;
 using Samkuk.Meta;
-// (미룸) using Samkuk.Stages;
-// (미룸) using Samkuk.UI;
+using Samkuk.Stages;
+using Samkuk.UI;
 using Samkuk.Upgrades;
 using Samkuk.Weapons;
 using Samkuk.Compat;
@@ -32,21 +32,11 @@ namespace Samkuk.Tests
         }
 
         string savePath;
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         GameObject playerGo, camGo, root;
-#endif
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         PlayerHealth health;
-#endif
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         PlayerExperience exp;
-#endif
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         WeaponController wc;
-#endif
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         EnemySpawner spawner;
-#endif
         readonly List<Samkuk.Compat.Object> toDestroy = new List<Samkuk.Compat.Object>();
 
         [SetUp]
@@ -56,28 +46,27 @@ namespace Samkuk.Tests
             savePath = Path.Combine(Application.temporaryCachePath, $"test_sound_save_{Guid.NewGuid():N}.json");
             SaveSystem.PathOverride = savePath;
             SaveSystem.ResetCache();
-            // (미룸) AudioManager.DestroyInstance();
+            AudioManager.DestroyInstance();
         }
 
         [TearDown]
         public void TearDown()
         {
-            // (미룸) Time.timeScale = 1f;
-            // (미룸) AudioManager.DestroyInstance();
+            Time.timeScale = 1f;
+            AudioManager.DestroyInstance();
             SaveSystem.Delete();
             SaveSystem.PathOverride = null;
             SaveSystem.ResetCache();
             if (File.Exists(savePath + ".tmp")) File.Delete(savePath + ".tmp");
 
-            // (미룸) if (playerGo != null) Samkuk.Compat.Object.Destroy(playerGo);
-            // (미룸) if (camGo != null) Samkuk.Compat.Object.Destroy(camGo);
-            // (미룸) if (root != null) Samkuk.Compat.Object.Destroy(root);
+            if (playerGo != null) Samkuk.Compat.Object.Destroy(playerGo);
+            if (camGo != null) Samkuk.Compat.Object.Destroy(camGo);
+            if (root != null) Samkuk.Compat.Object.Destroy(root);
             foreach (var o in toDestroy) if (o != null) Samkuk.Compat.Object.Destroy(o);
         }
 
         // ───────────────────────── 효과음 합성 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Synth_EverySound_HasARecipe_AndNoneHasNone()
         {
@@ -88,7 +77,6 @@ namespace Samkuk.Tests
             Assert.AreEqual(0, SfxSynth.Generate(SfxId.None).Length);
             Assert.IsNull(SfxSynth.CreateClip(SfxId.None));
         }
-#endif
 
         [Test]
         public void Synth_Samples_AreFinite_Audible_Bounded_AndFadeInAndOut()
@@ -130,7 +118,6 @@ namespace Samkuk.Tests
             }
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Synth_CreateClip_MatchesSamples()
         {
@@ -142,7 +129,6 @@ namespace Samkuk.Tests
             Assert.AreEqual(SfxSynth.SampleRate, clip.frequency);
             Assert.AreEqual(1, clip.channels);
         }
-#endif
 
         [Test]
         public void WeaponSounds_EveryWeaponTypeIsMapped_OrbitIsSilent()
@@ -161,7 +147,6 @@ namespace Samkuk.Tests
 
         // ───────────────────────── AudioManager ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Manager_IsCreatedOnDemand_AndPlays()
         {
@@ -175,9 +160,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(1, m.GetPlayCount(SfxId.Click));
             Assert.AreSame(m, AudioManager.Instance, "하나만 존재");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Manager_RateLimitsSameSound_ButNotDifferentOnes()
         {
@@ -194,9 +177,7 @@ namespace Samkuk.Tests
             Assert.IsTrue(m.TryPlay(SfxId.Hit), "간격이 지나면 다시 재생");
             Assert.AreEqual(2, m.GetPlayCount(SfxId.Hit));
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Manager_IgnoresNone_AndPlaysNothingWhenMuted()
         {
@@ -212,9 +193,7 @@ namespace Samkuk.Tests
             m.SetSfxVolume(1f);
             Assert.IsTrue(m.TryPlay(SfxId.Click));
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Manager_PlaysEverySoundAtOnce_BeyondSourcePoolSize()
         {
@@ -227,9 +206,7 @@ namespace Samkuk.Tests
             });
             Assert.Greater(AllSounds.Length, 8, "재생기 풀(8개)보다 많은 소리를 한꺼번에 재생해도 안전");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Manager_LoadsVolumeFromSave_AndSetVolumePersists()
         {
@@ -245,7 +222,6 @@ namespace Samkuk.Tests
             SaveSystem.ResetCache();
             Assert.AreEqual(0.5f, SaveSystem.Load().sfxVolume, 0.0001f, "파일에 저장됨");
         }
-#endif
 
 #if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
@@ -273,7 +249,6 @@ namespace Samkuk.Tests
         }
 #endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Volume_Steps_CycleAndNameThemselves()
         {
@@ -289,9 +264,7 @@ namespace Samkuk.Tests
             Assert.AreEqual("크게", AudioManager.VolumeName(1f));
             Assert.AreEqual("보통", AudioManager.VolumeName(0.6f));
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void MinInterval_IsPositive_AndFrequentSoundsHaveLongerSpacing()
         {
@@ -300,7 +273,6 @@ namespace Samkuk.Tests
             Assert.Greater(AudioManager.MinInterval(SfxId.Hit), AudioManager.MinInterval(SfxId.Click),
                 "수백 번 몰릴 수 있는 피격음이 UI 클릭음보다 간격이 길어야 함");
         }
-#endif
 
         [Test]
         public void Save_SfxVolume_DefaultsAndIsSanitized()
@@ -319,7 +291,6 @@ namespace Samkuk.Tests
 
         // ───────────────────────── 게임 이벤트 → 소리 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         void BuildWorld()
         {
             var enemyPrefab = AssetDatabase.LoadAssetAtPath<Enemy>(EnemyPrefabPath);
@@ -346,9 +317,7 @@ namespace Samkuk.Tests
             wc = playerGo.AddComponent<WeaponController>();
             wc.EnemyManager = manager;
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         SfxHooks MakeHooks()
         {
             var go = new GameObject("TestHooks");
@@ -359,7 +328,6 @@ namespace Samkuk.Tests
             hooks.Weapons = wc;
             return hooks;
         }
-#endif
 
         EnemyData Dummy(int hp)
         {
@@ -378,7 +346,6 @@ namespace Samkuk.Tests
             return w;
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Hooks_EnemyHit_PlaysHit_KillingBlowPlaysKillOnly()
         {
@@ -397,9 +364,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(1, m.GetPlayCount(SfxId.Kill));
             Assert.AreEqual(1, m.GetPlayCount(SfxId.Hit), "처치하는 타격은 피격음을 따로 내지 않음");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Hooks_PlayerHurt_OnlyWhenHealthDrops()
         {
@@ -417,9 +382,7 @@ namespace Samkuk.Tests
             health.TakeDamage(10000f); // 사망
             Assert.AreEqual(1, m.GetPlayCount(SfxId.PlayerHurt), "사망은 피격음 대신 종료음(게임 매니저가 있을 때)");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Hooks_LevelUp_Evolve_AndLevelUpChoiceClick()
         {
@@ -456,18 +419,14 @@ namespace Samkuk.Tests
             wc.Evolve(bow, evolved);
             Assert.AreEqual(1, m.GetPlayCount(SfxId.Evolve));
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         class FakeLevelUpView : ILevelUpView
         {
             public bool IsVisible { get; private set; }
             public void Show(IReadOnlyList<UpgradeOption> options, Action<int> onChosen) { IsVisible = true; }
             public void Hide() { IsVisible = false; }
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Hooks_GameEnd_PlaysDefeatOrVictory()
         {
@@ -492,9 +451,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(1, m.GetPlayCount(SfxId.Victory));
             Assert.AreEqual(0, m.GetPlayCount(SfxId.Defeat));
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Hooks_PlayerDeath_PlaysDefeat()
         {
@@ -516,9 +473,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(1, m.GetPlayCount(SfxId.Defeat));
             Assert.AreEqual(0, m.GetPlayCount(SfxId.PlayerHurt), "사망은 피격음 대신 패배음");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Hooks_DisabledOrRewired_StopListening()
         {
@@ -546,9 +501,7 @@ namespace Samkuk.Tests
             health.TakeDamage(10f);
             Assert.AreEqual(0, m.GetPlayCount(SfxId.PlayerHurt), "연결을 끊은 체력의 변화에는 반응하지 않음");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Weapons_PlayTheirAttackSound_WhenTheyFire()
         {
@@ -563,7 +516,6 @@ namespace Samkuk.Tests
 
             Assert.GreaterOrEqual(AudioManager.Instance.GetPlayCount(SfxId.Thrust), 1, "창 찌르기 발동 시 효과음");
         }
-#endif
 
 #if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
@@ -574,9 +526,9 @@ namespace Samkuk.Tests
             toDestroy.Add(go);
             var panel = new GameObject("Panel");
             panel.transform.SetParent(go.transform);
-            UnityEngine.UI.Button MakeButton(string n)
+            Samkuk.Compat.UI.Button MakeButton(string n)
             {
-                var b = new GameObject(n, typeof(RectTransform)).AddComponent<UnityEngine.UI.Button>();
+                var b = new GameObject(n, typeof(RectTransform)).AddComponent<Samkuk.Compat.UI.Button>();
                 b.transform.SetParent(panel.transform);
                 return b;
             }

@@ -1,0 +1,139 @@
+{
+  "kind": "prefab",
+  "name": "Enemy",
+  "roots": ["1293840167947911218"],
+  "objects": [
+    {
+      "id": "1293840167947911218",
+      "name": "Enemy",
+      "layer": 9,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "3562238469828176788",
+          "class": "Transform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": null,
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 }
+          }
+        },
+        {
+          "id": "8300342080725272609",
+          "class": "Rigidbody2D",
+          "data": {
+            "m_BodyType": 1,
+            "m_Simulated": 1,
+            "m_UseFullKinematicContacts": 0,
+            "m_UseAutoMass": 0,
+            "m_Mass": 1,
+            "m_LinearDamping": 0,
+            "m_AngularDamping": 0.05,
+            "m_GravityScale": 0,
+            "m_Material": null,
+            "m_IncludeLayers": { "serializedVersion": 2, "m_Bits": 0 },
+            "m_ExcludeLayers": { "serializedVersion": 2, "m_Bits": 0 },
+            "m_Interpolate": 0,
+            "m_SleepingMode": 1,
+            "m_CollisionDetection": 0,
+            "m_Constraints": 4
+          }
+        },
+        {
+          "id": "9120155230576251601",
+          "class": "CircleCollider2D",
+          "data": {
+            "m_Enabled": 1,
+            "m_Density": 1,
+            "m_Material": null,
+            "m_IncludeLayers": { "serializedVersion": 2, "m_Bits": 0 },
+            "m_ExcludeLayers": { "serializedVersion": 2, "m_Bits": 0 },
+            "m_LayerOverridePriority": 0,
+            "m_ForceSendLayers": { "serializedVersion": 2, "m_Bits": 4294967295 },
+            "m_ForceReceiveLayers": { "serializedVersion": 2, "m_Bits": 4294967295 },
+            "m_ContactCaptureLayers": { "serializedVersion": 2, "m_Bits": 4294967295 },
+            "m_CallbackLayers": { "serializedVersion": 2, "m_Bits": 4294967295 },
+            "m_IsTrigger": 1,
+            "m_UsedByEffector": 0,
+            "m_CompositeOperation": 0,
+            "m_CompositeOrder": 0,
+            "m_Offset": { "x": 0, "y": 0 },
+            "m_Radius": 0.4
+          }
+        },
+        {
+          "id": "8702168051303815877",
+          "class": "SpriteRenderer",
+          "data": {
+            "m_Enabled": 1,
+            "m_CastShadows": 0,
+            "m_ReceiveShadows": 0,
+            "m_DynamicOccludee": 1,
+            "m_StaticShadowCaster": 0,
+            "m_MotionVectors": 1,
+            "m_LightProbeUsage": 1,
+            "m_ReflectionProbeUsage": 1,
+            "m_RayTracingMode": 0,
+            "m_RayTraceProcedural": 0,
+            "m_RayTracingAccelStructBuildFlagsOverride": 0,
+            "m_RayTracingAccelStructBuildFlags": 1,
+            "m_SmallMeshCulling": 1,
+            "m_ForceMeshLod": -1,
+            "m_MeshLodSelectionBias": 0,
+            "m_RenderingLayerMask": 1,
+            "m_RendererPriority": 0,
+            "m_Materials": [null],
+            "m_StaticBatchInfo": { "firstSubMesh": 0, "subMeshCount": 0 },
+            "m_StaticBatchRoot": null,
+            "m_ProbeAnchor": null,
+            "m_LightProbeVolumeOverride": null,
+            "m_ScaleInLightmap": 1,
+            "m_ReceiveGI": 1,
+            "m_PreserveUVs": 0,
+            "m_IgnoreNormalsForChartDetection": 0,
+            "m_ImportantGI": 0,
+            "m_StitchLightmapSeams": 1,
+            "m_SelectedEditorRenderState": 0,
+            "m_MinimumChartSize": 4,
+            "m_AutoUVMaxDistance": 0.5,
+            "m_AutoUVMaxAngle": 89,
+            "m_LightmapParameters": null,
+            "m_GlobalIlluminationMeshLod": 0,
+            "m_SortingLayerID": 1007,
+            "m_SortingLayer": 3,
+            "m_SortingOrder": 0,
+            "m_MaskInteraction": 0,
+            "m_Sprite": { "$sprite": "res://sprites/Enemy.png", "w": 48, "h": 48, "ppu": 64, "pivot": [0.5, 0.5] },
+            "m_Color": { "r": 1, "g": 1, "b": 1, "a": 1 },
+            "m_FlipX": 0,
+            "m_FlipY": 0,
+            "m_DrawMode": 0,
+            "m_Size": { "x": 0.75, "y": 0.75 },
+            "m_AdaptiveModeThreshold": 0.5,
+            "m_SpriteTileMode": 0,
+            "m_WasSpriteAssigned": 1,
+            "m_SpriteSortPoint": 1,
+            "m_BlendShapeWeights": [],
+            "sortingLayerName": "World"
+          }
+        },
+        {
+          "id": "559051821178269823",
+          "class": "Samkuk.World.StandingSprite",
+          "data": { "m_Enabled": 1, "footLift": 0.25, "toward": 0, "translucent": 0, "liftHeight": 0, "stretchScale": 1 }
+        },
+        {
+          "id": "7292686257079920750",
+          "class": "Samkuk.Enemies.Enemy",
+          "data": { "m_Enabled": 1 }
+        }
+      ]
+    }
+  ],
+  "prefabInstances": []
+}

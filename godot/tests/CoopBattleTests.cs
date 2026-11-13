@@ -87,7 +87,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(10f, model.LastSnapshotAt);
         }
 
-        [Ignore("확인 필요: 옮긴 코드에서 실패한다. 유니티 Test Runner 에서 통과하던 테스트인지 먼저 확인할 것 (godot/PORTING.md)")]
+        [Ignore("확인 필요: 옮긴 코드에서 실패한다. 유니티 Test Runner 에서 통과하던 테스트인지 확인할 것 (godot/PORTING.md)")]
         [Test]
         public void CoopBattleModel_Expire_HidesUnseenEnemies_KeepsFloorGems()
         {
@@ -154,7 +154,6 @@ namespace Samkuk.Tests
             model.RevivePlayer(9, Vector2.zero); // 범위 밖은 무시
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void CoopBattleDriver_BuildOptions_MapsServerKindToCards()
         {
@@ -173,9 +172,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(UpgradeKind.Passive, options[3].Kind, "모르는 종류는 패시브 색");
             Assert.AreEqual("", options[2].Description);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void PuppetWalker_FacingOf_MatchesSheetRowOrder()
         {
@@ -185,6 +182,5 @@ namespace Samkuk.Tests
             Assert.AreEqual(FacingDir.Right, PuppetWalker.FacingOf(3));
             Assert.AreEqual(FacingDir.Down, PuppetWalker.FacingOf(9));
         }
-#endif
     }
 }

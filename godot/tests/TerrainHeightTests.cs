@@ -19,7 +19,7 @@ namespace Samkuk.Tests
             TerrainCollision.Active = null;
             TerrainThemeCatalog.Use(null);
             Hd2dSettings.TiltOverride = true;
-            // (미룸) TiltView.ResetForTests();
+            TiltView.ResetForTests();
         }
 
         [TearDown]
@@ -27,7 +27,7 @@ namespace Samkuk.Tests
         {
             foreach (var o in toDestroy) if (o != null) Object.DestroyImmediate(o);
             toDestroy.Clear();
-            // (미룸) TiltView.ResetForTests();
+            TiltView.ResetForTests();
             Hd2dSettings.ResetOverrides();
             MapStore.Disabled = false;
             TerrainCollision.Active = null;
@@ -130,7 +130,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(5, cx); Assert.AreEqual(0, cy);
         }
 
-        [Ignore("확인 필요: 옮긴 코드에서 실패한다. 유니티 Test Runner 에서 통과하던 테스트인지 먼저 확인할 것 (godot/PORTING.md)")]
+        [Ignore("확인 필요: 옮긴 코드에서 실패한다. 유니티 Test Runner 에서 통과하던 테스트인지 확인할 것 (godot/PORTING.md)")]
         [Test]
         public void Map_HeightAt_UsesCustomHeights_AndRampInterpolates()
         {
@@ -161,7 +161,7 @@ namespace Samkuk.Tests
             }
         }
 
-        [Ignore("확인 필요: 옮긴 코드에서 실패한다. 유니티 Test Runner 에서 통과하던 테스트인지 먼저 확인할 것 (godot/PORTING.md)")]
+        [Ignore("확인 필요: 옮긴 코드에서 실패한다. 유니티 Test Runner 에서 통과하던 테스트인지 확인할 것 (godot/PORTING.md)")]
         [Test]
         public void Auto_MountainsHaveHills_PlainsHaveFew_AndRiversStayFlat()
         {
@@ -226,7 +226,7 @@ namespace Samkuk.Tests
             Assert.Greater(ramps, 0, "산악 맵에는 경사로가 생긴다");
         }
 
-        [Ignore("확인 필요: 옮긴 코드에서 실패한다. 유니티 Test Runner 에서 통과하던 테스트인지 먼저 확인할 것 (godot/PORTING.md)")]
+        [Ignore("확인 필요: 옮긴 코드에서 실패한다. 유니티 Test Runner 에서 통과하던 테스트인지 확인할 것 (godot/PORTING.md)")]
         [Test]
         public void Auto_StarterHill_IsNearTheStart_WithARamp_AndOffTheRiver()
         {
@@ -384,7 +384,6 @@ namespace Samkuk.Tests
             Assert.LessOrEqual(v.x, 1e-3f, "경사로 옆은 여전히 벽");
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void ZAt_IsZeroWithoutTilt_AndFollowsTheMapUnderTilt()
         {
@@ -396,7 +395,6 @@ namespace Samkuk.Tests
             Assert.AreEqual(new Vector3(5f, 5f, -1f), TerrainHeight.Feet(new Vector2(5f, 5f)));
             Assert.AreEqual(0f, TerrainHeight.ZAt(new Vector2(1f, 1f)));
         }
-#endif
 
         // ───────────────────────── 편집 / 저장 ─────────────────────────
 

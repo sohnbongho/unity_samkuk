@@ -20,7 +20,10 @@ namespace Samkuk.Tests
         public void Load_ReadsEveryFile_WithoutProblems()
         {
             Assert.IsEmpty(GameData.Problems, "모르는 형식·없는 참조·겹친 이름이 없어야 한다");
-            int files = Directory.GetFiles(Path.Combine(AssetDatabase.GodotRoot, "data"), "*.json", SearchOption.AllDirectories).Length;
+            // 데이터 파일만 센다 (씬·프리팹·프로젝트 설정·그림 색인은 $type 이 없다)
+            int files = 0;
+            foreach (string f in Directory.GetFiles(Path.Combine(AssetDatabase.GodotRoot, "data"), "*.json", SearchOption.AllDirectories))
+                if (File.ReadAllText(f).Contains("\"$type\"")) files++;
             Assert.AreEqual(files, GameData.Count, "파일 하나가 데이터 한 건");
             Assert.AreEqual(46, GameData.All<CastleData>().Count);
             Assert.AreEqual(27, GameData.All<WeaponData>().Count);

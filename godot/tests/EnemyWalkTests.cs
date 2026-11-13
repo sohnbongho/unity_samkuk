@@ -14,18 +14,10 @@ namespace Samkuk.Tests
         const string EnemyPrefabPath = "Assets/Prefabs/Enemy.prefab";
         const string EnemyDir = "Assets/ScriptableObjects/Enemies";
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         GameObject root;
-#endif
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         GameObject playerGo;
-#endif
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         EnemyManager manager;
-#endif
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         EnemySpawner spawner;
-#endif
         Texture2D sheet;
         EnemyData walker;   // 걷기 시트가 있는 적
         EnemyData plain;    // 시트가 없는 적
@@ -34,28 +26,28 @@ namespace Samkuk.Tests
         [SetUp]
         public void SetUp()
         {
-            // (미룸) var prefab = AssetDatabase.LoadAssetAtPath<Enemy>(EnemyPrefabPath);
-            // (미룸) Assert.IsNotNull(prefab, "Enemy 프리팹이 없습니다. Samkuk > Step 3 를 먼저 실행하세요.");
+            var prefab = AssetDatabase.LoadAssetAtPath<Enemy>(EnemyPrefabPath);
+            Assert.IsNotNull(prefab, "Enemy 프리팹이 없습니다. Samkuk > Step 3 를 먼저 실행하세요.");
 
-            // (미룸) playerGo = new GameObject("TestPlayer");
-            // (미룸) var camGo = new GameObject("TestCam", typeof(Camera));
-            // (미룸) var cam = camGo.GetComponent<Camera>();
-            // (미룸) cam.orthographic = true;
-            // (미룸) cam.orthographicSize = 6f;
-            // (미룸) cam.aspect = 16f / 9f;
-            // (미룸) camGo.transform.position = new Vector3(0f, 0f, -10f);
-            // (미룸) toDestroy.Add(camGo);
+            playerGo = new GameObject("TestPlayer");
+            var camGo = new GameObject("TestCam", typeof(Camera));
+            var cam = camGo.GetComponent<Camera>();
+            cam.orthographic = true;
+            cam.orthographicSize = 6f;
+            cam.aspect = 16f / 9f;
+            camGo.transform.position = new Vector3(0f, 0f, -10f);
+            toDestroy.Add(camGo);
 
-            // (미룸) root = new GameObject("TestSystems");
-            // (미룸) root.SetActive(false);
-            // (미룸) manager = root.AddComponent<EnemyManager>();
-            // (미룸) spawner = root.AddComponent<EnemySpawner>();
-            // (미룸) manager.Target = playerGo.transform;
-            // (미룸) spawner.Manager = manager;
-            // (미룸) spawner.Cam = cam;
-            // (미룸) spawner.EnemyPrefab = prefab;
-            // (미룸) spawner.autoSpawn = false;
-            // (미룸) root.SetActive(true);
+            root = new GameObject("TestSystems");
+            root.SetActive(false);
+            manager = root.AddComponent<EnemyManager>();
+            spawner = root.AddComponent<EnemySpawner>();
+            manager.Target = playerGo.transform;
+            spawner.Manager = manager;
+            spawner.Cam = cam;
+            spawner.EnemyPrefab = prefab;
+            spawner.autoSpawn = false;
+            root.SetActive(true);
 
             sheet = new Texture2D(8, 8) { name = "EnemyTestSheet" };
             toDestroy.Add(sheet);
@@ -67,8 +59,8 @@ namespace Samkuk.Tests
         [TearDown]
         public void TearDown()
         {
-            // (미룸) if (root != null) Object.Destroy(root);
-            // (미룸) if (playerGo != null) Object.Destroy(playerGo);
+            if (root != null) Object.Destroy(root);
+            if (playerGo != null) Object.Destroy(playerGo);
             foreach (var o in toDestroy) if (o != null) Object.Destroy(o);
             toDestroy.Clear();
         }
@@ -86,7 +78,6 @@ namespace Samkuk.Tests
             return d;
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Spawn_WithSheet_ShowsFrontStandingFrame_InArtColor()
         {
@@ -99,9 +90,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(Color.white, sr.color, "그림 색 그대로 (tint 를 곱하지 않음)");
             Assert.IsFalse(sr.flipX);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Enemy_FacesThePlayer_FromEverySide()
         {
@@ -123,9 +112,7 @@ namespace Samkuk.Tests
                 e.Despawn();
             }
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Enemy_WalkFramesCycle_WhileChasing()
         {
@@ -143,9 +130,7 @@ namespace Samkuk.Tests
             }
             Assert.GreaterOrEqual(frames.Count, 3, "쫓아가는 동안 프레임이 돌아야 함: " + string.Join(",", frames));
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Enemy_StandsStill_WhenItReachesThePlayer()
         {
@@ -156,9 +141,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(0, e.WalkFrame, "멈춰 있으면 서 있는 자세(0번 프레임)");
             Assert.AreEqual(FacingDir.Left, e.Facing, "멈춰도 플레이어를 바라본다");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Enemy_WithoutSheet_KeepsOldTintAndFlip()
         {
@@ -171,9 +154,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(plain.tint, sr.color, "시트가 없으면 예전처럼 tint 색");
             Assert.IsTrue(sr.flipX, "오른쪽에서 왼쪽으로 움직이면 예전처럼 반전");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Enemy_Stun_RestoresArtColor()
         {
@@ -186,9 +167,7 @@ namespace Samkuk.Tests
             yield return new WaitForSeconds(0.5f);
             Assert.AreEqual(Color.white, sr.color, "기절이 끝나면 그림 색으로 복원");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void TickAnimation_TurnsToFaceDirection_AndAdvancesFramesOnlyWhenMoving()
         {
@@ -207,7 +186,6 @@ namespace Samkuk.Tests
             Assert.AreEqual(FacingDir.Right, e.Facing);
             Assert.AreEqual(4, seen.Count, "한 바퀴 돌면 4프레임을 모두 거침");
         }
-#endif
 
         [Test]
         public void EnemyAssets_HaveWalkSheets_WithFourByFourCells()

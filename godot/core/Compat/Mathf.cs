@@ -20,6 +20,7 @@ namespace Samkuk.Compat
         public static float Atan(float f) => (float)Math.Atan(f);
         public static float Atan2(float y, float x) => (float)Math.Atan2(y, x);
         public static float Acos(float f) => (float)Math.Acos(f);
+        public static float Asin(float f) => (float)Math.Asin(f);
         public static float Sqrt(float f) => (float)Math.Sqrt(f);
         public static float Pow(float f, float p) => (float)Math.Pow(f, p);
         public static float Exp(float f) => (float)Math.Exp(f);
@@ -35,6 +36,7 @@ namespace Samkuk.Compat
         public static float Min(float a, float b, float c) => Min(Min(a, b), c);
         public static float Max(float a, float b, float c) => Max(Max(a, b), c);
 
+        public static int NextPowerOfTwo(int v) { int p = 1; while (p < v) p <<= 1; return p; }
         public static float Floor(float f) => (float)Math.Floor(f);
         public static float Ceil(float f) => (float)Math.Ceiling(f);
         /// <summary>유니티와 같이 .5 는 짝수 쪽으로.</summary>

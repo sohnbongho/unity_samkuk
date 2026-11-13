@@ -7,6 +7,10 @@
     <LangVersion>12</LangVersion>
   </PropertyGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="Samkuk.Tests" />
+    <InternalsVisibleTo Include="Samkuk.Game" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Google.Protobuf" Version="3.27.3" />
   </ItemGroup>
 </Project>

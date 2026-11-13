@@ -4,8 +4,6 @@ using Samkuk.Core;
 using Samkuk.Data;
 using Samkuk.World;
 using Samkuk.Compat;
-// (미룸) using UnityEngine.Rendering;
-// (미룸) using UnityEngine.Rendering.Universal;
 
 namespace Samkuk.Tests
 {
@@ -30,14 +28,12 @@ namespace Samkuk.Tests
             toDestroy.Clear();
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         BattlePostFx MakeCamera()
         {
             var go = new GameObject("Cam", typeof(Camera));
             toDestroy.Add(go);
             return go.AddComponent<BattlePostFx>();   // Awake 에서 Volume 을 만든다
         }
-#endif
 
         [Test]
         public void Preset_BloomOnlyAffectsOverbrightLights()
@@ -85,7 +81,6 @@ namespace Samkuk.Tests
         }
 #endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void PostFx_Toggle_TurnsCameraPostProcessingOff()
         {
@@ -101,9 +96,7 @@ namespace Samkuk.Tests
             Assert.IsTrue(data.renderPostProcessing);
             Assert.AreEqual(1f, fx.Volume.weight);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void PostFx_StartsOff_WhenSettingDisabled()
         {
@@ -113,9 +106,7 @@ namespace Samkuk.Tests
             Assert.IsFalse(fx.GetComponent<Camera>().GetUniversalAdditionalCameraData().renderPostProcessing);
             Assert.IsNotNull(fx.Volume, "볼륨은 만들어 두고 무게만 0 (F6 로 바로 켤 수 있게)");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void PostFx_UsesSortieCastleTimeOfDay()
         {
@@ -133,7 +124,6 @@ namespace Samkuk.Tests
             Assert.AreEqual(PostFxPreset.Temperature(TimeOfDay.Dawn), wb.temperature.value);
             Assert.AreEqual(PostFxPreset.Tint(TimeOfDay.Dawn), wb.tint.value);
         }
-#endif
 
         [Test]
         public void Hd2dSettings_PostFxOverride_WinsOverSave()

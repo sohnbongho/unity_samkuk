@@ -8,11 +8,11 @@ namespace Samkuk.World
     /// </summary>
     public static class TiltShiftPreset
     {
-        // 셰이더 매개변수 이름 (화면 층이 이 이름으로 값을 넣는다)
-        public const string AmountParam = "tilt_amount";
-        public const string FocusParam = "tilt_focus";
-        public const string BandParam = "tilt_band";
-        public const string RadiusParam = "tilt_radius";
+        public const string ShaderName = "Samkuk/TiltShift";
+        public static readonly int AmountId = Shader.PropertyToID("_TiltShiftAmount");
+        public static readonly int FocusId = Shader.PropertyToID("_TiltShiftFocus");
+        public static readonly int BandId = Shader.PropertyToID("_TiltShiftBand");
+        public static readonly int RadiusId = Shader.PropertyToID("_TiltShiftRadius");
 
         /// <summary>흐림 세기 (0 = 없음, 1 = 기준).</summary>
         public const float Amount = 1f;
@@ -26,5 +26,14 @@ namespace Samkuk.World
         /// <summary>화면 높이에 맞춘 흐림 반지름 (1080 → 6, 2160 → 12).</summary>
         public static float RadiusFor(int screenHeight) => RadiusAt1080 * Mathf.Max(1, screenHeight) / 1080f;
 
+        /// <summary>머티리얼에 값을 넣는다.</summary>
+        public static void Apply(Material material, int screenHeight, float amount = Amount)
+        {
+            if (material == null) return;
+            material.SetFloat(AmountId, amount);
+            material.SetFloat(FocusId, Focus);
+            material.SetFloat(BandId, Band);
+            material.SetFloat(RadiusId, RadiusFor(screenHeight));
+        }
     }
 }

@@ -6,15 +6,15 @@ using NUnit.Framework;
 using Samkuk.Core;
 using Samkuk.Data;
 using Samkuk.Enemies;
-// (미룸) using Samkuk.Heroes;
+using Samkuk.Heroes;
 using Samkuk.Meta;
 using Samkuk.Player;
-// (미룸) using Samkuk.Stages;
-// (미룸) using Samkuk.UI;
+using Samkuk.Stages;
+using Samkuk.UI;
 using Samkuk.Upgrades;
 using Samkuk.Weapons;
 using Samkuk.Compat;
-// (미룸) using UnityEngine.UI;
+using Samkuk.Compat.UI;
 
 namespace Samkuk.Tests
 {
@@ -24,18 +24,10 @@ namespace Samkuk.Tests
         const string MetaCatalogPath = "Assets/ScriptableObjects/MetaCatalog.asset";
 
         string savePath;
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         GameObject playerGo;
-#endif
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         PlayerStats stats;
-#endif
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         PlayerHealth health;
-#endif
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         PlayerExperience exp;
-#endif
         readonly List<Samkuk.Compat.Object> toDestroy = new List<Samkuk.Compat.Object>();
 
         [SetUp]
@@ -46,22 +38,22 @@ namespace Samkuk.Tests
             SaveSystem.PathOverride = savePath;
             SaveSystem.ResetCache();
 
-            // (미룸) playerGo = new GameObject("TestPlayer");
-            // (미룸) stats = playerGo.AddComponent<PlayerStats>();
-            // (미룸) health = playerGo.AddComponent<PlayerHealth>();
-            // (미룸) exp = playerGo.AddComponent<PlayerExperience>();
+            playerGo = new GameObject("TestPlayer");
+            stats = playerGo.AddComponent<PlayerStats>();
+            health = playerGo.AddComponent<PlayerHealth>();
+            exp = playerGo.AddComponent<PlayerExperience>();
         }
 
         [TearDown]
         public void TearDown()
         {
-            // (미룸) Time.timeScale = 1f;
+            Time.timeScale = 1f;
             SaveSystem.Delete();
             SaveSystem.PathOverride = null;
             SaveSystem.ResetCache();
             if (File.Exists(savePath + ".tmp")) File.Delete(savePath + ".tmp");
 
-            // (미룸) if (playerGo != null) Samkuk.Compat.Object.Destroy(playerGo);
+            if (playerGo != null) Samkuk.Compat.Object.Destroy(playerGo);
             foreach (var o in toDestroy) if (o != null) Samkuk.Compat.Object.Destroy(o);
         }
 
@@ -126,7 +118,7 @@ namespace Samkuk.Tests
         public void Save_CorruptFile_FallsBackToFreshData_WithoutThrowing()
         {
             File.WriteAllText(savePath, "{ 이건 JSON 이 아니다 ::: ");
-            UnityEngine.TestTools.LogAssert.ignoreFailingMessages = true;
+            Samkuk.Compat.TestTools.LogAssert.ignoreFailingMessages = true;
             try
             {
                 SaveData loaded = null;
@@ -135,7 +127,7 @@ namespace Samkuk.Tests
             }
             finally
             {
-                UnityEngine.TestTools.LogAssert.ignoreFailingMessages = false;
+                Samkuk.Compat.TestTools.LogAssert.ignoreFailingMessages = false;
             }
         }
 #endif
@@ -288,7 +280,6 @@ namespace Samkuk.Tests
 
         // ───────────────────────── 능력치 적용 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Stats_ApplyMeta_ScalesStats_AndStacksWithOtherLayers()
         {
@@ -313,9 +304,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(1.2f, stats.DamageMultiplier, 0.0001f, "메타만 제거되고 장수 보정은 유지");
             Assert.AreEqual(100f, health.Max, 0.001f);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator MetaApplier_AppliesSavedUpgradesAtStart()
         {
@@ -341,11 +330,9 @@ namespace Samkuk.Tests
             Assert.AreEqual(120f, health.Max, 0.001f);
             Assert.AreEqual(0.1f, applier.Bonuses.goldGain, 0.0001f);
         }
-#endif
 
         // ───────────────────────── 런 통계 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator RunStats_CountsKills_AndReadsStageTimeAndLevel()
         {
@@ -382,9 +369,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(12.5f, run.Seconds, 0.3f, "스테이지 경과 시간 (프레임 갱신분 오차 허용)");
             Assert.AreEqual(2, run.Level);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator RunStats_WithoutStage_CountsItsOwnTime()
         {
@@ -397,11 +382,9 @@ namespace Samkuk.Tests
             Assert.Greater(run.Seconds, 0.25f);
             Assert.AreEqual(1, run.Level, "경험치 컴포넌트가 없으면 1레벨");
         }
-#endif
 
         // ───────────────────────── 게임 매니저 / 결과 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         class FakeResultView : IResultView
         {
             public int ShowCount;
@@ -414,9 +397,7 @@ namespace Samkuk.Tests
             }
             public void Hide() { IsVisible = false; }
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         GameManager MakeGameManager(StageController stage = null)
         {
             var go = new GameObject("TestGM");
@@ -428,9 +409,7 @@ namespace Samkuk.Tests
             go.SetActive(true);
             return gm;
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void GameManager_FiresFinishedOnce_WithClearedFlag()
         {
@@ -445,9 +424,7 @@ namespace Samkuk.Tests
             Assert.IsTrue(gm.IsGameOver);
             Assert.AreEqual(0f, Time.timeScale);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void GameManager_ReportsClear()
         {
@@ -467,9 +444,7 @@ namespace Samkuk.Tests
             CollectionAssert.AreEqual(new[] { true }, results);
             Assert.IsTrue(gm.IsCleared);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         ResultController MakeResultController(GameManager gm, RunStats run, FakeResultView view, MetaApplier meta = null)
         {
             var go = new GameObject("TestResult");
@@ -481,9 +456,7 @@ namespace Samkuk.Tests
             rc.View = view;
             return rc;
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         RunStats MakeRun(int kills, float seconds, int level)
         {
             // 처치/시간/레벨을 직접 세팅하기 위해 스테이지 + 경험치를 구성한다
@@ -502,9 +475,7 @@ namespace Samkuk.Tests
             while (exp.Level < level) exp.AddExp(exp.ToNext);
             return run;
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         /// <summary>적 사망 이벤트를 흉내내기 위해 실제 적을 하나 처치한다.</summary>
         void RunStatsKill(RunStats run)
         {
@@ -522,9 +493,7 @@ namespace Samkuk.Tests
             d.maxHp = 1; d.moveSpeed = 0f; toDestroy.Add(d);
             spawner.SpawnAt(d, new Vector2(20f, 0f)).TakeDamage(10f);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Result_Defeat_SavesGoldAndRecords_AndShowsView()
         {
@@ -555,9 +524,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(20, saved.bestKills);
             Assert.IsTrue(rc.LastResult.HasValue);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Result_Clear_AddsBonus_AndCountsClear()
         {
@@ -584,7 +551,6 @@ namespace Samkuk.Tests
             SaveSystem.ResetCache();
             Assert.AreEqual(1, SaveSystem.Load().clears);
         }
-#endif
 
         // ───────────────────────── 정복 (내정에서 출진한 판) ─────────────────────────
 
@@ -596,7 +562,6 @@ namespace Samkuk.Tests
             return c;
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         /// <summary>한 판을 끝까지 돌려 결과를 얻는다 (cleared: 스테이지 클리어, 아니면 사망).</summary>
         RunResult FinishRun(bool cleared)
         {
@@ -617,9 +582,7 @@ namespace Samkuk.Tests
             else health.TakeDamage(1000f);
             return view.Last;
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Result_ClearAfterSortie_ConquersTargetCastle_AndSelectsItOnMap()
         {
@@ -645,9 +608,7 @@ namespace Samkuk.Tests
                 Samkuk.Strategy.StrategySession.LastCastleId = null;
             }
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Result_DefeatAfterSortie_DoesNotConquer()
         {
@@ -663,9 +624,7 @@ namespace Samkuk.Tests
             }
             finally { Samkuk.Core.GameSession.SortieCastle = null; }
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Result_ClearWithoutSortie_ConquersNothing()
         {
@@ -676,9 +635,7 @@ namespace Samkuk.Tests
             Assert.IsTrue(string.IsNullOrEmpty(r.castleName));
             Assert.IsEmpty(SaveSystem.Current.ownedCastleIds, "타이틀의 [시작]은 영토와 무관하다");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Result_ClearOnAlreadyOwnedCastle_IsNotConqueredAgain()
         {
@@ -693,9 +650,7 @@ namespace Samkuk.Tests
             }
             finally { Samkuk.Core.GameSession.SortieCastle = null; }
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Result_AccumulatesAcrossRuns_AndOnlyFlagsActualRecords()
         {
@@ -720,9 +675,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(50f, saved.bestSeconds, 0.001f, "기록은 갱신되지 않음");
             Assert.AreEqual(99, saved.bestKills);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Result_GoldMultiplier_FromMetaIsApplied()
         {
@@ -744,9 +697,7 @@ namespace Samkuk.Tests
 
             Assert.AreEqual(60, view.Last.goldEarned, "40 × 1.5");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Result_ButtonCallbacks_AreProvided()
         {
@@ -760,7 +711,6 @@ namespace Samkuk.Tests
             Assert.IsNotNull(view.Retry);
             Assert.IsNotNull(view.Title);
         }
-#endif
 
 #if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
@@ -823,7 +773,6 @@ namespace Samkuk.Tests
 
         // ───────────────────────── 일시정지 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         class FakePauseView : IPauseView
         {
             public int ShowCount, HideCount;
@@ -832,9 +781,7 @@ namespace Samkuk.Tests
             public void Show(Action onResume, Action onRestart, Action onTitle) { ShowCount++; Resume = onResume; IsVisible = true; }
             public void Hide() { HideCount++; IsVisible = false; }
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         PauseController MakePause(FakePauseView view, GameManager gm = null,
             HeroSelectController hero = null, LevelUpController levelUp = null)
         {
@@ -844,9 +791,7 @@ namespace Samkuk.Tests
             pc.Game = gm; pc.Hero = hero; pc.LevelUp = levelUp; pc.View = view;
             return pc;
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Pause_StopsTime_AndResumeRestoresIt()
         {
@@ -871,9 +816,7 @@ namespace Samkuk.Tests
             Assert.IsFalse(pc.IsPaused, "토글로도 계속하기");
             Assert.AreEqual(2, view.ShowCount);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Pause_NotAllowed_AfterGameEnds()
         {
@@ -888,9 +831,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(0, view.ShowCount);
             Assert.AreEqual(0f, Time.timeScale, "게임 종료 상태의 정지는 그대로");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Pause_NotAllowed_DuringHeroSelectOrLevelUp()
         {
@@ -919,16 +860,13 @@ namespace Samkuk.Tests
             hero.Choose(0);
             Assert.IsTrue(pc.CanPause, "선택이 끝나면 가능");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         class FakeHeroView : IHeroSelectView
         {
             public bool IsVisible { get; private set; }
             public void Show(IReadOnlyList<HeroData> heroes, Action<int> onChosen) { IsVisible = true; }
             public void Hide() { IsVisible = false; }
         }
-#endif
 
         // ───────────────────────── 실제 에셋 ─────────────────────────
 

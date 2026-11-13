@@ -20,36 +20,28 @@ namespace Samkuk.Tests
         /// <summary>전용 무기 1 + 공용 목록. 보유 한도 4 에서 공용은 3개까지 얻으므로 조합이 생기려면 공용이 4개 이상이어야 한다.</summary>
         const int MinCommonWeapons = 4;
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         GameObject playerGo;
-#endif
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         PlayerStats stats;
-#endif
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         PlayerHealth health;
-#endif
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         WeaponController wc;
-#endif
         readonly List<Object> toDestroy = new List<Object>();
 
         [SetUp]
         public void SetUp()
         {
             GameSession.SelectedHero = null;
-            // (미룸) playerGo = new GameObject("TestPlayer");
-            // (미룸) stats = playerGo.AddComponent<PlayerStats>();
-            // (미룸) health = playerGo.AddComponent<PlayerHealth>();
-            // (미룸) wc = playerGo.AddComponent<WeaponController>();
+            playerGo = new GameObject("TestPlayer");
+            stats = playerGo.AddComponent<PlayerStats>();
+            health = playerGo.AddComponent<PlayerHealth>();
+            wc = playerGo.AddComponent<WeaponController>();
         }
 
         [TearDown]
         public void TearDown()
         {
-            // (미룸) Time.timeScale = 1f;
+            Time.timeScale = 1f;
             GameSession.SelectedHero = null;
-            // (미룸) if (playerGo != null) Object.Destroy(playerGo);
+            if (playerGo != null) Object.Destroy(playerGo);
             foreach (var o in toDestroy) if (o != null) Object.Destroy(o);
         }
 
@@ -94,7 +86,6 @@ namespace Samkuk.Tests
 
         // ───────────────────────── 규칙 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void AllowsWeapon_EmptyOrNullList_AllowsEverything()
         {
@@ -102,9 +93,7 @@ namespace Samkuk.Tests
             Assert.IsTrue(UpgradeGenerator.AllowsWeapon(null, w));
             Assert.IsTrue(UpgradeGenerator.AllowsWeapon(new List<WeaponData>(), w));
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void AllowsWeapon_ListGiven_OnlyListedWeapons()
         {
@@ -114,9 +103,7 @@ namespace Samkuk.Tests
             Assert.IsTrue(UpgradeGenerator.AllowsWeapon(list, inList));
             Assert.IsFalse(UpgradeGenerator.AllowsWeapon(list, outside));
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Generate_WithHeroList_NewWeaponsOnlyFromList()
         {
@@ -132,9 +119,7 @@ namespace Samkuk.Tests
             Assert.IsFalse(seen.Contains(c));
             Assert.IsFalse(seen.Contains(d));
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Generate_EmptyHeroList_AllCatalogWeapons()
         {
@@ -146,9 +131,7 @@ namespace Samkuk.Tests
 
             CollectionAssert.AreEquivalent(new[] { a, b, c }, NewWeaponsIn(options));
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Generate_OwnedWeaponOutsideList_StillLevelsUp()
         {
@@ -167,9 +150,7 @@ namespace Samkuk.Tests
                 if (o.Kind == UpgradeKind.WeaponLevelUp && o.Weapon == exclusive) levelUpShown = true;
             Assert.IsTrue(levelUpShown, "전용 무기 강화가 목록 때문에 막히면 안 된다");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void LevelUpController_UsesSelectedHeroList()
         {
@@ -196,16 +177,13 @@ namespace Samkuk.Tests
             // 정리: 남은 레벨업을 전부 소비해 timeScale 복구
             while (ctrl.IsShowing) ctrl.Choose(0);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         class FakeView : UI.ILevelUpView
         {
             public bool IsVisible { get; private set; }
             public void Show(IReadOnlyList<UpgradeOption> options, System.Action<int> onChosen) => IsVisible = true;
             public void Hide() => IsVisible = false;
         }
-#endif
 
         // ───────────────────────── 에셋 검사 (셋업 결과) ─────────────────────────
 

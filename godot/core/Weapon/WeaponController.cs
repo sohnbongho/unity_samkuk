@@ -1,0 +1,157 @@
+using System.Collections.Generic;
+using Samkuk.Data;
+using Samkuk.Enemies;
+using Samkuk.Player;
+using Samkuk.Compat;
+using Samkuk.Compat.Pool;
+
+namespace Samkuk.Weapons
+{
+    /// <summary>플레이어가 보유한 무기를 관리하고 투사체 풀을 제공한다.</summary>
+    [RequireComponent(typeof(PlayerController))]
+    public class WeaponController : MonoBehaviour
+    {
+        [SerializeField] Projectile projectilePrefab;
+        [SerializeField] List<WeaponData> startingWeapons = new List<WeaponData>();
+        [SerializeField] EnemyManager enemyManager;
+
+        readonly List<Weapon> weapons = new List<Weapon>();
+        readonly HashSet<WeaponData> evolvedBases = new HashSet<WeaponData>();
+        ObjectPool<Projectile> pool;
+        PlayerController owner;
+        PlayerStats ownerStats;
+
+        public IReadOnlyList<Weapon> Weapons => weapons;
+
+        /// <summary>무기가 진화했을 때 (기본 무기, 진화 무기).</summary>
+        public event System.Action<WeaponData, WeaponData> Evolved;
+        public Projectile ProjectilePrefab { get => projectilePrefab; set => projectilePrefab = value; }
+        /// <summary>일회성 이펙트 재생기 (Awake에서 생성).</summary>
+        public WeaponFx Fx { get; private set; }
+        public EnemyManager EnemyManager
+        {
+            get => enemyManager;
+            set
+            {
+                enemyManager = value;
+                foreach (var w in weapons) w.SetEnemies(enemyManager);
+            }
+        }
+
+        void Awake()
+        {
+            owner = GetComponent<PlayerController>();
+            ownerStats = GetComponent<PlayerStats>();
+
+            // 이펙트는 월드 좌표에 고정되어야 하므로 플레이어의 자식으로 두지 않는다.
+            var fxGo = new GameObject("WeaponFx");
+            Fx = fxGo.AddComponent<WeaponFx>();
+        }
+
+        void OnDestroy()
+        {
+            if (Fx != null) Destroy(Fx.gameObject);
+        }
+
+        void Start()
+        {
+            if (enemyManager == null)
+                EnemyManager = FindAnyObjectByType<EnemyManager>();
+
+            foreach (var data in startingWeapons)
+                if (data != null) AddWeapon(data);
+        }
+
+        /// <summary>무기를 추가한다. 이미 가진 무기라면 레벨업한다.</summary>
+        public Weapon AddWeapon(WeaponData data)
+        {
+            foreach (var w in weapons)
+            {
+                if (w.Data == data)
+                {
+                    w.LevelUp();
+                    return w;
+                }
+            }
+
+            var go = new GameObject($"Weapon_{data.displayName}");
+            go.transform.SetParent(transform, false);
+
+            Weapon weapon = WeaponFactory.Attach(go, data.type);
+            if (weapon == null)
+            {
+                Destroy(go);
+                return null;
+            }
+
+            weapon.Initialize(data, this, owner.transform, ownerStats, enemyManager);
+            weapons.Add(weapon);
+            return weapon;
+        }
+
+        /// <summary>해당 무기를 현재 보유 중인가.</summary>
+        public bool Owns(WeaponData data) => Find(data) != null;
+
+        /// <summary>해당 무기가 이미 다른 무기로 진화했는가 (다시 새 무기로 나오지 않게 하는 데 사용).</summary>
+        public bool HasEvolved(WeaponData baseWeapon) => evolvedBases.Contains(baseWeapon);
+
+        Weapon Find(WeaponData data)
+        {
+            foreach (var w in weapons)
+                if (w.Data == data) return w;
+            return null;
+        }
+
+        /// <summary>
+        /// 기본 무기를 진화 무기로 교체한다. 기본 무기를 갖고 있지 않거나 진화 무기를 이미 갖고 있으면 null.
+        /// 진화 무기는 1레벨에서 시작하며 이후 다시 강화할 수 있다.
+        /// </summary>
+        public Weapon Evolve(WeaponData from, WeaponData to)
+        {
+            if (from == null || to == null || from == to) return null;
+
+            var old = Find(from);
+            if (old == null || Owns(to)) return null;
+
+            weapons.Remove(old);
+            Destroy(old.gameObject);
+            evolvedBases.Add(from);
+
+            var evolved = AddWeapon(to);
+            Evolved?.Invoke(from, to);
+            return evolved;
+        }
+
+        public void LevelUpAll()
+        {
+            foreach (var w in weapons) w.LevelUp();
+        }
+
+        // ─────────── 투사체 풀 ───────────
+
+        public Projectile GetProjectile()
+        {
+            EnsurePool();
+            return pool.Get();
+        }
+
+        public void ReleaseProjectile(Projectile p)
+        {
+            if (p == null || !p.gameObject.activeSelf) return;
+            pool.Release(p);
+        }
+
+        void EnsurePool()
+        {
+            if (pool != null) return;
+            pool = new ObjectPool<Projectile>(
+                createFunc: () => Instantiate(projectilePrefab, transform.parent),
+                actionOnGet: p => p.gameObject.SetActive(true),
+                actionOnRelease: p => p.gameObject.SetActive(false),
+                actionOnDestroy: p => { if (p != null) Destroy(p.gameObject); },
+                collectionCheck: false,
+                defaultCapacity: 64,
+                maxSize: 1000);
+        }
+    }
+}
