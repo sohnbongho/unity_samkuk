@@ -31,3 +31,5 @@ crashlytics-build.properties
 godot/.godot/
 godot/**/bin/
 godot/**/obj/
+
+__pycache__/

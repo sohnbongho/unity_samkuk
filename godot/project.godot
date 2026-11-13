@@ -6,7 +6,7 @@ config_version=5
 [application]
 
 config/name="Samkuk"
-run/main_scene="res://scenes/Boot.tscn"
+run/main_scene="res://scenes/Main.tscn"
 config/features=PackedStringArray("4.7", "C#", "Forward Plus")
 
 [dotnet]

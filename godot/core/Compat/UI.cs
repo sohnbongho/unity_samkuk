@@ -15,6 +15,8 @@ namespace Samkuk.Compat
         public Vector2 pivot = new Vector2(0.5f, 0.5f);
         public Vector2 anchoredPosition;
         public Vector2 sizeDelta = new Vector2(100f, 100f);
+        /// <summary>배치 계산 결과: 캔버스 좌표의 사각형 (왼쪽 아래 원점). <see cref="UI.UiLayout"/> 이 채운다.</summary>
+        public Rect screenRect;
 
         /// <summary>부모 사각형의 크기. 최상위(캔버스)는 기준 해상도.</summary>
         Vector2 ParentSize => parent is RectTransform p ? p.rect.size : UI.CanvasScaler.CurrentReference;
