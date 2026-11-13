@@ -98,7 +98,7 @@ namespace Samkuk.Game
             clipped = false;
             screenHeight = screen.Y;
             hits.Clear();
-            mouse = GetViewport().GetMousePosition();
+            mouse = InputFeed.OverrideMouse ?? GetViewport().GetMousePosition();   // 자동 점검의 합성 마우스가 있으면 그 자리
 
             canvases.Clear();
             foreach (var go in SceneRuntime.Objects)
@@ -266,12 +266,13 @@ namespace Samkuk.Game
                 patch.RegionRect = Textures.Region(sprite);
                 patch.TextureFilter = sprite.texture != null && sprite.texture.filterMode == FilterMode.Point ? CanvasItem.TextureFilterEnum.Nearest : CanvasItem.TextureFilterEnum.Linear;
             }
-            bool sliced = image.type == Image.Type.Sliced && sprite.border != null;
+            var border = sprite.border;
+            bool sliced = image.type == Image.Type.Sliced && (border.x > 0f || border.y > 0f || border.z > 0f || border.w > 0f);
             // 테두리(왼쪽, 아래, 오른쪽, 위)는 그림 픽셀 그대로 두고 노드를 캔버스 배율로 키운다
-            patch.PatchMarginLeft = sliced ? (int)sprite.border[0] : 0;
-            patch.PatchMarginBottom = sliced ? (int)sprite.border[1] : 0;
-            patch.PatchMarginRight = sliced ? (int)sprite.border[2] : 0;
-            patch.PatchMarginTop = sliced ? (int)sprite.border[3] : 0;
+            patch.PatchMarginLeft = sliced ? (int)border.x : 0;
+            patch.PatchMarginBottom = sliced ? (int)border.y : 0;
+            patch.PatchMarginRight = sliced ? (int)border.z : 0;
+            patch.PatchMarginTop = sliced ? (int)border.w : 0;
             var r = rect;
             if (image.preserveAspect && sprite.rect.height > 0f && r.Size.Y > 0f)
             {

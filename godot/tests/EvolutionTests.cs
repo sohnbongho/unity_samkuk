@@ -349,7 +349,6 @@ namespace Samkuk.Tests
             Assert.AreEqual(1f, Time.timeScale, "선택 후 게임 재개");
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void LevelUpUI_HighlightsEvolveCard_AndRestoresNormalColor()
         {
@@ -411,11 +410,9 @@ namespace Samkuk.Tests
             Assert.AreEqual(UiSkin.CardTint(UpgradeKind.NewWeapon), cards[0].button.targetGraphic.color, "진화가 아니면 진화색이 남지 않음");
             Assert.AreNotEqual(evolveColor, cards[0].button.targetGraphic.color);
         }
-#endif
 
         // ───────────────────────── 실제 에셋 ─────────────────────────
 
-        [Ignore("원본 데이터와 테스트가 어긋난다: 장팔사모는 찌르기로 바뀌었지만 진화형 비룡사모는 화살형 그대로다 (Step 10-9 결정). godot/PORTING.md")]
         [Test]
         public void CatalogAsset_HasWellFormedEvolutions()
         {
@@ -457,7 +454,8 @@ namespace Samkuk.Tests
                 Assert.GreaterOrEqual(evo.requiredLevel, 2);
 
                 var b = evo.baseWeapon; var e = evo.evolvedWeapon;
-                Assert.AreEqual(b.type, e.type, $"{evo.name}: 진화 후에도 같은 계열의 동작");
+                // 장팔사모(찌르기) → 비룡사모(화살형)만 계열이 바뀐다 (Step 10-9 결정: 비룡사모는 화살형 그대로)
+                if (evo.name != "Evo_SerpentSpear") Assert.AreEqual(b.type, e.type, $"{evo.name}: 진화 후에도 같은 계열의 동작");
                 Assert.Greater(e.damage, b.damage, $"{evo.name}: 진화 무기가 더 강해야 함");
                 Assert.IsFalse(string.IsNullOrEmpty(e.description), $"{evo.name}: 진화 무기 설명");
                 Assert.IsFalse(catalogNames.Contains(e.displayName), $"{evo.name}: 진화 무기 이름이 일반 무기와 겹침 ({e.displayName})");

@@ -73,7 +73,13 @@ namespace Samkuk.Compat
     }
 
     /// <summary>그림의 세계 크기 (유니티 Bounds 자리, 크기만).</summary>
-    public struct SpriteBounds { public Vector3 size; }
+    public struct SpriteBounds
+    {
+        public Vector3 size, center;
+        public Vector3 extents => size * 0.5f;
+        public Vector3 min => center - extents;
+        public Vector3 max => center + extents;
+    }
 
     /// <summary>
     /// 스프라이트: 텍스처의 한 조각 + 피벗 + 유닛당 픽셀. <see cref="rect"/> 와 <see cref="pivot"/> 은 픽셀 단위(유니티와 같음, 왼쪽 아래 기준).
@@ -86,12 +92,27 @@ namespace Samkuk.Compat
         public Vector2 pivot;
         public float pixelsPerUnit = 100f;
         public string name;
-        /// <summary>9-슬라이스 테두리(픽셀): 왼쪽, 아래, 오른쪽, 위. 없으면 null (UI 프레임 그림만 쓴다).</summary>
-        public float[] border;
+        /// <summary>9-슬라이스 테두리(픽셀): x 왼쪽, y 아래, z 오른쪽, w 위. 없으면 0 (UI 프레임 그림만 쓴다).</summary>
+        public Vector4 border;
 
         /// <summary>파일 그림이면 그 경로 (코드로 만든 그림은 null).</summary>
         public string path => texture != null ? texture.path : null;
-        public SpriteBounds bounds => new SpriteBounds { size = new Vector3(rect.width / pixelsPerUnit, rect.height / pixelsPerUnit, 0f) };
+        /// <summary>피벗을 원점으로 한 그림의 범위 (유닛).</summary>
+        public SpriteBounds bounds
+        {
+            get
+            {
+                float w = rect.width / pixelsPerUnit, h = rect.height / pixelsPerUnit;
+                return new SpriteBounds { size = new Vector3(w, h, 0f), center = new Vector3(w * 0.5f - pivot.x / pixelsPerUnit, h * 0.5f - pivot.y / pixelsPerUnit, 0f) };
+            }
+        }
+
+        public static Sprite Create(Texture2D texture, Rect rect, Vector2 pivot, float pixelsPerUnit, uint extrude, SpriteMeshType meshType, Vector4 border)
+        {
+            var s = Create(texture, rect, pivot, pixelsPerUnit, extrude, meshType);
+            s.border = border;
+            return s;
+        }
 
         /// <summary><paramref name="pivot"/> 은 0~1 비율 (유니티 Sprite.Create 와 같음).</summary>
         public static Sprite Create(Texture2D texture, Rect rect, Vector2 pivot, float pixelsPerUnit = 100f, uint extrude = 0, SpriteMeshType meshType = SpriteMeshType.Tight)

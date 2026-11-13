@@ -34,7 +34,7 @@ namespace Samkuk.Compat
     public class UniversalAdditionalCameraData : Behaviour
     {
         public bool renderPostProcessing;
-        public int volumeLayerMask = 1;
+        public LayerMask volumeLayerMask = 1;
         public int rendererIndex = -1;
         public void SetRenderer(int index) => rendererIndex = index;
     }
@@ -50,6 +50,12 @@ namespace Samkuk.Compat
     {
         public bool isActive { get; private set; }
         public void SetActive(bool active) => isActive = active;
+    }
+
+    /// <summary>전체 화면 패스 (틸트 시프트): 쓰는 재질만 든다.</summary>
+    public sealed class FullScreenPassRendererFeature : ScriptableRendererFeature
+    {
+        public Material passMaterial;
     }
 
     public sealed class ScriptableRendererData : ScriptableObject { }
@@ -192,8 +198,12 @@ namespace Samkuk.Compat
     }
 
     /// <summary>레이어 이름 ↔ 번호.</summary>
-    public static class LayerMask
+    public struct LayerMask
     {
+        public int value;
+        public static implicit operator int(LayerMask mask) => mask.value;
+        public static implicit operator LayerMask(int value) => new LayerMask { value = value };
+
         public static readonly List<string> Names = new List<string> { "Default", "TransparentFX", "Ignore Raycast", "", "Water", "UI", "", "", "Player", "Enemy", "PlayerProjectile", "Pickup" };
         public static int NameToLayer(string name) => Names.IndexOf(name);
         public static string LayerToName(int layer) => layer >= 0 && layer < Names.Count ? Names[layer] : "";

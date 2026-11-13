@@ -223,7 +223,6 @@ namespace Samkuk.Tests
             Assert.AreEqual(0.5f, SaveSystem.Load().sfxVolume, 0.0001f, "파일에 저장됨");
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Manager_GeneratedClipIsCached_AndOverrideTakesPriority()
         {
@@ -247,7 +246,6 @@ namespace Samkuk.Tests
             Assert.AreSame(custom, m.GetClip(SfxId.Hit), "오버라이드한 음원이 우선");
             Assert.AreSame(m.GetClip(SfxId.Kill), m.GetClip(SfxId.Kill), "다른 소리는 합성음 그대로");
         }
-#endif
 
         [Test]
         public void Volume_Steps_CycleAndNameThemselves()
@@ -517,7 +515,6 @@ namespace Samkuk.Tests
             Assert.GreaterOrEqual(AudioManager.Instance.GetPlayCount(SfxId.Thrust), 1, "창 찌르기 발동 시 효과음");
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator PauseAndResultButtons_PlayClick()
         {
@@ -548,6 +545,5 @@ namespace Samkuk.Tests
             Assert.IsTrue(resumed, "동작은 그대로 실행됨");
             Assert.AreEqual(1, AudioManager.Instance.GetPlayCount(SfxId.Click));
         }
-#endif
     }
 }

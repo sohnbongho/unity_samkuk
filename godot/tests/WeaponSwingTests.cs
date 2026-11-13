@@ -216,7 +216,6 @@ namespace Samkuk.Tests
             Assert.IsFalse(left.Alive, "count 2: 반대편도 함께");
         }
 
-        [Ignore("원본에서도 실패로 판단: 이 테스트가 쓰인 커밋의 코드로도, 유니티의 Mono 로도 실패한다. 프레임 순서를 흉내 낸 장면 모형 위의 결과라 유니티 에디터에서 한 번 돌려 보면 확정된다 (godot/PORTING.md 보류 테스트 판정)")]
         [UnityTest]
         public IEnumerator Slash_HeldSprite_ShowsWhileSwinging_AndHidesAfter()
         {
@@ -228,6 +227,7 @@ namespace Samkuk.Tests
             Assert.IsNotNull(slash);
 
             yield return null; // 첫 Update 에서 바로 휘두른다(쿨다운이 차 있고 적이 사거리 안)
+            yield return null; // 무기 그림은 휘두르기가 시작된 다음 Update 에서 켜진다
             Assert.IsTrue(slash.IsSwinging);
             var held = slash.HeldRenderer(0);
             Assert.IsNotNull(held, "들고 휘두르는 그림 렌더러");
@@ -366,12 +366,11 @@ namespace Samkuk.Tests
             return w;
         }
 
-        [Ignore("원본에서도 실패로 판단: 이 테스트가 쓰인 커밋의 코드로도, 유니티의 Mono 로도 실패한다. 프레임 순서를 흉내 낸 장면 모형 위의 결과라 유니티 에디터에서 한 번 돌려 보면 확정된다 (godot/PORTING.md 보류 테스트 판정)")]
         [UnityTest]
         public IEnumerator Halberd_AlternatesThrustAndSweep()
         {
             yield return null;
-            var far = spawner.SpawnAt(Tough(), new Vector2(3.0f, 0f));        // 찌르기 직선 위, 휩쓸기 원 안
+            var far = spawner.SpawnAt(Tough(), new Vector2(1.5f, 0f));        // 가장 가까운 적 = 찌르기가 향하는 쪽, 휩쓸기 원 안
             var side = spawner.SpawnAt(Tough(), new Vector2(1.2f, 1.2f));     // 직선 밖(옆), 휩쓸기 원 안
             var halberd = wc.AddWeapon(MakeHalberd(cooldown: 0.6f)) as HalberdWeapon;
             Assert.IsNotNull(halberd);
@@ -396,7 +395,6 @@ namespace Samkuk.Tests
             Assert.AreSame(WaveSprites.Arc(), halberd.TrailRenderer(0).sprite, "휩쓸기 검기는 반원");
         }
 
-        [Ignore("원본에서도 실패로 판단: 이 테스트가 쓰인 커밋의 코드로도, 유니티의 Mono 로도 실패한다. 프레임 순서를 흉내 낸 장면 모형 위의 결과라 유니티 에디터에서 한 번 돌려 보면 확정된다 (godot/PORTING.md 보류 테스트 판정)")]
         [UnityTest]
         public IEnumerator Halberd_HeldSprite_LungesWhenThrusting_AndTurnsWhenSweeping()
         {
@@ -407,6 +405,7 @@ namespace Samkuk.Tests
             var halberd = wc.AddWeapon(data) as HalberdWeapon;
 
             yield return null;
+            yield return null; // 극 그림은 찌르기가 시작된 다음 Update 에서 켜진다
             var held = halberd.HeldRenderer(0);
             Assert.IsTrue(held.enabled);
             float x0 = held.transform.position.x;
@@ -599,7 +598,6 @@ namespace Samkuk.Tests
             return w;
         }
 
-        [Ignore("원본에서도 실패로 판단: 이 테스트가 쓰인 커밋의 코드로도, 유니티의 Mono 로도 실패한다. 프레임 순서를 흉내 낸 장면 모형 위의 결과라 유니티 에디터에서 한 번 돌려 보면 확정된다 (godot/PORTING.md 보류 테스트 판정)")]
         [UnityTest]
         public IEnumerator Thrust_HeldSpear_MovesForwardAlongTheThrust_ThenHides()
         {
@@ -611,10 +609,11 @@ namespace Samkuk.Tests
             Assert.IsNotNull(thrust);
 
             yield return null;
+            yield return null; // 창 그림은 찌르기가 시작된 다음 Update 에서 켜진다
             Assert.IsTrue(thrust.IsThrusting);
             var held = thrust.HeldRenderer(0);
             Assert.IsTrue(held.enabled);
-            Assert.AreEqual(-90f, Mathf.DeltaAngle(held.transform.rotation.eulerAngles.z, 0f), 1f, "오른쪽 적을 향해 촉이 +x (각도 0 - 90)");
+            Assert.AreEqual(-90f, Mathf.DeltaAngle(0f, held.transform.rotation.eulerAngles.z), 1f, "오른쪽 적을 향해 촉이 +x (각도 0 - 90)");
             float x0 = held.transform.position.x;
 
             yield return new WaitForSeconds(0.6f * ThrustMotion.LungeEnd - 0.05f);

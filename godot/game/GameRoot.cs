@@ -125,8 +125,10 @@ namespace Samkuk.Game
 
             UpdateScreen();
             RuntimeInitializers.Run(false);
+            // 씬이 읽힐 때마다 "씬 로드 뒤" 훅을 부른다: 타이틀의 [맵 편집기]·[협동] 버튼, 맵 테스트 안내가 씬을 오갈 때마다 다시 붙는다.
+            // (유니티는 이 훅을 실행 시작 때 한 번만 불러서, 전투에서 타이틀로 돌아오면 그 버튼들이 없었다. 코드의 의도대로 고친 것이다)
+            SceneManager.sceneLoaded += (_, __) => RuntimeInitializers.Run(true);
             SceneManager.LoadScene(scene);
-            RuntimeInitializers.Run(true);
             foreach (string problem in SceneFile.Problems) GD.PushWarning("[Samkuk] 씬: " + problem);
             GD.Print($"[Samkuk] 시작: 씬 {scene}, 데이터 {GameData.Count}건, 오브젝트 {SceneRuntime.Objects.Count}");
         }
@@ -205,9 +207,9 @@ namespace Samkuk.Game
                 }
                 InputFeed.OverrideMouse = null;
                 foreach (var (at, point) in clicks)
-                    if (frames == at || frames == at + 1)
+                    if (frames >= at - 2 && frames <= at + 1)
                     {
-                        // 규칙 코드가 직접 읽는 마우스(맵 편집기)에도 같은 눌림을 넣는다
+                        // 규칙 코드가 직접 읽는 마우스(맵 편집기)에도 같은 눌림을 넣는다. 누르기 두 프레임 전부터 그 자리에 올려 둔다(UI 위인지 판정이 먼저 되도록)
                         InputFeed.OverrideMouse = point;
                         InputFeed.OverrideLeft = frames == at;
                     }

@@ -2,7 +2,7 @@
   "$type": "Samkuk.Data.TerrainTheme",
   "name": "Theme_River",
   "terrain": 3,
-  "groundTile": { "$sprite": "res://sprites/Terrain/Ground_River.png", "w": 128, "h": 128, "ppu": 32, "pivot": [0.5, 0.5] },
+  "groundTile": { "$sprite": "res://sprites/Terrain/Ground_River.png", "w": 128, "h": 128, "ppu": 32, "pivot": [0.5, 0.5], "repeat": true },
   "propsPerChunk": 8,
   "props": [
     {

@@ -268,7 +268,6 @@ namespace Samkuk.Tests
 
         // ───────────────────────── 게임 매니저 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void GameManager_ShowsClearPanel_AndPauses_OnStageCleared()
         {
@@ -295,7 +294,6 @@ namespace Samkuk.Tests
             Assert.IsTrue(panel.activeSelf);
             Assert.AreEqual(0f, Time.timeScale);
         }
-#endif
 
         // ───────────────────────── 돌진 패턴/큰 적 ─────────────────────────
 

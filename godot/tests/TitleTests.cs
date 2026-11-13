@@ -101,7 +101,6 @@ namespace Samkuk.Tests
             return go.GetComponent<Text>();
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         /// <summary>타이틀 씬과 같은 구성의 UI를 코드로 만든다 (Awake 전에 참조를 모두 연결하기 위해 비활성으로 구성).</summary>
         TitleParts BuildTitle(MetaCatalog catalog, Action<string> sceneLoader = null, Action quit = null)
         {
@@ -167,7 +166,6 @@ namespace Samkuk.Tests
             p.root.SetActive(true); // Awake / Start
             return p;
         }
-#endif
 
         // ───────────────────────── 효과 문구 / 기록 문구 ─────────────────────────
 
@@ -302,7 +300,6 @@ namespace Samkuk.Tests
 
         // ───────────────────────── 상점 UI ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator ShopUI_BuildsOneRowPerUpgrade_AndReflectsAffordability()
         {
@@ -322,9 +319,7 @@ namespace Samkuk.Tests
             StringAssert.Contains("50G", buttons[0].GetComponentInChildren<Text>().text);
             StringAssert.Contains("100", p.shopGold.text, "보유 골드 표시");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator ShopUI_ClickingBuy_PurchasesAndRefreshesEverything()
         {
@@ -354,9 +349,7 @@ namespace Samkuk.Tests
             button.onClick.Invoke(); // 최대 레벨 — 아무 일도 없어야 함
             Assert.AreEqual(50, SaveSystem.Current.gold);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator ShopUI_Bind_Twice_DoesNotDuplicateRows()
         {
@@ -371,11 +364,9 @@ namespace Samkuk.Tests
             Assert.AreEqual(2, p.shopUi.RowCount);
             Assert.AreEqual(2, p.rows.GetComponentsInChildren<Button>().Length, "다시 연결해도 행이 중복되지 않음");
         }
-#endif
 
         // ───────────────────────── 타이틀 컨트롤러 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Title_StartsOnMainPanel_AndAllReferencesAreWired()
         {
@@ -390,9 +381,7 @@ namespace Samkuk.Tests
             StringAssert.Contains("77", p.gold.text);
             Assert.AreEqual(1f, Time.timeScale);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Title_ButtonsSwitchPanels_AndCloseReturnsToMain()
         {
@@ -415,9 +404,7 @@ namespace Samkuk.Tests
             Assert.IsTrue(p.controller.IsMainVisible);
             Assert.IsFalse(p.controller.IsRecordsVisible);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Title_StartLoadsGameScene_QuitCallsQuitAction()
         {
@@ -433,9 +420,7 @@ namespace Samkuk.Tests
             p.quit.onClick.Invoke();
             Assert.AreEqual(1, quits);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Title_Reset_RequiresSecondClick_ThenWipesSave()
         {
@@ -462,9 +447,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(0, p.controller.Shop.Entries[0].Level, "상점도 초기화된 상태를 반영");
             StringAssert.Contains("0", p.gold.text);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Title_ResetConfirmation_ExpiresAfterTimeout()
         {
@@ -485,9 +468,7 @@ namespace Samkuk.Tests
             p.reset.onClick.Invoke(); // 다시 첫 클릭부터
             Assert.AreEqual(500, SaveSystem.Current.gold, "시간 초과 후의 클릭은 지우지 않음");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Title_LeavingMainPanel_CancelsPendingReset()
         {
@@ -503,7 +484,6 @@ namespace Samkuk.Tests
             Assert.IsFalse(p.controller.ResetArmed, "화면을 오가면 확인 대기가 풀림");
             Assert.AreEqual(500, SaveSystem.Current.gold);
         }
-#endif
 
         [UnityTest]
         public IEnumerator Title_MissingReferences_ReportsWhatIsNotWired()
@@ -521,7 +501,6 @@ namespace Samkuk.Tests
             Assert.AreEqual(19, missing.Count);
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Title_SoundButton_CyclesVolume_ShowsLabel_AndSaves()
         {
@@ -546,9 +525,7 @@ namespace Samkuk.Tests
             StringAssert.Contains("작게", p.soundLabel.text);
             Audio.AudioManager.DestroyInstance();
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator Title_ShakeButton_TogglesSetting_ShowsLabel_AndSaves()
         {
@@ -569,11 +546,9 @@ namespace Samkuk.Tests
             StringAssert.Contains("켬", p.shakeLabel.text);
             Audio.AudioManager.DestroyInstance();
         }
-#endif
 
         // ───────────────────────── 실제 씬 / 빌드 설정 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void BuildSettings_ListTitleFirst_ThenGame_BothEnabled()
         {
@@ -585,7 +560,6 @@ namespace Samkuk.Tests
             Assert.IsTrue(scenes[0].enabled);
             Assert.IsTrue(scenes[1].enabled);
         }
-#endif
 
         [Test]
         public void SceneNames_MatchTheSceneAssets()

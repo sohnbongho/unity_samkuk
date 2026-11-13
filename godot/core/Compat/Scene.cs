@@ -198,6 +198,17 @@ namespace Samkuk.Compat
         public T[] GetComponents<T>() where T : class => gameObject.GetComponents<T>();
         public T GetComponentInParent<T>() where T : class => gameObject.GetComponentInParent<T>();
         public bool CompareTag(string other) => gameObject.CompareTag(other);
+        /// <summary>이 오브젝트의 컴포넌트들에서 그 이름의 메서드를 찾아 부른다 (테스트가 Awake 같은 것을 직접 부를 때).</summary>
+        public void SendMessage(string method)
+        {
+            foreach (var c in gameObject.components.ToArray())
+                for (var t = c.GetType(); t != null && t != typeof(Component); t = t.BaseType)
+                {
+                    var m = t.GetMethod(method, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly, null, Type.EmptyTypes, null);
+                    if (m != null) { m.Invoke(c, null); break; }
+                }
+        }
+
         /// <summary>복제할 때 public 필드로 옮겨지지 않는 상태를 옮긴다 (내장 컴포넌트용).</summary>
         internal virtual void CopyStateFrom(Component source) { }
         public override string ToString() => $"{gameObject?.name} ({GetType().Name})";

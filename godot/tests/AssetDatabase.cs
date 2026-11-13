@@ -80,6 +80,17 @@ namespace Samkuk.Tests
 
         public static string GUIDToAssetPath(string guid) => guid;
 
+        /// <summary>데이터·그림의 예전 에셋 경로 (이름만 맞으면 되는 테스트용).</summary>
+        public static string GetAssetPath(Samkuk.Compat.Object asset)
+        {
+            // Resources 에 있던 카탈로그·테마는 그 경로로
+            if (asset is ScriptableObject so)
+                return (so is CastleCatalog || so is HeroCatalog || so is TerrainThemeCatalog || so is Samkuk.UI.UiTheme ? "Assets/Resources/" : "Assets/ScriptableObjects/") + so.name + ".asset";
+            if (asset is Sprite s && s.path != null) return "Assets/Sprites/" + s.path.Substring("res://sprites/".Length);
+            if (asset is Texture2D t && t.path != null) return "Assets/Sprites/" + t.path.Substring("res://sprites/".Length);
+            return "";
+        }
+
         static void ReadPngSize(string file, out int width, out int height)
         {
             using var f = File.OpenRead(file);

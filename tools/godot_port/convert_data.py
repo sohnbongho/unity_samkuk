@@ -71,7 +71,8 @@ def sprite_info(rel):
         pivot = ALIGN.get(align, (0.5, 0.5))
     b = imp.get('spriteBorder', {}) or {}
     border = [b.get('x', 0), b.get('y', 0), b.get('z', 0), b.get('w', 0)]
-    return w, h, ppu, pivot, border
+    repeat = (imp.get('textureSettings', {}) or {}).get('wrapU', 1) == 0   # 0 = Repeat (바닥 타일)
+    return w, h, ppu, pivot, border, repeat
 
 
 def res_path(rel):
@@ -95,11 +96,13 @@ class Converter:
         if rel.endswith('.asset'):
             return {'$ref': os.path.splitext(os.path.basename(rel))[0]}
         if rel.endswith('.png'):
-            w, h, ppu, pivot, border = sprite_info(rel)
+            w, h, ppu, pivot, border, repeat = sprite_info(rel)
             if file_id == 21300000:   # Sprite
                 out = {'$sprite': res_path(rel), 'w': w, 'h': h, 'ppu': ppu, 'pivot': [round(pivot[0], 6), round(pivot[1], 6)]}
                 if any(border):
                     out['border'] = border
+                if repeat:
+                    out['repeat'] = True
                 return out
             return {'$texture': res_path(rel), 'w': w, 'h': h}   # Texture2D (2800000)
         self.missing.add(rel)
@@ -198,10 +201,12 @@ def main():
         for name in sorted(files):
             if name.endswith('.png'):
                 rel = 'Sprites/' + os.path.relpath(os.path.join(base, name), sprites).replace(os.sep, '/')
-                w, h, ppu, pivot, border = sprite_info(rel)
+                w, h, ppu, pivot, border, repeat = sprite_info(rel)
                 entry = {'w': w, 'h': h, 'ppu': ppu, 'pivot': [round(pivot[0], 6), round(pivot[1], 6)]}
                 if any(border):
                     entry['border'] = border
+                if repeat:
+                    entry['repeat'] = True
                 index[res_path(rel)] = entry
     write_json(os.path.join(OUT_DATA, 'sprites.json'), dict(sorted(index.items())))
 

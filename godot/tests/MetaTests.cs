@@ -113,12 +113,11 @@ namespace Samkuk.Tests
             Assert.AreEqual(0, loaded.upgrades.Count);
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Save_CorruptFile_FallsBackToFreshData_WithoutThrowing()
         {
             File.WriteAllText(savePath, "{ 이건 JSON 이 아니다 ::: ");
-            Samkuk.Compat.TestTools.LogAssert.ignoreFailingMessages = true;
+            Samkuk.Compat.LogAssert.ignoreFailingMessages = true;
             try
             {
                 SaveData loaded = null;
@@ -127,10 +126,9 @@ namespace Samkuk.Tests
             }
             finally
             {
-                Samkuk.Compat.TestTools.LogAssert.ignoreFailingMessages = false;
+                Samkuk.Compat.LogAssert.ignoreFailingMessages = false;
             }
         }
-#endif
 
         [Test]
         public void Save_Sanitizes_NegativeOrBrokenValues()
@@ -712,7 +710,6 @@ namespace Samkuk.Tests
             Assert.IsNotNull(view.Title);
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void ResultUI_FormatsSummary_AndWiresButtons()
         {
@@ -769,7 +766,6 @@ namespace Samkuk.Tests
             ui.Hide();
             Assert.IsFalse(ui.IsVisible);
         }
-#endif
 
         // ───────────────────────── 일시정지 ─────────────────────────
 

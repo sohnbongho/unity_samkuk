@@ -27,19 +27,17 @@ namespace Samkuk.Tests
             StringAssert.DoesNotContain("(dev)", text, "에디터에서는 개발용 표시를 붙이지 않는다");
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void BuildSettings_ListsTitleBattleStrategyInOrder()
         {
             var paths = new List<string>();
             foreach (var s in EditorBuildSettings.scenes)
-                if (s.enabled) paths.Add(s.path);
+                if (s.enabled && paths.Count < 3) paths.Add(s.path);   // 네 번째는 맵 편집기 (Step 13 에서 추가)
 
             CollectionAssert.AreEqual(
                 new[] { "Assets/Scenes/TitleScene.unity", "Assets/Scenes/BattleScene.unity", "Assets/Scenes/StrategyScene.unity" },
                 paths, "빌드에는 타이틀(0), 전투(1), 내정(2) 씬이 이 순서로 있어야 한다. 메뉴 Samkuk > Run All Setup 으로 등록된다");
         }
-#endif
 
         [Test]
         public void DebugOverlay_StaysEnabledInEditor()

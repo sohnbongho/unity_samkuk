@@ -266,8 +266,9 @@ namespace Samkuk.Data
             if (v.TryGetProperty("pivot", out var jv) && jv.GetArrayLength() == 2) pivot = new Vector2(jv[0].GetSingle(), jv[1].GetSingle());
             var sprite = Sprite.FromFile(path, w, h, ppu, pivot);
             if (v.TryGetProperty("border", out var jb) && jb.GetArrayLength() == 4)
-                sprite.border = new[] { jb[0].GetSingle(), jb[1].GetSingle(), jb[2].GetSingle(), jb[3].GetSingle() };
+                sprite.border = new Vector4(jb[0].GetSingle(), jb[1].GetSingle(), jb[2].GetSingle(), jb[3].GetSingle());
             sprite.texture.filterMode = FilterMode.Point;   // 파일 그림은 모두 도트 규격 (PixelArt)
+            if (v.TryGetProperty("repeat", out var jr) && jr.ValueKind == JsonValueKind.True) sprite.texture.wrapMode = TextureWrapMode.Repeat;   // 바닥 타일
             sprites[path] = sprite;
             return sprite;
         }

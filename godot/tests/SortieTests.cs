@@ -134,7 +134,6 @@ namespace Samkuk.Tests
             StringAssert.DoesNotContain("퇴각", replay);
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void ResultUI_StrategyButton_ShownOnlyWhenReturnIsSet_AndInvokesIt()
         {
@@ -173,7 +172,6 @@ namespace Samkuk.Tests
             ui.Show(new RunResult(), () => { }, () => { });
             Assert.IsFalse(toStrategy.gameObject.activeSelf, "다시 성 없이 보여 주면 숨긴다");
         }
-#endif
 
         // ───────────────────────── 타이틀 시작 ─────────────────────────
 

@@ -556,7 +556,6 @@ namespace Samkuk.Tests
 
         // ───────────────────────── 레벨업 UI ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void LevelUpUI_ShowsOptionTexts_AndClickReportsIndex()
         {
@@ -612,6 +611,5 @@ namespace Samkuk.Tests
             ui.Hide();
             Assert.IsFalse(ui.IsVisible);
         }
-#endif
     }
 }

@@ -383,6 +383,24 @@ namespace Samkuk.Tests
         }
 
         [Ignore("원본에서도 실패: 엔진과 무관한 계산이고, 유니티의 Mono 로 돌려도, 이 테스트가 쓰인 커밋의 코드로 돌려도 같은 결과다. 테스트 기대를 고칠 것 (godot/PORTING.md 보류 테스트 판정)")]
+        /// <summary>자동 생성 물건(소품, 얼룩)이 radius 안에 하나도 없는 자리. 고친 칸(5,5)에서 떨어진 곳을 훑어 찾는다.</summary>
+        static Vector2 EmptySpot(TerrainMap map, float radius)
+        {
+            for (int n = 0; n < 4000; n++)
+            {
+                var candidate = new Vector2(150f + (n % 60) * 2.5f, 150f + (n / 60) * 2.5f);
+                bool clear = true;
+                var c = TerrainMap.ChunkOf(candidate);
+                for (int dy = -1; dy <= 1 && clear; dy++)
+                    for (int dx = -1; dx <= 1 && clear; dx++)
+                        foreach (var p in map.GetChunk(c.x + dx, c.y + dy))
+                            if (Vector2.Distance(p.position, candidate) < radius || Vector2.Distance(MapEditModel.VisualCenter(p), candidate) < radius) { clear = false; break; }
+                if (clear) return candidate;
+            }
+            Assert.Fail("빈 자리를 찾지 못했다");
+            return Vector2.zero;
+        }
+
         [Test]
         public void FindNearest_PrefersPropsOverPatches_AndMissesFarAway()
         {
@@ -397,10 +415,9 @@ namespace Samkuk.Tests
             Assert.IsTrue(model.TryGet(found, out var p));
             Assert.AreEqual("A", p.prop.name, "소품이 얼룩보다 먼저 잡힌다");
             Assert.AreEqual(propRef, found);
-            Assert.IsFalse(model.FindNearest(new Vector2(900f, 900f), out _));
+            Assert.IsFalse(model.FindNearest(EmptySpot(map, 3f), out _), "주변에 아무것도 없는 곳에서는 잡히지 않는다");
         }
 
-        [Ignore("원본에서도 실패: 엔진과 무관한 계산이고, 유니티의 Mono 로 돌려도, 이 테스트가 쓰인 커밋의 코드로 돌려도 같은 결과다. 테스트 기대를 고칠 것 (godot/PORTING.md 보류 테스트 판정)")]
         [Test]
         public void EraseCircle_RemovesOnlyInsideAndRespectsFilter()
         {
@@ -412,7 +429,7 @@ namespace Samkuk.Tests
             model.Add(Prop(map, "A", new Vector2(70.5f, 70.5f)));
             model.ConsumeDirtyChunks();
 
-            Assert.AreEqual(0, model.EraseCircle(new Vector2(100f, 100f), 3f), "멀면 아무것도 지우지 않고 칸도 건드리지 않는다");
+            Assert.AreEqual(0, model.EraseCircle(EmptySpot(map, 3.5f), 3f), "물건이 없는 곳에서는 아무것도 지우지 않고 칸도 건드리지 않는다");
             Assert.AreEqual(0, map.CustomChunks.Count(c => c != new Vector2Int(5, 5)));
 
             Assert.AreEqual(1, model.EraseCircle(new Vector2(65f, 65f), 3f, p => p.prop.name == "B"), "필터에 맞는 것만");

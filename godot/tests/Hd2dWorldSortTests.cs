@@ -79,7 +79,6 @@ namespace Samkuk.Tests
 
         // ───────────────────────── 걷기 시트 피벗 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void WalkSheet_PivotIsAtFeet()
         {
@@ -90,7 +89,6 @@ namespace Samkuk.Tests
             Assert.AreEqual(PixelArt.WalkFootPixels, s.pivot.y, 1e-4f, "발은 아래에서 8px");
             Assert.AreEqual(-PixelArt.WalkFootPixels / (float)PixelArt.PPU, s.bounds.min.y, 1e-4f, "트랜스폼 아래로는 발 두께만큼만 내려간다");
         }
-#endif
 
         // ───────────────────────── 드리운 그림자 ─────────────────────────
 

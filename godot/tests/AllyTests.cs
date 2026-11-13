@@ -402,7 +402,6 @@ namespace Samkuk.Tests
             public Button confirm;
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         Fixture BuildAllyUi(int cardCount)
         {
             var uiGo = new GameObject("TestAllyUI");
@@ -459,12 +458,10 @@ namespace Samkuk.Tests
             uiGo.SetActive(true);
             return f;
         }
-#endif
 
         // 카드 상태는 직렬화된 복사본이므로 UI 오브젝트에서 다시 읽는다
         static bool MarkOn(Fixture f, int i) => f.cards[i].selectedMark.activeSelf;
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void SelectUI_ShowsCandidates_TogglesAndKeepsTheLimit()
         {
@@ -499,9 +496,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(1, result.Count);
             Assert.AreEqual("조조", result[0].displayName);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void SelectUI_PreselectsPreviousAllies_AndAllowsZero()
         {
@@ -520,7 +515,6 @@ namespace Samkuk.Tests
             Assert.IsNotNull(result);
             Assert.AreEqual(0, result.Count, "0명으로도 출발할 수 있음");
         }
-#endif
 
         // ───────────────────────── 장수 선택 → 아군 선택 흐름 ─────────────────────────
 

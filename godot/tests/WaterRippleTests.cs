@@ -85,7 +85,6 @@ namespace Samkuk.Tests
             return fx;
         }
 
-        [Ignore("원본에서도 실패로 판단: 이 테스트가 쓰인 커밋의 코드로도, 유니티의 Mono 로도 실패한다. 프레임 순서를 흉내 낸 장면 모형 위의 결과라 유니티 에디터에서 한 번 돌려 보면 확정된다 (godot/PORTING.md 보류 테스트 판정)")]
         [UnityTest]
         public IEnumerator Wader_InWater_MakesRipplesAndOneSplash_ThenStopsOnLand()
         {
@@ -98,8 +97,8 @@ namespace Samkuk.Tests
             yield return null;
             Assert.AreEqual(0, fx.SplashCount, "처음부터 물 안에 있었으면 '들어간' 것이 아니다");
 
-            // 물 안에서 걷는다
-            for (int i = 0; i < 30; i++)
+            // 물 안에서 걷는다 (서 있을 때 낸 첫 물결의 다음 차례가 0.75초 뒤라 1초는 걸어야 두 번째가 나온다)
+            for (int i = 0; i < 60; i++)
             {
                 wader.transform.position += new Vector3(0.05f, 0f, 0f);
                 yield return null;

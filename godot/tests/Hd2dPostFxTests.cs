@@ -51,7 +51,6 @@ namespace Samkuk.Tests
             Assert.AreEqual(0f, PostFxPreset.Temperature(TimeOfDay.Day));
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void PostFx_CreatesGlobalVolume_WithAllFourEffects()
         {
@@ -79,7 +78,6 @@ namespace Samkuk.Tests
             Assert.IsTrue(data.renderPostProcessing);
             Assert.AreNotEqual(0, data.volumeLayerMask.value & (1 << fx.Volume.gameObject.layer), "볼륨이 카메라 마스크에 들어간다");
         }
-#endif
 
         [Test]
         public void PostFx_Toggle_TurnsCameraPostProcessingOff()

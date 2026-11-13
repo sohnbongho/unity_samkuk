@@ -44,7 +44,6 @@ namespace Samkuk.Tests
             Assert.AreEqual(TiltShiftPreset.RadiusFor(1440), mat.GetFloat(TiltShiftPreset.RadiusId), 1e-4f);
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         BattleTiltShift MakeCamera(out FullScreenPassRendererFeature feature, out Material mat)
         {
             feature = ScriptableObject.CreateInstance<FullScreenPassRendererFeature>();
@@ -61,9 +60,7 @@ namespace Samkuk.Tests
             go.SetActive(true);
             return tilt;
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void TiltShift_EnablesFeature_OnlyWhileAlive()
         {
@@ -82,9 +79,7 @@ namespace Samkuk.Tests
             tilt.gameObject.SetActive(true);
             Assert.IsTrue(feature.isActive, "돌아오면 다시 켠다");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void TiltShift_StartsOff_WhenSettingDisabled()
         {
@@ -96,9 +91,7 @@ namespace Samkuk.Tests
             tilt.gameObject.SetActive(true);
             Assert.IsFalse(feature.isActive, "꺼 둔 상태는 다시 켜질 때도 유지");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void TiltShift_Refresh_FollowsScreenHeight()
         {
@@ -106,7 +99,6 @@ namespace Samkuk.Tests
             tilt.Refresh(2160);
             Assert.AreEqual(TiltShiftPreset.RadiusFor(2160), mat.GetFloat(TiltShiftPreset.RadiusId), 1e-4f);
         }
-#endif
 
         [Test]
         public void Hd2dSettings_TiltShiftOverride_WinsOverSave()

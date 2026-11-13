@@ -52,7 +52,6 @@ namespace Samkuk.Tests
             Assert.AreEqual(1f, Vector3.Dot(rot * Vector3.up, TiltPreset.Up(TiltPreset.Pitch)), 1e-4f, "카메라 위쪽 = 서 있는 그림의 위쪽");
         }
 
-        [Ignore("원본에서도 실패: 엔진과 무관한 계산이고, 유니티의 Mono 로 돌려도, 이 테스트가 쓰인 커밋의 코드로 돌려도 같은 결과다. 테스트 기대를 고칠 것 (godot/PORTING.md 보류 테스트 판정)")]
         [Test]
         public void Preset_Up_IsPerpendicularToForward_AndRisesFromGround()
         {
@@ -62,7 +61,7 @@ namespace Samkuk.Tests
             Assert.Less(u.z, 0f, "위 = -z");
             Assert.Greater(u.y, 0f, "위는 화면에서 북쪽으로도 간다");
             Assert.Greater(f.z, 0f, "카메라는 땅을 향한다");
-            Assert.AreEqual(Vector3.forward, TiltPreset.Forward(90f), "90도면 완전 탑다운");
+            Assert.Less((Vector3.forward - TiltPreset.Forward(90f)).magnitude, 1e-5f, "90도면 완전 탑다운 (cos 90° 는 실수 계산에서 정확히 0 이 아니다)");
         }
 
         [Test]
@@ -149,7 +148,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(expected, TiltView.StandScale, 1e-4f, "수직 그림은 카메라 기울기의 1/cos 만큼 늘린다");
             Assert.AreEqual(expected, TiltView.StandScaleAt(new Vector2(0f, -5f)), 1e-4f, "직교라 화면 아래쪽도 같다");
             Assert.AreEqual(expected, TiltView.StandScaleAt(new Vector2(0f, 6f)), 1e-4f, "화면 위쪽도 같다");
-            Assert.AreEqual(TiltView.Up * (0.55f * expected), TiltView.Lift(0.55f, new Vector2(0f, -5f)));
+            Assert.Less((TiltView.Up * (0.55f * expected) - TiltView.Lift(0.55f, new Vector2(0f, -5f))).magnitude, 1e-5f, "올리는 높이도 같은 배율 (실수 계산 순서에 따라 끝자리가 다를 수 있어 거의 같으면 된다)");
             Hd2dSettings.TiltOverride = false;
             Assert.AreEqual(1f, TiltView.StandScaleAt(new Vector2(0f, -5f)), "틸트가 꺼지면 1");
         }
@@ -225,7 +224,6 @@ namespace Samkuk.Tests
             Assert.AreEqual(ShadowCastingMode.Off, sr.shadowCastingMode);
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void StandingSprite_AttachedTranslucent_StaysTranslucent_EvenWithOpaqueColor()
         {
@@ -241,7 +239,6 @@ namespace Samkuk.Tests
             Assert.IsTrue(stand.Translucent, "체력 막대 채움처럼 처음부터 반투명이면 알파 1 이어도 컷아웃으로 바뀌지 않는다 (뒷판과 깊이가 겹쳐 깜박인다)");
             Assert.AreSame(TiltView.StandingMaterial(0f, TiltPreset.OverlayToward, true), sr.sharedMaterial);
         }
-#endif
 
         [Test]
         public void StandingSprite_LiftHeight_MovesAlongBillboardUp()

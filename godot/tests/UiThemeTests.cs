@@ -40,7 +40,6 @@ namespace Samkuk.Tests
 
         // ───────────────────────── 헬퍼 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         Sprite MakeSprite(string name, int border)
         {
             var tex = new Texture2D(16, 16);
@@ -51,9 +50,7 @@ namespace Samkuk.Tests
             toDestroy.Add(sprite);
             return sprite;
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         /// <summary>스프라이트를 갖춘 테스트용 테마를 만들어 현재 테마로 쓴다.</summary>
         UiTheme UseTestTheme(bool withSprites = true)
         {
@@ -68,7 +65,6 @@ namespace Samkuk.Tests
             UiTheme.Use(t);
             return t;
         }
-#endif
 
         GameObject NewGo(string name, Transform parent, params Type[] components)
         {
@@ -119,16 +115,13 @@ namespace Samkuk.Tests
             Assert.AreSame(t, UiTheme.Get(), "한 번 불러온 테마는 캐시");
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Theme_Use_OverridesCurrentTheme()
         {
             var custom = UseTestTheme();
             Assert.AreSame(custom, UiTheme.Get());
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void ThemeAsset_ExistsWithAllSprites_AndSliceBorders()
         {
@@ -150,9 +143,7 @@ namespace Samkuk.Tests
             Assert.Greater(theme.frame.border.x, theme.frameThin.border.x, "패널 프레임이 버튼 프레임보다 두꺼움");
             Assert.AreEqual(100f, theme.frame.pixelsPerUnit, "캔버스 기본 단위(100)와 같아 테두리가 픽셀 그대로 표시됨");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void ThemeAsset_LoadsFromResources_ForRuntimeUse()
         {
@@ -161,7 +152,6 @@ namespace Samkuk.Tests
             Assert.IsNotNull(t.frame, "Resources/UiTheme.asset 을 런타임에 불러올 수 있어야 함 (Step 10-3)");
             Assert.AreEqual(ThemePath, AssetDatabase.GetAssetPath(t));
         }
-#endif
 
         // ───────────────────────── 이름 규칙 ─────────────────────────
 
@@ -179,7 +169,6 @@ namespace Samkuk.Tests
             Assert.IsFalse(UiSkin.IsCardName(null));
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void CardTint_DiffersPerKind_AndMatchesTheme()
         {
@@ -191,11 +180,9 @@ namespace Samkuk.Tests
             Assert.AreEqual(t.evolve, UiSkin.CardTint(UpgradeKind.Evolve));
             Assert.AreEqual(t.passive, UiSkin.CardTint(UpgradeKind.Passive));
         }
-#endif
 
         // ───────────────────────── 스킨 적용 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Apply_StylesEachRole_AndLeavesOthersAlone()
         {
@@ -252,9 +239,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(Color.white, cardTitle.color);
             Assert.IsNull(cardTitle.GetComponent<Shadow>());
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Apply_IsIdempotent_AndFramesNeverBlockInputOrLayout()
         {
@@ -277,9 +262,7 @@ namespace Samkuk.Tests
             Assert.IsTrue(frame.GetComponent<LayoutElement>().ignoreLayout, "레이아웃 그룹 안에서도 자리를 차지하지 않음");
             Assert.AreEqual(card.transform.childCount - 1, frame.GetSiblingIndex(), "프레임은 맨 위에 그려짐");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void Apply_WithoutSprites_StillColors_ButAddsNoFrames()
         {
@@ -296,9 +279,7 @@ namespace Samkuk.Tests
             Assert.IsNull(card.sprite);
             Assert.AreEqual(t.gold, title.color);
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void StyleButton_WithRecolorFalse_KeepsCurrentColor()
         {
@@ -313,9 +294,7 @@ namespace Samkuk.Tests
             Assert.AreEqual(original, img.color);
             Assert.IsNotNull(FrameOf(img), "프레임은 입힘");
         }
-#endif
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator SkinComponent_AppliesOnAwake_IncludingInactiveChildren()
         {
@@ -334,11 +313,9 @@ namespace Samkuk.Tests
             Assert.AreEqual(t.card, card.color);
             Assert.IsNotNull(FrameOf(card));
         }
-#endif
 
         // ───────────────────────── 상점 행 ─────────────────────────
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [UnityTest]
         public IEnumerator ShopRows_AreSkinned_AndButtonsUseThemeColors()
         {
@@ -378,6 +355,5 @@ namespace Samkuk.Tests
             Assert.AreEqual(t.disabled, ((Image)buttons[1].targetGraphic).color, "골드가 모자란 강화");
             Assert.IsNotNull(FrameOf(buttons[0].targetGraphic), "구매 버튼에도 프레임");
         }
-#endif
     }
 }

@@ -13,6 +13,10 @@ namespace Samkuk.Compat
         public Vector4(float x, float y, float z, float w) { this.x = x; this.y = y; this.z = z; this.w = w; }
         public static Vector4 zero => new Vector4(0f, 0f, 0f, 0f);
         public static implicit operator Vector4(Vector3 v) => new Vector4(v.x, v.y, v.z, 0f);
+        public static bool operator ==(Vector4 a, Vector4 b) => a.x == b.x && a.y == b.y && a.z == b.z && a.w == b.w;
+        public static bool operator !=(Vector4 a, Vector4 b) => !(a == b);
+        public override bool Equals(object obj) => obj is Vector4 v && this == v;
+        public override int GetHashCode() => HashCode.Combine(x, y, z, w);
         public static implicit operator Vector3(Vector4 v) => new Vector3(v.x, v.y, v.z);
         public override string ToString() => $"({x:F2}, {y:F2}, {z:F2}, {w:F2})";
     }
@@ -280,6 +284,8 @@ namespace Samkuk.Compat
         }
 
         public static Scene GetActiveScene() => active;
+        /// <summary>빌드 순서 i 번째 씬의 이름.</summary>
+        public static string SceneNameAt(int buildIndex) => order[buildIndex];
         public static bool CanLoad(string name) => Builders.ContainsKey(name);
 
         public static void LoadScene(string name, LoadSceneMode mode = LoadSceneMode.Single)

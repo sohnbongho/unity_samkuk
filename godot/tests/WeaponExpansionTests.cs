@@ -162,7 +162,6 @@ namespace Samkuk.Tests
             Assert.IsFalse(e.Alive, "대상이 생기면 곧바로 찌름 (쿨다운 10초지만 낭비하지 않았음)");
         }
 
-        [Ignore("원본에서도 실패로 판단: 이 테스트가 쓰인 커밋의 코드로도, 유니티의 Mono 로도 실패한다. 프레임 순서를 흉내 낸 장면 모형 위의 결과라 유니티 에디터에서 한 번 돌려 보면 확정된다 (godot/PORTING.md 보류 테스트 판정)")]
         [UnityTest]
         public IEnumerator Thrust_KnocksEnemiesAway()
         {
@@ -174,7 +173,7 @@ namespace Samkuk.Tests
             {
                 w.damage = 1f; w.range = 4f; w.size = 0.4f; w.knockback = 8f;
             }));
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(0.8f);   // 넉백 8 이 0.2 밑으로 줄려면 맞은 뒤 0.46초가 필요하다
 
             Assert.Greater(e.Position.x, 2.5f, $"넉백으로 밀려남 (x={e.Position.x})");
             Assert.AreEqual(0f, e.KnockbackVelocity.magnitude, 0.2f, "넉백은 시간이 지나면 감쇠");

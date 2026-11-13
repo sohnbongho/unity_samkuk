@@ -53,6 +53,8 @@ namespace Samkuk.Tests
                 theme.terrain = t;
                 theme.propsPerChunk = density;
                 theme.groundTile = MakeSprite();
+                theme.riverWater = MakeSprite();   // 강 그림이 있어야 강이 생긴다 (River_NeedsRiverArtInTheme)
+                theme.riverBank = MakeSprite();
                 theme.props.Add(new TerrainProp { name = "Tree", sprite = MakeSprite(), weight = 1f, standing = true, blockRadius = 0.3f });
                 toDestroy.Add(theme);
                 c.themes.Add(theme);
@@ -130,13 +132,12 @@ namespace Samkuk.Tests
             Assert.AreEqual(5, cx); Assert.AreEqual(0, cy);
         }
 
-        [Ignore("원본에서도 실패: 엔진과 무관한 계산이고, 유니티의 Mono 로 돌려도, 이 테스트가 쓰인 커밋의 코드로 돌려도 같은 결과다. 테스트 기대를 고칠 것 (godot/PORTING.md 보류 테스트 판정)")]
         [Test]
         public void Map_HeightAt_UsesCustomHeights_AndRampInterpolates()
         {
             var map = MakeOneHillMap(RampDir.South);
             Assert.AreEqual(0f, map.HeightAt(new Vector2(1f, 1f)));
-            Assert.AreEqual(1f, map.HeightAt(new Vector2(5f, 5.99f)), 1e-3f, "경사로 북쪽 끝 = 1층");
+            Assert.AreEqual(1f, map.HeightAt(new Vector2(5f, 5.99f)), 1e-2f, "경사로 북쪽 끝 = 1층 (셀의 99.5% 지점이라 0.995)");
             Assert.AreEqual(0.5f, map.HeightAt(new Vector2(5f, 5f)), 1e-5f, "경사로 가운데");
             Assert.AreEqual(0f, map.HeightAt(new Vector2(5f, 4f)), 1e-5f, "경사로 남쪽 끝 = 0층");
             Assert.AreEqual(0f, map.HeightAt(new Vector2(7f, 5f)), "옆 셀은 평지");
@@ -161,7 +162,6 @@ namespace Samkuk.Tests
             }
         }
 
-        [Ignore("원본에서도 실패: 엔진과 무관한 계산이고, 유니티의 Mono 로 돌려도, 이 테스트가 쓰인 커밋의 코드로 돌려도 같은 결과다. 테스트 기대를 고칠 것 (godot/PORTING.md 보류 테스트 판정)")]
         [Test]
         public void Auto_MountainsHaveHills_PlainsHaveFew_AndRiversStayFlat()
         {
@@ -226,7 +226,6 @@ namespace Samkuk.Tests
             Assert.Greater(ramps, 0, "산악 맵에는 경사로가 생긴다");
         }
 
-        [Ignore("원본에서도 실패: 엔진과 무관한 계산이고, 유니티의 Mono 로 돌려도, 이 테스트가 쓰인 커밋의 코드로 돌려도 같은 결과다. 테스트 기대를 고칠 것 (godot/PORTING.md 보류 테스트 판정)")]
         [Test]
         public void Auto_StarterHill_IsNearTheStart_WithARamp_AndOffTheRiver()
         {
@@ -238,7 +237,7 @@ namespace Samkuk.Tests
                 TerrainMap.CreateFreeBattle(catalog),
             })
             {
-                Assert.AreEqual(8, map.StarterHillCellCount, "6셀 언덕 + 경사로 아래 평지 1셀 (경사로 셀은 겹침)");
+                Assert.AreEqual(7, map.StarterHillCellCount, "6셀 언덕 + 경사로 아래 평지 1셀 (경사로 셀은 겹침)");
                 var ramp = map.StarterRampCenter;
                 Assert.Less(ramp.magnitude, 16f, "시작 위치에서 화면 안쪽");
                 Assert.Greater(ramp.magnitude, TerrainHeight.FlatRadius, "시작 평지 밖");

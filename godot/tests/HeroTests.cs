@@ -644,7 +644,6 @@ namespace Samkuk.Tests
             StringAssert.DoesNotContain("경험치", s);
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void HeroSelectUI_ShowsHeroInfo_AndClickReportsIndex()
         {
@@ -735,7 +734,6 @@ namespace Samkuk.Tests
             ui.Hide();
             Assert.IsFalse(ui.IsVisible);
         }
-#endif
 
         [Test]
         public void HeroSelect_Apply_KeepsArtColor_WhenHeroHasWalkSheet_AndTintsOtherwise()

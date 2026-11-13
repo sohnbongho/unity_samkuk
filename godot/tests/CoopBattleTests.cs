@@ -87,15 +87,14 @@ namespace Samkuk.Tests
             Assert.AreEqual(10f, model.LastSnapshotAt);
         }
 
-        [Ignore("원본에서도 실패: 엔진과 무관한 계산이고, 유니티의 Mono 로 돌려도, 이 테스트가 쓰인 커밋의 코드로 돌려도 같은 결과다. 테스트 기대를 고칠 것 (godot/PORTING.md 보류 테스트 판정)")]
         [Test]
         public void CoopBattleModel_Expire_HidesUnseenEnemies_KeepsFloorGems()
         {
             var model = new CoopBattleModel(0, 10);
             model.SpawnEnemy(1, "Enemy_Soldier", Vector2.zero, 0f);
-            model.SpawnEnemy(2, "Enemy_Soldier", Vector2.one, 0f);
+            model.SpawnEnemy(2, "Enemy_Soldier", Vector2.one, 1f);                  // 1초까지는 보였다가 스냅샷에서 빠진다
             model.SpawnGem(10, Vector2.zero, 1, 0f);                  // 바닥의 젬 (스냅샷에 안 담김)
-            var gem = model.SpawnGem(11, Vector2.zero, 1, 0f);
+            var gem = model.SpawnGem(11, Vector2.zero, 1, 1f);
             gem.Attracted = true;                                     // 끌려가는 중인데 스냅샷에서 빠짐
 
             var snap = Snapshot(1, 100, (0, 0, 0, 0));
@@ -105,6 +104,10 @@ namespace Samkuk.Tests
             var gone = new List<int>(); var goneGems = new List<int>();
             model.Expire(1.3f, gone, goneGems);
             Assert.IsEmpty(gone, "0.5초까지는 기다린다");
+            // 다음 스냅샷에도 적 1 만 있다: 적 2 와 끌려가던 젬은 마지막으로 본 지 0.5초가 넘어 사라진다
+            var next = Snapshot(2, 600, (0, 0, 0, 0));
+            AddEnemy(next, 1, 0, 0, 0);
+            model.Apply(next, 1.5f, null);
             model.Expire(1.6f, gone, goneGems);
             CollectionAssert.AreEqual(new[] { 2 }, gone);
             CollectionAssert.AreEqual(new[] { 11 }, goneGems);

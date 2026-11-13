@@ -592,7 +592,6 @@ namespace Samkuk.Tests
             Assert.IsTrue(ui.IsCastleVisible, "취소하면 성 화면으로 돌아온다");
         }
 
-        [Ignore("원본 문구와 테스트가 어긋난다: 화면 문구는 [공격할 수 있는 성이 없습니다] 인데 테스트는 [공격할 수 없습니다] 를 찾는다. godot/PORTING.md")]
         [UnityTest]
         public IEnumerator Ui_TargetPanel_ShowsMessage_WhenNoTargets()
         {
@@ -605,7 +604,7 @@ namespace Samkuk.Tests
             Find(ui, "SortieButton").onClick.Invoke();
 
             Assert.IsTrue(ui.IsTargetPanelVisible);
-            StringAssert.Contains("공격할 수 없습니다", ui.TargetPanelTitle);
+            StringAssert.Contains("공격할 수 있는 성이 없습니다", ui.TargetPanelTitle);
         }
 
         [UnityTest]
@@ -678,7 +677,6 @@ namespace Samkuk.Tests
             Assert.AreEqual(GameManager.StrategySceneName, loaded);
         }
 
-#if GAME_PORT   // 미룸: 아직 옮기지 않은 부분에 기댄다
         [Test]
         public void StrategyScene_ExistsAndIsInBuildSettings_AfterTitleAndGame()
         {
@@ -691,6 +689,5 @@ namespace Samkuk.Tests
             Assert.AreEqual("Assets/Scenes/TitleScene.unity", paths[0], "타이틀이 0번");
             Assert.AreEqual("Assets/Scenes/BattleScene.unity", paths[1], "전투가 1번");
         }
-#endif
     }
 }

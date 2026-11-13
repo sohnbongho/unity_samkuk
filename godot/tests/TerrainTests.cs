@@ -679,7 +679,6 @@ namespace Samkuk.Tests
             Assert.IsTrue(water.All(s => s.sortingOrder == TerrainMap.OrderWater));
         }
 
-        [Ignore("원본에서도 실패로 판단: 이 테스트가 쓰인 커밋의 코드로도, 유니티의 Mono 로도 실패한다. 프레임 순서를 흉내 낸 장면 모형 위의 결과라 유니티 에디터에서 한 번 돌려 보면 확정된다 (godot/PORTING.md 보류 테스트 판정)")]
         [UnityTest]
         public IEnumerator Spawner_ReusedPoolObjects_ResetRotationAndScale()
         {
@@ -700,6 +699,7 @@ namespace Samkuk.Tests
             {
                 bool isRiver = sr.sprite == catalog.Get(CastleTerrain.River).riverWater || sr.sprite == catalog.Get(CastleTerrain.River).riverBank;
                 if (isRiver) continue;
+                if (sr.sprite == TerrainDecals.SoftBlob) continue;   // 바닥 얼룩은 일부러 돌리고 늘여 놓는다
                 Assert.AreEqual(0f, Mathf.DeltaAngle(0f, sr.transform.localEulerAngles.z), 0.01f, "소품에 강 토막의 회전이 남아 있다");
                 Assert.Less(sr.transform.localScale.y, 2f, "소품에 강 토막의 늘임이 남아 있다");
             }
@@ -756,7 +756,6 @@ namespace Samkuk.Tests
 
         // ───────────────────────── 실제 에셋 (Step 12-6 셋업 뒤) ─────────────────────────
 
-        [Ignore("원본 데이터와 테스트가 어긋난다: 바닥 타일은 Step 14-3 에서 128x128 이 됐는데 테스트는 256 을 기대한다. godot/PORTING.md")]
         [Test]
         public void RealCatalog_HasAllTerrainsWithArt()
         {
@@ -768,14 +767,14 @@ namespace Samkuk.Tests
                 var theme = catalog.Get(terrain);
                 Assert.IsNotNull(theme, $"{terrain}: 테마가 없습니다");
                 Assert.IsNotNull(theme.groundTile, $"{terrain}: 바닥 타일이 없습니다 (tools/terrain_art/generate.ps1 후 Step 12-6)");
-                Assert.AreEqual(256f, theme.groundTile.rect.width, $"{terrain}: 바닥 타일은 256x256");
-                Assert.AreEqual(64f, theme.groundTile.pixelsPerUnit, $"{terrain}: 바닥 타일 PPU 64 (4유닛)");
+                Assert.AreEqual(128f, theme.groundTile.rect.width, $"{terrain}: 바닥 타일은 128x128 (Step 14-3 도트 규격)");
+                Assert.AreEqual(32f, theme.groundTile.pixelsPerUnit, $"{terrain}: 바닥 타일 PPU 32 (4유닛)");
                 Assert.AreEqual(TextureWrapMode.Repeat, theme.groundTile.texture.wrapMode, $"{terrain}: 바닥 타일은 Repeat");
                 Assert.GreaterOrEqual(theme.props.Count, 4, $"{terrain}: 소품이 너무 적다");
                 Assert.Greater(theme.propsPerChunk, 0f);
                 Assert.IsNotNull(theme.riverWater, $"{terrain}: 강물 그림이 없습니다 (tools/terrain_art/generate.ps1 후 Step 12-6)");
                 Assert.IsNotNull(theme.riverBank, $"{terrain}: 강둑 그림이 없습니다");
-                Assert.AreEqual(256f, theme.riverWater.rect.width, $"{terrain}: 강 토막은 256x128");
+                Assert.AreEqual(128f, theme.riverWater.rect.width, $"{terrain}: 강 토막은 128x64");
                 Assert.Greater(theme.riverWidth, 1f, $"{terrain}: 강 폭");
                 Assert.AreEqual(0.5f, theme.riverWater.pivot.y / theme.riverWater.rect.height, 0.01f, $"{terrain}: 강 토막의 피벗은 가운데");
                 foreach (var p in theme.props)

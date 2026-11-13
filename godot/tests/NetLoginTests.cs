@@ -141,7 +141,6 @@ namespace Samkuk.Tests
 
         // ───────────────────────── 로그인 흐름 ─────────────────────────
 
-        [Ignore("원본에서도 실패: 엔진과 무관한 계산이고, 유니티의 Mono 로 돌려도, 이 테스트가 쓰인 커밋의 코드로 돌려도 같은 결과다. 테스트 기대를 고칠 것 (godot/PORTING.md 보류 테스트 판정)")]
         [Test]
         public void LoginFlow_HappyPath_LoginServer_ThenGameServer_ThenKeepAlive()
         {
@@ -184,7 +183,7 @@ namespace Samkuk.Tests
             Assert.IsTrue(flow.IsOnline);
             Assert.IsFalse(flow.IsBusy);
 
-            flow.Tick(2.9f);
+            flow.Tick(2.8f);   // 접속 완료가 된 틱의 0.1초도 센다: 합쳐서 2.9초
             Assert.AreEqual(0, flow.KeepAlivesSent, "3초 전에는 아직");
             flow.Tick(0.2f);
             Assert.AreEqual(1, flow.KeepAlivesSent);
