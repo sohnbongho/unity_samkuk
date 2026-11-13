@@ -10,6 +10,46 @@
 
 ---
 
+## Godot 전환 (브랜치 `features/godot`, ADR 0004)
+
+마지막 갱신: 2026-11-13. **이 브랜치의 작업 대상은 `godot/` 다.** Unity 프로젝트를 Godot 4.7.2 .NET(C#)으로 전부 옮긴다.
+`Assets/` 등 Unity 파일은 참고 원본이라 **고치지 않는다**(Unity 쪽 개발은 `main`/`features/tilt`). 아래 "진행 상황"부터는 Unity 원본의 기록이다.
+방법·도구·확인이 필요한 것은 `godot/PORTING.md`, 결정은 `docs/adr/0004-godot-conversion.md`, 용어는 `CONTEXT.md` "Godot 전환".
+
+| 단계 | 내용 | 상태 |
+|---|---|---|
+| G0 | 브랜치, `godot/` 뼈대(프로젝트 3개: `Samkuk.Core`/`Samkuk.Game`/`Samkuk.Tests`, `project.godot`, 첫 화면 `Boot`), Godot 4.7.2 .NET 설치(`D:\01-AgentLegion\tools\godot\`, SHA512 확인), ADR 0004, 옮기는 도구 `tools/godot_port/` | 확인 대기 |
+| G1 | 순수 로직을 `godot/core` 로: 호환 층 `Samkuk.Compat`(유니티와 같은 이름의 `Vector2`/`Mathf`/`Color`/`Rect`/`Sprite`/`Texture2D`/`ScriptableObject`/`Resources`/`JsonUtility`/`Debug`), 데이터 클래스 16개, 밸런스, 지형(맵·충돌·높이·흙길·절벽 메시·맵 편집 규칙·맵 저장), 틸트·조명·그림자·후처리 수치, 협동(방·흐름·전투 모델), 네트워크(프레임·로그인 흐름·`TcpLink`·`Message.cs`), 내정 규칙, 저장, 영구 강화, 무기 동작 규칙(`SwingMotion`/`ThrustMotion`), 코드 생성 그림·소리(`CliffArt`/`PathArt`/`WaveSprites`/`SfxSynth`). 테스트 30개 파일 이전: **통과 183, 보류 24, 실패 0**, 271개는 `#if GAME_PORT` 로 미룸 | 확인 대기 |
+| G2 | 데이터·그림 변환(`.asset` 137개 → Godot 쪽 데이터, PNG 146장 복사·임포트 설정). 형식은 JSON 추천(`godot/PORTING.md`) | |
+| G3 | 전투 한 판: 이동, 적 스폰·추적, 무기 3종, 경험치·레벨업, 결과 | |
+| G4 | 틸트 화면: 직교 카메라 55°, 서 있는 그림 셰이더, 방향광 그림자, 언덕 한 덩이, 후처리 | |
+| 확인 | **화면 품질·성능을 사용자가 확인** (Forward+ 유지 여부, 적 그리기 방식) | |
+| G5 | 전투 나머지: 무기 전부·진화, 장수·스킬, 아군, 적 병과, 웨이브·보스 | |
+| G6 | 타이틀, 영구 강화, 결과, 일시정지, 소리, 타격감, UI 스킨 | |
+| G7 | 지형 전부: 소품, 강, 흙길, 절벽, 물결, 겹친 소품 반투명 | |
+| G8 | 내정(지도, 성 화면, 출진, 정복) | |
+| G9 | 맵 편집기 | |
+| G10 | 로그인, 협동 방, 협동 전투 | |
+| G11 | Windows 내보내기, Unity 와 기능 대조표 점검 | |
+
+### Godot 전환 작업 규칙
+
+- **검증은 직접 한다**: `cd godot && dotnet test tests/Samkuk.Tests.csproj`, `dotnet build Samkuk.Game.csproj`, Godot 헤드리스 실행(`godot/PORTING.md` "실행").
+  Unity 때와 달리 이 환경에서 엔진이 돈다. 화면이 어떻게 보이는지(품질, 느낌)만 사용자가 확인한다.
+- **순수 로직(`godot/core`)에는 Godot 참조를 넣지 않는다.** 엔진이 필요한 것은 `godot/game` 에 두고, 순수 로직에는 창구(`Debug.Sink`, `Resources.Loader`, `DisplaySettings.ApplyAction`)로 꽂는다.
+- 옮긴 파일은 원본과 줄 단위로 대조되게 둔다(이름·주석 유지). 유니티와 달라진 점은 `godot/PORTING.md` "유니티에서 달라진 것"에 적는다.
+- 미룬 테스트(`#if GAME_PORT`)는 지우지 않는다. 기능을 옮긴 단계에서 풀어 되살리고, 남은 수를 진행표에 적는다.
+- 탑다운 2D 경로(틸트 끔, Light2D, `CastShadow`, 월드 정렬 축, 픽셀 퍼펙트 카메라)와 에디터 셋업 스크립트는 옮기지 않는다.
+- 단계마다 사용자 확인 뒤 커밋(제목 `Godot G<n>: ...`), 이 표를 같은 커밋에서 갱신한다.
+
+### Godot 전환 알려진 이슈
+
+- **확인 필요한 테스트 10개**: 옮긴 코드에서 실패해 `[Ignore]` 로 두었다. 유니티에서도 실패하던 테스트인지, 옮기면서 달라진 것인지 가르지 못했다(유니티 Test Runner 결과가 필요). 그중 4개는 자동 생성 맵이 유니티와 다르게 나온다는 신호일 수 있다. 목록·추정은 `godot/PORTING.md` "확인 필요".
+- `.gitignore` 의 Unity 규칙(`*.csproj`, `*.sln`)에 `godot/` 예외를 두었다. `godot/.godot/`, `bin/`, `obj/` 는 제외.
+- .NET 10 SDK 의 `dotnet new sln` 은 `.slnx` 를 만든다. Godot 은 `Samkuk.Game.sln` 을 찾으므로 `--format sln` 으로 만든다.
+
+---
+
 ## 진행 상황
 
 마지막 갱신: 2026-10-25 (Step 16-3 그림(이펙트 높이·식물 세우기·흙길) 완료, Step 16-2 언덕·절벽 완료(직교 틸트 카메라·수직 그림으로 전환), Step 16-1 2.5D 틸트 시점 완료(브랜치 features/tilt, ADR 0003: 가짜 3/4 시점 → 진짜 틸트), Step 15-4 후속: 레벨업 선택자만 정지·10초 자동 부활·팀 부활 3회 완료(서버로 확인), Step 15-4 협동 전투(꼭두각시 모드) 완료(서버로 전투까지 확인), Step 15-3 협동 방(성 단위 월드 입장) 완료, Step 15-2 서버 데이터 내보내기 완료(브랜치 features/online), Step 15-1 서버 로그인 완료, Step 10-9 후속 조조 연속 베기·여포 극 완료, 무기 휘두르기(베기) 완료, Step 8-5 장수별 무기 목록 완료. Step 14 HD-2D 전환 진행 중: 14-1 조명 완료, 14-2 후처리 완료, 14-3 도트 규격 완료, 14-4 월드 정렬·그림자 완료, 14-5 틸트 시프트 완료, 후속 14-6 겹친 소품 반투명 완료. 나머지 후속은 `docs/HD2D.md` 후속 목록. 계획/결정은 `docs/HD2D.md`, 용어 `CONTEXT.md`, ADR `docs/adr/`)

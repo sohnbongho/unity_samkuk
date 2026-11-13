@@ -24,3 +24,10 @@ sysinfo.txt
 *.aab
 *.unitypackage
 crashlytics-build.properties
+
+# Godot 전환(godot/): 프로젝트 파일은 커밋한다(위의 Unity 규칙이 *.csproj, *.sln 을 무시하므로 예외)
+!godot/**/*.csproj
+!godot/*.sln
+godot/.godot/
+godot/**/bin/
+godot/**/obj/

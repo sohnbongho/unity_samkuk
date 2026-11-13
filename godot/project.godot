@@ -1,0 +1,14 @@
+; Engine configuration file.
+; 삼국지 서바이버 (Godot 전환, ADR 0004)
+
+config_version=5
+
+[application]
+
+config/name="Samkuk"
+run/main_scene="res://scenes/Boot.tscn"
+config/features=PackedStringArray("4.7", "C#", "Forward Plus")
+
+[dotnet]
+
+project/assembly_name="Samkuk.Game"

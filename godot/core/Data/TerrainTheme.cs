@@ -1,0 +1,62 @@
+using System;
+using System.Collections.Generic;
+using Samkuk.Compat;
+
+namespace Samkuk.Data
+{
+    /// <summary>맵에 흩뿌려지는 소품 하나(나무, 바위 등)의 그림과 나오는 비중.</summary>
+    [Serializable]
+    public class TerrainProp
+    {
+        public string name;
+        [Tooltip("바닥에 닿는 점이 스프라이트 피벗(아래쪽 가운데)인 그림")] public Sprite sprite;
+        [Tooltip("나올 확률 비중 (다른 소품과의 상대값)")] public float weight = 1f;
+        [Tooltip("크기 배율 범위")] public float scaleMin = 0.9f;
+        public float scaleMax = 1.2f;
+
+        [Header("보이기 (HD-2D 월드 정렬)")]
+        [Tooltip("서 있는 소품: 옆에서 본 모습이라 캐릭터를 가릴 수 있다. World 정렬 레이어에서 발 위치로 앞뒤가 정해지고 드리운 그림자가 붙으며 회전하지 않는다. 막는 소품(나무, 바위, 유르트, 배, 깃대)이 해당")] public bool standing;
+
+        [Header("이동 (지형 효과)")]
+        [Tooltip("막는 반지름(유닛, 소품 크기 배율을 곱한다). 바닥에 닿는 점이 중심. 0 이면 그대로 지나간다")] public float blockRadius;
+        [Tooltip("느려지는 범위의 반지름(유닛, 배율을 곱한다). 0 이면 없음. 연못처럼 밟으면 느려지는 것에 쓴다")] public float slowRadius;
+        [Tooltip("느려지는 범위 안에서의 속도 배율 (0.5 = 절반)")] public float slowFactor = 1f;
+
+        [Header("빛 (HD-2D 조명)")]
+        [Tooltip("소품에 붙는 점광원 색. 알파 0 이면 빛 없음. 깃발(횃불)은 따뜻한 색, 연못은 푸른색")] public Color lightColor = new Color(1f, 1f, 1f, 0f);
+        [Tooltip("점광원 바깥 반지름(유닛, 소품 크기 배율을 곱한다). 0 이면 빛 없음")] public float lightRadius;
+        [Tooltip("점광원 세기")] public float lightIntensity = 1f;
+        [Tooltip("흔들림 정도 (0 = 일정, 1 = 세기가 0~100% 사이로 일렁임). 횃불은 0.3 안팎")] [Range(0f, 1f)] public float lightFlicker;
+        [Tooltip("바닥에 닿는 점에서 빛의 중심까지 높이(유닛, 배율을 곱한다). 깃대의 횃불처럼 위에 달린 빛에 쓴다")] public float lightHeight;
+
+        /// <summary>이 소품이 이동을 막는가.</summary>
+        public bool Blocks => blockRadius > 0f;
+        /// <summary>이 소품에 점광원이 붙는가.</summary>
+        public bool HasLight => lightRadius > 0f && lightIntensity > 0f && lightColor.a > 0f;
+        /// <summary>이 소품 위에서 느려지는가 (배율이 1 미만일 때만).</summary>
+        public bool Slows => slowRadius > 0f && slowFactor > 0f && slowFactor < 1f;
+    }
+
+    /// <summary>
+    /// 한 지형(평야, 초원, 산악, 강변, 남방, 황토)의 전투 맵 구성: 바닥 타일과 흩뿌릴 소품 목록.
+    /// 성마다 같은 지형이라도 소품 비율, 밀도, 바닥 색조가 조금씩 달라진다(<c>TerrainMap</c>).
+    /// </summary>
+    [CreateAssetMenu(menuName = "Samkuk/Terrain Theme", fileName = "Theme_New")]
+    public class TerrainTheme : ScriptableObject
+    {
+        public CastleTerrain terrain;
+        [Tooltip("이어 붙여도 이음새가 없는 바닥 타일 (128x128, PPU 32 = 4유닛). 비워 두면 기본 배경 + 색 덮개")] public Sprite groundTile;
+        [Tooltip("한 칸(12x12 유닛)당 소품 평균 개수")] public float propsPerChunk = 9f;
+        public List<TerrainProp> props = new List<TerrainProp>();
+
+        [Header("강")]
+        [Tooltip("강 한 토막(물) 그림: 여러 개를 겹쳐 구불구불 흐르는 강을 만든다. 비워 두면 이 지형에는 강이 없다")] public Sprite riverWater;
+        [Tooltip("강둑: 물 밑에 더 넓게 깔리는 흙색 가장자리")] public Sprite riverBank;
+        [Tooltip("강 폭 (유닛, 성마다 +-15%)")] public float riverWidth = 3.6f;
+        [Tooltip("강물 위에서의 속도 배율 (0.5 = 절반). 1 이면 느려지지 않는다")] public float riverSlowFactor = 0.5f;
+
+        [Header("언덕 (Step 16-2)")]
+        [Tooltip("절벽 옆면 그림 (2x2 유닛 = 64x64px, 반복). 비워 두면 코드로 만든 임시 그림")] public Texture2D cliffTexture;
+        [Tooltip("흙길 띠 그림 (길이 2 x 폭 1 유닛 = 64x32px, 길이 방향 반복, 위아래 가장자리는 알파). 비워 두면 코드로 만든 임시 그림")] public Texture2D pathTexture;
+    }
+}
