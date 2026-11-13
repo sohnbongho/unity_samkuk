@@ -23,14 +23,14 @@
 | G2 | 데이터·그림 변환: 유니티 `.asset` 132건 → `godot/data/**/*.json`(`tools/godot_port/convert_data.py`, `$type`/`$ref`/`$sprite`/`$texture` 규칙), 그림 146장 → `godot/sprites/`(임포트 기본값: 무압축·밉맵 없음). 순수 로직 `GameData`(JSON → 데이터 클래스, 참조 두 번에 나눠 잇기, `Resources.Load` 창구, 문제 목록) + `IDataSource`, 화면 층 `GodotDataSource`(res://data)·`Textures`(그림 손잡이 → Godot 텍스처, 코드 그림은 픽셀 → ImageTexture), `UiTheme` 데이터 이전. 테스트 `GameDataTests` + 에셋이 필요하던 테스트 되살림(`tests/AssetDatabase.cs` 가 예전 경로를 창고로 연결): **통과 212, 보류 15, 실패 0**. Godot 헤드리스 임포트·실행으로 데이터 132건·그림 읽기 확인. **이제 데이터의 원본은 `godot/data` 의 JSON**(직접 고친다, 변환 도구를 다시 돌리면 덮어씀) | 완료 |
 | G3 | 전투 한 판. **방식(사용자 결정 + 구체화)**: 규칙이 든 컴포넌트를 엔진에서 떼어 내려고 순수 로직에 **장면 모형**(`Samkuk.Compat`: `GameObject`/`Component`/`MonoBehaviour` 수명 주기, `Transform`, `SceneRuntime.Tick`, 복제·찾기·파괴, 그림·빛·메시·UI·입력·소리의 "표시 데이터" 컴포넌트)을 두고, 유니티 런타임 스크립트 **전부**(전투·무기·적·아군·스킬·메타·UI·지형 연출·내정·맵 편집기·협동·네트워크)를 `using` 만 바꿔 `godot/core` 로 옮겼다. 프리팹 5개·씬 4개는 `tools/godot_port/convert_scenes.py` 가 `godot/data/Prefabs|Scenes/*.scene.json` 으로 옮기고 `SceneFile`/`Prefabs` 가 읽는다(씬 전환 `SceneManager.Builders`). 테스트 42개 파일 전부 이전 + `[UnityTest]` 실행기(`tests/UnityTestSupport.cs`, yield 마다 1/60초): **통과 587, 보류 25, 실패 0**, 미룬 블록 52. **화면 층**(`godot/game`): `GameRoot`(입력 → `SceneRuntime.Tick` → 비추기, 점검용 명령줄 `--scene/--frames/--shot/--press/--keys`), `WorldMirror`(SpriteRenderer → Sprite3D: 서 있는 그림은 수직·컷아웃·그림자, 바닥 그림은 눕힘, 타일 바닥, 빛, 메시, 세계 글자, 카메라), `UiMirror`(순수 로직 `UiLayout` 이 계산한 사각형대로 Label/NinePatchRect/LineEdit, 버튼 눌림 전달), `InputFeed`, `AudioOut`. 창을 띄워 찍은 화면으로 타이틀·로그인 창·장수 선택·전투(바닥·흙길·나무·연못·적·데미지 숫자·HUD) 확인 | 완료 |
 | G4 | 틸트 화면: 카메라·서 있는 그림·방향광 그림자·점광원은 G3 의 `WorldMirror` 가 규칙 코드(`BattleTiltCamera`, `StandingSprite`, `BattleLighting`)의 값을 그대로 비춘다. 여기서 더한 것: 서 있는 그림을 면 방향과 무관하게 밝힘(빛 계산을 끄고 환경광+햇빛 색을 곱함), 후처리 `ScreenFx` + `shaders/screen_fx.gdshader`(틸트 시프트 13탭 + 비네트 + 색온도, 블룸·대비·채도는 Godot 환경), 절벽·흙길 메시의 면 방향·투명 가장자리, 타일 바닥, UI 회전(내정 지도의 길), 다른 오브젝트 아래의 캔버스(맵 편집기). 점검용 명령줄 `--castle`, `--click`. 화면으로 확인: 평야 낮·산악 저녁 전투, 언덕·절벽, 내정 지도·성 화면, 맵 편집기, 타이틀 | 완료 |
-| 확인 | **화면 품질·성능을 사용자가 확인** (Forward+ 유지 여부, 적 그리기 방식). 사용자 결정(2026-11-13)으로 기다리지 않고 진행하며, 볼 것은 `godot/PORTING.md` "눈으로 확인할 것"에 모은다 | 사용자 확인 대기 |
+| 확인 | **화면 품질·성능을 사용자가 확인**: 볼 것 7가지는 `godot/PORTING.md` "눈으로 확인할 것". 수치는 유니티 원본에 맞추는 쪽으로 정했다(사용자 결정) | 사용자 확인 대기 |
 | G5 | 전투 나머지: 규칙은 G3 에서 전부 옮겨졌고(무기·진화·장수·스킬·아군·적 병과·웨이브·보스 테스트 통과) 화면으로 확인: 장수 선택 → 아군 선택 → 아군 2명 동행(체력 막대) → 검기·데미지 숫자·보석·적 화살·정예 출현 문구 → 레벨업 카드(종류별 색) → 사망 → 결과 화면(기록·골드 저장). 한 판 44초를 60 FPS 로. 아직 화면으로 못 본 것: 보스(여포), 스테이지 클리어, 진화, 스킬 이펙트, 무기 10종 각각 | 완료 (화면 일부 미확인) |
-| G6 | 타이틀·메타: 화면으로 확인 — 타이틀(로그인 창, 메인 버튼, 설정 버튼), 영구 강화 상점, 일시정지, 결과, UI 스킨(프레임·카드 색). 해상도·창 모드는 `GameRoot.ApplyDisplay` 가 실제 창에 적용, 소리는 `AudioOut` 으로 연결(들어 보지는 못함). 남은 것: 키보드로 UI 고르기(Select), 디버그 표시(FPS, F 키 안내), 리치 텍스트의 크기·색 꼬리표(상점 설명이 크게 나옴), 맵 테스트 안내 글자 | 진행 중 |
+| G6 | 타이틀·메타: 화면으로 확인 — 타이틀(로그인 창, 메인, 설정 버튼, [맵 편집기]·[협동] 버튼), 영구 강화 상점(크기·색 꼬리표는 RichTextLabel), 일시정지, 결과, UI 스킨. 해상도·창 모드는 `GameRoot.ApplyDisplay`, 소리는 `AudioOut`(들어 보지는 못함), 개발용 표시(`DebugOverlay`: FPS·F 키)와 맵 테스트 안내는 `GameRoot.SyncNotes`, 시작 훅(`RuntimeInitializers`) | 완료 |
 | G7 | 지형: 규칙은 G1·G3 에서 옮겨졌고 화면으로 확인 — 소품(서 있는 것·눕힌 것), 연못, 강(부드러운 가장자리), 흙길, 언덕·절벽, 소품 횃불. 아직 화면으로 못 본 것: 물결, 겹친 소품 반투명 | 완료 (화면 일부 미확인) |
-| G8 | 내정: 화면으로 확인 — 전략 지도(성 46곳, 길), 성 선택, [이 성에서 시작], 성 화면(배경, 인접 성, [출진]). 아직 못 본 것: 출진 → 전투 → 정복 → 지도 반영 흐름 | 진행 중 |
-| G9 | 맵 편집기: 화면이 나온다(탑다운 세계, 격자, 붓 커서, 위·왼쪽·오른쪽 패널). 남은 것: 왼쪽 패널 일부가 겹침(세로 배치 계산), 오른쪽 그림 목록의 스크롤·가리기(ScrollRect/RectMask2D 를 아직 비추지 않음), 마우스로 놓기·지우기 조작 확인 | 진행 중 |
-| G10 | 로그인·협동: 규칙·흐름은 옮겨졌고(테스트 통과) 로그인 창이 나온다. 실제 서버(csharpServer) 접속, 협동 방, 협동 전투는 확인하지 못했다 | 진행 중 |
-| G11 | Windows 내보내기, Unity 와 기능 대조표 점검 | |
+| G8 | 내정: 화면으로 확인 — 전략 지도(성 46곳, 기울인 길), 성 선택, [이 성에서 시작], 성 화면, [출진] → 대상 선택 → 전투 → 클리어 → "정복 성공" → [내정으로] → 지도에 보유 성 반영 | 완료 |
+| G9 | 맵 편집기: 패널 배치(`UiLayout` 의 최소↔선호 줄이기), 그림 목록의 스크롤·가리기(`UiMirror` 의 ClipContents 상자), 그림 고르기 → 마우스로 놓기 확인. 선택·이동·지우개·높이 도구·저장은 테스트만 통과(화면 미확인) | 완료 (화면 일부 미확인) |
+| G10 | 로그인·협동: csharpServer(LoginServer 9100, GameServer 9101)를 로컬에서 띄워 확인 — 로그인 → 게임 서버 인증 → 협동 방 입장(방장) → [시작] → 서버 시뮬레이션 전투 표시·이동(부활 남음, 타이머, 적). 2인 이상은 미확인. 점검용 `--login=아이디:비밀번호` | 완료 (1인) |
+| G11 | Windows 내보내기: `tools/godot_port/build_windows.sh` → `Builds/godot/Samkuk.exe` + `Builds/Samkuk-godot-win64.zip`(템플릿은 `tools/godot/templates`, SHA512 확인, `godot/export_presets.cfg`). 내보낸 실행 파일로 전투 확인. 유니티와 기능 대조표는 `godot/PORTING.md`. **옮기지 않은 것**: 서버 데이터 내보내기 메뉴(15-2) | 완료 |
 
 ### Godot 전환 작업 규칙
 
@@ -46,7 +46,7 @@
 
 ### Godot 전환 알려진 이슈
 
-- **확인 필요한 테스트 10개**: 옮긴 코드에서 실패해 `[Ignore]` 로 두었다. 유니티에서도 실패하던 테스트인지, 옮기면서 달라진 것인지 가르지 못했다(유니티 Test Runner 결과가 필요). 그중 4개는 자동 생성 맵이 유니티와 다르게 나온다는 신호일 수 있다. 목록·추정은 `godot/PORTING.md` "확인 필요".
+- **보류 테스트 25개**(확인 필요 19 + 원본 데이터·문구와 어긋남 6): 옮긴 코드에서 실패해 `[Ignore]` 로 두었다. 유니티에서도 실패하던 테스트인지, 옮기면서 달라진 것인지 가르지 못했다(유니티 Test Runner 결과가 필요). 그중 4개는 자동 생성 맵이 유니티와 다르게 나온다는 신호일 수 있다. 목록·추정은 `godot/PORTING.md` "확인 필요".
 - `.gitignore` 의 Unity 규칙(`*.csproj`, `*.sln`)에 `godot/` 예외를 두었다. `godot/.godot/`, `bin/`, `obj/` 는 제외.
 - .NET 10 SDK 의 `dotnet new sln` 은 `.slnx` 를 만든다. Godot 은 `Samkuk.Game.sln` 을 찾으므로 `--format sln` 으로 만든다.
 
