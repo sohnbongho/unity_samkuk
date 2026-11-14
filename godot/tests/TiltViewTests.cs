@@ -91,12 +91,14 @@ namespace Samkuk.Tests
             Assert.Greater(r.yMax, -r.yMin - TiltPreset.PerspectiveSouthMargin, "북쪽(먼 곳)이 남쪽보다 멀리 보인다");
             Assert.Greater(r.xMax, 10f, "먼 곳은 직교 때(폭 20)보다 넓게 보인다");
             Assert.AreEqual(-r.xMin, r.xMax, 1e-4f, "좌우 대칭");
-            // 바라보는 점 거리에서의 화면 반높이가 직교 때와 같다 → 주인공 둘레는 같은 크기로 보인다
+            // 화각은 직교 때의 거리에서 화면 반높이가 같아지는 값이고, 원근 카메라는 그보다 조금 더 물러나 캐릭터가 작게 보인다 (너무 멀어지지는 않게)
             float half = TiltPreset.Distance * Mathf.Tan(TiltPreset.FieldOfView * 0.5f * Mathf.Deg2Rad);
             Assert.AreEqual(TiltPreset.OrthoSize, half, 0.05f);
+            Assert.AreEqual(TiltPreset.PerspectiveDistance, TiltPreset.ViewDistance);
+            Assert.That(TiltPreset.PerspectiveDistance / TiltPreset.Distance, Is.InRange(1f, 1.5f));
 
             // 화면 위쪽 가운데 광선이 땅과 만나는 점이 북쪽 끝이다 (직접 계산해 맞춰 본다)
-            TiltPreset.CameraPose(Vector3.zero, TiltPreset.Pitch, TiltPreset.Distance, out var cam, out _);
+            TiltPreset.CameraPose(Vector3.zero, TiltPreset.Pitch, TiltPreset.ViewDistance, out var cam, out _);
             var ray = TiltPreset.Forward(TiltPreset.Pitch) + TiltPreset.Up(TiltPreset.Pitch) * Mathf.Tan(TiltPreset.FieldOfView * 0.5f * Mathf.Deg2Rad);
             float t = -cam.z / ray.z;
             Assert.AreEqual((cam + ray * t).y, r.yMax, 1e-3f);
@@ -185,7 +187,7 @@ namespace Samkuk.Tests
             TiltView.SetReady(true);
             var go = new GameObject("Cam");
             toDestroy.Add(go);
-            TiltPreset.CameraPose(new Vector3(5f, 7f, 0f), TiltPreset.Pitch, TiltPreset.Distance, out var pos, out var rot);
+            TiltPreset.CameraPose(new Vector3(5f, 7f, 0f), TiltPreset.Pitch, TiltPreset.ViewDistance, out var pos, out var rot);
             go.transform.SetPositionAndRotation(pos, rot);
             var look = TiltView.LookPoint(go.transform);
             Assert.AreEqual(5f, look.x, 1e-4f);
@@ -318,7 +320,7 @@ namespace Samkuk.Tests
 
             TiltView.SetReady(true);
             follow.SnapToTarget();
-            TiltPreset.CameraPose(new Vector3(3f, 4f, 0f), TiltPreset.Pitch, TiltPreset.Distance, out var pos, out var rot);
+            TiltPreset.CameraPose(new Vector3(3f, 4f, 0f), TiltPreset.Pitch, TiltPreset.ViewDistance, out var pos, out var rot);
             Assert.AreEqual(pos.x, camGo.transform.position.x, 1e-4f);
             Assert.AreEqual(pos.y, camGo.transform.position.y, 1e-4f);
             Assert.AreEqual(pos.z, camGo.transform.position.z, 1e-4f);

@@ -92,7 +92,7 @@ namespace Samkuk.World
         /// <summary>카메라 트랜스폼이 바라보는 땅 위의 점 (z = 0). 틸트가 꺼져 있으면 카메라 위치 그대로(z 만 0).</summary>
         public static Vector3 LookPoint(Transform camera)
         {
-            Vector3 p = Active ? camera.position + Forward * TiltPreset.Distance : camera.position;
+            Vector3 p = Active ? camera.position + Forward * TiltPreset.ViewDistance : camera.position;
             return new Vector3(p.x, p.y, 0f);
         }
 

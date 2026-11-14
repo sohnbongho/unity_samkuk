@@ -25,8 +25,15 @@ namespace Samkuk.World
         /// </summary>
         public static bool Perspective = true;
         /// <summary>원근 카메라의 세로 화각(도). 바라보는 점에서 <see cref="Distance"/> 떨어진 화면 반높이가 직교 때와 같은 <see cref="OrthoSize"/> 가 되는 값
-        /// (2 x atan(5.625 / 19) ≈ 33°) — 주인공 둘레의 크기는 직교 때와 같다.</summary>
+        /// (2 x atan(5.625 / 19) ≈ 33°). 실제로는 <see cref="PerspectiveDistance"/> 만큼 더 물러나 그보다 작게 보인다.</summary>
         public const float FieldOfView = 33f;
+        /// <summary>
+        /// 원근 카메라가 바라보는 점에서 물러나는 거리(유닛). <see cref="Distance"/>(19)면 주인공 둘레가 직교 때와 같은 크기인데
+        /// 3D 모델은 그 크기에서 너무 커 보여(사용자 피드백) 조금 더 물러난다: 캐릭터가 19 / 23 ≈ 0.83배로 보이고 그만큼 넓게 보인다.
+        /// </summary>
+        public const float PerspectiveDistance = 23f;
+        /// <summary>지금 카메라가 물러나는 거리: 원근이면 <see cref="PerspectiveDistance"/>, 직교면 <see cref="Distance"/>.</summary>
+        public static float ViewDistance => Perspective ? PerspectiveDistance : Distance;
         /// <summary>원근일 때 보이는 땅 범위의 남쪽 여유(유닛): 화면 아래 바깥의 키 큰 것(나무)의 윗부분이 화면 안으로 솟는다.</summary>
         public const float PerspectiveSouthMargin = 2.5f;
         public const float Near = 0.3f, Far = 100f;
@@ -92,7 +99,7 @@ namespace Samkuk.World
         /// </summary>
         public static Rect GroundFootprint(float pitchDeg, float orthoSize, float aspect)
         {
-            if (Perspective) return PerspectiveFootprint(pitchDeg, FieldOfView, Distance, aspect);
+            if (Perspective) return PerspectiveFootprint(pitchDeg, FieldOfView, PerspectiveDistance, aspect);
             float halfW = orthoSize * aspect;
             float halfH = orthoSize / Mathf.Max(0.1f, Mathf.Sin(pitchDeg * Mathf.Deg2Rad));
             return Rect.MinMaxRect(-halfW, -halfH, halfW, halfH);
