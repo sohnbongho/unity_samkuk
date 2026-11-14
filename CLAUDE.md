@@ -12,7 +12,7 @@
 
 ## Godot 전환 (브랜치 `features/godot`, ADR 0004)
 
-마지막 갱신: 2026-11-13. **이 브랜치의 작업 대상은 `godot/` 다.** Unity 프로젝트를 Godot 4.7.2 .NET(C#)으로 전부 옮긴다.
+마지막 갱신: 2026-11-14. **이 브랜치의 작업 대상은 `godot/` 다.** Unity 프로젝트를 Godot 4.7.2 .NET(C#)으로 전부 옮긴다.
 `Assets/` 등 Unity 파일은 참고 원본이라 **고치지 않는다**(Unity 쪽 개발은 `main`/`features/tilt`). 아래 "진행 상황"부터는 Unity 원본의 기록이다.
 방법·도구·확인이 필요한 것은 `godot/PORTING.md`, 결정은 `docs/adr/0004-godot-conversion.md`, 용어는 `CONTEXT.md` "Godot 전환".
 
@@ -34,6 +34,7 @@
 | G12 | 3D 전환 1단계 — 로우폴리 모델: 서 있는 도트 그림(장수·아군·적·지형 소품)을 화면 층이 로우폴리 3D 모델로 바꿔 그린다. **규칙 코드는 그대로**(규칙은 여전히 걷기 시트 칸을 `SpriteRenderer` 에 넣고, `ModelMirror` 가 그림 파일 이름으로 모델을 고르고 칸의 줄·움직인 방향으로 몸을 돌리고 움직인 거리로 다리를 흔든다). 모델은 코드로 만든 임시 모델(`LowPolyMesh`: 사람·말 탄 사람·소품 14종, 색은 그림에서 뽑음), 모델 종류마다 MultiMesh 하나로 인스턴싱(`shaders/lowpoly.gdshader`: 꼭짓점 셰이더 걷기, 점묘 반투명, 반 램버트). 적 500 에서 120 FPS(도트 그림 114). 끄기: `--sprites`. 구매한 번들 모델은 디스크에서 찾지 못해 연결하지 않음 | 완료 |
 | G13 | 3D 전환 2단계 — 원근(쿼터뷰) 카메라: `TiltPreset.Perspective`(기본 켬)·`FieldOfView` 33°(거리 19 에서 화면 반높이가 직교 때와 같음), `PerspectiveFootprint`(사다리꼴로 보이는 땅을 감싼 사각형: 소품 범위·적 스폰 링이 이것을 따른다, 스폰 반지름 12.1 → 15.3), `BattleTiltCamera`·`WorldMirror.SyncCamera`. 화면으로 확인: 평야·산악(절벽·아군·말 탄 적). 비교용 `--ortho`. 테스트 `Preset_PerspectiveFootprint_...`. 설명 `godot/PORTING.md` "3D 전환" | 완료 |
 | G14 | 3D 전환 3단계 — 무기·탄환·이펙트: 손에 든 무기(검·창·언월도·극), 화살, 적 탄환, 회전 칼날, 경험치 보석, 검기(초승달·쐐기), 충격 고리, 번개 줄기, 불길, 타격 입자를 3D 메시로(`ModelMirror.TryDrawEffect` 가 그림의 역할을 이름·정렬 레이어·그림 파일로 가린다, `LowPolyMesh`, `shaders/lowpoly_fx.gdshader`). 규칙 코드·테스트는 그대로. 체력 막대·데미지 숫자·물결·바닥 얼룩은 그대로 둠. 화면으로 확인(무기 8종을 준 전투). 적 500 + 무기 8종: 3D 113~117 FPS / 예전 화면 79 FPS. 점검용 `--give`, `--shot-every`, `--dump-sprites` | 완료 |
+| G15 | 3D 전환 마무리: `--dump-sprites` 가 그림마다 3D/2D 를 적게 해 남은 도트 그림을 찾아 메움 — 반투명 재질이 된 서 있는 그림(흐려진 소품, 무적 깜빡임, 쓰러진 아군)도 모델로(점묘 반투명), 협동 전투의 손에 든 무기(`P#Held`)도 무기 모델로(서버로는 미확인), 걷기 시트 없는 주인공 기본 그림도 사람 모델로. 일부러 둔 것: 물결·바닥 얼룩·연못·강·체력 막대·데미지 숫자. **타이틀 [3D 화면] 버튼**(`core/UI/View3dButton.cs`, 타이틀이 읽힐 때 코드로 붙음, `SaveData.view3d`/`Hd2dSettings.View3d`): 켬 = 로우폴리 모델 + 원근 카메라, 끔 = 도트 그림 + 직교 카메라, 다음 전투부터 적용(규칙은 읽지 않고 `GameRoot` 가 `WorldMirror.Models3D`·`TiltPreset.Perspective` 에 넣는다). 화면으로 확인(버튼, 켬·끔 전투). 테스트 `View3dButtonTests`. 번들 모델 연결·공격 자세는 따로 | 완료 |
 
 ### Godot 전환 작업 규칙
 
@@ -49,7 +50,7 @@
 
 ### Godot 전환 알려진 이슈
 
-- **테스트**: `dotnet test` 통과 658, 보류 4, 실패 0, 미룬 것 0. 보류 4개는 밸런스(타격감 집중 기간의 적 수 때문에 일부러 범위 밖, 원본과 같은 상태). 유니티 원본에서도 실패하던 테스트 21개는 유니티의 Mono 로 실행(`mono_check.sh`)·테스트가 쓰인 커밋의 코드로 실행(`old_snapshot.sh`)해 원래 실패하던 것임을 확인한 뒤 **`godot/tests` 에서 기대를 코드에 맞게 고쳤다**(유니티 원본의 테스트는 그대로). 목록과 이유는 `godot/PORTING.md` "유니티 원본과 달라진 테스트".
+- **테스트**: `dotnet test` 통과 662, 보류 4, 실패 0, 미룬 것 0. 보류 4개는 밸런스(타격감 집중 기간의 적 수 때문에 일부러 범위 밖, 원본과 같은 상태). 유니티 원본에서도 실패하던 테스트 21개는 유니티의 Mono 로 실행(`mono_check.sh`)·테스트가 쓰인 커밋의 코드로 실행(`old_snapshot.sh`)해 원래 실패하던 것임을 확인한 뒤 **`godot/tests` 에서 기대를 코드에 맞게 고쳤다**(유니티 원본의 테스트는 그대로). 목록과 이유는 `godot/PORTING.md` "유니티 원본과 달라진 테스트".
 - **유니티 원본의 잠재 버그 두 가지를 Godot 판에서 고쳤다**: 씬 로드 뒤 훅이 한 번만 불려 타이틀로 돌아오면 [맵 편집기]·[협동] 버튼이 없고 시험 전투에 M 키 안내가 붙지 않던 것(`GameRoot` 가 씬마다 부른다). 유니티 쪽에도 같은 문제가 있을 것이다(확인하지 못함).
 - `.gitignore` 의 Unity 규칙(`*.csproj`, `*.sln`)에 `godot/` 예외를 두었다. `godot/.godot/`, `bin/`, `obj/` 는 제외.
 - .NET 10 SDK 의 `dotnet new sln` 은 `.slnx` 를 만든다. Godot 은 `Samkuk.Game.sln` 을 찾으므로 `--format sln` 으로 만든다.

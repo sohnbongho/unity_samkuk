@@ -44,6 +44,7 @@ namespace Samkuk.Game
         readonly List<(string key, int from, int to)> holds = new List<(string, int, int)>();   // --hold=s:100-160;d:160-180 (그 프레임 구간 동안 누름)
         readonly List<(int frame, Godot.Vector2 at)> clicks = new List<(int, Godot.Vector2)>();   // --click=40:640,360 (그 프레임에 그 화면 점을 누르고 다음 프레임에 뗀다)
         bool failed;
+        bool forceSprites, forceOrtho;   // --sprites, --ortho: 저장 설정([3D 화면])과 무관하게 끈다
 
         public override void _Ready()
         {
@@ -121,11 +122,11 @@ namespace Samkuk.Game
                 else if (arg.StartsWith("--login=")) autoLogin = arg.Substring(8).Split(':');   // --login=아이디:비밀번호 (20번째 프레임에 로그인)
                 else if (arg.StartsWith("--save=")) Samkuk.Meta.SaveSystem.PathOverride = arg.Substring(7);   // 점검이 실제 저장을 건드리지 않게
                 else if (arg.StartsWith("--watch-coop=")) watchCoop = arg.Substring(13);   // 협동 전투의 상태(레벨·선택 중·사망·결과 창)가 바뀔 때마다 기록하고 화면을 저장한다 (파일 이름 머리)
-                else if (arg == "--ortho") Samkuk.World.TiltPreset.Perspective = false;   // 원근 대신 예전 직교 카메라 (비교용)
+                else if (arg == "--ortho") forceOrtho = true;   // 원근 대신 예전 직교 카메라 (비교용)
                 else if (arg.StartsWith("--shot-every=")) { var se = arg.Substring(13).Split(':', 2); shotEvery = int.Parse(se[0]); shotEveryPrefix = se[1]; }   // N 프레임마다 화면 저장 (파일 머리)
                 else if (arg.StartsWith("--give=")) give = arg.Substring(7);   // --give=120:Weapon_Bow,Weapon_Lightning (그 프레임에 주인공에게 무기를 준다 — 이펙트 점검용)
                 else if (arg == "--dump-sprites") WorldMirror.DumpKinds = new HashSet<string>();   // 끝낼 때 화면에 나왔던 그림 종류를 적는다
-                else if (arg == "--sprites") WorldMirror.Models3D = false;   // 3D 모델 대신 예전 도트 그림으로 (비교용)
+                else if (arg == "--sprites") forceSprites = true;   // 3D 모델 대신 예전 도트 그림으로 (비교용)
                 else if (arg == "--smoke") quitAfter = 120;
             }
 
@@ -246,6 +247,10 @@ namespace Samkuk.Game
                 foreach (var (at, key) in presses) if (frames == at || frames == at + 1) down.Add(key);
                 foreach (var (key, from, to) in holds) if (frames >= from && frames <= to) down.Add(key);
                 InputFeed.Poll(GetViewport(), down);
+                // 타이틀의 [3D 화면]: 켜면 로우폴리 모델 + 원근 카메라, 끄면 도트 그림 + 직교 카메라. 전투 카메라가 만들어질 때 읽히므로 다음 전투부터 바뀐다
+                bool view3d = Samkuk.Core.Hd2dSettings.View3d;
+                WorldMirror.Models3D = view3d && !forceSprites;
+                Samkuk.World.TiltPreset.Perspective = view3d && !forceOrtho;
                 SceneRuntime.Tick((float)Math.Min(delta, 0.1));   // 창을 끌거나 멈췄다 돌아와도 한 번에 너무 멀리 가지 않게
                 world.Sync();
                 screenFx.Sync(world.Environment, GetViewport().GetVisibleRect().Size.Y);

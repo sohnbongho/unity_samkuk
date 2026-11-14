@@ -43,6 +43,8 @@ namespace Samkuk.Meta
         public bool hd2dTiltShift = true;
         // 2.5D 틸트(Step 16-1): 원근 카메라로 비스듬히 내려다보고, 캐릭터·소품은 서 있는 그림, 3D 빛과 진짜 그림자
         public bool hd2dTilt = true;
+        // Godot 판 3D 전환(G12~G15): 전투를 로우폴리 3D 모델 + 원근 카메라로 그린다. 끄면 도트 그림 + 직교 카메라 (화면 층만 읽는다)
+        public bool view3d = true;
 
         // 내정: 시작할 때 고른 "내 성" (CastleData.id, 비어 있으면 아직 고르지 않음)
         public string homeCastleId;

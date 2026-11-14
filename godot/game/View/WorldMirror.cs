@@ -55,7 +55,7 @@ namespace Samkuk.Game
         ModelMirror models;
         int frame;
 
-        /// <summary>서 있는 도트 그림(캐릭터·적·소품)을 로우폴리 3D 모델로 그린다 (3D 전환 1단계). 끄면 예전 도트 그림 (점검용 --sprites, F11).</summary>
+        /// <summary>서 있는 도트 그림(캐릭터·적·소품)을 로우폴리 3D 모델로 그린다 (3D 전환 1단계). 끄면 예전 도트 그림 (타이틀 [3D 화면], 점검용 --sprites).</summary>
         public static bool Models3D = true;
         /// <summary>점검용 (--dump-sprites): 화면에 나온 그림의 종류를 모은다.</summary>
         public static HashSet<string> DumpKinds;
@@ -194,11 +194,12 @@ namespace Samkuk.Game
             }
             if (tiled.TryGetValue(sr, out var oldTiled)) oldTiled.node.Visible = false;
 
+            string dumpKind = null;
             if (DumpKinds != null)
             {
                 var m0 = sr.sharedMaterial;
                 string kind = $"{sr.gameObject.name} | sprite={sprite.name} tex={(sprite.path ?? sprite.texture?.name)} {sprite.rect.width}x{sprite.rect.height} ppu{sprite.pixelsPerUnit} | layer={sr.sortingLayerName} stand={(m0 != null && m0.shader != null && m0.shader.name == TiltView.ShaderName && m0.GetFloat(StandId) > 0.5f)} parent={(sr.transform.parent != null ? sr.transform.parent.name : "-")}";
-                DumpKinds.Add(kind);
+                dumpKind = kind;
             }
             node.Visible = true;
             if (node.Texture != texture) node.Texture = texture;
@@ -227,7 +228,7 @@ namespace Samkuk.Game
             {
                 bool cutout = material.renderQueue < (int)RenderQueue.Transparent;
                 // 3D 모델로 바꿔 그리는 그림(캐릭터·적·소품): 도트 그림은 숨기고 인스턴스 하나를 더한다
-                if (Models3D && ((cutout && models.TryDraw(sr, sprite)) || models.TryDrawEffect(sr, sprite))) { node.Visible = false; return true; }   // 손에 든 무기는 반투명 재질일 수도 있다
+                if (Models3D && (models.TryDraw(sr, sprite) || models.TryDrawEffect(sr, sprite))) { node.Visible = false; if (dumpKind != null) DumpKinds.Add("3D " + dumpKind); return true; }   // 반투명 재질(흐려진 소품, 무적 깜빡임, 쓰러진 아군)도 모델로: 불투명도는 점묘로 그린다
                 float stretch = material.GetFloat(StretchId) > 0f ? material.GetFloat(StretchId) : 1f;
                 float vertical = scale.y * standScale * stretch;
                 float lift = material.GetFloat(FootLiftId) * vertical;
@@ -242,6 +243,8 @@ namespace Samkuk.Game
             {
                 // 탄환·보석·이펙트: 3D 메시로 그렸다 (3D 전환 3단계)
                 node.Visible = false;
+                if (dumpKind != null) DumpKinds.Add("3D " + dumpKind);
+                return true;
             }
             else
             {
@@ -262,6 +265,7 @@ namespace Samkuk.Game
                     node.RenderPriority = priority;
                 }
             }
+            if (dumpKind != null) DumpKinds.Add("2D " + dumpKind);
             return true;
         }
 

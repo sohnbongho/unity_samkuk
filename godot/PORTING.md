@@ -91,7 +91,7 @@ GODOT=/d/01-AgentLegion/tools/godot/Godot_v4.7.2-stable_mono_win64/Godot_v4.7.2-
 
 ## 테스트 현황
 
-`dotnet test`: **통과 658, 보류 4, 실패 0, 미룬 것 0**. 유니티 PlayMode 테스트 42개 파일의 테스트가 전부 돈다(+ Godot 판에서 더한 `GameDataTests`, `ServerDataExporterTests`).
+`dotnet test`: **통과 662, 보류 4, 실패 0, 미룬 것 0**. 유니티 PlayMode 테스트 42개 파일의 테스트가 전부 돈다(+ Godot 판에서 더한 `GameDataTests`, `ServerDataExporterTests`, `View3dButtonTests`).
 유니티의 Mono 런타임으로 돌려도 같다(`tools/godot_port/mono_check.sh`: 보류 4개와, 작업 폴더에 `Assets/` 가 없어 실패하는 `SceneNames_MatchTheSceneAssets` 만 실패).
 
 테스트 도우미(`godot/tests`): `UnityTestSupport.cs`(프레임을 넘기는 `[UnityTest]`, 입력 흉내, 테스트 사이 프레임 경계), `AssetDatabase.cs`(예전 에셋 경로 → 데이터 창고·프리팹),
@@ -174,7 +174,7 @@ tools/godot_port/build_windows.sh     # Builds/godot/Samkuk.exe + Builds/Samkuk-
 | Windows 빌드 (11) | — | 화면 | `tools/godot_port/build_windows.sh` |
 | 디버그 키 F1~F10 | — | 화면 | F7(도트 격자)·F10(틸트 끄기)은 값만 바뀌고 화면은 그대로 |
 
-## 3D 전환 (G12~G14)
+## 3D 전환 (G12~G15)
 
 도트 2.5D 에서 로우폴리 3D 로 가는 단계. **규칙 코드(`godot/core`)의 전투 규칙은 바꾸지 않았다**: 이동·충돌·무기 판정·적 AI 는 여전히 평면(x, y) + 언덕 층이다.
 
@@ -183,6 +183,7 @@ tools/godot_port/build_windows.sh     # Builds/godot/Samkuk.exe + Builds/Samkuk-
 | 1 (G12) | 서 있는 도트 그림(장수·아군·적·지형 소품)을 로우폴리 3D 모델로 바꿔 그린다 | `game/View/ModelMirror.cs`, `game/View/LowPolyMesh.cs`, `shaders/lowpoly.gdshader` |
 | 2 (G13) | 전투 카메라를 기울인 직교에서 **원근(쿼터뷰)** 으로 | `core/World/TiltPreset.cs`(`Perspective`, `FieldOfView`, `PerspectiveFootprint`), `BattleTiltCamera`, `WorldMirror.SyncCamera` |
 | 3 (G14) | 손에 든 무기·탄환·보석·이펙트를 3D 모델·3D 이펙트 메시로 | `ModelMirror.TryDrawEffect`, `LowPolyMesh`(무기 4종, 화살, 보석, 칼날, 고리, 검기, 번개, 불길), `shaders/lowpoly_fx.gdshader` |
+| 4 (G15) | 도트 그림으로 떨어지던 경우를 메우고, 타이틀에 **[3D 화면]** 버튼 | `WorldMirror.SyncSprite`, `ModelMirror.RoleOf`, `core/UI/View3dButton.cs`, `SaveData.view3d`, `Hd2dSettings.View3d` |
 
 **모델로 바꾸는 방법 (1단계)**. 규칙 코드는 예전처럼 `SpriteRenderer` 에 걷기 시트의 칸을 넣는다. 화면 층이 그 그림의 **파일 이름**으로 모델을 고른다
 (`HeroWalk/*`, `EnemyWalk/*` = 사람 또는 말 탄 사람, `Terrain/Prop_*` = 소품 14종. 손에 든 무기·이펙트·체력 막대·데미지 숫자는 도트 그림 그대로).
@@ -212,8 +213,15 @@ tools/godot_port/build_windows.sh     # Builds/godot/Samkuk.exe + Builds/Samkuk-
   그대로 둔 것: 체력 막대·데미지 숫자(화면 위 표시), 물결(물 표면의 고리), 바닥 얼룩, 연못·강.
   빛나는 이펙트는 `lowpoly_fx`(빛을 받지 않음, 반투명), 무기·화살·보석·입자는 `lowpoly`(빛·그림자). 모두 종류마다 MultiMesh 한 묶음이다.
   성능(적 500 + 무기 8종, 1280x720, 수직 동기 끔, 이 PC): 3D 113~117 FPS / 예전 화면(`--sprites --ortho`) 79 FPS — 그림 한 장이 노드 하나이던 것이 묶음이 되어 오히려 빠르다.
-- 끄고 비교: `--sprites`(도트 그림), `--ortho`(직교 카메라). 둘 다 붙이면 G11 까지의 화면이다.
-- 남은 것: 모델·이펙트가 모두 코드로 만든 임시 모양, 걷기 말고는 동작(공격 자세, 쓰러짐)이 없음, 맵 편집기·내정은 2D 그대로, 타이틀에 켜고 끄는 버튼 없음.
+- **마무리 (4단계, G15)**. `--dump-sprites` 가 이제 그림마다 `3D`/`2D` 를 붙여 적는다. 장수 5명 × 무기·진화 무기 전부로 돌려 남은 것을 찾아 메웠다:
+  - 반투명 재질이 된 서 있는 그림(주인공 앞을 가려 흐려진 소품, 무적 깜빡임, 쓰러진 아군)이 그동안 도트 그림으로 되돌아갔다 → 모델로 그리고 불투명도는 점묘로.
+  - 협동 전투의 손에 든 무기(`P#Held`)가 이름 규칙(`Held#`)에 안 맞아 도트 그림이었다 → 무기 모델로(서버를 띄워 화면으로 확인하지는 못함).
+  - 걷기 시트가 없는 주인공 기본 그림(`Player.png`, 장수를 고르기 전)도 사람 모델로.
+  - 지금 전투에서 도트·납작한 그림으로 남은 것은 일부러 둔 것뿐이다: 물결, 바닥 얼룩, 연못·강(땅의 그림), 체력 막대, 데미지 숫자.
+- **타이틀 [3D 화면] 버튼**: 왼쪽 설정 줄 맨 아래(`View3dButton`, 씬 파일을 고치지 않고 타이틀이 읽힐 때 코드로 붙는다). 켬 = 로우폴리 모델 + 원근 카메라, 끔 = 도트 그림 + 직교 카메라(G11 까지의 화면). `SaveData.view3d` 에 저장되고 다음 전투부터 적용된다.
+  규칙 코드는 이 값을 읽지 않는다: `GameRoot` 가 프레임마다 `WorldMirror.Models3D` 와 `TiltPreset.Perspective` 에 넣는다(끄면 적 스폰 링도 직교 때의 크기로 돌아간다).
+- 명령줄로 끄고 비교: `--sprites`(도트 그림), `--ortho`(직교 카메라) — 저장 설정과 무관하게 끈다. 둘 다 붙이면 G11 까지의 화면이다.
+- 남은 것: 모델·이펙트가 모두 코드로 만든 임시 모양(번들 모델 연결은 따로), 걷기 말고는 동작(공격 자세, 쓰러짐)이 없음, 맵 편집기·내정은 2D 그대로.
 
 ## 눈으로 확인할 것 (사용자)
 
@@ -227,4 +235,4 @@ tools/godot_port/build_windows.sh     # Builds/godot/Samkuk.exe + Builds/Samkuk-
 5. **조작감과 소리**: 이동, 무기 타이밍, 화면 흔들림, 효과음 크기와 겹침. 소리는 한 번도 들어 보지 못했다.
 6. **성능**: RTX 3080 에서 적 194마리 60 FPS. 내장 그래픽에서는 재지 못했다(그림 한 장이 노드 하나라 적이 아주 많으면 `MultiMesh` 로 묶어야 할 수 있다).
 7. **맵 편집기**: 왼쪽 패널의 "지우개 반경" 글자가 두 줄로 나와 조금 잘린다.
-8. **3D 모델과 원근 카메라 (G12·G13)**: 임시 로우폴리 모델의 생김새·크기(`ModelMirror.CharacterScale` 1.3), 걷는 모양, 원근의 세기(`TiltPreset.FieldOfView` 33°)와 내려다보는 각(`Pitch` 55°), 화면 가장자리에서 모델이 바깥으로 기울어 보이는 정도, 적이 화면 밖에서 걸어 들어오는 거리. 도트 그림 쪽이 낫다면 `--sprites --ortho` 로 예전 화면과 비교할 수 있다.
+8. **3D 모델과 원근 카메라 (G12·G13)**: 임시 로우폴리 모델의 생김새·크기(`ModelMirror.CharacterScale` 1.3), 걷는 모양, 원근의 세기(`TiltPreset.FieldOfView` 33°)와 내려다보는 각(`Pitch` 55°), 화면 가장자리에서 모델이 바깥으로 기울어 보이는 정도, 적이 화면 밖에서 걸어 들어오는 거리. 도트 그림 쪽이 낫다면 타이틀의 [3D 화면] 을 꺼서 예전 화면과 비교할 수 있다.

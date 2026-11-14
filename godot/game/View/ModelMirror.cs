@@ -189,7 +189,8 @@ namespace Samkuk.Game
         Batch CreateBatch(string path, Compat.Sprite sprite)
         {
             string name = System.IO.Path.GetFileNameWithoutExtension(path);
-            bool hero = path.Contains("/HeroWalk/"), enemy = path.Contains("/EnemyWalk/");
+            // 걷기 시트가 없는 주인공(장수를 고르기 전의 기본 그림)도 사람 모델로
+            bool hero = path.Contains("/HeroWalk/") || path.EndsWith("/sprites/Player.png"), enemy = path.Contains("/EnemyWalk/");
             if (!hero && !enemy && !(path.Contains("/Terrain/") && name.StartsWith("Prop_"))) return null;
             if (batches.TryGetValue(name, out var existing)) return existing;
 
@@ -523,7 +524,7 @@ namespace Samkuk.Game
             var parent = sr.transform.parent;
             string parentName = parent != null ? parent.gameObject.name ?? "" : "";
 
-            if (path.Contains("/Weapons/") && name.StartsWith("Held")) return Role.Weapon;
+            if (path.Contains("/Weapons/") && name.Contains("Held")) return Role.Weapon;   // 오프라인 무기는 Held#, 협동 꼭두각시는 P#Held
             if (path.EndsWith("/ExpGem.png")) return Role.Gem;
             if (tex == "BurstSquare" || sprite.name == "BurstSquare") return Role.Cube;
             if (sprite.name == "SlashArc") return Role.Crescent;
