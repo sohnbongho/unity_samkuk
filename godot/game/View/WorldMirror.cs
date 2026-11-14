@@ -73,7 +73,7 @@ namespace Samkuk.Game
         public static bool IsoField;
         /// <summary>내려다보는 각 30°: sin = 0.5 → 2D 의 세로 1 이 땅의 깊이 2.</summary>
         public const float IsoDepth = 2f;
-        const float IsoSin = 0.5f, IsoCos = 0.8660254f;
+        internal const float IsoSin = 0.5f, IsoCos = 0.8660254f;
         static readonly GVec3 IsoUp = new GVec3(0f, IsoCos, -IsoSin), IsoBack = new GVec3(0f, IsoSin, IsoCos);
         DirectionalLight3D isoSun;
 
@@ -331,8 +331,8 @@ namespace Samkuk.Game
         }
 
         // 야전의 그림 한 장 (3D 화면). 정렬 레이어가 역할을 알려 준다: World = 부대(모델로), Background = 타일·사거리·선택 테(땅에 깐다),
-        // 그 밖(Effect: 무기·검기·화살·입자) = 카메라를 향한 그림. 이펙트는 2D 좌표에 높이가 섞여 있어 땅 위의 한 점으로 정할 수 없으므로
-        // 같은 화면 자리에 깊이 검사 없이 그린다(2D 때도 늘 맨 앞이었다). 모델로 그렸으면 true.
+        // 그 밖(Effect) = 장수의 무기·검기·화살·타격 입자 → 3D 메시로(ModelMirror.TryDrawEffect: 야전의 이펙트는 모두 손 높이에서 나온다).
+        // 역할을 모르는 그림만 카메라를 향한 그림으로 같은 화면 자리에 깊이 검사 없이 그린다. 모델·메시로 그렸으면 true.
         bool SyncIsoSprite(SpriteRenderer sr, Sprite sprite, Sprite3D node, Godot.Texture2D texture, bool pixel)
         {
             var t = sr.transform;
@@ -357,6 +357,7 @@ namespace Samkuk.Game
                 node.MaterialOverride = SpriteMaterial(texture, tile, pixel, tile ? 0 : order - 60, Godot.Vector2.One);
                 return false;
             }
+            if (layer != Samkuk.Core.GameLayers.Sorting.World && models.TryDrawEffect(sr, sprite)) { node.Visible = false; return true; }
             // 카메라를 향한 그림: 2D 평면의 오른쪽·위가 카메라의 오른쪽·위
             node.Position = IsoGround(pos) + IsoBack * 3f;
             node.Basis = new Basis((GVec3.Right * right.x + IsoUp * right.y) * scale.x, (GVec3.Right * up.x + IsoUp * up.y) * scale.y, IsoBack);

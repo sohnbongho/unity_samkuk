@@ -52,6 +52,8 @@ namespace Samkuk.Game
             public float attack, fall;
             public bool looked;
             public float isoYaw; public bool isoSet;   // 야전: 멈춰 있을 때 바라보는 쪽
+            public bool fieldLooked;
+            public Samkuk.Field.FieldUnitView unitView;
             public Samkuk.Player.PlayerHealth health;
             public Samkuk.Allies.AllyController ally;
             // 마지막으로 그린 모습 (죽은 적이 넘어지는 연출의 시작)
@@ -61,7 +63,7 @@ namespace Samkuk.Game
             public Compat.Color color;
         }
 
-        sealed class Ghost { public Batch batch; public CVec3 position; public float yaw, sx, sy, sz, time; public Compat.Color color; }
+        sealed class Ghost { public Batch batch; public CVec3 position; public float yaw, sx, sy, sz, time; public Compat.Color color; public float slow = 1f; }   // slow: 넘어지고 사라지는 시간 배율 (야전의 부대는 천천히)
 
         const float AttackLean = 0.16f;      // 공격 자세에서 몸을 앞으로 숙이는 각 (라디안)
         const float FallAngle = 1.5f;        // 쓰러졌을 때 뒤로 누운 각
@@ -96,9 +98,52 @@ namespace Samkuk.Game
             Samkuk.Enemies.Enemy.Died += OnEnemyDied;
         }
 
+        // ───────────────────────── 야전의 동작 (G19) ─────────────────────────
+        // 규칙(FieldBattleModel)의 이벤트를 듣기만 한다: 때린 부대는 잠깐 상대 쪽으로 돌아 팔을 내려치고(공격 자세), 무너진 부대는 그 자리에서 넘어지며 사라진다.
+        /// <summary>야전의 이펙트(무기·검기·화살·입자)가 나오는 높이: 발 + 0.55 (FieldFx.PositionOf 의 손 높이, 2D 유닛).</summary>
+        public const float FieldHandLift = 0.55f;
+        /// <summary>야전에서 장수가 든 무기 모델의 길이 배율 (부대 모델을 줄인 만큼).</summary>
+        public const float FieldWeaponScale = 0.7f;
+        const float FieldAttackHold = 0.3f;   // 마지막으로 때린 뒤 공격 자세를 유지하는 시간 (피해는 매 틱 일어난다)
+        Samkuk.Field.FieldBattleController fieldController;
+        Samkuk.Field.FieldBattleModel fieldModel;
+        readonly Dictionary<int, (float time, float yaw)> fieldAttacks = new Dictionary<int, (float, float)>();
+
+        void SyncField()
+        {
+            Samkuk.Field.FieldBattleModel model = null;
+            if (WorldMirror.IsoField)
+            {
+                if (fieldController == null || fieldController.destroyed || frame % 30 == 1) fieldController = Compat.Object.FindAnyObjectByType<Samkuk.Field.FieldBattleController>();
+                if (fieldController != null) model = fieldController.Model;
+            }
+            if (model == fieldModel) return;
+            if (fieldModel != null) { fieldModel.Hit -= OnFieldHit; fieldModel.UnitRouted -= OnFieldRouted; }
+            fieldModel = model;
+            fieldAttacks.Clear();
+            if (model != null) { model.Hit += OnFieldHit; model.UnitRouted += OnFieldRouted; }
+        }
+
+        void OnFieldHit(Samkuk.Field.FieldUnit attacker, Samkuk.Field.FieldUnit victim, float amount, bool ranged, bool charge)
+        {
+            Samkuk.Field.IsoGrid.CellToWorld(attacker.VisualCol, attacker.VisualRow, out float ax, out float ay);
+            Samkuk.Field.IsoGrid.CellToWorld(victim.VisualCol, victim.VisualRow, out float vx, out float vy);
+            fieldAttacks[attacker.Id] = (Compat.Time.time, Mathf.Atan2(vx - ax, -(vy - ay) * WorldMirror.IsoDepth));
+        }
+
+        void OnFieldRouted(Samkuk.Field.FieldUnit unit)
+        {
+            if (fieldController == null || ghosts.Count >= MaxGhosts) return;
+            var view = fieldController.ViewOf(unit);
+            var sr = view != null ? view.Renderer : null;
+            if (sr == null || !states.TryGetValue(sr, out var s) || s.batch == null || s.seen < frame - 1) return;
+            ghosts.Add(new Ghost { batch = s.batch, position = s.position, yaw = s.yaw, sx = s.sx, sy = s.sy, sz = s.sz, color = s.color, slow = 2.2f });
+        }
+
         public void Begin()
         {
             frame++;
+            SyncField();
             foreach (var b in batches.Values) b.count = 0;
             AnyGhostFalling = AnyDown = AnyAttacking = false;
             if (frame % 30 == 1) coop = Compat.Object.FindAnyObjectByType<Samkuk.Coop.CoopBattleDriver>() != null;
@@ -167,7 +212,7 @@ namespace Samkuk.Game
                     : (state.health != null && state.health.IsDead) || (state.ally != null && state.ally.IsDowned));
                 // 공격 자세: 손에 든 무기가 보이는 동안 그쪽으로. 적은 주인공·아군에 닿아 있는 동안 팔을 내려친다
                 bool swinging = false; float want = 0f;
-                var owner = sr.transform.parent;
+                var owner = iso ? sr.transform : sr.transform.parent;   // 야전: 장수의 무기는 부대 밑에 있지 않아 부대 자신으로 찾는다
                 if (!down && batch.hero && owner != null && swings.TryGetValue(owner, out var sw) && sw.frame >= frame - 1) { swinging = true; want = 1f; target = sw.yaw; }
                 else if (!batch.hero)
                 {
@@ -178,6 +223,19 @@ namespace Samkuk.Game
                         if (hx * hx + hy * hy > reach * reach) continue;
                         want = 0.5f + 0.5f * Mathf.Sin(Compat.Time.time * 9f + (sr.GetHashCode() & 255) * 0.1f);
                         break;
+                    }
+                }
+                // 야전: 방금 때린 부대는 상대 쪽으로 돌아 팔을 내려친다 (장수는 무기를 휘두르는 쪽이 먼저)
+                bool fieldAttack = false; float fieldYaw = 0f;
+                if (iso)
+                {
+                    if (!swinging) want = 0f;
+                    if (!state.fieldLooked) { state.fieldLooked = true; state.unitView = sr.GetComponent<Samkuk.Field.FieldUnitView>(); }
+                    var unit = state.unitView != null ? state.unitView.Unit : null;
+                    if (unit != null && fieldAttacks.TryGetValue(unit.Id, out var fa) && Compat.Time.time - fa.time < FieldAttackHold)
+                    {
+                        fieldAttack = true; fieldYaw = fa.yaw;
+                        if (!swinging) want = 0.5f + 0.5f * Mathf.Sin(Compat.Time.time * 9f + (sr.GetHashCode() & 255) * 0.1f);
                     }
                 }
                 float dt = Mathf.Max(0.0001f, Compat.Time.deltaTime);
@@ -196,13 +254,14 @@ namespace Samkuk.Game
                         if (state.vx * state.vx + state.vy * state.vy > 0.3f * 0.3f)
                         {
                             float moveYaw = Mathf.Atan2(state.vx, -state.vy);   // Godot 의 +z 는 로직의 남쪽
-                            if (iso) target = state.isoYaw = moveYaw;
+                            if (iso) { state.isoYaw = moveYaw; if (!swinging) target = moveYaw; }
                             else if (!swinging && Mathf.Abs(Mathf.DeltaAngle(moveYaw * Mathf.Rad2Deg, rowYaw * Mathf.Rad2Deg)) < 75f) target = moveYaw;
                         }
                     }
                 }
                 else { state.yaw = target; state.started = true; }
                 state.lastPosition = pos;
+                if (fieldAttack && !swinging && state.vx * state.vx + state.vy * state.vy <= 0.3f * 0.3f) target = state.isoYaw = fieldYaw;
                 float diff = Mathf.DeltaAngle(state.yaw * Mathf.Rad2Deg, target * Mathf.Rad2Deg) * Mathf.Deg2Rad;
                 state.yaw += Mathf.Clamp(diff, -TurnSpeed * dt, TurnSpeed * dt);
                 // 걷기: 움직인 거리만큼 위상이 가고, 멈추면 흔들림이 잦아든다
@@ -260,7 +319,7 @@ namespace Samkuk.Game
             for (int i = ghosts.Count - 1; i >= 0; i--)
             {
                 var g = ghosts[i];
-                g.time += gdt;
+                g.time += gdt / g.slow;
                 if (g.time >= GhostFall + GhostFade) { ghosts.RemoveAt(i); continue; }
                 float f = Mathf.Clamp01(g.time / GhostFall);
                 if (f > 0.5f && f < 1f) AnyGhostFalling = true;
@@ -542,6 +601,18 @@ namespace Samkuk.Game
             var origin = Map(p);
             var right = Map(q * CVec3.right);
             var up = Map(q * CVec3.up);
+            // 야전: 이펙트는 모두 손 높이(발 + 0.55)에서 나온다. 그만큼 내린 점을 땅으로 옮기고 다시 그 높이로 올리면 화면에서 같은 자리다.
+            // 2D 평면의 방향은 땅 위의 방향으로 (세로 1 = 깊이 2). 역할마다 더하던 높이는 뺀다
+            bool iso = WorldMirror.IsoField;
+            float lift = 1f;
+            if (iso)
+            {
+                origin = WorldMirror.IsoGround(new CVec3(p.x, p.y - FieldHandLift, 0f)) + GVec3.Up * (FieldHandLift / WorldMirror.IsoCos);
+                var r2 = q * CVec3.right; var u2 = q * CVec3.up;
+                right = new GVec3(r2.x, 0f, -r2.y * WorldMirror.IsoDepth);
+                up = new GVec3(u2.x, 0f, -u2.y * WorldMirror.IsoDepth);
+                lift = 0f;
+            }
             var Y = GVec3.Up;
             int hash = (Mathf.RoundToInt(p.x * 31.7f) * 73856093) ^ (Mathf.RoundToInt(p.y * 17.3f) * 19349663) ^ sr.GetHashCode();
             float h01 = (hash & 1023) / 1023f;
@@ -559,10 +630,16 @@ namespace Samkuk.Game
                     var flat = new GVec3(up.X, 0f, up.Z);
                     if (flat.LengthSquared() < 1e-6f) flat = GVec3.Back;
                     var axis = (flat.Normalized() + Y * WeaponRise).Normalized();
-                    float len = h * WeaponScale;
+                    float len = h * WeaponScale * (iso ? FieldWeaponScale : 1f);
                     var side = Y.Cross(axis).Normalized() * (sr.flipX ? -1f : 1f);
                     // 무기의 주인(무기 오브젝트의 부모)이 이쪽으로 공격 자세를 잡는다
                     var holder = t.parent != null ? t.parent.parent : null;
+                    if (iso)
+                    {
+                        // 야전: 무기는 연출 오브젝트 밑에 있다. 주인은 내 장수 부대
+                        var general = fieldController != null && fieldModel != null ? fieldController.ViewOf(fieldModel.PlayerGeneral) : null;
+                        holder = general != null ? general.transform : null;
+                    }
                     if (holder != null) swings[holder] = (frame, Mathf.Atan2(flat.X, flat.Z));
                     Push(batch, side * len, axis * len, side.Cross(axis).Normalized() * len, origin, color.r, color.g, color.b, 1f, 0f, 0f, color.a, 0f);
                     break;
@@ -573,7 +650,7 @@ namespace Samkuk.Game
                     if (dir.LengthSquared() < 1e-6f) dir = GVec3.Right;
                     dir = dir.Normalized();
                     float len = Mathf.Max(w, h) * 1.6f;
-                    Push(batch, dir * len, Y * len, dir.Cross(Y) * len, origin + Y * ProjectileHeight, color.r, color.g, color.b, 1f, 0f, 0f, color.a, 0f);
+                    Push(batch, dir * len, Y * len, dir.Cross(Y) * len, origin + Y * (ProjectileHeight * lift), color.r, color.g, color.b, 1f, 0f, 0f, color.a, 0f);
                     break;
                 }
                 case Role.Orb:
@@ -594,7 +671,7 @@ namespace Samkuk.Game
                     float s = Mathf.Max(w, h) * 0.7f, yaw = time * 7f + h01 * 6.28f, c = Mathf.Cos(yaw), sn = Mathf.Sin(yaw);
                     // 기울여 굴린다: 세 면이 다 보여야 덩어리로 읽힌다
                     var bx = new GVec3(c, 0.5f, -sn).Normalized(); var bz = bx.Cross(Y).Normalized(); var by = bz.Cross(bx);
-                    Push(batch, bx * s, by * s, bz * s, origin + Y * (0.4f + h01 * 0.6f), color.r, color.g, color.b, 1f, 0f, 0f, color.a, 0.3f);
+                    Push(batch, bx * s, by * s, bz * s, origin + Y * ((0.4f + h01 * 0.6f) * lift), color.r, color.g, color.b, 1f, 0f, 0f, color.a, 0.3f);
                     break;
                 }
                 case Role.SpinBlade:
@@ -622,7 +699,7 @@ namespace Samkuk.Game
                 {
                     float radius = Samkuk.Weapons.WaveSprites.RadiusUnits * sxAbs;
                     var r = new GVec3(right.X, 0f, right.Z).Normalized();
-                    Push(batch, r * radius, Y * radius, r.Cross(Y) * radius, origin + Y * WaveHeight, color.r, color.g, color.b, color.a, 0f, 0f, 0f, 0f);
+                    Push(batch, r * radius, Y * radius, r.Cross(Y) * radius, origin + Y * (WaveHeight * lift), color.r, color.g, color.b, color.a, 0f, 0f, 0f, 0f);
                     break;
                 }
                 case Role.Ripple:
@@ -668,6 +745,7 @@ namespace Samkuk.Game
             if (sprite.name == "SlashArc") return Role.Crescent;
             if (sprite.name == "ThrustPoint") return Role.Wedge;
             if (name.StartsWith("Blade") || path.EndsWith("/Blade.png")) return Role.SpinBlade;
+            if (WorldMirror.IsoField && name.StartsWith("Arrow")) return Role.Arrow;   // 야전 궁병의 화살 (코드로 만든 그림, Effect 레이어)
             if (sr.sortingLayerName == "Projectile") return path.EndsWith("/Arrow.png") || path.EndsWith("/Bolt.png") ? Role.Arrow : Role.Orb;
             bool effect = parentName == "WeaponFx" || name == "SkillFx" || name == "NovaRing" || name == "FireZone";
             if (!effect) return Role.None;
