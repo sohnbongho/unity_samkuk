@@ -25,6 +25,7 @@ namespace Samkuk.Game
         public const float CharacterScale = 1.3f;
         public const float PropHeightScale = 1.0f;
         const float TurnSpeed = 14f;         // 몸 돌리기 (라디안/초)
+        const float VelocitySmoothing = 0.1f; // 움직이는 방향을 읽는 속도를 고르게 하는 시간 (초)
         const float StepPerUnit = 5.2f;      // 걸은 거리 1유닛당 다리 흔들기 위상
         const float SwingAngle = 0.62f;      // 다리 흔들 각 (라디안)
 
@@ -41,6 +42,7 @@ namespace Samkuk.Game
         sealed class State
         {
             public float yaw, phase, amplitude;
+            public float vx, vy;   // 고르게 한 속도 (유닛/초)
             public CVec3 lastPosition;
             public bool started;
             public int seen;
@@ -171,11 +173,18 @@ namespace Samkuk.Game
                 {
                     float dx = pos.x - state.lastPosition.x, dy = pos.y - state.lastPosition.y;
                     moved = Mathf.Sqrt(dx * dx + dy * dy);
-                    if (moved > 3f) moved = 0f;   // 순간 이동(풀에서 다시 나옴, 부활)
-                    else if (moved > 0.0005f)
+                    if (moved > 3f) { moved = 0f; state.vx = state.vy = 0f; }   // 순간 이동(풀에서 다시 나옴, 부활)
+                    else
                     {
-                        float moveYaw = Mathf.Atan2(dx, -dy);   // Godot 의 +z 는 로직의 남쪽
-                        if (!swinging && Mathf.Abs(Mathf.DeltaAngle(moveYaw * Mathf.Rad2Deg, rowYaw * Mathf.Rad2Deg)) < 75f) target = moveYaw;
+                        // 움직이는 방향은 고르게 한 속도에서 읽는다. 적은 고정 틱(50Hz)으로 움직여 화면 프레임(60Hz) 가운데 여섯에 하나는 제자리인데,
+                        // 프레임마다의 이동만 보면 그 프레임에 목표가 걷기 시트의 4방향으로 튀어 몸(얼굴)이 좌우로 떨렸다
+                        float k = 1f - Mathf.Exp(-dt / VelocitySmoothing);
+                        state.vx += (dx / dt - state.vx) * k; state.vy += (dy / dt - state.vy) * k;
+                        if (state.vx * state.vx + state.vy * state.vy > 0.3f * 0.3f)
+                        {
+                            float moveYaw = Mathf.Atan2(state.vx, -state.vy);   // Godot 의 +z 는 로직의 남쪽
+                            if (!swinging && Mathf.Abs(Mathf.DeltaAngle(moveYaw * Mathf.Rad2Deg, rowYaw * Mathf.Rad2Deg)) < 75f) target = moveYaw;
+                        }
                     }
                 }
                 else { state.yaw = target; state.started = true; }
@@ -185,7 +194,7 @@ namespace Samkuk.Game
                 // 걷기: 움직인 거리만큼 위상이 가고, 멈추면 흔들림이 잦아든다
                 float size = Mathf.Max(0.3f, scale.y);
                 state.phase += moved * StepPerUnit / size;
-                float walking = !down && moved / dt > 0.3f ? 1f : 0f;
+                float walking = !down && state.vx * state.vx + state.vy * state.vy > 0.3f * 0.3f ? 1f : 0f;
                 state.amplitude = Mathf.MoveTowards(state.amplitude, walking, dt * 8f);
                 float s = Mathf.Sin(state.phase);
                 swing = s * SwingAngle * state.amplitude;
