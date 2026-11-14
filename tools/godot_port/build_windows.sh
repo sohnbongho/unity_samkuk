@@ -1,6 +1,7 @@
 #!/bin/bash
 # Godot 전환 G11: Windows 릴리스 빌드를 내보내고 공유용 zip 을 만든다.
-#   tools/godot_port/build_windows.sh
+#   tools/godot_port/build_windows.sh          릴리스 (친구에게 보내는 것)
+#   tools/godot_port/build_windows.sh --dev    개발용: 타이틀의 [맵 편집기](전투 테스트)와 FPS 표시·F1~F4 치트가 켜진다
 # 결과: Builds/godot/Samkuk.exe (+ Samkuk.pck, data_Samkuk.Game_windows_x86_64/), Builds/Samkuk-godot-win64.zip
 # 내보내기 템플릿은 godot/export_presets.cfg 의 custom_template 경로(D:/01-AgentLegion/tools/godot/templates/...)를 쓴다.
 # 릴리스 빌드에서는 FPS 표시와 F1~F4 치트(DebugOverlay)가 꺼진다.
@@ -8,10 +9,12 @@ set -e
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 GODOT="${GODOT:-/d/01-AgentLegion/tools/godot/Godot_v4.7.2-stable_mono_win64/Godot_v4.7.2-stable_mono_win64_console.exe}"
 OUT="$ROOT/Builds/godot"
+MODE=--export-release
+[ "$1" = "--dev" ] && MODE=--export-debug
 rm -rf "$OUT"
 mkdir -p "$OUT"
 cd "$ROOT/godot"
-"$GODOT" --headless --path . --export-release "Windows Desktop" ../Builds/godot/Samkuk.exe > "$ROOT/Builds/godot_export.log" 2>&1 || { tail -20 "$ROOT/Builds/godot_export.log"; exit 1; }
+"$GODOT" --headless --path . $MODE "Windows Desktop" ../Builds/godot/Samkuk.exe > "$ROOT/Builds/godot_export.log" 2>&1 || { tail -20 "$ROOT/Builds/godot_export.log"; exit 1; }
 cat > "$OUT/README.txt" <<'TXT'
 삼국지 서바이버 (Godot 판)
 
