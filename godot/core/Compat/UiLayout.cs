@@ -391,4 +391,23 @@ namespace Samkuk.Compat.UI
             }
         }
     }
+
+    /// <summary>유니티의 같은 이름: 화면 픽셀을 사각 트랜스폼의 로컬 좌표(피벗 기준, 캔버스 단위)로. 오버레이 캔버스만 다룬다(cam 은 쓰지 않는다).</summary>
+    public static class RectTransformUtility
+    {
+        public static bool ScreenPointToLocalPointInRectangle(RectTransform rect, Vector2 screenPoint, Camera cam, out Vector2 localPoint)
+        {
+            localPoint = Vector2.zero;
+            if (rect == null) return false;
+            var canvas = rect.GetComponentInParent<Canvas>();
+            var screen = new Vector2(Screen.width, Screen.height);
+            float scale = 1f;
+            Vector2 size = canvas != null ? UiLayout.CanvasSize(canvas, screen, out scale) : screen;
+            // 아직 배치 전이면(크기 0) 캔버스 전체로 본다
+            Rect r = rect.screenRect.width > 0f && rect.screenRect.height > 0f ? rect.screenRect : new Rect(0f, 0f, size.x, size.y);
+            float x = screenPoint.x / Mathf.Max(1e-6f, scale), y = screenPoint.y / Mathf.Max(1e-6f, scale);
+            localPoint = new Vector2(x - (r.x + r.width * rect.pivot.x), y - (r.y + r.height * rect.pivot.y));
+            return true;
+        }
+    }
 }

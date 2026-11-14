@@ -31,7 +31,7 @@ Unity 프로젝트(저장소 루트의 `Assets/`)를 Godot 4.7.2 .NET 으로 옮
 |---|---|---|
 | `godot/core/` | `Samkuk.Core` (net8.0) | 순수 로직 + 장면 모형. 폴더는 유니티 `Assets/Scripts/<영역>/` 과 같다 |
 | `godot/game/`, `godot/scenes/Main.tscn` | `Samkuk.Game` (Godot.NET.Sdk) | 화면 층. 씬 파일은 `Main.tscn` 하나(`GameRoot`)뿐이고 나머지는 실행 중에 비춘다 |
-| `godot/tests/` | `Samkuk.Tests` (NUnit) | 유니티 PlayMode 테스트 42개 파일 + `GameDataTests` |
+| `godot/tests/` | `Samkuk.Tests` (NUnit) | 유니티 PlayMode 테스트 45개 파일 + `GameDataTests` |
 | `godot/exporter/` | `Samkuk.Exporter` (콘솔) | 서버 데이터 내보내기 (유니티 메뉴 `Samkuk > Export Server Data` 의 자리) |
 | `godot/data/` | | 데이터 JSON 132건, 씬 4개·프리팹 5개, `project.json`(레이어·씬 순서), `sprites.json`(그림 색인) |
 | `godot/sprites/` | | 그림 146장 |
@@ -92,7 +92,7 @@ GODOT=/d/01-AgentLegion/tools/godot/Godot_v4.7.2-stable_mono_win64/Godot_v4.7.2-
 
 ## 테스트 현황
 
-`dotnet test`: **통과 662, 보류 4, 실패 0, 미룬 것 0**. 유니티 PlayMode 테스트 42개 파일의 테스트가 전부 돈다(+ Godot 판에서 더한 `GameDataTests`, `ServerDataExporterTests`, `View3dButtonTests`).
+`dotnet test`: **통과 721, 보류 4, 실패 0, 미룬 것 0**. 유니티 PlayMode 테스트 45개 파일(야전 3개 포함)의 테스트가 전부 돈다(+ Godot 판에서 더한 `GameDataTests`, `ServerDataExporterTests`, `View3dButtonTests`).
 유니티의 Mono 런타임으로 돌려도 같다(`tools/godot_port/mono_check.sh`: 보류 4개와, 작업 폴더에 `Assets/` 가 없어 실패하는 `SceneNames_MatchTheSceneAssets` 만 실패).
 
 테스트 도우미(`godot/tests`): `UnityTestSupport.cs`(프레임을 넘기는 `[UnityTest]`, 입력 흉내, 테스트 사이 프레임 경계), `AssetDatabase.cs`(예전 에셋 경로 → 데이터 창고·프리팹),
@@ -237,6 +237,21 @@ tools/godot_port/build_windows.sh     # Builds/godot/Samkuk.exe + Builds/Samkuk-
   - 화면으로 확인: 관우·아군의 공격 자세, 넘어지는 적(말 탄 적 포함), 쓰러져 누운 아군. 주인공 사망은 결과 창에 가려 보지 못했고 협동 전투의 쓰러짐은 서버로 확인하지 못했다.
 - **몸 방향 떨림 고침**: 적은 고정 틱(50Hz)으로 움직여 화면 프레임(60Hz) 여섯에 하나는 제자리다. 프레임마다의 이동으로 방향을 읽던 탓에 그 프레임마다 목표가 걷기 시트의 4방향으로 튀어 적의 몸(얼굴)이 좌우로 떨렸다(프레임당 평균 3.7°, 셋에 한 번 방향이 뒤집힘). 고르게 한 속도(`ModelMirror.VelocitySmoothing` 0.1초)에서 읽게 해 0.4°, 0.5% 로 줄였다.
 - 남은 것: 모델·이펙트가 모두 코드로 만든 임시 모양(번들 모델 연결은 따로), 원거리 무기·적 궁병의 공격 자세, 맵 편집기·내정은 2D 그대로.
+
+## 야전 (G17)
+
+유니티 `main` 브랜치에만 있던 **야전**(남코 삼국지2식 부대 전투, Step 15-0~15-8; 설계·조작은 `docs/FIELD_BATTLE.md`, 용어 `CONTEXT.md` "야전")을 옮겼다.
+Godot 브랜치가 그 작업 전에 갈라져서 빠져 있었다. `main` 을 합치지 않고(`Assets/` 는 이 브랜치에서 건드리지 않는다) 필요한 것만 가져왔다:
+
+- 스크립트 `Assets/Scripts/Field/*.cs` 19개 → `godot/core/Field/`(`using` 만 바꿈), `GameManager.FieldSceneName`.
+- 씬·수치·그림: `tools/godot_port/port_field.py <main 을 꺼낸 폴더>` 가 `FieldBattleScene.scene.json`, `data/Field/FieldRules.json`, `sprites/Field/` 14장을 더하고
+  `sprites.json`·`project.json`(씬 순서 5번째)에 항목을 넣는다. 전체 변환 도구와 달리 다른 데이터를 덮어쓰지 않는다. 수치는 이제 `data/Field/FieldRules.json` 을 직접 고친다.
+- 호환 층에 더한 것: `Camera.WorldToScreenPoint`(회전 없는 직교), `RectTransformUtility.ScreenPointToLocalPointInRectangle`(부대 위 병사 수 라벨 자리).
+- 테스트 `FieldBattleModelTests`, `FieldBattleSceneTests`, `IsoGridTests` 59개가 고치지 않고 통과한다.
+- 여는 법: 타이틀 왼쪽 아래 **[야전 테스트]**(개발용 빌드에서만 — `build_windows.sh --dev`), 또는 `--scene=FieldBattleScene`.
+- 화면은 유니티 때의 2D 그대로다(아이소메트릭 도트 그림, 고정 직교 카메라). 3D 전환(로우폴리 모델·원근 카메라)은 서바이버 전투에만 적용된다.
+- 화면으로 확인: 타이틀 버튼, 준비 화면, 야전(격자·부대·병사 수 라벨·양옆 목록·명령 띠), 전진 → 교전(무기 연출·검기) → 결과창. 마우스·키보드 조작감과 소리는 사용자 확인.
+- **옮기지 않은 것**: `main` 의 Step 10-9b(손에 든 무기의 앞뒤·쉬는 자세). 서바이버 전투의 무기 그림 규칙을 바꾸는 것이라 3D 무기 모델·공격 자세와 맞물린다 — 따로 결정.
 
 ## 눈으로 확인할 것 (사용자)
 

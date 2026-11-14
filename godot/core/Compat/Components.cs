@@ -169,6 +169,14 @@ namespace Samkuk.Compat
             return new Vector3(p.x + (screen.x / Mathf.Max(1, Screen.width) - 0.5f) * w, p.y + (screen.y / Mathf.Max(1, Screen.height) - 0.5f) * h, p.z + screen.z);
         }
 
+        /// <summary>세계 → 화면 픽셀(왼쪽 아래 0,0). <see cref="ScreenToWorldPoint"/> 의 역: 회전하지 않은 직교 카메라 기준 (야전의 고정 카메라).</summary>
+        public Vector3 WorldToScreenPoint(Vector3 world)
+        {
+            float h = orthographicSize * 2f, w = h * aspect;
+            var p = transform.position;
+            return new Vector3(((world.x - p.x) / w + 0.5f) * Screen.width, ((world.y - p.y) / h + 0.5f) * Screen.height, world.z - p.z);
+        }
+
         /// <summary>"MainCamera" 태그가 붙은 켜진 카메라 (없으면 첫 카메라).</summary>
         public static Camera main
         {

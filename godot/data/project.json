@@ -1,5 +1,5 @@
 {
   "layers": ["Default", "TransparentFX", "Ignore Raycast", "", "Water", "UI", "", "", "Player", "Enemy", "PlayerProjectile", "Pickup", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
   "sortingLayers": ["Default", "Background", "Pickup", "World", "Enemy", "Player", "Projectile", "Effect"],
-  "scenes": ["TitleScene", "BattleScene", "StrategyScene", "MapEditorScene"]
+  "scenes": ["TitleScene", "BattleScene", "StrategyScene", "MapEditorScene", "FieldBattleScene"]
 }

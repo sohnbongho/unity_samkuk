@@ -1,0 +1,280 @@
+{
+  "kind": "scene",
+  "name": "FieldBattleScene",
+  "roots": ["1445844714", "1116013139", "1772247236", "582912330"],
+  "objects": [
+    {
+      "id": "582912330",
+      "name": "FieldBattle",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "582912332",
+          "class": "Transform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": null,
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 }
+          }
+        },
+        {
+          "id": "582912331",
+          "class": "Samkuk.Field.FieldBattleController",
+          "data": {
+            "m_Enabled": 1,
+            "heroCatalog": { "$ref": "HeroCatalog" },
+            "rulesData": { "$ref": "FieldRules" },
+            "tileSprites": [
+              { "$sprite": "res://sprites/Field/Tile_Plain.png", "w": 48, "h": 24, "ppu": 32, "pivot": [0.5, 0.5] },
+              { "$sprite": "res://sprites/Field/Tile_Steppe.png", "w": 48, "h": 24, "ppu": 32, "pivot": [0.5, 0.5] },
+              { "$sprite": "res://sprites/Field/Tile_Mountain.png", "w": 48, "h": 24, "ppu": 32, "pivot": [0.5, 0.5] },
+              { "$sprite": "res://sprites/Field/Tile_River.png", "w": 48, "h": 24, "ppu": 32, "pivot": [0.5, 0.5] },
+              { "$sprite": "res://sprites/Field/Tile_Jungle.png", "w": 48, "h": 24, "ppu": 32, "pivot": [0.5, 0.5] },
+              { "$sprite": "res://sprites/Field/Tile_Loess.png", "w": 48, "h": 24, "ppu": 32, "pivot": [0.5, 0.5] }
+            ],
+            "unitSheets": [
+              { "$texture": "res://sprites/Field/Unit_Infantry_Player.png", "w": 192, "h": 192 },
+              { "$texture": "res://sprites/Field/Unit_Infantry_Enemy.png", "w": 192, "h": 192 },
+              { "$texture": "res://sprites/Field/Unit_Archer_Player.png", "w": 192, "h": 192 },
+              { "$texture": "res://sprites/Field/Unit_Archer_Enemy.png", "w": 192, "h": 192 },
+              { "$texture": "res://sprites/Field/Unit_Cavalry_Player.png", "w": 192, "h": 192 },
+              { "$texture": "res://sprites/Field/Unit_Cavalry_Enemy.png", "w": 192, "h": 192 },
+              { "$texture": "res://sprites/Field/Unit_General_Player.png", "w": 192, "h": 192 },
+              { "$texture": "res://sprites/Field/Unit_General_Enemy.png", "w": 192, "h": 192 }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "1116013139",
+      "name": "Global Light 2D",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "1116013141",
+          "class": "Transform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": null,
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 }
+          }
+        },
+        {
+          "id": "1116013140",
+          "class": "UnityEngine.Rendering.Universal.Light2D",
+          "data": {
+            "m_Enabled": 1,
+            "m_ComponentVersion": 4,
+            "m_LightType": 4,
+            "m_BlendStyleIndex": 0,
+            "m_Light2DProvider": { "rid": -2 },
+            "m_SelectionSources": { "rid": 5210265676880543887 },
+            "m_FalloffIntensity": 0.5,
+            "m_Color": { "r": 1, "g": 1, "b": 1, "a": 1 },
+            "m_Intensity": 1,
+            "m_LightVolumeIntensity": 1,
+            "m_LightVolumeEnabled": 0,
+            "m_ApplyToSortingLayers": "00000000e9030000ea030000ef030000eb030000ec030000ed030000ee030000",
+            "m_LightCookieSprite": null,
+            "m_DeprecatedPointLightCookieSprite": null,
+            "m_LightOrder": 0,
+            "m_AlphaBlendOnOverlap": 0,
+            "m_OverlapOperation": 0,
+            "m_NormalMapDistance": 3,
+            "m_NormalMapQuality": 2,
+            "m_UseNormalMap": 0,
+            "m_ShadowsEnabled": 1,
+            "m_ShadowIntensity": 0.75,
+            "m_ShadowSoftness": 0.3,
+            "m_ShadowSoftnessFalloffIntensity": 0.5,
+            "m_ShadowVolumeIntensityEnabled": 0,
+            "m_ShadowVolumeIntensity": 0.75,
+            "m_LocalBounds": {
+              "m_Center": { "x": 0, "y": 0, "z": 0 },
+              "m_Extent": { "x": 0, "y": 0, "z": 0 }
+            },
+            "m_PointLightInnerAngle": 360,
+            "m_PointLightOuterAngle": 360,
+            "m_PointLightInnerRadius": 0,
+            "m_PointLightOuterRadius": 1,
+            "m_ShapeLightParametricSides": 5,
+            "m_ShapeLightParametricAngleOffset": 0,
+            "m_ShapeLightParametricRadius": 1,
+            "m_ShapeLightFalloffSize": 0.5,
+            "m_ShapeLightFalloffOffset": { "x": 0, "y": 0 },
+            "m_ShapePath": [
+              { "x": -0.5, "y": -0.5, "z": 0 },
+              { "x": 0.5, "y": -0.5, "z": 0 },
+              { "x": 0.5, "y": 0.5, "z": 0 },
+              { "x": -0.5, "y": 0.5, "z": 0 }
+            ],
+            "references": {
+              "version": 2,
+              "RefIds": [
+                {
+                  "rid": -2,
+                  "type": { "class": null, "ns": null, "asm": null }
+                },
+                {
+                  "rid": 5210265676880543887,
+                  "type": { "class": "Light2DProviderSources", "ns": "UnityEngine.Rendering.Universal", "asm": "Unity.RenderPipelines.Universal.2D.Runtime" },
+                  "data": {
+                    "m_SelectedHashCode": 4,
+                    "m_SelectedSource": { "rid": -2 },
+                    "m_Provider2DCache": { "rid": -2 }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "1445844714",
+      "name": "Main Camera",
+      "layer": 0,
+      "tag": "MainCamera",
+      "active": true,
+      "components": [
+        {
+          "id": "1445844719",
+          "class": "Transform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": -0.9375, "z": -10 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": null,
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 }
+          }
+        },
+        {
+          "id": "1445844718",
+          "class": "Camera",
+          "data": {
+            "m_Enabled": 1,
+            "m_ClearFlags": 2,
+            "m_BackGroundColor": { "r": 0.06, "g": 0.05, "b": 0.08, "a": 1 },
+            "m_projectionMatrixMode": 1,
+            "m_GateFitMode": 2,
+            "m_FOVAxisMode": 0,
+            "m_Iso": 200,
+            "m_ShutterSpeed": 0.005,
+            "m_Aperture": 16,
+            "m_FocusDistance": 10,
+            "m_FocalLength": 50,
+            "m_BladeCount": 5,
+            "m_Curvature": { "x": 2, "y": 11 },
+            "m_BarrelClipping": 0.25,
+            "m_Anamorphism": 0,
+            "m_SensorSize": { "x": 36, "y": 24 },
+            "m_LensShift": { "x": 0, "y": 0 },
+            "m_NormalizedViewPortRect": { "serializedVersion": 2, "x": 0, "y": 0, "width": 1, "height": 1 },
+            "near clip plane": 0.3,
+            "far clip plane": 1000,
+            "field of view": 60,
+            "orthographic": 1,
+            "orthographic size": 5.625,
+            "m_Depth": 0,
+            "m_CullingMask": { "serializedVersion": 2, "m_Bits": 4294967295 },
+            "m_RenderingPath": -1,
+            "m_TargetTexture": null,
+            "m_TargetDisplay": 0,
+            "m_TargetEye": 3,
+            "m_HDR": 1,
+            "m_AllowMSAA": 1,
+            "m_AllowDynamicResolution": 0,
+            "m_ForceIntoRT": 0,
+            "m_OcclusionCulling": 1,
+            "m_StereoConvergence": 10,
+            "m_StereoSeparation": 0.022
+          }
+        },
+        {
+          "id": "1445844717",
+          "class": "AudioListener",
+          "data": { "m_Enabled": 1 }
+        },
+        {
+          "id": "1445844716",
+          "class": "UnityEngine.Rendering.Universal.PixelPerfectCamera",
+          "data": { "m_Enabled": 1, "m_ComponentVersion": 1, "m_AssetsPPU": 32, "m_RefResolutionX": 640, "m_RefResolutionY": 360, "m_CropFrame": 0, "m_GridSnapping": 1, "m_FilterMode": 0, "m_UpscaleRT": 0, "m_PixelSnapping": 0, "m_CropFrameX": 0, "m_CropFrameY": 0, "m_StretchFill": 0 }
+        },
+        {
+          "id": "1445844715",
+          "class": "Samkuk.World.BattlePixelCamera",
+          "data": { "m_Enabled": 1 }
+        }
+      ]
+    },
+    {
+      "id": "1772247236",
+      "name": "EventSystem",
+      "layer": 0,
+      "tag": "Untagged",
+      "active": true,
+      "components": [
+        {
+          "id": "1772247239",
+          "class": "Transform",
+          "data": {
+            "m_LocalRotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+            "m_LocalPosition": { "x": 0, "y": 0, "z": 0 },
+            "m_LocalScale": { "x": 1, "y": 1, "z": 1 },
+            "m_ConstrainProportionsScale": 0,
+            "m_Children": [],
+            "m_Father": null,
+            "m_LocalEulerAnglesHint": { "x": 0, "y": 0, "z": 0 }
+          }
+        },
+        {
+          "id": "1772247238",
+          "class": "UnityEngine.EventSystems.EventSystem",
+          "data": { "m_Enabled": 1, "m_FirstSelected": null, "m_sendNavigationEvents": 1, "m_DragThreshold": 10 }
+        },
+        {
+          "id": "1772247237",
+          "class": "UnityEngine.InputSystem.UI.InputSystemUIInputModule",
+          "data": {
+            "m_Enabled": 1,
+            "m_SendPointerHoverToParent": 1,
+            "m_MoveRepeatDelay": 0.5,
+            "m_MoveRepeatRate": 0.1,
+            "m_XRTrackingOrigin": null,
+            "m_ActionsAsset": { "$id": "1278293674" },
+            "m_PointAction": { "$id": "1521163227" },
+            "m_MoveAction": { "$id": "1124511598" },
+            "m_SubmitAction": { "$id": "47065543" },
+            "m_CancelAction": { "$id": "1423461022" },
+            "m_LeftClickAction": { "$id": "708206685" },
+            "m_MiddleClickAction": { "$id": "1446176623" },
+            "m_RightClickAction": { "$id": "693101051" },
+            "m_ScrollWheelAction": { "$id": "292417466" },
+            "m_TrackedDevicePositionAction": { "$id": "2073099521" },
+            "m_TrackedDeviceOrientationAction": { "$id": "1040828" },
+            "m_DeselectOnBackgroundClick": 1,
+            "m_PointerBehavior": 0,
+            "m_CursorLockBehavior": 0,
+            "m_ScrollDeltaPerTick": 6
+          }
+        }
+      ]
+    }
+  ],
+  "prefabInstances": []
+}
