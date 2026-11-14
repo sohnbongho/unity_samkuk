@@ -29,9 +29,9 @@ namespace Samkuk.World
         public const float FieldOfView = 33f;
         /// <summary>
         /// 원근 카메라가 바라보는 점에서 물러나는 거리(유닛). <see cref="Distance"/>(19)면 주인공 둘레가 직교 때와 같은 크기인데
-        /// 3D 모델은 그 크기에서 너무 커 보여(사용자 피드백) 조금 더 물러난다: 캐릭터가 19 / 23 ≈ 0.83배로 보이고 그만큼 넓게 보인다.
+        /// 3D 모델은 그 크기에서 너무 커 보여(사용자 피드백) 조금 더 물러난다: 캐릭터가 19 / 27 ≈ 0.70배로 보이고 그만큼 넓게 보인다.
         /// </summary>
-        public const float PerspectiveDistance = 23f;
+        public const float PerspectiveDistance = 27f;
         /// <summary>지금 카메라가 물러나는 거리: 원근이면 <see cref="PerspectiveDistance"/>, 직교면 <see cref="Distance"/>.</summary>
         public static float ViewDistance => Perspective ? PerspectiveDistance : Distance;
         /// <summary>원근일 때 보이는 땅 범위의 남쪽 여유(유닛): 화면 아래 바깥의 키 큰 것(나무)의 윗부분이 화면 안으로 솟는다.</summary>
