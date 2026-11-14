@@ -54,6 +54,9 @@ GODOT=/d/01-AgentLegion/tools/godot/Godot_v4.7.2-stable_mono_win64/Godot_v4.7.2-
 마지막 줄이 **자동 점검**이다: 전투 씬에서 30번째 프레임에 2번 장수를 고르고 60번째에 확인, d 키를 누른 채 420 프레임을 돌린 뒤 화면을 PNG 로 저장한다
 (창이 잠깐 뜬다). 명령줄 옵션은 `GameRoot.cs` 머리말. 에디터로 열려면 `Godot_v4.7.2-stable_mono_win64.exe` 로 `godot/project.godot` 을 가져온다.
 
+이펙트 점검용 명령줄: `--give=120:Weapon_Bow,Weapon_Lightning`(그 프레임에 주인공에게 무기를 준다), `--shot-every=20:C:/경로/머리`(N 프레임마다 화면 저장, 경로는 윈도우식),
+`--dump-sprites`(끝낼 때 화면에 나온 그림 종류를 적는다 — 아직 도트 그림인 것을 찾을 때), `--sprites`, `--ortho`.
+
 ## 옮기는 방법
 
 - **스크립트**: `tools/godot_port/copy_core.sh <Assets/Scripts 기준 경로>...` 가 파일을 `godot/core` 로 복사하며 `using` 을 바꾼다(`usings.sed`).
@@ -171,7 +174,7 @@ tools/godot_port/build_windows.sh     # Builds/godot/Samkuk.exe + Builds/Samkuk-
 | Windows 빌드 (11) | — | 화면 | `tools/godot_port/build_windows.sh` |
 | 디버그 키 F1~F10 | — | 화면 | F7(도트 격자)·F10(틸트 끄기)은 값만 바뀌고 화면은 그대로 |
 
-## 3D 전환 (G12·G13)
+## 3D 전환 (G12~G14)
 
 도트 2.5D 에서 로우폴리 3D 로 가는 단계. **규칙 코드(`godot/core`)의 전투 규칙은 바꾸지 않았다**: 이동·충돌·무기 판정·적 AI 는 여전히 평면(x, y) + 언덕 층이다.
 
@@ -179,6 +182,7 @@ tools/godot_port/build_windows.sh     # Builds/godot/Samkuk.exe + Builds/Samkuk-
 |---|---|---|
 | 1 (G12) | 서 있는 도트 그림(장수·아군·적·지형 소품)을 로우폴리 3D 모델로 바꿔 그린다 | `game/View/ModelMirror.cs`, `game/View/LowPolyMesh.cs`, `shaders/lowpoly.gdshader` |
 | 2 (G13) | 전투 카메라를 기울인 직교에서 **원근(쿼터뷰)** 으로 | `core/World/TiltPreset.cs`(`Perspective`, `FieldOfView`, `PerspectiveFootprint`), `BattleTiltCamera`, `WorldMirror.SyncCamera` |
+| 3 (G14) | 손에 든 무기·탄환·보석·이펙트를 3D 모델·3D 이펙트 메시로 | `ModelMirror.TryDrawEffect`, `LowPolyMesh`(무기 4종, 화살, 보석, 칼날, 고리, 검기, 번개, 불길), `shaders/lowpoly_fx.gdshader` |
 
 **모델로 바꾸는 방법 (1단계)**. 규칙 코드는 예전처럼 `SpriteRenderer` 에 걷기 시트의 칸을 넣는다. 화면 층이 그 그림의 **파일 이름**으로 모델을 고른다
 (`HeroWalk/*`, `EnemyWalk/*` = 사람 또는 말 탄 사람, `Terrain/Prop_*` = 소품 14종. 손에 든 무기·이펙트·체력 막대·데미지 숫자는 도트 그림 그대로).
@@ -190,8 +194,26 @@ tools/godot_port/build_windows.sh     # Builds/godot/Samkuk.exe + Builds/Samkuk-
   적 500 마리(F1 다섯 번), 1280x720, 수직 동기 끔: 모델 120 FPS / 도트 그림 114 FPS — 이 PC 의 그래픽 카드 기준이고 내장 그래픽은 확인하지 못했다.
 - **원근 카메라 (2단계)**: 화각 33°(세로), 거리 19, 기울기 55° 그대로 → 주인공 둘레의 크기는 직교 때와 같고 화면 위쪽(먼 곳)이 작게·넓게 보인다.
   보이는 땅이 사다리꼴이 되어 `TiltPreset.GroundFootprint` 가 그것을 감싼 사각형을 준다(북쪽 8.7, 남쪽 5.7 + 여유 2.5, 좌우 ±12.6). 그래서 소품을 만드는 범위와 **적 스폰 링이 조금 커졌다**(반지름 12.1 → 15.3 유닛: 적이 0.8초쯤 더 걸어온다). 협동 서버의 스폰 링(`balance.json`)은 그대로다.
+- **무기·탄환·이펙트 (3단계)**. 규칙 코드는 여전히 납작한 그림을 움직이고, 화면 층이 그 그림의 **역할**(오브젝트 이름·정렬 레이어·그림 파일)을 보고 같은 자리·방향·크기·색의 3D 메시로 바꿔 그린다. 규칙·판정·타이밍은 그대로다.
+
+  | 그림 | 3D 로 | 비고 |
+  |---|---|---|
+  | 손에 든 무기 (`Weapons/*_Held.png`, `Held#`) | 검·창·언월도·극 모델 | 그림의 날 방향을 땅 위의 방향으로 옮겨 몸 둘레를 수평으로 휘두른다(끝을 조금 든다). 색은 그림에서 뽑음 |
+  | 화살·쇠뇌 (`Projectile` 레이어) | 화살 모델 | 몸통 높이(0.8)로 난다. 적 화살은 그림 색(붉은 기)이 곱해진다 |
+  | 적 탄환 (`Projectile.png`) | 빛나는 팔면체 | |
+  | 회전 도끼·비도 (`Blade#`, `Blade.png`) | 도는 칼날 모델 | |
+  | 경험치 보석 | 도는 팔면체 | 제자리에서 돌며 오르내린다 |
+  | 반원 검기 (`SlashArc`) / 뾰족한 검기 (`ThrustPoint`) | 세운 초승달 날 / 쐐기 | 빛나는 반투명 |
+  | 범위 공격·착탄·전고·스킬 (`WeaponFx`, `NovaRing`, `SkillFx`) | 충격 고리 (낮은 벽 + 바닥 띠) | |
+  | 번개 줄기 (`Bolt.png` 을 길게 늘인 것) | 하늘에서 떨어지는 꺾인 줄기 | 같은 그림을 배율이 같게 쓴 것은 착탄 고리 |
+  | 불길 (`Fire.png`) | 일렁이는 불꽃 뿔 여럿 + 바닥 고리 | 일렁임은 셰이더 |
+  | 타격 입자 (`BurstSquare`) | 구르는 정육면체 | 사라짐은 점묘 |
+
+  그대로 둔 것: 체력 막대·데미지 숫자(화면 위 표시), 물결(물 표면의 고리), 바닥 얼룩, 연못·강.
+  빛나는 이펙트는 `lowpoly_fx`(빛을 받지 않음, 반투명), 무기·화살·보석·입자는 `lowpoly`(빛·그림자). 모두 종류마다 MultiMesh 한 묶음이다.
+  성능(적 500 + 무기 8종, 1280x720, 수직 동기 끔, 이 PC): 3D 113~117 FPS / 예전 화면(`--sprites --ortho`) 79 FPS — 그림 한 장이 노드 하나이던 것이 묶음이 되어 오히려 빠르다.
 - 끄고 비교: `--sprites`(도트 그림), `--ortho`(직교 카메라). 둘 다 붙이면 G11 까지의 화면이다.
-- 남은 것: 손에 든 무기·이펙트·투사체는 아직 도트 그림(납작), 모델이 임시, 맵 편집기·내정은 2D 그대로, 타이틀에 켜고 끄는 버튼 없음.
+- 남은 것: 모델·이펙트가 모두 코드로 만든 임시 모양, 걷기 말고는 동작(공격 자세, 쓰러짐)이 없음, 맵 편집기·내정은 2D 그대로, 타이틀에 켜고 끄는 버튼 없음.
 
 ## 눈으로 확인할 것 (사용자)
 

@@ -159,6 +159,9 @@ namespace Samkuk.Game
                 dead.Clear();
                 foreach (var kv in states) if (kv.Key.destroyed) dead.Add(kv.Key);
                 foreach (var k in dead) states.Remove(k);
+                dead.Clear();
+                foreach (var kv in roles) if (kv.Key.destroyed) dead.Add(kv.Key);
+                foreach (var k in dead) roles.Remove(k);
             }
         }
 
@@ -341,6 +344,258 @@ namespace Samkuk.Game
                 if (score > best) { best = score; result = c; }
             }
             return result;
+        }
+
+        // ───────────────────────── 무기·탄환·이펙트 (3D 전환 3단계) ─────────────────────────
+        // 규칙 코드는 여전히 납작한 그림(SpriteRenderer)을 움직인다. 화면 층이 그 그림의 역할(이름·정렬 레이어·그림 파일)을 보고
+        // 같은 자리·방향·크기·색의 3D 모델/이펙트 메시로 바꿔 그린다. 체력 막대·데미지 숫자·물결·바닥 얼룩은 그대로 둔다.
+
+        enum Role { None, Weapon, Arrow, Orb, Gem, Cube, SpinBlade, Ring, Bolt, Crescent, Wedge, Flames }
+
+        sealed class RoleEntry { public Compat.Sprite sprite; public Role role; public Batch batch; public Compat.Color tint = Compat.Color.white; }
+
+        readonly Dictionary<string, Compat.Color> textureColors = new Dictionary<string, Compat.Color>();
+
+        // 그림 파일의 가장 흔한 색 (밝게 맞춘다). 코드로 만든 그림(검기, 입자)은 흰색
+        Compat.Color TextureColor(Compat.Sprite sprite)
+        {
+            string path = sprite.path;
+            if (string.IsNullOrEmpty(path)) return Compat.Color.white;
+            if (textureColors.TryGetValue(path, out var cached)) return cached;
+            var result = Compat.Color.white;
+            var texture = Textures.Of(sprite);
+            var image = texture != null ? texture.GetImage() : null;
+            if (image != null)
+            {
+                if (image.IsCompressed()) image.Decompress();
+                var c = Dominant(image, 0, 0, image.GetWidth(), image.GetHeight(), new GColor(1f, 1f, 1f));
+                float max = Mathf.Max(0.05f, Mathf.Max(c.R, Mathf.Max(c.G, c.B)));
+                result = new Compat.Color(c.R / max, c.G / max, c.B / max, 1f);
+            }
+            textureColors[path] = result;
+            return result;
+        }
+
+        /// <summary>땅에서 띄우는 높이(유닛): 탄환·검기는 몸통 높이, 보석은 발치.</summary>
+        public const float ProjectileHeight = 0.8f, WaveHeight = 0.75f, GemHeight = 0.32f, BladeHeight = 0.7f;
+        /// <summary>손에 든 무기의 길이 배율 (사람 모델을 키운 만큼) 과 들어 올린 각도(수평에서, 라디안 탄젠트).</summary>
+        public const float WeaponScale = 1.7f, WeaponRise = 0.35f;
+
+        readonly Dictionary<SpriteRenderer, RoleEntry> roles = new Dictionary<SpriteRenderer, RoleEntry>();
+        ShaderMaterial fxMaterial;
+
+        static GVec3 Map(CVec3 v) => new GVec3(v.x, -v.z, -v.y);
+
+        /// <summary>손에 든 무기·탄환·보석·이펙트 그림을 3D 로 그렸으면 true (그러면 도트 그림은 숨긴다).</summary>
+        public bool TryDrawEffect(SpriteRenderer sr, Compat.Sprite sprite)
+        {
+            if (!roles.TryGetValue(sr, out var entry)) roles[sr] = entry = new RoleEntry();
+            if (entry.sprite != sprite)
+            {
+                entry.sprite = sprite;
+                entry.role = RoleOf(sr, sprite);
+                entry.batch = entry.role == Role.None ? null : EffectBatch(entry.role, sprite);
+                // 무기·화살·칼날은 모델이 제 색을 갖는다. 나머지는 그림의 본색을 입힌다
+                bool ownColor = entry.role == Role.Weapon || entry.role == Role.Arrow || entry.role == Role.SpinBlade || entry.role == Role.None;
+                entry.tint = ownColor ? Compat.Color.white : TextureColor(sprite);
+            }
+            if (entry.batch == null) return false;
+
+            var role = entry.role;
+            var t = sr.transform;
+            var p = t.position;
+            var q = t.rotation;
+            var scale = t.lossyScale;
+            float sxAbs = Mathf.Abs(scale.x), syAbs = Mathf.Abs(scale.y);
+            float w = sprite.rect.width / sprite.pixelsPerUnit * sxAbs, h = sprite.rect.height / sprite.pixelsPerUnit * syAbs;
+            var color = sr.color;
+            color = new Compat.Color(color.r * entry.tint.r, color.g * entry.tint.g, color.b * entry.tint.b, color.a);
+            var origin = Map(p);
+            var right = Map(q * CVec3.right);
+            var up = Map(q * CVec3.up);
+            var Y = GVec3.Up;
+            int hash = (Mathf.RoundToInt(p.x * 31.7f) * 73856093) ^ (Mathf.RoundToInt(p.y * 17.3f) * 19349663) ^ sr.GetHashCode();
+            float h01 = (hash & 1023) / 1023f;
+            float time = Compat.Time.time;
+            var batch = entry.batch;
+
+            // 그 자리에서 번개인지 고리인지 갈리는 이펙트 (같은 그림을 줄기와 착탄 고리에 함께 쓴다)
+            if (role == Role.Bolt && Mathf.Abs(sxAbs - syAbs) < 0.02f * Mathf.Max(sxAbs, syAbs)) { role = Role.Ring; batch = EffectBatch(Role.Ring, sprite); }
+
+            switch (role)
+            {
+                case Role.Weapon:
+                {
+                    // 그림의 위쪽(날 방향)을 땅 위의 방향으로: 몸 둘레를 수평으로 휘두르고 끝을 조금 든다
+                    var flat = new GVec3(up.X, 0f, up.Z);
+                    if (flat.LengthSquared() < 1e-6f) flat = GVec3.Back;
+                    var axis = (flat.Normalized() + Y * WeaponRise).Normalized();
+                    float len = h * WeaponScale;
+                    var side = Y.Cross(axis).Normalized() * (sr.flipX ? -1f : 1f);
+                    Push(batch, side * len, axis * len, side.Cross(axis).Normalized() * len, origin, color.r, color.g, color.b, 1f, 0f, 0f, color.a, 0f);
+                    break;
+                }
+                case Role.Arrow:
+                {
+                    var dir = new GVec3(right.X, 0f, right.Z);
+                    if (dir.LengthSquared() < 1e-6f) dir = GVec3.Right;
+                    dir = dir.Normalized();
+                    float len = Mathf.Max(w, h) * 1.6f;
+                    Push(batch, dir * len, Y * len, dir.Cross(Y) * len, origin + Y * ProjectileHeight, color.r, color.g, color.b, 1f, 0f, 0f, color.a, 0f);
+                    break;
+                }
+                case Role.Orb:
+                {
+                    float s = Mathf.Max(w, h) * 1.3f, yaw = time * 5f + h01 * 6.28f, c = Mathf.Cos(yaw), sn = Mathf.Sin(yaw);
+                    Push(batch, new GVec3(c, 0f, -sn) * s, Y * s, new GVec3(sn, 0f, c) * s, origin + Y * ProjectileHeight, color.r, color.g, color.b, color.a, 0f, 0f, 0f, 0f);
+                    break;
+                }
+                case Role.Gem:
+                {
+                    float s = Mathf.Max(w, h) * 1.0f, yaw = time * 2.4f + h01 * 6.28f, c = Mathf.Cos(yaw), sn = Mathf.Sin(yaw);
+                    float bob = Mathf.Sin(time * 3f + h01 * 6.28f) * 0.06f;
+                    Push(batch, new GVec3(c, 0f, -sn) * s, Y * s, new GVec3(sn, 0f, c) * s, origin + Y * (GemHeight + bob), color.r, color.g, color.b, 1f, 0f, 0f, color.a, 0.22f);
+                    break;
+                }
+                case Role.Cube:
+                {
+                    float s = Mathf.Max(w, h) * 0.7f, yaw = time * 7f + h01 * 6.28f, c = Mathf.Cos(yaw), sn = Mathf.Sin(yaw);
+                    // 기울여 굴린다: 세 면이 다 보여야 덩어리로 읽힌다
+                    var bx = new GVec3(c, 0.5f, -sn).Normalized(); var bz = bx.Cross(Y).Normalized(); var by = bz.Cross(bx);
+                    Push(batch, bx * s, by * s, bz * s, origin + Y * (0.4f + h01 * 0.6f), color.r, color.g, color.b, 1f, 0f, 0f, color.a, 0.3f);
+                    break;
+                }
+                case Role.SpinBlade:
+                {
+                    float s = Mathf.Max(w, h) * 1.2f;
+                    var r = new GVec3(right.X, 0f, right.Z).Normalized();
+                    Push(batch, r * s, Y * s, r.Cross(Y) * s, origin + Y * BladeHeight, color.r, color.g, color.b, 1f, 0f, 0f, color.a, 0f);
+                    break;
+                }
+                case Role.Ring:
+                {
+                    float d = Mathf.Max(w, h);
+                    Push(batch, GVec3.Right * d, Y * Mathf.Clamp(d, 0.8f, 3f), GVec3.Back * d, origin + Y * 0.03f, color.r, color.g, color.b, color.a, 0f, 0f, 0f, 0f);
+                    break;
+                }
+                case Role.Bolt:
+                {
+                    // 그림은 땅에 누워 있다: 아래 끝(남쪽 끝)이 떨어지는 자리. 그 자리에서 하늘로 세운다
+                    var foot = Map(p - q * CVec3.up * (h * 0.5f));
+                    Push(batch, GVec3.Right * h * 0.9f, Y * h * 1.5f, GVec3.Back * h * 0.9f, foot, color.r, color.g, color.b, color.a, 0f, 0f, 0f, 0f);
+                    break;
+                }
+                case Role.Crescent:
+                case Role.Wedge:
+                {
+                    float radius = Samkuk.Weapons.WaveSprites.RadiusUnits * sxAbs;
+                    var r = new GVec3(right.X, 0f, right.Z).Normalized();
+                    Push(batch, r * radius, Y * radius, r.Cross(Y) * radius, origin + Y * WaveHeight, color.r, color.g, color.b, color.a, 0f, 0f, 0f, 0f);
+                    break;
+                }
+                case Role.Flames:
+                {
+                    float d = Mathf.Max(w, h);
+                    Push(batch, GVec3.Right * d, Y * Mathf.Clamp(d * 0.6f, 0.9f, 2f), GVec3.Back * d, origin + Y * 0.02f, color.r, color.g, color.b, color.a, h01, 0f, 0f, 0f);
+                    break;
+                }
+            }
+            return true;
+        }
+
+        void Push(Batch b, GVec3 bx, GVec3 by, GVec3 bz, GVec3 origin, float r, float g, float bl, float a, float c0, float c1, float c2, float c3)
+        {
+            if (b.count >= b.capacity) Grow(b);
+            int o = b.count++ * Stride;
+            var f = b.buffer;
+            f[o] = bx.X; f[o + 1] = by.X; f[o + 2] = bz.X; f[o + 3] = origin.X;
+            f[o + 4] = bx.Y; f[o + 5] = by.Y; f[o + 6] = bz.Y; f[o + 7] = origin.Y;
+            f[o + 8] = bx.Z; f[o + 9] = by.Z; f[o + 10] = bz.Z; f[o + 11] = origin.Z;
+            f[o + 12] = r; f[o + 13] = g; f[o + 14] = bl; f[o + 15] = a;
+            f[o + 16] = c0; f[o + 17] = c1; f[o + 18] = c2; f[o + 19] = c3;
+        }
+
+        static Role RoleOf(SpriteRenderer sr, Compat.Sprite sprite)
+        {
+            string path = sprite.path ?? "";
+            string tex = sprite.texture != null ? sprite.texture.name ?? "" : "";
+            string name = sr.gameObject.name ?? "";
+            var parent = sr.transform.parent;
+            string parentName = parent != null ? parent.gameObject.name ?? "" : "";
+
+            if (path.Contains("/Weapons/") && name.StartsWith("Held")) return Role.Weapon;
+            if (path.EndsWith("/ExpGem.png")) return Role.Gem;
+            if (tex == "BurstSquare" || sprite.name == "BurstSquare") return Role.Cube;
+            if (sprite.name == "SlashArc") return Role.Crescent;
+            if (sprite.name == "ThrustPoint") return Role.Wedge;
+            if (name.StartsWith("Blade") || path.EndsWith("/Blade.png")) return Role.SpinBlade;
+            if (sr.sortingLayerName == "Projectile") return path.EndsWith("/Arrow.png") || path.EndsWith("/Bolt.png") ? Role.Arrow : Role.Orb;
+            bool effect = parentName == "WeaponFx" || name == "SkillFx" || name == "NovaRing" || name == "FireZone";
+            if (!effect) return Role.None;
+            if (path.EndsWith("/Fire.png")) return Role.Flames;
+            if (path.EndsWith("/Bolt.png")) return Role.Bolt;   // 줄기인지 고리인지는 그릴 때 배율로 가른다
+            return Role.Ring;
+        }
+
+        Batch EffectBatch(Role role, Compat.Sprite sprite)
+        {
+            string key = "Fx_" + role;
+            if (role == Role.Weapon) key = System.IO.Path.GetFileNameWithoutExtension(sprite.path);
+            if (batches.TryGetValue(key, out var existing)) return existing;
+
+            ArrayMesh mesh; bool glow = true;
+            switch (role)
+            {
+                case Role.Weapon:
+                {
+                    glow = false;
+                    var texture = Textures.Of(sprite);
+                    var image = texture != null ? texture.GetImage() : null;
+                    var blade = new GColor(0.85f, 0.87f, 0.92f); var shaft = new GColor(0.45f, 0.3f, 0.18f);
+                    if (image != null)
+                    {
+                        if (image.IsCompressed()) image.Decompress();
+                        Bounds(image, 0, 0, image.GetWidth(), image.GetHeight(), out int bx, out int by, out int bw, out int bh);
+                        blade = Dominant(image, bx, by, bw, Mathf.Max(1, bh * 4 / 10), blade);
+                        shaft = Dominant(image, bx, by + bh * 6 / 10, bw, Mathf.Max(1, bh * 4 / 10), shaft);
+                    }
+                    var accent = new GColor(0.85f, 0.68f, 0.25f);
+                    string n = key;
+                    var kind = n.Contains("GreenDragon") || n.Contains("MoonDragon") ? LowPolyMesh.WeaponKind.Glaive
+                        : n.Contains("SkyPiercer") || n.Contains("Halberd") ? LowPolyMesh.WeaponKind.Halberd
+                        : n.Contains("Spear") || n.Contains("Thrust") ? LowPolyMesh.WeaponKind.Spear
+                        : LowPolyMesh.WeaponKind.Sword;
+                    mesh = LowPolyMesh.HeldWeapon(kind, blade, shaft, accent);
+                    break;
+                }
+                case Role.Arrow: mesh = LowPolyMesh.Arrow(); glow = false; break;
+                case Role.Gem: mesh = LowPolyMesh.Gem(); glow = false; break;
+                case Role.SpinBlade: mesh = LowPolyMesh.SpinBlade(); glow = false; break;
+                case Role.Orb: mesh = LowPolyMesh.Gem(1f); break;
+                case Role.Cube: mesh = LowPolyMesh.Cube(); glow = false; break;
+                case Role.Ring: mesh = LowPolyMesh.Ring(); break;
+                case Role.Bolt: mesh = LowPolyMesh.BoltZig(); break;
+                case Role.Crescent: mesh = LowPolyMesh.Crescent(); break;
+                case Role.Wedge: mesh = LowPolyMesh.Wedge(); break;
+                case Role.Flames: mesh = LowPolyMesh.Flames(); break;
+                default: return null;
+            }
+
+            if (material == null) material = new ShaderMaterial { Shader = GD.Load<Godot.Shader>("res://shaders/lowpoly.gdshader") };
+            if (fxMaterial == null) fxMaterial = new ShaderMaterial { Shader = GD.Load<Godot.Shader>("res://shaders/lowpoly_fx.gdshader"), RenderPriority = 20 };
+            var multi = new MultiMesh { TransformFormat = MultiMesh.TransformFormatEnum.Transform3D, UseColors = true, UseCustomData = true, Mesh = mesh };
+            var node = new MultiMeshInstance3D
+            {
+                Name = "Model_" + key,
+                Multimesh = multi,
+                MaterialOverride = glow ? fxMaterial : material,
+                CastShadow = glow ? GeometryInstance3D.ShadowCastingSetting.Off : GeometryInstance3D.ShadowCastingSetting.On,
+                ExtraCullMargin = 4096f,
+            };
+            parent.AddChild(node);
+            var batch = new Batch { mesh = multi, node = node };
+            batches[key] = batch;
+            return batch;
         }
     }
 }

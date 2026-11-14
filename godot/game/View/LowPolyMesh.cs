@@ -346,5 +346,218 @@ namespace Samkuk.Game
             }
             return m.Build();
         }
+
+        // ───────────────────────── 무기·탄환·이펙트 (3D 전환 3단계) ─────────────────────────
+
+        /// <summary>이펙트용 사각형: 면 밝기를 흔들지 않고(색은 인스턴스가 정한다) UV.y 에 옅어지는 정도를 넣는다 (a, b 쪽 fadeA / c, d 쪽 fadeB). 재질이 양면이라 한 면만.</summary>
+        void RawQuad(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color, float fadeA, float fadeB)
+        {
+            positions.Add(a); positions.Add(b); positions.Add(c); positions.Add(a); positions.Add(c); positions.Add(d);
+            var n = (b - a).Cross(c - a); n = n.LengthSquared() > 1e-12f ? n.Normalized() : Vector3.Up;
+            float[] fade = { fadeA, fadeA, fadeB, fadeA, fadeB, fadeB };
+            for (int i = 0; i < 6; i++) { normals.Add(n); colors.Add(color); uvs.Add(new Vector2(swing, fade[i])); }
+        }
+
+        public enum WeaponKind { Sword, Spear, Glaive, Halberd }
+
+        /// <summary>손에 든 무기: 손잡이 끝이 원점, +y 로 길이 1. blade = 날 색, shaft = 자루 색.</summary>
+        public static ArrayMesh HeldWeapon(WeaponKind kind, Color blade, Color shaft, Color accent)
+        {
+            var m = new LowPolyMesh();
+            switch (kind)
+            {
+                case WeaponKind.Sword:
+                    m.Box(0f, 0f, 0.22f, 0f, 0.05f, 0.05f, shaft);
+                    m.Box(0f, 0.20f, 0.26f, 0f, 0.26f, 0.07f, accent);
+                    m.Box(0f, 0.26f, 0.86f, 0f, 0.11f, 0.035f, blade);
+                    m.Box(0f, 0.86f, 1.0f, 0f, 0.11f, 0.035f, blade, 0.05f);
+                    break;
+                case WeaponKind.Spear:
+                    m.Box(0f, 0f, 0.78f, 0f, 0.04f, 0.04f, shaft);
+                    m.Box(0f, 0.74f, 0.80f, 0f, 0.12f, 0.06f, accent);
+                    m.Box(0f, 0.80f, 1.0f, 0f, 0.10f, 0.035f, blade, 0.05f);
+                    break;
+                case WeaponKind.Glaive:   // 언월도: 긴 자루 + 한쪽으로 휜 넓은 날
+                    m.Box(0f, 0f, 0.66f, 0f, 0.045f, 0.045f, shaft);
+                    m.Box(0f, 0.62f, 0.68f, 0f, 0.13f, 0.07f, accent);
+                    m.Box(0.04f, 0.68f, 0.90f, 0f, 0.17f, 0.035f, blade, 1.1f);
+                    m.Box(0.06f, 0.90f, 1.0f, 0f, 0.19f, 0.035f, blade, 0.1f);
+                    break;
+                case WeaponKind.Halberd:  // 극: 창날 + 옆의 초승달 날
+                    m.Box(0f, 0f, 0.80f, 0f, 0.045f, 0.045f, shaft);
+                    m.Box(0f, 0.80f, 1.0f, 0f, 0.09f, 0.035f, blade, 0.05f);
+                    m.Box(0.11f, 0.66f, 0.86f, 0f, 0.10f, 0.03f, blade, 0.6f);
+                    m.Box(0.05f, 0.73f, 0.78f, 0f, 0.14f, 0.04f, accent);
+                    m.Box(-0.08f, 0.70f, 0.80f, 0f, 0.07f, 0.03f, blade, 0.4f);
+                    break;
+            }
+            return m.Build();
+        }
+
+        // x 방향으로 긴 상자 (x0 → x1), 끝 배율 top
+        LowPolyMesh BoxX(float x0, float x1, float h, float d, Color color, float top = 1f)
+        {
+            float hh = h * 0.5f, hd = d * 0.5f, th = hh * top, td = hd * top;
+            var a0 = new Vector3(x0, -hh, -hd); var a1 = new Vector3(x0, hh, -hd); var a2 = new Vector3(x0, hh, hd); var a3 = new Vector3(x0, -hh, hd);
+            var b0 = new Vector3(x1, -th, -td); var b1 = new Vector3(x1, th, -td); var b2 = new Vector3(x1, th, td); var b3 = new Vector3(x1, -th, td);
+            Quad(a3, b3, b2, a2, color); Quad(b0, a0, a1, b1, color); Quad(a2, b2, b1, a1, color); Quad(a0, b0, b3, a3, color);
+            Quad(b3, b0, b1, b2, color); Quad(a0, a3, a2, a1, color);
+            return this;
+        }
+
+        /// <summary>화살: +x 로 날아간다, 길이 1, 가운데가 원점.</summary>
+        public static ArrayMesh Arrow()
+        {
+            var m = new LowPolyMesh();
+            var wood = new Color(0.62f, 0.45f, 0.26f); var steel = new Color(0.86f, 0.88f, 0.92f); var feather = new Color(0.95f, 0.95f, 0.9f);
+            m.BoxX(-0.42f, 0.30f, 0.035f, 0.035f, wood);
+            m.BoxX(0.28f, 0.5f, 0.11f, 0.05f, steel, 0.05f);
+            m.BoxX(-0.5f, -0.30f, 0.16f, 0.02f, feather);
+            m.BoxX(-0.5f, -0.30f, 0.02f, 0.16f, feather);
+            return m.Build();
+        }
+
+        /// <summary>팔면체 (보석, 탄환): 반지름 0.5, 가운데가 원점.</summary>
+        public static ArrayMesh Gem(float stretchY = 1.3f)
+        {
+            var m = new LowPolyMesh();
+            var white = new Color(1f, 1f, 1f);
+            var top = new Vector3(0f, 0.5f * stretchY, 0f); var bottom = new Vector3(0f, -0.5f * stretchY, 0f);
+            for (int i = 0; i < 4; i++)
+            {
+                float a0 = Mathf.Tau * i / 4f, a1 = Mathf.Tau * (i + 1) / 4f;
+                var p0 = new Vector3(Mathf.Sin(a0), 0f, Mathf.Cos(a0)) * 0.5f; var p1 = new Vector3(Mathf.Sin(a1), 0f, Mathf.Cos(a1)) * 0.5f;
+                m.Tri(p0, p1, top, m.Shade(white));
+                m.Tri(p1, p0, bottom, m.Shade(new Color(0.78f, 0.78f, 0.78f)));
+            }
+            return m.Build();
+        }
+
+        /// <summary>정육면체 (타격 입자): 한 변 1, 가운데가 원점.</summary>
+        public static ArrayMesh Cube()
+        {
+            var m = new LowPolyMesh();
+            m.Box(0f, -0.5f, 0.5f, 0f, 1f, 1f, new Color(1f, 1f, 1f));
+            return m.Build();
+        }
+
+        /// <summary>도는 칼날 (회전 도끼·비도): xz 평면에 누운 날 넷, 지름 1.</summary>
+        public static ArrayMesh SpinBlade()
+        {
+            var m = new LowPolyMesh();
+            var steel = new Color(0.88f, 0.9f, 0.95f); var hub = new Color(0.45f, 0.32f, 0.2f);
+            m.Prism(0f, 0f, -0.05f, 0.05f, 0.12f, 0.12f, 6, hub);
+            for (int i = 0; i < 4; i++)
+            {
+                float a = Mathf.Tau * i / 4f, b = a + 0.9f;
+                var p0 = new Vector3(Mathf.Sin(a), 0f, Mathf.Cos(a)) * 0.1f;
+                var p1 = new Vector3(Mathf.Sin(a), 0f, Mathf.Cos(a)) * 0.5f;
+                var p2 = new Vector3(Mathf.Sin(b), 0f, Mathf.Cos(b)) * 0.34f;
+                var up = new Vector3(0f, 0.03f, 0f);
+                var c = m.Shade(steel);
+                m.Tri(p0 + up, p1, p2 + up, c); m.Tri(p1, p0 + up, p2 + up, c);
+                m.Tri(p0 - up, p2 - up, p1, c); m.Tri(p2 - up, p0 - up, p1, c);
+            }
+            return m.Build();
+        }
+
+        /// <summary>충격 고리 (범위 공격, 착탄): 지름 1, 낮은 벽이 위로 옅어진다 + 바닥의 얇은 띠.</summary>
+        public static ArrayMesh Ring()
+        {
+            var m = new LowPolyMesh();
+            var white = new Color(1f, 1f, 1f, 1f);
+            const int sides = 20;
+            for (int i = 0; i < sides; i++)
+            {
+                float a0 = Mathf.Tau * i / sides, a1 = Mathf.Tau * (i + 1) / sides;
+                var d0 = new Vector3(Mathf.Sin(a0), 0f, Mathf.Cos(a0)); var d1 = new Vector3(Mathf.Sin(a1), 0f, Mathf.Cos(a1));
+                var up = new Vector3(0f, 0.16f, 0f); var lift = new Vector3(0f, 0.02f, 0f);
+                m.RawQuad(d0 * 0.5f + lift, d1 * 0.5f + lift, d1 * 0.52f + up, d0 * 0.52f + up, white, 0.15f, 1f);         // 벽
+                m.RawQuad(d0 * 0.36f + lift, d1 * 0.36f + lift, d1 * 0.5f + lift, d0 * 0.5f + lift, white, 0.85f, 0.3f);   // 바닥 띠
+            }
+            return m.Build();
+        }
+
+        /// <summary>반원 검기 (베기): +x 로 볼록한 ±75도 호, 반지름 1, 가운데가 두껍고 양 끝이 얇은 세운 날.</summary>
+        public static ArrayMesh Crescent()
+        {
+            var m = new LowPolyMesh();
+            var white = new Color(1f, 1f, 1f, 1f);
+            const int steps = 10; const float half = 75f * Mathf.Pi / 180f;
+            for (int i = 0; i < steps; i++)
+            {
+                float a0 = -half + 2f * half * i / steps, a1 = -half + 2f * half * (i + 1) / steps;
+                float t0 = Mathf.Cos(a0 / half * Mathf.Pi * 0.5f), t1 = Mathf.Cos(a1 / half * Mathf.Pi * 0.5f);
+                var d0 = new Vector3(Mathf.Cos(a0), 0f, Mathf.Sin(a0)); var d1 = new Vector3(Mathf.Cos(a1), 0f, Mathf.Sin(a1));
+                float h0 = 0.08f + 0.42f * t0, h1 = 0.08f + 0.42f * t1;
+                // 바깥 날(밝다): 세운 면 + 안쪽으로 옅어지는 누운 면
+                m.RawQuad(d0 - new Vector3(0f, h0 * 0.5f, 0f), d1 - new Vector3(0f, h1 * 0.5f, 0f), d1 + new Vector3(0f, h1 * 0.5f, 0f), d0 + new Vector3(0f, h0 * 0.5f, 0f), white, 0.25f, 0.25f);
+                m.RawQuad(d0, d1, d1 * (1f - 0.3f * t1), d0 * (1f - 0.3f * t0), white, 0f, 1f);
+            }
+            return m.Build();
+        }
+
+        /// <summary>뾰족한 검기 (찌르기): 촉 끝이 +x 의 1, 뒤로 벌어지는 두 날개.</summary>
+        public static ArrayMesh Wedge()
+        {
+            var m = new LowPolyMesh();
+            var white = new Color(1f, 1f, 1f, 1f);
+            var tip = new Vector3(1f, 0f, 0f);
+            for (int side = -1; side <= 1; side += 2)
+            {
+                var wing = new Vector3(-0.1f, 0f, side * 0.62f);
+                var inner = new Vector3(0.45f, 0f, 0f);
+                m.RawQuad(tip + new Vector3(0f, -0.16f, 0f), wing, wing, tip + new Vector3(0f, 0.16f, 0f), white, 0.1f, 0.9f);   // 세운 면
+                m.RawQuad(tip, wing, inner + new Vector3(0f, 0f, side * 0.1f), tip, white, 0f, 1f);                                 // 누운 면
+            }
+            return m.Build();
+        }
+
+        /// <summary>번개 줄기: 바닥이 원점, +y 로 높이 1 의 꺾인 줄기 (십자로 두 장).</summary>
+        public static ArrayMesh BoltZig()
+        {
+            var m = new LowPolyMesh();
+            var white = new Color(1f, 1f, 1f, 1f);
+            float[] offs = { 0f, 0.09f, -0.07f, 0.10f, -0.06f, 0.05f, 0f };
+            for (int i = 0; i + 1 < offs.Length; i++)
+            {
+                float y0 = (float)i / (offs.Length - 1), y1 = (float)(i + 1) / (offs.Length - 1);
+                float w0 = 0.035f + 0.05f * (1f - y0), w1 = 0.035f + 0.05f * (1f - y1);
+                m.RawQuad(new Vector3(offs[i] - w0, y0, 0f), new Vector3(offs[i] + w0, y0, 0f), new Vector3(offs[i + 1] + w1, y1, 0f), new Vector3(offs[i + 1] - w1, y1, 0f), white, 0f, 0f);
+                m.RawQuad(new Vector3(offs[i], y0, -w0), new Vector3(offs[i], y0, w0), new Vector3(offs[i + 1], y1, w1), new Vector3(offs[i + 1], y1, -w1), white, 0f, 0f);
+            }
+            return m.Build();
+        }
+
+        /// <summary>불길: 지름 1 안에 흩어진 불꽃 뿔들 (끝이 일렁인다) + 바닥의 고리.</summary>
+        public static ArrayMesh Flames()
+        {
+            var m = new LowPolyMesh();
+            var rng = new Random(11);
+            var core = new Color(1f, 0.95f, 0.75f, 1f); var white = new Color(1f, 1f, 1f, 1f);
+            for (int i = 0; i < 9; i++)
+            {
+                float a = Mathf.Tau * i / 9f + (float)rng.NextDouble() * 0.5f, r = i == 0 ? 0f : 0.16f + (float)rng.NextDouble() * 0.26f;
+                float cx = Mathf.Sin(a) * r, cz = Mathf.Cos(a) * r, h = 0.34f + (float)rng.NextDouble() * 0.3f, w = 0.07f + (float)rng.NextDouble() * 0.05f;
+                var top = new Vector3(cx, h, cz);
+                for (int k = 0; k < 4; k++)
+                {
+                    float b0 = Mathf.Tau * k / 4f, b1 = Mathf.Tau * (k + 1) / 4f;
+                    var p0 = new Vector3(cx + Mathf.Sin(b0) * w, 0.02f, cz + Mathf.Cos(b0) * w); var p1 = new Vector3(cx + Mathf.Sin(b1) * w, 0.02f, cz + Mathf.Cos(b1) * w);
+                    // 끝(위)만 일렁이게 UV.x 를 켠다
+                    m.positions.Add(p0); m.positions.Add(p1); m.positions.Add(top);
+                    for (int v = 0; v < 3; v++) { m.normals.Add(Vector3.Up); m.colors.Add(v == 2 ? white : core); m.uvs.Add(new Vector2(v == 2 ? 1f : 0f, v == 2 ? 0.75f : 0.05f)); }
+                }
+            }
+            const int sides = 16;
+            for (int i = 0; i < sides; i++)
+            {
+                float a0 = Mathf.Tau * i / sides, a1 = Mathf.Tau * (i + 1) / sides;
+                var d0 = new Vector3(Mathf.Sin(a0), 0f, Mathf.Cos(a0)); var d1 = new Vector3(Mathf.Sin(a1), 0f, Mathf.Cos(a1));
+                var lift = new Vector3(0f, 0.02f, 0f);
+                m.RawQuad(d0 * 0.2f + lift, d1 * 0.2f + lift, d1 * 0.5f + lift, d0 * 0.5f + lift, white, 0.8f, 0.45f);
+            }
+            return m.Build();
+        }
     }
 }

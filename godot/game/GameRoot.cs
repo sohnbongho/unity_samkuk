@@ -34,6 +34,8 @@ namespace Samkuk.Game
         AudioOut audio;
         int frames, quitAfter = -1;
         string shotPath;
+        int shotEvery; string shotEveryPrefix;
+        string give;
         string watchCoop, watchKey = "";   // --watch-coop
         int watchShotAt = -1, watchCount;
         string[] heldKeys = new string[0];
@@ -120,6 +122,9 @@ namespace Samkuk.Game
                 else if (arg.StartsWith("--save=")) Samkuk.Meta.SaveSystem.PathOverride = arg.Substring(7);   // 점검이 실제 저장을 건드리지 않게
                 else if (arg.StartsWith("--watch-coop=")) watchCoop = arg.Substring(13);   // 협동 전투의 상태(레벨·선택 중·사망·결과 창)가 바뀔 때마다 기록하고 화면을 저장한다 (파일 이름 머리)
                 else if (arg == "--ortho") Samkuk.World.TiltPreset.Perspective = false;   // 원근 대신 예전 직교 카메라 (비교용)
+                else if (arg.StartsWith("--shot-every=")) { var se = arg.Substring(13).Split(':', 2); shotEvery = int.Parse(se[0]); shotEveryPrefix = se[1]; }   // N 프레임마다 화면 저장 (파일 머리)
+                else if (arg.StartsWith("--give=")) give = arg.Substring(7);   // --give=120:Weapon_Bow,Weapon_Lightning (그 프레임에 주인공에게 무기를 준다 — 이펙트 점검용)
+                else if (arg == "--dump-sprites") WorldMirror.DumpKinds = new HashSet<string>();   // 끝낼 때 화면에 나왔던 그림 종류를 적는다
                 else if (arg == "--sprites") WorldMirror.Models3D = false;   // 3D 모델 대신 예전 도트 그림으로 (비교용)
                 else if (arg == "--smoke") quitAfter = 120;
             }
@@ -256,6 +261,22 @@ namespace Samkuk.Game
                 return;
             }
 
+            if (give != null)
+            {
+                var parts = give.Split(':', 2);
+                if (frames == int.Parse(parts[0]))
+                {
+                    var controller = Compat.Object.FindAnyObjectByType<Samkuk.Weapons.WeaponController>();
+                    foreach (string name in parts[1].Split(','))
+                    {
+                        var data = GameData.Get<Samkuk.Data.WeaponData>(name);
+                        if (controller != null && data != null) controller.AddWeapon(data);
+                        else GD.PushWarning($"[Samkuk] --give: {name} 을(를) 줄 수 없습니다");
+                    }
+                    give = null;
+                }
+            }
+            if (shotEvery > 0 && frames > 0 && frames % shotEvery == 0) GetViewport().GetTexture().GetImage().SavePng($"{shotEveryPrefix}_{frames:0000}.png");
             if (watchCoop != null) WatchCoop();
             frames++;
             if (quitAfter >= 0 && frames >= quitAfter) Finish();
@@ -291,6 +312,11 @@ namespace Samkuk.Game
             var net = Samkuk.Net.NetClient.Instance;
             if (net != null) GD.Print($"[Samkuk] 네트워크: {net.Phase} {net.Message}");
             GD.Print($"[Samkuk] {frames} 프레임: 씬 {SceneManager.GetActiveScene().name}, 오브젝트 {SceneRuntime.Objects.Count}, 보이는 그림 {world.SpriteCount}, 시간 {Compat.Time.time:0.00}초, FPS {Engine.GetFramesPerSecond():0}");
+            if (WorldMirror.DumpKinds != null)
+            {
+                var kinds = new List<string>(WorldMirror.DumpKinds); kinds.Sort();
+                foreach (var k in kinds) GD.Print("[그림] " + k);
+            }
             if (!string.IsNullOrEmpty(shotPath))
             {
                 var image = GetViewport().GetTexture().GetImage();
