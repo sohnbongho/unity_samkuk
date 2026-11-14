@@ -88,7 +88,7 @@ GODOT=/d/01-AgentLegion/tools/godot/Godot_v4.7.2-stable_mono_win64/Godot_v4.7.2-
 
 ## 테스트 현황
 
-`dotnet test`: **통과 657, 보류 4, 실패 0, 미룬 것 0**. 유니티 PlayMode 테스트 42개 파일의 테스트가 전부 돈다(+ Godot 판에서 더한 `GameDataTests`, `ServerDataExporterTests`).
+`dotnet test`: **통과 658, 보류 4, 실패 0, 미룬 것 0**. 유니티 PlayMode 테스트 42개 파일의 테스트가 전부 돈다(+ Godot 판에서 더한 `GameDataTests`, `ServerDataExporterTests`).
 유니티의 Mono 런타임으로 돌려도 같다(`tools/godot_port/mono_check.sh`: 보류 4개와, 작업 폴더에 `Assets/` 가 없어 실패하는 `SceneNames_MatchTheSceneAssets` 만 실패).
 
 테스트 도우미(`godot/tests`): `UnityTestSupport.cs`(프레임을 넘기는 `[UnityTest]`, 입력 흉내, 테스트 사이 프레임 경계), `AssetDatabase.cs`(예전 에셋 경로 → 데이터 창고·프리팹),
@@ -171,6 +171,28 @@ tools/godot_port/build_windows.sh     # Builds/godot/Samkuk.exe + Builds/Samkuk-
 | Windows 빌드 (11) | — | 화면 | `tools/godot_port/build_windows.sh` |
 | 디버그 키 F1~F10 | — | 화면 | F7(도트 격자)·F10(틸트 끄기)은 값만 바뀌고 화면은 그대로 |
 
+## 3D 전환 (G12·G13)
+
+도트 2.5D 에서 로우폴리 3D 로 가는 단계. **규칙 코드(`godot/core`)의 전투 규칙은 바꾸지 않았다**: 이동·충돌·무기 판정·적 AI 는 여전히 평면(x, y) + 언덕 층이다.
+
+| 단계 | 한 것 | 어디 |
+|---|---|---|
+| 1 (G12) | 서 있는 도트 그림(장수·아군·적·지형 소품)을 로우폴리 3D 모델로 바꿔 그린다 | `game/View/ModelMirror.cs`, `game/View/LowPolyMesh.cs`, `shaders/lowpoly.gdshader` |
+| 2 (G13) | 전투 카메라를 기울인 직교에서 **원근(쿼터뷰)** 으로 | `core/World/TiltPreset.cs`(`Perspective`, `FieldOfView`, `PerspectiveFootprint`), `BattleTiltCamera`, `WorldMirror.SyncCamera` |
+
+**모델로 바꾸는 방법 (1단계)**. 규칙 코드는 예전처럼 `SpriteRenderer` 에 걷기 시트의 칸을 넣는다. 화면 층이 그 그림의 **파일 이름**으로 모델을 고른다
+(`HeroWalk/*`, `EnemyWalk/*` = 사람 또는 말 탄 사람, `Terrain/Prop_*` = 소품 14종. 손에 든 무기·이펙트·체력 막대·데미지 숫자는 도트 그림 그대로).
+몸의 방향은 걷기 시트 칸의 **줄**(아래/위/왼쪽/오른쪽 — 규칙 코드가 정한 바라보는 쪽)이고 움직이는 방향이 그 줄과 맞으면 움직이는 방향을 따른다. 다리·팔은 움직인 거리만큼 흔들린다.
+
+- **모델은 코드로 만든 임시 모델**이다(`LowPolyMesh`: 상자·각기둥·정이십면체 덩어리). 색은 걷기 시트·소품 그림에서 뽑으므로(머리/얼굴/몸통/다리 띠의 가장 흔한 색) 그림을 바꾸면 모델 색도 따라온다.
+  구매한 itch.io 번들의 모델 파일은 이 PC 에서 찾지 못해 연결하지 않았다. 바꿀 자리는 `ModelMirror.CreateBatch`(그림 이름 → 메시)다. 번들 파일은 구매 에셋이라 공개 저장소에 올리면 안 된다(라이선스) — 쓰게 되면 `.gitignore` 에 넣고 로컬에만 둔다.
+- **성능(인스턴싱)**: 모델 종류마다 `MultiMesh` 하나. 보이는 것만 버퍼에 넣어 한 번에 올린다. 걷기는 뼈대 없이 꼭짓점 셰이더(UV 에 흔들 방향·축 높이), 겹친 소품 반투명은 점묘라 깊이·그림자·인스턴싱이 그대로다.
+  적 500 마리(F1 다섯 번), 1280x720, 수직 동기 끔: 모델 120 FPS / 도트 그림 114 FPS — 이 PC 의 그래픽 카드 기준이고 내장 그래픽은 확인하지 못했다.
+- **원근 카메라 (2단계)**: 화각 33°(세로), 거리 19, 기울기 55° 그대로 → 주인공 둘레의 크기는 직교 때와 같고 화면 위쪽(먼 곳)이 작게·넓게 보인다.
+  보이는 땅이 사다리꼴이 되어 `TiltPreset.GroundFootprint` 가 그것을 감싼 사각형을 준다(북쪽 8.7, 남쪽 5.7 + 여유 2.5, 좌우 ±12.6). 그래서 소품을 만드는 범위와 **적 스폰 링이 조금 커졌다**(반지름 12.1 → 15.3 유닛: 적이 0.8초쯤 더 걸어온다). 협동 서버의 스폰 링(`balance.json`)은 그대로다.
+- 끄고 비교: `--sprites`(도트 그림), `--ortho`(직교 카메라). 둘 다 붙이면 G11 까지의 화면이다.
+- 남은 것: 손에 든 무기·이펙트·투사체는 아직 도트 그림(납작), 모델이 임시, 맵 편집기·내정은 2D 그대로, 타이틀에 켜고 끄는 버튼 없음.
+
 ## 눈으로 확인할 것 (사용자)
 
 테스트와 정지 화면으로는 알 수 없는 것만 모은다. 수치는 **유니티 원본에 맞추는 쪽**으로 정해 두었다(사용자 결정 2026-11-13).
@@ -183,3 +205,4 @@ tools/godot_port/build_windows.sh     # Builds/godot/Samkuk.exe + Builds/Samkuk-
 5. **조작감과 소리**: 이동, 무기 타이밍, 화면 흔들림, 효과음 크기와 겹침. 소리는 한 번도 들어 보지 못했다.
 6. **성능**: RTX 3080 에서 적 194마리 60 FPS. 내장 그래픽에서는 재지 못했다(그림 한 장이 노드 하나라 적이 아주 많으면 `MultiMesh` 로 묶어야 할 수 있다).
 7. **맵 편집기**: 왼쪽 패널의 "지우개 반경" 글자가 두 줄로 나와 조금 잘린다.
+8. **3D 모델과 원근 카메라 (G12·G13)**: 임시 로우폴리 모델의 생김새·크기(`ModelMirror.CharacterScale` 1.3), 걷는 모양, 원근의 세기(`TiltPreset.FieldOfView` 33°)와 내려다보는 각(`Pitch` 55°), 화면 가장자리에서 모델이 바깥으로 기울어 보이는 정도, 적이 화면 밖에서 걸어 들어오는 거리. 도트 그림 쪽이 낫다면 `--sprites --ortho` 로 예전 화면과 비교할 수 있다.

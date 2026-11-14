@@ -19,6 +19,16 @@ namespace Samkuk.World
         /// 직교는 화면 어디서나 같은 배율이라 도트 밀도도 일정하다.
         /// </summary>
         public const float OrthoSize = 5.625f;
+        /// <summary>
+        /// 원근(쿼터뷰) 카메라 (3D 전환 2단계, Godot 판). 서 있는 것이 3D 모델이 되면서 직교를 고른 이유(늘린 도트 그림이 풍선처럼 커짐)가 없어져
+        /// 원근으로 바꿨다: 화면 아래쪽(가까운 곳)이 크고 위쪽(먼 곳)이 작게 보인다. 끄면 예전 직교 (점검용 <c>--ortho</c>, 직교 기준 테스트).
+        /// </summary>
+        public static bool Perspective = true;
+        /// <summary>원근 카메라의 세로 화각(도). 바라보는 점에서 <see cref="Distance"/> 떨어진 화면 반높이가 직교 때와 같은 <see cref="OrthoSize"/> 가 되는 값
+        /// (2 x atan(5.625 / 19) ≈ 33°) — 주인공 둘레의 크기는 직교 때와 같다.</summary>
+        public const float FieldOfView = 33f;
+        /// <summary>원근일 때 보이는 땅 범위의 남쪽 여유(유닛): 화면 아래 바깥의 키 큰 것(나무)의 윗부분이 화면 안으로 솟는다.</summary>
+        public const float PerspectiveSouthMargin = 2.5f;
         public const float Near = 0.3f, Far = 100f;
         /// <summary>컬링 여유(유닛). 서 있는 그림은 눕힌 트랜스폼 범위보다 화면에서 더 높이 솟으므로 아래 가장자리에서 먼저 잘리지 않게.</summary>
         public const float CullMargin = 4f;
@@ -82,9 +92,27 @@ namespace Samkuk.World
         /// </summary>
         public static Rect GroundFootprint(float pitchDeg, float orthoSize, float aspect)
         {
+            if (Perspective) return PerspectiveFootprint(pitchDeg, FieldOfView, Distance, aspect);
             float halfW = orthoSize * aspect;
             float halfH = orthoSize / Mathf.Max(0.1f, Mathf.Sin(pitchDeg * Mathf.Deg2Rad));
             return Rect.MinMaxRect(-halfW, -halfH, halfW, halfH);
+        }
+
+        /// <summary>
+        /// 원근 카메라에 보이는 땅(z = 0)의 범위를 감싼 사각형, 바라보는 점 기준. 보이는 땅은 사다리꼴(북쪽이 멀고 넓다)이라
+        /// 화면 위쪽 두 귀퉁이의 광선이 땅과 만나는 점이 북쪽 끝과 좌우 끝을, 아래쪽 귀퉁이가 남쪽 끝을 정한다.
+        /// </summary>
+        public static Rect PerspectiveFootprint(float pitchDeg, float fovDeg, float distance, float aspect)
+        {
+            float p = pitchDeg * Mathf.Deg2Rad, sin = Mathf.Sin(p), cos = Mathf.Cos(p);
+            float ty = Mathf.Tan(fovDeg * 0.5f * Mathf.Deg2Rad), tx = ty * aspect;
+            // 카메라 = 바라보는 점 - 앞 x 거리. 광선 = 앞 + 위 x (±ty) + 오른쪽 x (±tx). z = 0 과 만나는 배율 t
+            float tTop = distance * sin / Mathf.Max(0.05f, sin - ty * cos);
+            float tBottom = distance * sin / (sin + ty * cos);
+            float north = -cos * distance + tTop * (cos + ty * sin);
+            float south = -cos * distance + tBottom * (cos - ty * sin);
+            float halfW = tTop * tx;
+            return Rect.MinMaxRect(-halfW, south - PerspectiveSouthMargin, halfW, north);
         }
 
         /// <summary>바라보는 점에서 사각형의 가장 먼 귀퉁이까지 — 적이 화면 밖에서 태어나려면 이보다 멀어야 한다.</summary>

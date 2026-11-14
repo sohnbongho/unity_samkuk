@@ -407,6 +407,8 @@ namespace Samkuk.Game
             camera.Position = Map(t.position);
             camera.Projection = cam.orthographic ? Camera3D.ProjectionType.Orthogonal : Camera3D.ProjectionType.Perspective;
             camera.Size = cam.orthographicSize * 2f;   // Godot 은 전체 높이, 로직은 반높이
+            camera.KeepAspect = Camera3D.KeepAspectEnum.Height;
+            camera.Fov = Mathf.Clamp(cam.fieldOfView, 1f, 179f);   // 세로 화각
             camera.Near = Mathf.Max(0.05f, cam.nearClipPlane);
             camera.Far = Mathf.Max(camera.Near + 1f, cam.farClipPlane);
         }

@@ -153,6 +153,8 @@ namespace Samkuk.Compat
     {
         public bool orthographic = true;
         public float orthographicSize = 5f;
+        /// <summary>원근 카메라의 세로 화각 (도).</summary>
+        public float fieldOfView = 60f;
         public float aspect = 16f / 9f;
         public float nearClipPlane = 0.3f, farClipPlane = 1000f;
         public Color backgroundColor = Color.black;

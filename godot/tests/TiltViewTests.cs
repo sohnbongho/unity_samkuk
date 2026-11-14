@@ -67,13 +67,39 @@ namespace Samkuk.Tests
         [Test]
         public void Preset_GroundFootprint_CoversOldTopDownView_AndIsTallerOnTheGround()
         {
-            var r = TiltPreset.GroundFootprint(TiltPreset.Pitch, TiltPreset.OrthoSize, 16f / 9f);
+            // 직교 카메라 기준의 검사 (Godot 판의 기본은 원근 — 아래 Preset_PerspectiveFootprint_... 가 본다)
+            bool perspective = TiltPreset.Perspective;
+            TiltPreset.Perspective = false;
+            Rect r;
+            try { r = TiltPreset.GroundFootprint(TiltPreset.Pitch, TiltPreset.OrthoSize, 16f / 9f); }
+            finally { TiltPreset.Perspective = perspective; }
             Assert.AreEqual(20f, r.width, 1e-3f, "예전 2D 화면 폭(20) 그대로");
             Assert.AreEqual(2f * TiltPreset.OrthoSize / Mathf.Sin(TiltPreset.Pitch * Mathf.Deg2Rad), r.height, 1e-3f, "기울어진 만큼 바닥은 더 길게 보인다");
             Assert.Greater(r.height, 11.25f);
             Assert.IsTrue(r.Contains(Vector2.zero), "바라보는 점은 화면 안");
             Assert.AreEqual(-r.yMin, r.yMax, 1e-4f, "직교라 남북 대칭");
             Assert.AreEqual(-r.xMin, r.xMax, 1e-4f, "좌우 대칭");
+        }
+
+        // 원근(쿼터뷰) 카메라 (3D 전환 2단계, Godot 판에서 더한 테스트)
+        [Test]
+        public void Preset_PerspectiveFootprint_IsWiderAndFartherToTheNorth_AndKeepsTheSizeAroundThePlayer()
+        {
+            Assert.IsTrue(TiltPreset.Perspective, "Godot 판의 기본은 원근");
+            var r = TiltPreset.GroundFootprint(TiltPreset.Pitch, TiltPreset.OrthoSize, 16f / 9f);
+            Assert.IsTrue(r.Contains(Vector2.zero), "바라보는 점은 화면 안");
+            Assert.Greater(r.yMax, -r.yMin - TiltPreset.PerspectiveSouthMargin, "북쪽(먼 곳)이 남쪽보다 멀리 보인다");
+            Assert.Greater(r.xMax, 10f, "먼 곳은 직교 때(폭 20)보다 넓게 보인다");
+            Assert.AreEqual(-r.xMin, r.xMax, 1e-4f, "좌우 대칭");
+            // 바라보는 점 거리에서의 화면 반높이가 직교 때와 같다 → 주인공 둘레는 같은 크기로 보인다
+            float half = TiltPreset.Distance * Mathf.Tan(TiltPreset.FieldOfView * 0.5f * Mathf.Deg2Rad);
+            Assert.AreEqual(TiltPreset.OrthoSize, half, 0.05f);
+
+            // 화면 위쪽 가운데 광선이 땅과 만나는 점이 북쪽 끝이다 (직접 계산해 맞춰 본다)
+            TiltPreset.CameraPose(Vector3.zero, TiltPreset.Pitch, TiltPreset.Distance, out var cam, out _);
+            var ray = TiltPreset.Forward(TiltPreset.Pitch) + TiltPreset.Up(TiltPreset.Pitch) * Mathf.Tan(TiltPreset.FieldOfView * 0.5f * Mathf.Deg2Rad);
+            float t = -cam.z / ray.z;
+            Assert.AreEqual((cam + ray * t).y, r.yMax, 1e-3f);
         }
 
         [Test]

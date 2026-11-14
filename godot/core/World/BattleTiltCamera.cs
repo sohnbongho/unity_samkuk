@@ -62,7 +62,8 @@ namespace Samkuk.World
             if (data == null) data = cam.GetUniversalAdditionalCameraData();
             if (enabled)
             {
-                cam.orthographic = true;
+                cam.orthographic = !TiltPreset.Perspective;   // 원근(쿼터뷰)이 기본, 끄면 예전 직교
+                cam.fieldOfView = TiltPreset.FieldOfView;
                 cam.orthographicSize = TiltPreset.OrthoSize;
                 cam.nearClipPlane = TiltPreset.Near;
                 cam.farClipPlane = TiltPreset.Far;

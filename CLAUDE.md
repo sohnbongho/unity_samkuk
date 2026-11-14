@@ -32,6 +32,7 @@
 | G10 | 로그인·협동: csharpServer(LoginServer 9100, GameServer 9101)를 로컬에서 띄워 확인 — 로그인 → 게임 서버 인증 → 협동 방 입장 → [시작] → 서버 시뮬레이션 전투 표시·이동(부활 남음, 타이머, 적). **2인**(내보낸 실행 파일 둘, 계정 둘): 같은 성의 방에 방장·손님으로 입장 → 손님 [준비] → 방장 [시작] → 전투에서 서로 보임 → 레벨업 카드 → 쓰러짐·부활 → 결과 창. 대기방 글자 겹침 수정(`RoomPanel`: 시작 못 하는 이유는 버튼 위 한 줄). 3~4인과 다음 판은 미확인. 점검용 `--login=아이디:비밀번호`, `--watch-coop=파일머리`(상태가 바뀔 때마다 기록·화면 저장, 레벨업은 첫 카드 선택) | 완료 (2인) |
 | G11 | Windows 내보내기: `tools/godot_port/build_windows.sh` → `Builds/godot/Samkuk.exe` + `Builds/Samkuk-godot-win64.zip`(템플릿은 `tools/godot/templates`, SHA512 확인, `godot/export_presets.cfg`). 내보낸 실행 파일로 전투 확인. 유니티와 기능 대조표는 `godot/PORTING.md`. **서버 데이터 내보내기(15-2)**: `dotnet run --project godot/exporter` (`ServerDataExporter` 를 순수 로직으로 옮김, 출력이 유니티 판과 같음을 확인) | 완료 |
 | G12 | 3D 전환 1단계 — 로우폴리 모델: 서 있는 도트 그림(장수·아군·적·지형 소품)을 화면 층이 로우폴리 3D 모델로 바꿔 그린다. **규칙 코드는 그대로**(규칙은 여전히 걷기 시트 칸을 `SpriteRenderer` 에 넣고, `ModelMirror` 가 그림 파일 이름으로 모델을 고르고 칸의 줄·움직인 방향으로 몸을 돌리고 움직인 거리로 다리를 흔든다). 모델은 코드로 만든 임시 모델(`LowPolyMesh`: 사람·말 탄 사람·소품 14종, 색은 그림에서 뽑음), 모델 종류마다 MultiMesh 하나로 인스턴싱(`shaders/lowpoly.gdshader`: 꼭짓점 셰이더 걷기, 점묘 반투명, 반 램버트). 적 500 에서 120 FPS(도트 그림 114). 끄기: `--sprites`. 구매한 번들 모델은 디스크에서 찾지 못해 연결하지 않음 | 완료 |
+| G13 | 3D 전환 2단계 — 원근(쿼터뷰) 카메라: `TiltPreset.Perspective`(기본 켬)·`FieldOfView` 33°(거리 19 에서 화면 반높이가 직교 때와 같음), `PerspectiveFootprint`(사다리꼴로 보이는 땅을 감싼 사각형: 소품 범위·적 스폰 링이 이것을 따른다, 스폰 반지름 12.1 → 15.3), `BattleTiltCamera`·`WorldMirror.SyncCamera`. 화면으로 확인: 평야·산악(절벽·아군·말 탄 적). 비교용 `--ortho`. 테스트 `Preset_PerspectiveFootprint_...`. 설명 `godot/PORTING.md` "3D 전환" | 완료 |
 
 ### Godot 전환 작업 규칙
 
@@ -47,7 +48,7 @@
 
 ### Godot 전환 알려진 이슈
 
-- **테스트**: `dotnet test` 통과 657, 보류 4, 실패 0, 미룬 것 0. 보류 4개는 밸런스(타격감 집중 기간의 적 수 때문에 일부러 범위 밖, 원본과 같은 상태). 유니티 원본에서도 실패하던 테스트 21개는 유니티의 Mono 로 실행(`mono_check.sh`)·테스트가 쓰인 커밋의 코드로 실행(`old_snapshot.sh`)해 원래 실패하던 것임을 확인한 뒤 **`godot/tests` 에서 기대를 코드에 맞게 고쳤다**(유니티 원본의 테스트는 그대로). 목록과 이유는 `godot/PORTING.md` "유니티 원본과 달라진 테스트".
+- **테스트**: `dotnet test` 통과 658, 보류 4, 실패 0, 미룬 것 0. 보류 4개는 밸런스(타격감 집중 기간의 적 수 때문에 일부러 범위 밖, 원본과 같은 상태). 유니티 원본에서도 실패하던 테스트 21개는 유니티의 Mono 로 실행(`mono_check.sh`)·테스트가 쓰인 커밋의 코드로 실행(`old_snapshot.sh`)해 원래 실패하던 것임을 확인한 뒤 **`godot/tests` 에서 기대를 코드에 맞게 고쳤다**(유니티 원본의 테스트는 그대로). 목록과 이유는 `godot/PORTING.md` "유니티 원본과 달라진 테스트".
 - **유니티 원본의 잠재 버그 두 가지를 Godot 판에서 고쳤다**: 씬 로드 뒤 훅이 한 번만 불려 타이틀로 돌아오면 [맵 편집기]·[협동] 버튼이 없고 시험 전투에 M 키 안내가 붙지 않던 것(`GameRoot` 가 씬마다 부른다). 유니티 쪽에도 같은 문제가 있을 것이다(확인하지 못함).
 - `.gitignore` 의 Unity 규칙(`*.csproj`, `*.sln`)에 `godot/` 예외를 두었다. `godot/.godot/`, `bin/`, `obj/` 는 제외.
 - .NET 10 SDK 의 `dotnet new sln` 은 `.slnx` 를 만든다. Godot 은 `Samkuk.Game.sln` 을 찾으므로 `--format sln` 으로 만든다.
