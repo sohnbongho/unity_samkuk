@@ -17,13 +17,17 @@ namespace Samkuk.Game
         readonly List<Vector3> normals = new List<Vector3>();
         readonly List<Color> colors = new List<Color>();
         readonly List<Vector2> uvs = new List<Vector2>();
+        readonly List<Vector2> uv2s = new List<Vector2>();   // x = 1 이면 무기 든 팔 (공격 자세에서 앞으로 든다)
+        float arm;
         int faceSeed = 17;
 
         // 지금 붙이는 부분의 흔들 값
         float swing, pivotY;
 
         public LowPolyMesh Limb(float swingSign, float pivot) { swing = swingSign; pivotY = pivot; return this; }
-        public LowPolyMesh Body() { swing = 0f; pivotY = 0f; return this; }
+        public LowPolyMesh Body() { swing = 0f; pivotY = 0f; arm = 0f; return this; }
+        /// <summary>지금부터 붙이는 부분이 무기 든 팔인가 (Limb 뒤에 부른다, Body 가 끈다).</summary>
+        public LowPolyMesh WeaponArm() { arm = 1f; return this; }
 
         public ArrayMesh Build()
         {
@@ -33,6 +37,7 @@ namespace Samkuk.Game
             arrays[(int)Mesh.ArrayType.Normal] = normals.ToArray();
             arrays[(int)Mesh.ArrayType.Color] = colors.ToArray();
             arrays[(int)Mesh.ArrayType.TexUV] = uvs.ToArray();
+            arrays[(int)Mesh.ArrayType.TexUV2] = uv2s.ToArray();
             var mesh = new ArrayMesh();
             mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
             return mesh;
@@ -53,7 +58,7 @@ namespace Samkuk.Game
             if (n.LengthSquared() < 1e-12f) return;
             n = n.Normalized();
             positions.Add(a); positions.Add(c); positions.Add(b);
-            for (int i = 0; i < 3; i++) { normals.Add(n); colors.Add(color); uvs.Add(new Vector2(swing, pivotY)); }
+            for (int i = 0; i < 3; i++) { normals.Add(n); colors.Add(color); uvs.Add(new Vector2(swing, pivotY)); uv2s.Add(new Vector2(arm, 0f)); }
         }
 
         void Quad(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color)
@@ -206,8 +211,8 @@ namespace Samkuk.Game
             // 팔 (다리와 반대로)
             m.Limb(-1f, shoulder - 0.02f).Box(-0.255f, hip + 0.06f, shoulder, cz, 0.10f, 0.12f, Darken(p.Torso, 0.86f));
             m.Limb(-1f, shoulder - 0.02f).Box(-0.255f, hip + 0.02f, hip + 0.10f, cz, 0.09f, 0.10f, p.Skin);
-            m.Limb(1f, shoulder - 0.02f).Box(0.255f, hip + 0.06f, shoulder, cz, 0.10f, 0.12f, Darken(p.Torso, 0.86f));
-            m.Limb(1f, shoulder - 0.02f).Box(0.255f, hip + 0.02f, hip + 0.10f, cz, 0.09f, 0.10f, p.Skin);
+            m.Limb(1f, shoulder - 0.02f).WeaponArm().Box(0.255f, hip + 0.06f, shoulder, cz, 0.10f, 0.12f, Darken(p.Torso, 0.86f));
+            m.Limb(1f, shoulder - 0.02f).WeaponArm().Box(0.255f, hip + 0.02f, hip + 0.10f, cz, 0.09f, 0.10f, p.Skin);
             // 머리 + 머리카락/두건 (뒤와 위를 덮는다)
             m.Body().Box(0f, shoulder, headTop - 0.06f, cz + 0.01f, 0.32f, 0.28f, p.Skin, 0.94f);
             m.Box(0f, headTop - 0.14f, headTop, cz - 0.01f, 0.35f, 0.31f, p.Hair, 0.86f);
@@ -355,7 +360,7 @@ namespace Samkuk.Game
             positions.Add(a); positions.Add(b); positions.Add(c); positions.Add(a); positions.Add(c); positions.Add(d);
             var n = (b - a).Cross(c - a); n = n.LengthSquared() > 1e-12f ? n.Normalized() : Vector3.Up;
             float[] fade = { fadeA, fadeA, fadeB, fadeA, fadeB, fadeB };
-            for (int i = 0; i < 6; i++) { normals.Add(n); colors.Add(color); uvs.Add(new Vector2(swing, fade[i])); }
+            for (int i = 0; i < 6; i++) { normals.Add(n); colors.Add(color); uvs.Add(new Vector2(swing, fade[i])); uv2s.Add(Vector2.Zero); }
         }
 
         public enum WeaponKind { Sword, Spear, Glaive, Halberd }
@@ -479,6 +484,23 @@ namespace Samkuk.Game
         }
 
         /// <summary>반원 검기 (베기): +x 로 볼록한 ±75도 호, 반지름 1, 가운데가 두껍고 양 끝이 얇은 세운 날.</summary>
+        /// <summary>물결: 물 위에 살짝 솟은 고리 (지름 1). 안팎 가장자리로 갈수록 옅어진다.</summary>
+        public static ArrayMesh Ripple()
+        {
+            var m = new LowPolyMesh();
+            var white = new Color(1f, 1f, 1f, 1f);
+            const int sides = 16;
+            var up = new Vector3(0f, 0.045f, 0f);
+            for (int i = 0; i < sides; i++)
+            {
+                float a0 = Mathf.Tau * i / sides, a1 = Mathf.Tau * (i + 1) / sides;
+                var d0 = new Vector3(Mathf.Sin(a0), 0f, Mathf.Cos(a0)); var d1 = new Vector3(Mathf.Sin(a1), 0f, Mathf.Cos(a1));
+                m.RawQuad(d0 * 0.36f, d1 * 0.36f, d1 * 0.44f + up, d0 * 0.44f + up, white, 1f, 0.1f);   // 안쪽 비탈
+                m.RawQuad(d0 * 0.44f + up, d1 * 0.44f + up, d1 * 0.5f, d0 * 0.5f, white, 0.1f, 1f);     // 바깥 비탈
+            }
+            return m.Build();
+        }
+
         public static ArrayMesh Crescent()
         {
             var m = new LowPolyMesh();

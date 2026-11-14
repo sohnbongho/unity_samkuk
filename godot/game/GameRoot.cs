@@ -20,6 +20,7 @@ namespace Samkuk.Game
     /// --castle=Chengdu (그 성으로 출진한 전투 맵), --click=40:640,360 (그 프레임에 화면의 그 점을 마우스로 누른다),
     /// --save=경로 (저장 파일을 그 경로로 — 자동 점검은 이것을 써서 실제 저장을 건드리지 않는다), --maps=폴더 (맵 편집기 저장 폴더),
     /// --hold=s:100-160 (그 프레임 구간 동안 키를 누름), --drag=60:500,300>600,340:30 (마우스를 누른 채 끌기),
+    /// --shot-poses=파일머리 (공격 자세·쓰러진 아군·넘어지는 적이 처음 나온 순간의 화면을 하나씩 저장한다),
     /// --login=아이디:비밀번호 (로그인 창을 채우고 누름), --shot-when=evolve (레벨업에 진화가 나오면 화면 저장).
     /// </summary>
     public partial class GameRoot : Node
@@ -36,6 +37,7 @@ namespace Samkuk.Game
         string shotPath;
         int shotEvery; string shotEveryPrefix;
         string give;
+        string shotPoses; bool shotAttack, shotDown, shotGhost;   // --shot-poses
         string watchCoop, watchKey = "";   // --watch-coop
         int watchShotAt = -1, watchCount;
         string[] heldKeys = new string[0];
@@ -124,6 +126,7 @@ namespace Samkuk.Game
                 else if (arg.StartsWith("--watch-coop=")) watchCoop = arg.Substring(13);   // 협동 전투의 상태(레벨·선택 중·사망·결과 창)가 바뀔 때마다 기록하고 화면을 저장한다 (파일 이름 머리)
                 else if (arg == "--ortho") forceOrtho = true;   // 원근 대신 예전 직교 카메라 (비교용)
                 else if (arg.StartsWith("--shot-every=")) { var se = arg.Substring(13).Split(':', 2); shotEvery = int.Parse(se[0]); shotEveryPrefix = se[1]; }   // N 프레임마다 화면 저장 (파일 머리)
+                else if (arg.StartsWith("--shot-poses=")) shotPoses = arg.Substring(13);
                 else if (arg.StartsWith("--give=")) give = arg.Substring(7);   // --give=120:Weapon_Bow,Weapon_Lightning (그 프레임에 주인공에게 무기를 준다 — 이펙트 점검용)
                 else if (arg == "--dump-sprites") WorldMirror.DumpKinds = new HashSet<string>();   // 끝낼 때 화면에 나왔던 그림 종류를 적는다
                 else if (arg == "--sprites") forceSprites = true;   // 3D 모델 대신 예전 도트 그림으로 (비교용)
@@ -282,6 +285,14 @@ namespace Samkuk.Game
                 }
             }
             if (shotEvery > 0 && frames > 0 && frames % shotEvery == 0) GetViewport().GetTexture().GetImage().SavePng($"{shotEveryPrefix}_{frames:0000}.png");
+            if (shotPoses != null && world.Models != null)
+            {
+                // 동작 점검: 그 동작이 처음 보인 프레임의 화면
+                var m = world.Models;
+                if (m.AnyAttacking && !shotAttack) { shotAttack = true; GetViewport().GetTexture().GetImage().SavePng(shotPoses + "_attack.png"); GD.Print($"[Samkuk] 동작 {frames}: 공격 자세"); }
+                if (m.AnyDown && !shotDown) { shotDown = true; GetViewport().GetTexture().GetImage().SavePng(shotPoses + "_down.png"); GD.Print($"[Samkuk] 동작 {frames}: 쓰러짐"); }
+                if (m.AnyGhostFalling && !shotGhost) { shotGhost = true; GetViewport().GetTexture().GetImage().SavePng(shotPoses + "_ghost.png"); GD.Print($"[Samkuk] 동작 {frames}: 넘어지는 적"); }
+            }
             if (watchCoop != null) WatchCoop();
             frames++;
             if (quitAfter >= 0 && frames >= quitAfter) Finish();

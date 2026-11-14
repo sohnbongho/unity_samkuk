@@ -46,6 +46,10 @@ namespace Samkuk.Game
         // 그림 재질: (텍스처, 컷아웃?, 도트 필터?, 렌더 우선순위, UV 배율) 마다 하나
         readonly Dictionary<(Godot.Texture2D, bool, bool, int, Godot.Vector2), ShaderMaterial> spriteMaterials = new Dictionary<(Godot.Texture2D, bool, bool, int, Godot.Vector2), ShaderMaterial>();
         readonly Dictionary<Compat.Material, ShaderMaterial> meshMaterials = new Dictionary<Compat.Material, ShaderMaterial>();
+        // 물(연못, 강물) 재질: (텍스처, 렌더 우선순위) 마다 하나. 물이 아닌 그림 경로는 null 을 넣어 다시 따지지 않는다
+        readonly Dictionary<(Godot.Texture2D, int), ShaderMaterial> waterMaterials = new Dictionary<(Godot.Texture2D, int), ShaderMaterial>();
+        readonly Dictionary<string, bool> waterPaths = new Dictionary<string, bool>();
+        Godot.Shader waterShader;
         readonly Godot.Shader[] shaders = new Godot.Shader[4];   // [컷아웃?][도트?]
         readonly List<object> dead = new List<object>();
         readonly List<Component> scratch = new List<Component>();
@@ -102,6 +106,39 @@ namespace Samkuk.Game
             m.SetShaderParameter("tex", texture);
             m.SetShaderParameter("uv_scale", uvScale);
             spriteMaterials[key] = m;
+            return m;
+        }
+
+        // 물 그림인가: 연못과 강물 (강둑은 땅의 그림 그대로)
+        bool IsWater(Sprite sprite)
+        {
+            string path = sprite.path;
+            if (string.IsNullOrEmpty(path)) return false;
+            if (waterPaths.TryGetValue(path, out bool water)) return water;
+            string name = System.IO.Path.GetFileNameWithoutExtension(path);
+            water = path.Contains("/Terrain/") && (name.EndsWith("Pond") || (name.StartsWith("River_") && name.EndsWith("_Water")));
+            return waterPaths[path] = water;
+        }
+
+        // 3D 화면의 물 (G16): 그림은 모양(알파)과 물빛만 주고, 물결·반짝임·물가 거품은 shaders/water.gdshader 가 세계 좌표로 그린다
+        ShaderMaterial WaterMaterial(Godot.Texture2D texture, int priority, bool river)
+        {
+            var key = (texture, priority);
+            if (waterMaterials.TryGetValue(key, out var m)) return m;
+            if (waterShader == null) waterShader = GD.Load<Godot.Shader>("res://shaders/water.gdshader");
+            m = new ShaderMaterial { Shader = waterShader, RenderPriority = priority };
+            m.SetShaderParameter("tex", texture);
+            var color = new GColor(0.25f, 0.55f, 0.85f);
+            var image = texture.GetImage();
+            if (image != null)
+            {
+                if (image.IsCompressed()) image.Decompress();
+                color = ModelMirror.Dominant(image, 0, 0, image.GetWidth(), image.GetHeight(), color);
+                m.SetShaderParameter("texel", new Godot.Vector2(1f / image.GetWidth(), 1f / image.GetHeight()));
+            }
+            m.SetShaderParameter("water_color", color);
+            m.SetShaderParameter("foam_axes", river ? Godot.Vector2.Zero : Godot.Vector2.One);
+            waterMaterials[key] = m;
             return m;
         }
 
@@ -255,7 +292,8 @@ namespace Samkuk.Game
                 node.Basis = new Basis(Map(q * CVec3.right) * scale.x, Map(q * CVec3.up) * scale.y, Map(q * CVec3.back));
                 int priority = Mathf.Clamp(layer * 15 + Mathf.Clamp(sr.sortingOrder, 0, 14) - 60, -128, 127);
                 node.CastShadow = GeometryInstance3D.ShadowCastingSetting.Off;
-                if (pixelShader) node.MaterialOverride = SpriteMaterial(texture, false, pixel, priority, Godot.Vector2.One);   // 바닥 그림: 빛과 그림자를 받는다
+                if (Models3D && TiltView.Active && IsWater(sprite)) node.MaterialOverride = WaterMaterial(texture, priority, System.IO.Path.GetFileName(sprite.path).StartsWith("River_"));   // 물: 움직이는 물 표면
+                else if (pixelShader) node.MaterialOverride = SpriteMaterial(texture, false, pixel, priority, Godot.Vector2.One);   // 바닥 그림: 빛과 그림자를 받는다
                 else
                 {
                     // 이펙트·투사체·보석: 빛을 받지 않는 기본 그림

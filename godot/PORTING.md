@@ -55,7 +55,8 @@ GODOT=/d/01-AgentLegion/tools/godot/Godot_v4.7.2-stable_mono_win64/Godot_v4.7.2-
 (창이 잠깐 뜬다). 명령줄 옵션은 `GameRoot.cs` 머리말. 에디터로 열려면 `Godot_v4.7.2-stable_mono_win64.exe` 로 `godot/project.godot` 을 가져온다.
 
 이펙트 점검용 명령줄: `--give=120:Weapon_Bow,Weapon_Lightning`(그 프레임에 주인공에게 무기를 준다), `--shot-every=20:C:/경로/머리`(N 프레임마다 화면 저장, 경로는 윈도우식),
-`--dump-sprites`(끝낼 때 화면에 나온 그림 종류를 적는다 — 아직 도트 그림인 것을 찾을 때), `--sprites`, `--ortho`.
+`--dump-sprites`(끝낼 때 화면에 나온 그림 종류를 적는다 — 아직 도트 그림인 것을 찾을 때), `--sprites`, `--ortho`,
+`--shot-poses=C:/경로/머리`(공격 자세·쓰러진 주인공/아군·넘어지는 적이 처음 나온 순간의 화면을 `머리_attack/_down/_ghost.png` 로 저장).
 
 ## 옮기는 방법
 
@@ -174,7 +175,7 @@ tools/godot_port/build_windows.sh     # Builds/godot/Samkuk.exe + Builds/Samkuk-
 | Windows 빌드 (11) | — | 화면 | `tools/godot_port/build_windows.sh` |
 | 디버그 키 F1~F10 | — | 화면 | F7(도트 격자)·F10(틸트 끄기)은 값만 바뀌고 화면은 그대로 |
 
-## 3D 전환 (G12~G15)
+## 3D 전환 (G12~G16)
 
 도트 2.5D 에서 로우폴리 3D 로 가는 단계. **규칙 코드(`godot/core`)의 전투 규칙은 바꾸지 않았다**: 이동·충돌·무기 판정·적 AI 는 여전히 평면(x, y) + 언덕 층이다.
 
@@ -184,6 +185,7 @@ tools/godot_port/build_windows.sh     # Builds/godot/Samkuk.exe + Builds/Samkuk-
 | 2 (G13) | 전투 카메라를 기울인 직교에서 **원근(쿼터뷰)** 으로 | `core/World/TiltPreset.cs`(`Perspective`, `FieldOfView`, `PerspectiveFootprint`), `BattleTiltCamera`, `WorldMirror.SyncCamera` |
 | 3 (G14) | 손에 든 무기·탄환·보석·이펙트를 3D 모델·3D 이펙트 메시로 | `ModelMirror.TryDrawEffect`, `LowPolyMesh`(무기 4종, 화살, 보석, 칼날, 고리, 검기, 번개, 불길), `shaders/lowpoly_fx.gdshader` |
 | 4 (G15) | 도트 그림으로 떨어지던 경우를 메우고, 타이틀에 **[3D 화면]** 버튼 | `WorldMirror.SyncSprite`, `ModelMirror.RoleOf`, `core/UI/View3dButton.cs`, `SaveData.view3d`, `Hd2dSettings.View3d` |
+| 5 (G16) | 물(연못·강물)을 움직이는 물 표면으로, 물결을 3D 고리로, 모델에 **공격 자세·쓰러짐** 동작 | `shaders/water.gdshader`, `WorldMirror.WaterMaterial`, `LowPolyMesh.Ripple`, `ModelMirror`(동작), `shaders/lowpoly.gdshader`(무기 든 팔) |
 
 **모델로 바꾸는 방법 (1단계)**. 규칙 코드는 예전처럼 `SpriteRenderer` 에 걷기 시트의 칸을 넣는다. 화면 층이 그 그림의 **파일 이름**으로 모델을 고른다
 (`HeroWalk/*`, `EnemyWalk/*` = 사람 또는 말 탄 사람, `Terrain/Prop_*` = 소품 14종. 손에 든 무기·이펙트·체력 막대·데미지 숫자는 도트 그림 그대로).
@@ -217,11 +219,21 @@ tools/godot_port/build_windows.sh     # Builds/godot/Samkuk.exe + Builds/Samkuk-
   - 반투명 재질이 된 서 있는 그림(주인공 앞을 가려 흐려진 소품, 무적 깜빡임, 쓰러진 아군)이 그동안 도트 그림으로 되돌아갔다 → 모델로 그리고 불투명도는 점묘로.
   - 협동 전투의 손에 든 무기(`P#Held`)가 이름 규칙(`Held#`)에 안 맞아 도트 그림이었다 → 무기 모델로(서버를 띄워 화면으로 확인하지는 못함).
   - 걷기 시트가 없는 주인공 기본 그림(`Player.png`, 장수를 고르기 전)도 사람 모델로.
-  - 지금 전투에서 도트·납작한 그림으로 남은 것은 일부러 둔 것뿐이다: 물결, 바닥 얼룩, 연못·강(땅의 그림), 체력 막대, 데미지 숫자.
+  - 지금 전투에서 도트·납작한 그림으로 남은 것은 일부러 둔 것뿐이다: 바닥 얼룩과 강둑(땅의 그림 = 데칼), 체력 막대, 데미지 숫자. 물과 물결은 5단계에서 바꿨다.
 - **타이틀 [3D 화면] 버튼**: 왼쪽 설정 줄 맨 아래(`View3dButton`, 씬 파일을 고치지 않고 타이틀이 읽힐 때 코드로 붙는다). 켬 = 로우폴리 모델 + 원근 카메라, 끔 = 도트 그림 + 직교 카메라(G11 까지의 화면). `SaveData.view3d` 에 저장되고 다음 전투부터 적용된다.
   규칙 코드는 이 값을 읽지 않는다: `GameRoot` 가 프레임마다 `WorldMirror.Models3D` 와 `TiltPreset.Perspective` 에 넣는다(끄면 적 스폰 링도 직교 때의 크기로 돌아간다).
 - 명령줄로 끄고 비교: `--sprites`(도트 그림), `--ortho`(직교 카메라) — 저장 설정과 무관하게 끈다. 둘 다 붙이면 G11 까지의 화면이다.
-- 남은 것: 모델·이펙트가 모두 코드로 만든 임시 모양(번들 모델 연결은 따로), 걷기 말고는 동작(공격 자세, 쓰러짐)이 없음, 맵 편집기·내정은 2D 그대로.
+- **물 (5단계, G16)**. 연못(`Prop_*Pond`)과 강물(`River_*_Water`)은 여전히 땅에 놓인 평면이지만 도트 그림 대신 `shaders/water.gdshader` 로 그린다:
+  그림은 모양(알파)과 물빛(가장 흔한 색)만 주고, 표면은 세계 좌표로 흐르는 물결을 몇 단의 면으로 끊어 그리고 물마루 반짝임과 물가의 거품 띠(연못만)를 얹는다.
+  세계 좌표라 겹쳐 놓은 강 토막끼리 무늬가 이어지고, 바닥 그림과 같은 빛 규칙이라 나무 그림자가 물 위에 진다. 강둑·바닥 얼룩은 땅의 그림(데칼) 그대로.
+  물결(`WaterRing`)은 물 위에 살짝 솟은 고리 메시(`LowPolyMesh.Ripple`, 규칙이 그리는 납작한 타원 대신 폭을 지름으로 한 원)다. [3D 화면] 을 끄면 예전 그림 그대로.
+- **동작 (5단계, G16)** — 전부 화면 층의 연출이고 판정·타이밍·규칙 코드는 그대로다.
+  - 공격 자세: 손에 든 무기가 보이는 동안 주인(주인공·아군)이 무기 쪽으로 돌아 몸을 조금 숙이고 무기 든 팔(메시의 UV2 표시)을 앞으로 든다. 적은 주인공·아군에 닿아 있는 동안(`ContactRange`) 팔을 내려친다.
+    손에 든 그림이 없는 무기(활, 번개 등)와 적 궁병의 사격에는 자세가 없다. 협동 전투의 휘두르기 꼭두각시는 주인을 알 수 없어 자세가 붙지 않는다.
+  - 쓰러짐: 쓰러진 아군·죽은 주인공(`AllyController.IsDowned`, `PlayerHealth.IsDead`, 협동은 꼭두각시의 쓰러진 표시)은 뒤로 눕는다(되살아나면 일어선다).
+    죽은 적은 규칙이 바로 풀로 돌려보내므로 `Enemy.Died` 를 받아 마지막 모습을 0.6초쯤 남겨 뒤로 넘어뜨린 뒤 점묘로 지운다(최대 160).
+  - 화면으로 확인: 관우·아군의 공격 자세, 넘어지는 적(말 탄 적 포함), 쓰러져 누운 아군. 주인공 사망은 결과 창에 가려 보지 못했고 협동 전투의 쓰러짐은 서버로 확인하지 못했다.
+- 남은 것: 모델·이펙트가 모두 코드로 만든 임시 모양(번들 모델 연결은 따로), 원거리 무기·적 궁병의 공격 자세, 맵 편집기·내정은 2D 그대로.
 
 ## 눈으로 확인할 것 (사용자)
 

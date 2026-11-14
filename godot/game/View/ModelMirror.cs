@@ -15,6 +15,8 @@ namespace Samkuk.Game
     /// **칸의 줄**(아래/위/왼쪽/오른쪽)과 움직인 방향으로 몸을 돌리고, 움직인 거리로 다리를 흔든다.
     /// 성능: 모델 종류마다 MultiMesh 하나(인스턴싱). 적 수백 마리도 종류 수만큼의 드로우 콜이고, 걷기는 뼈대 없이 꼭짓점 셰이더가 한다.
     /// 색은 걷기 시트·소품 그림에서 뽑는다(머리/얼굴/몸/다리 띠의 가장 흔한 색) → 그림을 바꾸면 모델 색도 따라온다.
+    /// 동작(G16, 판정과 무관한 연출): 공격 자세 = 손에 든 무기가 보이는 동안 그쪽으로 돌아 몸을 숙이고 무기 든 팔을 든다(적은 주인공·아군에 닿아 있는 동안 팔을 내려친다),
+    /// 쓰러짐 = 쓰러진 주인공·아군은 뒤로 눕고, 죽은 적은 그 자리에 잠깐 남아 넘어지며 사라진다(규칙은 적을 바로 풀로 돌려보낸다).
     /// </summary>
     public sealed class ModelMirror
     {
@@ -32,7 +34,7 @@ namespace Samkuk.Game
             public MultiMeshInstance3D node;
             public float[] buffer = new float[0];
             public int count, capacity;
-            public bool character;
+            public bool character, hero;
             public float baseHeight = 1f;   // 인스턴스 배율 1 일 때의 모델 높이
         }
 
@@ -42,7 +44,31 @@ namespace Samkuk.Game
             public CVec3 lastPosition;
             public bool started;
             public int seen;
+            // 동작: 공격 자세(0~1), 쓰러짐(0~1). 누가 쓰러졌는지는 규칙 컴포넌트에서 읽는다
+            public float attack, fall;
+            public bool looked;
+            public Samkuk.Player.PlayerHealth health;
+            public Samkuk.Allies.AllyController ally;
+            // 마지막으로 그린 모습 (죽은 적이 넘어지는 연출의 시작)
+            public Batch batch;
+            public CVec3 position;
+            public float sx, sy, sz;
+            public Compat.Color color;
         }
+
+        sealed class Ghost { public Batch batch; public CVec3 position; public float yaw, sx, sy, sz, time; public Compat.Color color; }
+
+        const float AttackLean = 0.16f;      // 공격 자세에서 몸을 앞으로 숙이는 각 (라디안)
+        const float FallAngle = 1.5f;        // 쓰러졌을 때 뒤로 누운 각
+        const float ContactRange = 0.95f;    // 적이 주인공·아군에 이만큼 가까우면 내려친다
+        const float GhostFall = 0.28f, GhostFade = 0.3f;   // 죽은 적: 넘어지는 시간, 그 뒤 사라지는 시간
+        const int MaxGhosts = 160;
+
+        // 손에 든 무기가 보이는 주인(주인공·아군의 트랜스폼) → (본 프레임, 휘두르는 쪽)
+        readonly Dictionary<Transform, (int frame, float yaw)> swings = new Dictionary<Transform, (int, float)>();
+        List<CVec3> heroes = new List<CVec3>(), heroesNow = new List<CVec3>();   // 적의 내려치기 판단용 (지난 프레임의 주인공·아군 자리)
+        readonly List<Ghost> ghosts = new List<Ghost>();
+        bool coop;   // 협동 전투 중인가 (가끔 확인한다)
 
         readonly Node3D parent;
         readonly Dictionary<string, Batch> batches = new Dictionary<string, Batch>();
@@ -53,14 +79,43 @@ namespace Samkuk.Game
         int frame;
 
         public int InstanceCount { get; private set; }
+        /// <summary>점검용 (--shot-poses): 넘어지는 중인 죽은 적이 있는가, 쓰러져 누운 주인공·아군이 있는가, 공격 자세를 잡은 주인공·아군이 있는가.</summary>
+        public bool AnyGhostFalling { get; private set; }
+        public bool AnyDown { get; private set; }
+        public bool AnyAttacking { get; private set; }
         public int BatchCount => batches.Count;
 
-        public ModelMirror(Node3D parent) { this.parent = parent; }
+        public ModelMirror(Node3D parent)
+        {
+            this.parent = parent;
+            Samkuk.Enemies.Enemy.Died += OnEnemyDied;
+        }
 
         public void Begin()
         {
             frame++;
             foreach (var b in batches.Values) b.count = 0;
+            AnyGhostFalling = AnyDown = AnyAttacking = false;
+            if (frame % 30 == 1) coop = Compat.Object.FindAnyObjectByType<Samkuk.Coop.CoopBattleDriver>() != null;
+            var swap = heroes; heroes = heroesNow; heroesNow = swap;
+            heroesNow.Clear();
+        }
+
+        // 죽은 적: 규칙은 바로 풀로 돌려보낸다. 마지막 모습을 받아 그 자리에서 넘어지는 모델을 잠깐 남긴다
+        void OnEnemyDied(Samkuk.Enemies.Enemy enemy)
+        {
+            if (enemy == null || ghosts.Count >= MaxGhosts) return;
+            var sr = enemy.GetComponent<SpriteRenderer>();
+            if (sr == null || !states.TryGetValue(sr, out var s) || s.batch == null || s.seen < frame - 1) return;
+            ghosts.Add(new Ghost { batch = s.batch, position = s.position, yaw = s.yaw, sx = s.sx, sy = s.sy, sz = s.sz, color = s.color });
+        }
+
+        // 사람 모델 하나: yaw 로 돌리고 pitch 만큼 앞(+)·뒤(-)로 기울인다
+        void PushCharacter(Batch batch, CVec3 pos, float yaw, float pitch, float sx, float sy, float sz, Compat.Color color, float swing, float bob, float alpha, float attack)
+        {
+            float c = Mathf.Cos(yaw), sn = Mathf.Sin(yaw), cp = Mathf.Cos(pitch), sp = Mathf.Sin(pitch);
+            Push(batch, new GVec3(c, 0f, -sn) * sx, new GVec3(sn * sp, cp, c * sp) * sy, new GVec3(sn * cp, -sp, c * cp) * sz,
+                new GVec3(pos.x, -pos.z, -pos.y), color.r, color.g, color.b, 1f, swing, bob, alpha, -attack);
         }
 
         /// <summary>이 그림을 모델로 그렸으면 true (그러면 도트 그림은 숨긴다).</summary>
@@ -86,6 +141,30 @@ namespace Samkuk.Game
                 int row = sprite.texture != null && cell > 0f ? Mathf.RoundToInt((sprite.texture.height - sprite.rect.y - sprite.rect.height) / cell) : 0;
                 float rowYaw = row == 1 ? Mathf.PI : row == 2 ? -Mathf.PI * 0.5f : row == 3 ? Mathf.PI * 0.5f : 0f;
                 float target = rowYaw;
+                if (!state.looked)
+                {
+                    state.looked = true;
+                    state.health = sr.GetComponentInParent<Samkuk.Player.PlayerHealth>();
+                    state.ally = sr.GetComponentInParent<Samkuk.Allies.AllyController>();
+                }
+                // 쓰러짐: 주인공 사망, 아군 쓰러짐. 협동 전투(규칙 컴포넌트가 꺼져 있다)는 꼭두각시의 쓰러진 표시(불투명도 0.35, PuppetWalker.SetLook)로 안다
+                bool down = batch.hero && (coop ? color.a > 0.3f && color.a < 0.37f
+                    : (state.health != null && state.health.IsDead) || (state.ally != null && state.ally.IsDowned));
+                // 공격 자세: 손에 든 무기가 보이는 동안 그쪽으로. 적은 주인공·아군에 닿아 있는 동안 팔을 내려친다
+                bool swinging = false; float want = 0f;
+                var owner = sr.transform.parent;
+                if (!down && batch.hero && owner != null && swings.TryGetValue(owner, out var sw) && sw.frame >= frame - 1) { swinging = true; want = 1f; target = sw.yaw; }
+                else if (!batch.hero)
+                {
+                    float reach = ContactRange * Mathf.Max(1f, scale.y);
+                    for (int i = 0; i < heroes.Count; i++)
+                    {
+                        float hx = heroes[i].x - pos.x, hy = heroes[i].y - pos.y;
+                        if (hx * hx + hy * hy > reach * reach) continue;
+                        want = 0.5f + 0.5f * Mathf.Sin(Compat.Time.time * 9f + (sr.GetHashCode() & 255) * 0.1f);
+                        break;
+                    }
+                }
                 float dt = Mathf.Max(0.0001f, Compat.Time.deltaTime);
                 float moved = 0f;
                 if (state.started)
@@ -96,7 +175,7 @@ namespace Samkuk.Game
                     else if (moved > 0.0005f)
                     {
                         float moveYaw = Mathf.Atan2(dx, -dy);   // Godot 의 +z 는 로직의 남쪽
-                        if (Mathf.Abs(Mathf.DeltaAngle(moveYaw * Mathf.Rad2Deg, rowYaw * Mathf.Rad2Deg)) < 75f) target = moveYaw;
+                        if (!swinging && Mathf.Abs(Mathf.DeltaAngle(moveYaw * Mathf.Rad2Deg, rowYaw * Mathf.Rad2Deg)) < 75f) target = moveYaw;
                     }
                 }
                 else { state.yaw = target; state.started = true; }
@@ -106,7 +185,7 @@ namespace Samkuk.Game
                 // 걷기: 움직인 거리만큼 위상이 가고, 멈추면 흔들림이 잦아든다
                 float size = Mathf.Max(0.3f, scale.y);
                 state.phase += moved * StepPerUnit / size;
-                float walking = moved / dt > 0.3f ? 1f : 0f;
+                float walking = !down && moved / dt > 0.3f ? 1f : 0f;
                 state.amplitude = Mathf.MoveTowards(state.amplitude, walking, dt * 8f);
                 float s = Mathf.Sin(state.phase);
                 swing = s * SwingAngle * state.amplitude;
@@ -115,6 +194,16 @@ namespace Samkuk.Game
                 // 그림 한 칸(48px)의 몸 높이 40px 를 모델 키로
                 float body = sprite.rect.height / sprite.pixelsPerUnit * (40f / 48f) * CharacterScale / batch.baseHeight;
                 sx = Mathf.Abs(scale.x) * body; sy = scale.y * body; sz = sx;
+
+                state.attack = Mathf.MoveTowards(state.attack, want, dt * (want > state.attack ? 16f : 7f));
+                state.fall = Mathf.MoveTowards(state.fall, down ? 1f : 0f, Compat.Time.unscaledDeltaTime * (down ? 3.2f : 5f));   // 게임 오버로 시간이 멈춰도 끝까지 쓰러진다
+                float pitch = AttackLean * state.attack - FallAngle * state.fall * state.fall;   // 쓰러질 때는 점점 빨리
+                state.batch = batch; state.position = pos; state.sx = sx; state.sy = sy; state.sz = sz; state.color = color;
+                if (batch.hero && !down) heroesNow.Add(pos);
+                if (batch.hero && state.fall > 0.95f) AnyDown = true;
+                if (batch.hero && state.attack > 0.95f) AnyAttacking = true;
+                PushCharacter(batch, pos, yaw, pitch, sx, sy, sz, color, swing, bob, color.a, state.attack);
+                return true;
             }
             else
             {
@@ -142,6 +231,19 @@ namespace Samkuk.Game
 
         public void End()
         {
+            // 죽은 적: 뒤로 넘어진 뒤 점묘로 사라진다
+            float gdt = Compat.Time.deltaTime;
+            for (int i = ghosts.Count - 1; i >= 0; i--)
+            {
+                var g = ghosts[i];
+                g.time += gdt;
+                if (g.time >= GhostFall + GhostFade) { ghosts.RemoveAt(i); continue; }
+                float f = Mathf.Clamp01(g.time / GhostFall);
+                if (f > 0.5f && f < 1f) AnyGhostFalling = true;
+                float alpha = 1f - Mathf.Clamp01((g.time - GhostFall) / GhostFade);
+                PushCharacter(g.batch, g.position, g.yaw, -FallAngle * f * f, g.sx, g.sy, g.sz, g.color, 0f, 0f, alpha * g.color.a, 0f);
+            }
+
             int total = 0;
             foreach (var b in batches.Values)
             {
@@ -169,6 +271,7 @@ namespace Samkuk.Game
         {
             foreach (var b in batches.Values) b.node.Visible = false;
             InstanceCount = 0;
+            ghosts.Clear();
         }
 
         void Grow(Batch b)
@@ -243,7 +346,7 @@ namespace Samkuk.Game
                 ExtraCullMargin = 4096f,   // 인스턴스가 세계 곳곳에 흩어진다: 묶음 전체를 늘 그린다 (인스턴스는 보이는 것만 넣는다)
             };
             parent.AddChild(node);
-            var batch = new Batch { mesh = multi, node = node, character = character };
+            var batch = new Batch { mesh = multi, node = node, character = character, hero = hero };
             batches[name] = batch;
             return batch;
         }
@@ -316,7 +419,7 @@ namespace Samkuk.Game
         }
 
         // 사각형 안에서 가장 흔한 색 (투명·외곽선의 검정은 뺀다). skin = true 면 살색에 가까운 색을 우선한다
-        static GColor Dominant(Image image, int x0, int y0, int w, int h, GColor fallback, bool skin = false)
+        internal static GColor Dominant(Image image, int x0, int y0, int w, int h, GColor fallback, bool skin = false)
         {
             var counts = new Dictionary<int, (int n, float r, float g, float b)>();
             int x1 = Mathf.Min(image.GetWidth(), x0 + Mathf.Max(1, w)), y1 = Mathf.Min(image.GetHeight(), y0 + Mathf.Max(1, h));
@@ -351,7 +454,7 @@ namespace Samkuk.Game
         // 규칙 코드는 여전히 납작한 그림(SpriteRenderer)을 움직인다. 화면 층이 그 그림의 역할(이름·정렬 레이어·그림 파일)을 보고
         // 같은 자리·방향·크기·색의 3D 모델/이펙트 메시로 바꿔 그린다. 체력 막대·데미지 숫자·물결·바닥 얼룩은 그대로 둔다.
 
-        enum Role { None, Weapon, Arrow, Orb, Gem, Cube, SpinBlade, Ring, Bolt, Crescent, Wedge, Flames }
+        enum Role { None, Weapon, Arrow, Orb, Gem, Cube, SpinBlade, Ring, Bolt, Crescent, Wedge, Flames, Ripple }
 
         sealed class RoleEntry { public Compat.Sprite sprite; public Role role; public Batch batch; public Compat.Color tint = Compat.Color.white; }
 
@@ -433,6 +536,9 @@ namespace Samkuk.Game
                     var axis = (flat.Normalized() + Y * WeaponRise).Normalized();
                     float len = h * WeaponScale;
                     var side = Y.Cross(axis).Normalized() * (sr.flipX ? -1f : 1f);
+                    // 무기의 주인(무기 오브젝트의 부모)이 이쪽으로 공격 자세를 잡는다
+                    var holder = t.parent != null ? t.parent.parent : null;
+                    if (holder != null) swings[holder] = (frame, Mathf.Atan2(flat.X, flat.Z));
                     Push(batch, side * len, axis * len, side.Cross(axis).Normalized() * len, origin, color.r, color.g, color.b, 1f, 0f, 0f, color.a, 0f);
                     break;
                 }
@@ -494,6 +600,12 @@ namespace Samkuk.Game
                     Push(batch, r * radius, Y * radius, r.Cross(Y) * radius, origin + Y * WaveHeight, color.r, color.g, color.b, color.a, 0f, 0f, 0f, 0f);
                     break;
                 }
+                case Role.Ripple:
+                {
+                    // 규칙은 납작한 타원(가짜 원근)으로 그린다: 물 위에서는 폭을 지름으로 한 둥근 고리
+                    Push(batch, GVec3.Right * w, Y, GVec3.Back * w, origin + Y * 0.02f, color.r, color.g, color.b, color.a, 0f, 0f, 0f, 0f);
+                    break;
+                }
                 case Role.Flames:
                 {
                     float d = Mathf.Max(w, h);
@@ -527,6 +639,7 @@ namespace Samkuk.Game
             if (path.Contains("/Weapons/") && name.Contains("Held")) return Role.Weapon;   // 오프라인 무기는 Held#, 협동 꼭두각시는 P#Held
             if (path.EndsWith("/ExpGem.png")) return Role.Gem;
             if (tex == "BurstSquare" || sprite.name == "BurstSquare") return Role.Cube;
+            if (sprite.name == "WaterRing" || tex == "WaterRing") return Role.Ripple;
             if (sprite.name == "SlashArc") return Role.Crescent;
             if (sprite.name == "ThrustPoint") return Role.Wedge;
             if (name.StartsWith("Blade") || path.EndsWith("/Blade.png")) return Role.SpinBlade;
@@ -579,6 +692,7 @@ namespace Samkuk.Game
                 case Role.Crescent: mesh = LowPolyMesh.Crescent(); break;
                 case Role.Wedge: mesh = LowPolyMesh.Wedge(); break;
                 case Role.Flames: mesh = LowPolyMesh.Flames(); break;
+                case Role.Ripple: mesh = LowPolyMesh.Ripple(); break;
                 default: return null;
             }
 
