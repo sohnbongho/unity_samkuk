@@ -52,7 +52,12 @@ namespace Samkuk.Game
 
         Camera3D camera;
         WorldEnvironment environment;
+        ModelMirror models;
         int frame;
+
+        /// <summary>서 있는 도트 그림(캐릭터·적·소품)을 로우폴리 3D 모델로 그린다 (3D 전환 1단계). 끄면 예전 도트 그림 (점검용 --sprites, F11).</summary>
+        public static bool Models3D = true;
+        public ModelMirror Models => models;
 
         public Camera3D Camera => camera;
         public Godot.Environment Environment => environment.Environment;
@@ -71,6 +76,7 @@ namespace Samkuk.Game
                 AmbientLightEnergy = 1f,
             } };
             AddChild(environment);
+            models = new ModelMirror(this);
         }
 
         /// <summary>로직 좌표를 Godot 좌표로.</summary>
@@ -105,6 +111,7 @@ namespace Samkuk.Game
             bool tilt = TiltView.Active;
             float standScale = tilt ? TiltView.StandScale : 1f;
             Compat.Camera mainCamera = null;
+            models.Begin();
 
             var objects = SceneRuntime.Objects;
             for (int i = 0; i < objects.Count; i++)
@@ -136,6 +143,7 @@ namespace Samkuk.Game
                 }
             }
             SpriteCount = visible;
+            if (Models3D && tilt) models.End(); else models.Hide();
 
             Sweep(sprites, v => v.seen, v => v.node);
             Sweep(lights, v => v.seen, v => v.node);
@@ -210,6 +218,8 @@ namespace Samkuk.Game
             if (standing)
             {
                 bool cutout = material.renderQueue < (int)RenderQueue.Transparent;
+                // 3D 모델로 바꿔 그리는 그림(캐릭터·적·소품): 도트 그림은 숨기고 인스턴스 하나를 더한다
+                if (Models3D && cutout && models.TryDraw(sr, sprite)) { node.Visible = false; return true; }
                 float stretch = material.GetFloat(StretchId) > 0f ? material.GetFloat(StretchId) : 1f;
                 float vertical = scale.y * standScale * stretch;
                 float lift = material.GetFloat(FootLiftId) * vertical;

@@ -119,6 +119,7 @@ namespace Samkuk.Game
                 else if (arg.StartsWith("--login=")) autoLogin = arg.Substring(8).Split(':');   // --login=아이디:비밀번호 (20번째 프레임에 로그인)
                 else if (arg.StartsWith("--save=")) Samkuk.Meta.SaveSystem.PathOverride = arg.Substring(7);   // 점검이 실제 저장을 건드리지 않게
                 else if (arg.StartsWith("--watch-coop=")) watchCoop = arg.Substring(13);   // 협동 전투의 상태(레벨·선택 중·사망·결과 창)가 바뀔 때마다 기록하고 화면을 저장한다 (파일 이름 머리)
+                else if (arg == "--sprites") WorldMirror.Models3D = false;   // 3D 모델 대신 예전 도트 그림으로 (비교용)
                 else if (arg == "--smoke") quitAfter = 120;
             }
 

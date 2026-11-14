@@ -31,6 +31,7 @@
 | G9 | 맵 편집기: 패널 배치(`UiLayout` 의 최소↔선호 줄이기), 그림 목록의 스크롤·가리기(`UiMirror` 의 ClipContents 상자). 화면으로 확인: 그림 고르기·놓기, 선택 후 끌어 옮기기, 크기·복제·실행 취소, 지우개, 높이 올리기, 저장 → 다시 열기, [전투 테스트] → M 으로 복귀 | 완료 |
 | G10 | 로그인·협동: csharpServer(LoginServer 9100, GameServer 9101)를 로컬에서 띄워 확인 — 로그인 → 게임 서버 인증 → 협동 방 입장 → [시작] → 서버 시뮬레이션 전투 표시·이동(부활 남음, 타이머, 적). **2인**(내보낸 실행 파일 둘, 계정 둘): 같은 성의 방에 방장·손님으로 입장 → 손님 [준비] → 방장 [시작] → 전투에서 서로 보임 → 레벨업 카드 → 쓰러짐·부활 → 결과 창. 대기방 글자 겹침 수정(`RoomPanel`: 시작 못 하는 이유는 버튼 위 한 줄). 3~4인과 다음 판은 미확인. 점검용 `--login=아이디:비밀번호`, `--watch-coop=파일머리`(상태가 바뀔 때마다 기록·화면 저장, 레벨업은 첫 카드 선택) | 완료 (2인) |
 | G11 | Windows 내보내기: `tools/godot_port/build_windows.sh` → `Builds/godot/Samkuk.exe` + `Builds/Samkuk-godot-win64.zip`(템플릿은 `tools/godot/templates`, SHA512 확인, `godot/export_presets.cfg`). 내보낸 실행 파일로 전투 확인. 유니티와 기능 대조표는 `godot/PORTING.md`. **서버 데이터 내보내기(15-2)**: `dotnet run --project godot/exporter` (`ServerDataExporter` 를 순수 로직으로 옮김, 출력이 유니티 판과 같음을 확인) | 완료 |
+| G12 | 3D 전환 1단계 — 로우폴리 모델: 서 있는 도트 그림(장수·아군·적·지형 소품)을 화면 층이 로우폴리 3D 모델로 바꿔 그린다. **규칙 코드는 그대로**(규칙은 여전히 걷기 시트 칸을 `SpriteRenderer` 에 넣고, `ModelMirror` 가 그림 파일 이름으로 모델을 고르고 칸의 줄·움직인 방향으로 몸을 돌리고 움직인 거리로 다리를 흔든다). 모델은 코드로 만든 임시 모델(`LowPolyMesh`: 사람·말 탄 사람·소품 14종, 색은 그림에서 뽑음), 모델 종류마다 MultiMesh 하나로 인스턴싱(`shaders/lowpoly.gdshader`: 꼭짓점 셰이더 걷기, 점묘 반투명, 반 램버트). 적 500 에서 120 FPS(도트 그림 114). 끄기: `--sprites`. 구매한 번들 모델은 디스크에서 찾지 못해 연결하지 않음 | 완료 |
 
 ### Godot 전환 작업 규칙
 
