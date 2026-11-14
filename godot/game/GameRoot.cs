@@ -253,6 +253,7 @@ namespace Samkuk.Game
                 // 타이틀의 [3D 화면]: 켜면 로우폴리 모델 + 원근 카메라, 끄면 도트 그림 + 직교 카메라. 전투 카메라가 만들어질 때 읽히므로 다음 전투부터 바뀐다
                 bool view3d = Samkuk.Core.Hd2dSettings.View3d;
                 WorldMirror.Models3D = view3d && !forceSprites;
+                WorldMirror.IsoField = WorldMirror.Models3D && SceneManager.GetActiveScene().name == Samkuk.Core.GameManager.FieldSceneName;
                 Samkuk.World.TiltPreset.Perspective = view3d && !forceOrtho;
                 SceneRuntime.Tick((float)Math.Min(delta, 0.1));   // 창을 끌거나 멈췄다 돌아와도 한 번에 너무 멀리 가지 않게
                 world.Sync();

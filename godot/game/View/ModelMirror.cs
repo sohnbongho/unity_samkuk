@@ -24,6 +24,8 @@ namespace Samkuk.Game
         /// <summary>사람 모델의 키: 그림 속 몸 높이(40px/32)에 곱한다. 내려다보는 각도 때문에 납작해 보이는 만큼 조금 키운다.</summary>
         public const float CharacterScale = 1.3f;
         public const float PropHeightScale = 1.0f;
+        /// <summary>야전의 부대 모델 배율: 한 칸(변 약 1.06유닛)에 말 탄 부대가 들어가게 줄인다.</summary>
+        public const float IsoUnitScale = 0.62f;
         const float TurnSpeed = 14f;         // 몸 돌리기 (라디안/초)
         const float VelocitySmoothing = 0.1f; // 움직이는 방향을 읽는 속도를 고르게 하는 시간 (초)
         const float StepPerUnit = 5.2f;      // 걸은 거리 1유닛당 다리 흔들기 위상
@@ -49,6 +51,7 @@ namespace Samkuk.Game
             // 동작: 공격 자세(0~1), 쓰러짐(0~1). 누가 쓰러졌는지는 규칙 컴포넌트에서 읽는다
             public float attack, fall;
             public bool looked;
+            public float isoYaw; public bool isoSet;   // 야전: 멈춰 있을 때 바라보는 쪽
             public Samkuk.Player.PlayerHealth health;
             public Samkuk.Allies.AllyController ally;
             // 마지막으로 그린 모습 (죽은 적이 넘어지는 연출의 시작)
@@ -130,6 +133,8 @@ namespace Samkuk.Game
 
             var t = sr.transform;
             var pos = t.position;
+            bool iso = WorldMirror.IsoField;
+            if (iso) pos = new CVec3(pos.x, pos.y * WorldMirror.IsoDepth, 0f);   // 야전: 2D 아이소메트릭 좌표를 땅 위의 점으로
             var scale = t.lossyScale;
             var color = sr.color;
             float yaw, swing = 0f, bob = 0f, sx, sy, sz;
@@ -143,6 +148,14 @@ namespace Samkuk.Game
                 int row = sprite.texture != null && cell > 0f ? Mathf.RoundToInt((sprite.texture.height - sprite.rect.y - sprite.rect.height) / cell) : 0;
                 float rowYaw = row == 1 ? Mathf.PI : row == 2 ? -Mathf.PI * 0.5f : row == 3 ? Mathf.PI * 0.5f : 0f;
                 float target = rowYaw;
+                if (iso)
+                {
+                    // 야전은 시트의 왼쪽·오른쪽 줄만 쓴다. 땅 위에서는 대각선이다: 오른쪽 줄 = 적진 쪽(열 +), 왼쪽 줄 = 내 진영 쪽(열 -).
+                    // 멈춰 있는 동안은 마지막으로 걷던 쪽을 그대로 본다(줄이 바뀌었을 때만 그 줄의 기본 방향으로)
+                    bool left = row == 2;
+                    if (!state.isoSet || (Mathf.Sin(state.isoYaw) < 0f) != left) { state.isoYaw = left ? -Mathf.PI * 0.25f : Mathf.PI * 0.75f; state.isoSet = true; }
+                    target = state.isoYaw;
+                }
                 if (!state.looked)
                 {
                     state.looked = true;
@@ -183,7 +196,8 @@ namespace Samkuk.Game
                         if (state.vx * state.vx + state.vy * state.vy > 0.3f * 0.3f)
                         {
                             float moveYaw = Mathf.Atan2(state.vx, -state.vy);   // Godot 의 +z 는 로직의 남쪽
-                            if (!swinging && Mathf.Abs(Mathf.DeltaAngle(moveYaw * Mathf.Rad2Deg, rowYaw * Mathf.Rad2Deg)) < 75f) target = moveYaw;
+                            if (iso) target = state.isoYaw = moveYaw;
+                            else if (!swinging && Mathf.Abs(Mathf.DeltaAngle(moveYaw * Mathf.Rad2Deg, rowYaw * Mathf.Rad2Deg)) < 75f) target = moveYaw;
                         }
                     }
                 }
@@ -202,6 +216,7 @@ namespace Samkuk.Game
                 yaw = state.yaw;
                 // 그림 한 칸(48px)의 몸 높이 40px 를 모델 키로
                 float body = sprite.rect.height / sprite.pixelsPerUnit * (40f / 48f) * CharacterScale / batch.baseHeight;
+                if (iso) body *= IsoUnitScale;
                 sx = Mathf.Abs(scale.x) * body; sy = scale.y * body; sz = sx;
 
                 state.attack = Mathf.MoveTowards(state.attack, want, dt * (want > state.attack ? 16f : 7f));
@@ -303,6 +318,7 @@ namespace Samkuk.Game
             string name = System.IO.Path.GetFileNameWithoutExtension(path);
             // 걷기 시트가 없는 주인공(장수를 고르기 전의 기본 그림)도 사람 모델로
             bool hero = path.Contains("/HeroWalk/") || path.EndsWith("/sprites/Player.png"), enemy = path.Contains("/EnemyWalk/");
+            if (path.Contains("/Field/") && name.StartsWith("Unit_")) enemy = true;   // 야전의 부대 그림 (걷기 시트 규격): 병과·진영마다 모델 하나
             if (!hero && !enemy && !(path.Contains("/Terrain/") && name.StartsWith("Prop_"))) return null;
             if (batches.TryGetValue(name, out var existing)) return existing;
 

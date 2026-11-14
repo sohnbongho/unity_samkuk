@@ -65,6 +65,21 @@ namespace Samkuk.Game
         public static HashSet<string> DumpKinds;
         public ModelMirror Models => models;
 
+        // ───────────────────────── 야전의 3D 화면 (G18) ─────────────────────────
+        // 야전의 규칙·화면 코드는 2D 아이소메트릭 좌표(마름모 48x24)로 부대와 타일을 놓는다. 2:1 마름모는 정사각 칸을 30° 로 내려다본 직교 그림과 같으므로,
+        // 2D 의 (x, y) 를 땅 위의 (x, 깊이 y / sin 30° = 2y) 로 옮기고 직교 카메라를 30° 기울이면 **땅 위의 점은 화면에서 예전과 똑같은 자리**에 온다.
+        // 그래서 규칙 코드의 마우스 고르기·병사 수 라벨 자리는 그대로 맞고, 화면 층만 타일을 땅에 깔고 부대를 로우폴리 모델로 세운다.
+        /// <summary>야전을 3D 로 그린다 (GameRoot 가 프레임마다: 야전 씬 + [3D 화면] 켬).</summary>
+        public static bool IsoField;
+        /// <summary>내려다보는 각 30°: sin = 0.5 → 2D 의 세로 1 이 땅의 깊이 2.</summary>
+        public const float IsoDepth = 2f;
+        const float IsoSin = 0.5f, IsoCos = 0.8660254f;
+        static readonly GVec3 IsoUp = new GVec3(0f, IsoCos, -IsoSin), IsoBack = new GVec3(0f, IsoSin, IsoCos);
+        DirectionalLight3D isoSun;
+
+        /// <summary>야전 2D 좌표의 땅 위 점을 Godot 좌표로.</summary>
+        public static GVec3 IsoGround(CVec3 p) => new GVec3(p.x, 0f, -p.y * IsoDepth);
+
         public Camera3D Camera => camera;
         public Godot.Environment Environment => environment.Environment;
         public int SpriteCount { get; private set; }
@@ -182,7 +197,8 @@ namespace Samkuk.Game
                 }
             }
             SpriteCount = visible;
-            if (Models3D && tilt) models.End(); else models.Hide();
+            if (Models3D && (tilt || IsoField)) models.End(); else models.Hide();
+            SyncIsoSun();
 
             Sweep(sprites, v => v.seen, v => v.node);
             Sweep(lights, v => v.seen, v => v.node);
@@ -256,6 +272,13 @@ namespace Samkuk.Game
             var t = sr.transform;
             var pos = t.position;
             var scale = t.lossyScale;
+            if (IsoField)
+            {
+                bool model = SyncIsoSprite(sr, sprite, node, texture, pixel);
+                if (dumpKind != null) DumpKinds.Add((model ? "3D " : "2D ") + dumpKind);
+                return true;
+            }
+            node.NoDepthTest = false;
             var material = sr.sharedMaterial;
             bool pixelShader = material != null && material.shader != null && material.shader.name == TiltView.ShaderName;
             bool standing = pixelShader && material.GetFloat(StandId) > 0.5f;
@@ -305,6 +328,62 @@ namespace Samkuk.Game
             }
             if (dumpKind != null) DumpKinds.Add("2D " + dumpKind);
             return true;
+        }
+
+        // 야전의 그림 한 장 (3D 화면). 정렬 레이어가 역할을 알려 준다: World = 부대(모델로), Background = 타일·사거리·선택 테(땅에 깐다),
+        // 그 밖(Effect: 무기·검기·화살·입자) = 카메라를 향한 그림. 이펙트는 2D 좌표에 높이가 섞여 있어 땅 위의 한 점으로 정할 수 없으므로
+        // 같은 화면 자리에 깊이 검사 없이 그린다(2D 때도 늘 맨 앞이었다). 모델로 그렸으면 true.
+        bool SyncIsoSprite(SpriteRenderer sr, Sprite sprite, Sprite3D node, Godot.Texture2D texture, bool pixel)
+        {
+            var t = sr.transform;
+            var pos = t.position;
+            var scale = t.lossyScale;
+            var q = t.rotation;
+            string layer = sr.sortingLayerName;
+            if (layer == Samkuk.Core.GameLayers.Sorting.World && models.TryDraw(sr, sprite)) { node.Visible = false; return true; }
+
+            var right = q * CVec3.right;
+            var up = q * CVec3.up;
+            int order = Mathf.Clamp(sr.sortingOrder, 0, 14);
+            if (layer == Samkuk.Core.GameLayers.Sorting.Background)
+            {
+                var ground = IsoGround(pos);
+                node.Position = new GVec3(ground.X, 0.002f * (order + 1), ground.Z);
+                node.Basis = new Basis(IsoGround(right) * scale.x, IsoGround(up) * scale.y, GVec3.Up);
+                node.NoDepthTest = false;
+                node.CastShadow = GeometryInstance3D.ShadowCastingSetting.Off;
+                // 타일(순서 0, 불투명한 마름모)은 컷아웃 재질: 빛과 부대 그림자를 받는다. 사거리·선택 테는 반투명으로 그 위에
+                bool tile = sr.sortingOrder == 0 && sr.color.a >= 0.999f;
+                node.MaterialOverride = SpriteMaterial(texture, tile, pixel, tile ? 0 : order - 60, Godot.Vector2.One);
+                return false;
+            }
+            // 카메라를 향한 그림: 2D 평면의 오른쪽·위가 카메라의 오른쪽·위
+            node.Position = IsoGround(pos) + IsoBack * 3f;
+            node.Basis = new Basis((GVec3.Right * right.x + IsoUp * right.y) * scale.x, (GVec3.Right * up.x + IsoUp * up.y) * scale.y, IsoBack);
+            node.CastShadow = GeometryInstance3D.ShadowCastingSetting.Off;
+            node.MaterialOverride = null;
+            node.Shaded = false;
+            node.AlphaCut = SpriteBase3D.AlphaCutMode.Disabled;
+            node.NoDepthTest = true;
+            node.RenderPriority = 100 + order;
+            return false;
+        }
+
+        // 야전의 햇빛: 씬에는 2D 조명뿐이라 화면 층이 방향광 하나를 둔다 (모델의 음영과 땅에 지는 그림자)
+        void SyncIsoSun()
+        {
+            if (!IsoField) { if (isoSun != null) isoSun.Visible = false; return; }
+            if (isoSun == null)
+            {
+                isoSun = new DirectionalLight3D
+                {
+                    Name = "IsoSun", DirectionalShadowMode = DirectionalLight3D.ShadowMode.Orthogonal, DirectionalShadowMaxDistance = 80f, ShadowBlur = 0f,
+                    ShadowEnabled = true, LightEnergy = 0.65f, LightColor = new GColor(1f, 0.97f, 0.9f),
+                };
+                AddChild(isoSun);
+                isoSun.Basis = Basis.LookingAt(new GVec3(0.55f, -1f, -0.3f).Normalized(), GVec3.Up);
+            }
+            isoSun.Visible = true;
         }
 
         // 타일처럼 이어 붙이는 그림(바닥 배경): 큰 사각형 한 장에 그림을 반복해 입힌다
@@ -455,6 +534,18 @@ namespace Samkuk.Game
         {
             if (cam == null) return;
             var t = cam.transform;
+            if (IsoField)
+            {
+                // 야전: 2D 카메라가 보던 곳을 30° 기울인 직교 카메라로 (크기는 같다 → 땅 위의 점이 화면에서 같은 자리)
+                camera.Basis = new Basis(GVec3.Right, IsoUp, IsoBack);
+                camera.Position = IsoGround(t.position) + IsoBack * 40f;
+                camera.Projection = Camera3D.ProjectionType.Orthogonal;
+                camera.Size = cam.orthographicSize * 2f;
+                camera.KeepAspect = Camera3D.KeepAspectEnum.Height;
+                camera.Near = 0.5f;
+                camera.Far = 120f;
+                return;
+            }
             var q = t.rotation;
             // Godot 카메라는 -Z 를 본다: 로직의 보는 방향(+z)을 뒤집어 넣는다
             var basis = new Basis(Map(q * CVec3.right), Map(q * CVec3.up), -Map(q * CVec3.forward));
@@ -475,6 +566,7 @@ namespace Samkuk.Game
             // 빛이 없는 장면(타이틀, 내정, 맵 편집기)은 그림 색 그대로 보이게 환경광을 1 로, 전투는 규칙 코드가 정한 환경광
             bool lit = lights.Count > 0;
             var a = RenderSettings.ambientLight;
+            if (IsoField) { env.AmbientLightColor = new GColor(0.5f, 0.52f, 0.56f); env.AmbientLightEnergy = 1f; return; }   // 야전의 3D 화면: 화면 층의 햇빛 + 이 환경광
             env.AmbientLightColor = lit ? new GColor(a.r, a.g, a.b) : new GColor(1f, 1f, 1f);
             env.AmbientLightEnergy = 1f;
         }
