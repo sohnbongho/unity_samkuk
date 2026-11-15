@@ -89,6 +89,8 @@ namespace Samkuk.Game
         public const float LineWidth = 2.5f, PropLineWidth = 1.75f;
         /// <summary>그림에서 뽑은 색을 모델에 넣을 때의 보정 (채도, 밝기 배율). 살색은 덜 올린다(주황빛 방지). 도트 화면은 그림 그대로다.</summary>
         public const float VividSaturation = 1.25f, VividValue = 1.1f, SkinSaturation = 1.08f, SkinValue = 1.05f;
+        /// <summary>소품(나무·덤불)은 덜 올린다: 화면의 넓은 면적을 차지해 캐릭터와 같은 채도면 녹색이 화면을 덮는다.</summary>
+        public const float PropSaturation = 0.92f, PropValue = 1.12f;
         int frame;
 
         void EnsureMaterials()
@@ -484,7 +486,7 @@ namespace Samkuk.Game
                     // 줄기는 잎과 구별되는 갈색 쪽이어야 한다: 아래쪽도 풀색이면 기본 나무색
                     if (second.G > second.R * 1.05f) second = new GColor(0.42f, 0.29f, 0.17f);
                 }
-                mesh = LowPolyMesh.Prop(kind, Vivid(main), Vivid(second), name.GetHashCode() & 0xffff);
+                mesh = LowPolyMesh.Prop(kind, Vivid(main, PropSaturation, PropValue), Vivid(second, PropSaturation, PropValue), name.GetHashCode() & 0xffff);
                 lined = kind != LowPolyMesh.PropKind.Grass && kind != LowPolyMesh.PropKind.Flowers;   // 작고 많은 것에 선을 넣으면 화면이 까맣게 된다
             }
 
