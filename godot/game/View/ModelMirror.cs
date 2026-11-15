@@ -463,7 +463,14 @@ namespace Samkuk.Game
                     : name.Contains("Elite") || name.Contains("Infantry") || name.Contains("Cavalry") ? LowPolyMesh.Outfit.Elite
                     : LowPolyMesh.Outfit.Plain;
                 var palette = SamplePalette(image, rider);
-                mesh = rider ? LowPolyMesh.Rider(palette, outfit) : LowPolyMesh.Humanoid(palette, outfit);
+                // 장수의 특징(수염·관·깃)은 그림 파일 이름으로 가린다. 적 병사는 눈만
+                var feature = name.Contains("GuanYu") ? LowPolyMesh.Feature.GuanYu
+                    : name.Contains("ZhangFei") ? LowPolyMesh.Feature.ZhangFei
+                    : name.Contains("LiuBei") ? LowPolyMesh.Feature.LiuBei
+                    : name.Contains("CaoCao") ? LowPolyMesh.Feature.CaoCao
+                    : name.Contains("LvBu") || name.Contains("Lvbu") && name.Contains("Boss_") ? LowPolyMesh.Feature.LvBu
+                    : LowPolyMesh.Feature.None;
+                mesh = rider ? LowPolyMesh.Rider(palette, outfit, feature) : LowPolyMesh.Humanoid(palette, outfit, feature);
             }
             else
             {
@@ -526,7 +533,8 @@ namespace Samkuk.Game
                 Torso = Band(0.5f, 0.74f, new GColor(0.4f, 0.4f, 0.5f)),
                 Legs = Band(0.8f, 0.97f, new GColor(0.3f, 0.3f, 0.35f)),
             };
-            if (p.Skin.R < 0.5f) p.Skin = new GColor(0.93f, 0.76f, 0.6f);   // 얼굴이 수염·투구에 가려 살색을 못 찾으면 기본 살색
+            // 얼굴이 수염·투구에 가려 살색을 못 찾으면(어둡거나, 흰 눈자위·회색 투구처럼 붉은 기가 없으면) 기본 살색
+            if (p.Skin.R < 0.5f || p.Skin.R - p.Skin.B < 0.25f * p.Skin.R || p.Skin.G < p.Skin.B) p.Skin = new GColor(0.95f, 0.78f, 0.62f);
             // 카툰 색 보정: 도트 그림의 차분한 색을 선명하게
             p.Hair = Vivid(p.Hair); p.Torso = Vivid(p.Torso); p.Legs = Vivid(p.Legs);
             p.Skin = Vivid(p.Skin, SkinSaturation, SkinValue);

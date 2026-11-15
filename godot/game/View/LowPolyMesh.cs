@@ -5,9 +5,10 @@ using Godot;
 namespace Samkuk.Game
 {
     /// <summary>
-    /// 코드로 만드는 로우폴리 모델 (3D 전환 1단계의 임시 모델). 도트 그림이 코드 생성 임시 그림인 것과 같은 자리다.
+    /// 코드로 만드는 모델 (3D 전환의 임시 모델). 도트 그림이 코드 생성 임시 그림인 것과 같은 자리다.
     /// 모델 좌표: 발이 원점, y 위, +z 가 앞(화면 아래쪽을 볼 때의 정면). 사람 모델은 키 1, 소품 모델은 폭 1 x 높이 1 로 만들고 인스턴스 배율로 키운다.
-    /// 면마다 법선을 따로 둬(꼭짓점 공유 없음) 각진 면이 그대로 보이고, 면마다 밝기를 조금씩 달리해 덩어리가 읽히게 한다.
+    /// 카툰 3D(G20~): 사람·말은 둥근 모양(회전체 Lathe/Ball/Dome/Pill, 꼭짓점마다 부드러운 법선)으로 빚고 툰 셰이딩·외곽선을 입힌다.
+    /// 상자·각기둥·덩어리는 면마다 법선을 따로 둬 각진 면이 그대로 보인다(날붙이, 바위).
     /// 걷기: UV.x = 흔들 방향(±1), UV.y = 흔들 축 높이 (shaders/toon.gdshader 가 읽는다).
     /// 진짜 모델(구매한 번들 등)로 바꿀 때는 <see cref="ModelMirror"/> 의 모델 고르기에서 이 생성기 대신 파일의 메시를 넘기면 된다.
     /// </summary>
@@ -178,6 +179,79 @@ namespace Samkuk.Game
             return this;
         }
 
+        // ───────────────────────── 둥근 모양 (카툰 3D, G21) ─────────────────────────
+        // 법선을 꼭짓점마다 부드럽게 줘서 툰 셰이딩의 명암 경계가 곡선으로 떨어진다. 면 수는 낮게 둔다(멀리서 보는 작은 캐릭터).
+
+        // 삼각형 하나, 꼭짓점마다 법선 (밖에서 볼 때 a → b → c 가 반시계)
+        void TriS(Vector3 a, Vector3 b, Vector3 c, Vector3 na, Vector3 nb, Vector3 nc, Color color)
+        {
+            if ((b - a).Cross(c - a).LengthSquared() < 1e-12f) return;
+            positions.Add(a); positions.Add(c); positions.Add(b);
+            normals.Add(na); normals.Add(nc); normals.Add(nb);
+            for (int i = 0; i < 3; i++) { colors.Add(color); uvs.Add(new Vector2(swing, pivotY)); uv2s.Add(new Vector2(arm, 0f)); }
+        }
+
+        /// <summary>회전체: 옆모습(높이 y 가 커지는 순서의 (y, 반지름) 목록)을 xf 의 y 축 둘레로 돌린다. sx, sz = 가로·앞뒤 배율(타원), 반지름 0 인 끝은 뾰족하게 닫힌다.</summary>
+        public LowPolyMesh Lathe(Transform3D xf, (float y, float r)[] prof, float sx, float sz, int sides, Color color)
+        {
+            int n = prof.Length;
+            float s = (sx + sz) * 0.5f;
+            var nr = new float[n]; var ny = new float[n];
+            for (int i = 0; i < n; i++)
+            {
+                var prev = prof[Math.Max(i - 1, 0)]; var next = prof[Math.Min(i + 1, n - 1)];
+                float dy = next.y - prev.y, dr = (next.r - prev.r) * s;
+                float len = Mathf.Sqrt(dy * dy + dr * dr);
+                if (len < 1e-6f) { nr[i] = 1f; ny[i] = 0f; } else { nr[i] = dy / len; ny[i] = -dr / len; }
+                if (prof[i].r < 1e-5f) { nr[i] = 0f; ny[i] = i == 0 ? -1f : 1f; }
+            }
+            for (int j = 0; j < sides; j++)
+            {
+                float a0 = Mathf.Tau * j / sides, a1 = Mathf.Tau * (j + 1) / sides;
+                float s0 = Mathf.Sin(a0), c0 = Mathf.Cos(a0), s1 = Mathf.Sin(a1), c1 = Mathf.Cos(a1);
+                for (int i = 0; i + 1 < n; i++)
+                {
+                    Vector3 P(int k, float sn, float cs) => xf * new Vector3(prof[k].r * sx * sn, prof[k].y, prof[k].r * sz * cs);
+                    Vector3 N(int k, float sn, float cs) => (xf.Basis * new Vector3(nr[k] * sn * s / sx, ny[k], nr[k] * cs * s / sz)).Normalized();
+                    var p00 = P(i, s0, c0); var p01 = P(i, s1, c1); var p11 = P(i + 1, s1, c1); var p10 = P(i + 1, s0, c0);
+                    var n00 = N(i, s0, c0); var n01 = N(i, s1, c1); var n11 = N(i + 1, s1, c1); var n10 = N(i + 1, s0, c0);
+                    TriS(p00, p01, p11, n00, n01, n11, color);
+                    TriS(p00, p11, p10, n00, n11, n10, color);
+                }
+            }
+            return this;
+        }
+
+        /// <summary>공·타원체: 가운데 c, 반지름 (rx, ry, rz).</summary>
+        public LowPolyMesh Ball(Vector3 c, float rx, float ry, float rz, Color color, int sides = 8, int rings = 5)
+        {
+            var prof = new (float, float)[rings + 1];
+            for (int i = 0; i <= rings; i++) { float t = Mathf.Pi * i / rings; prof[i] = (-Mathf.Cos(t) * ry, i == 0 || i == rings ? 0f : Mathf.Sin(t)); }
+            return Lathe(new Transform3D(Basis.Identity, c), prof, rx, rz, sides, color);
+        }
+
+        /// <summary>덮개(머리카락, 투구, 지붕): 타원체의 위쪽만 — 꼭대기에서 cover 도(90 = 반구)까지. tilt 만큼 뒤(-z)로 기울인다.</summary>
+        public LowPolyMesh Dome(Vector3 c, float rx, float ry, float rz, Color color, float cover = 100f, float tilt = 0f, int sides = 8, int rings = 4)
+        {
+            var prof = new (float, float)[rings + 1];
+            float max = cover * Mathf.Pi / 180f;
+            for (int i = 0; i <= rings; i++) { float t = max * (1f - (float)i / rings); prof[i] = (Mathf.Cos(t) * ry, i == rings ? 0f : Mathf.Sin(t)); }
+            return Lathe(new Transform3D(new Basis(Vector3.Right, -tilt), c), prof, rx, rz, sides, color);
+        }
+
+        /// <summary>알약(끝이 둥근 막대): a 에서 b 로, 반지름 r0 → r1. 팔다리, 자루, 수염, 깃.</summary>
+        public LowPolyMesh Pill(Vector3 a, Vector3 b, float r0, float r1, Color color, int sides = 6, float flatten = 1f)
+        {
+            var d = b - a; float len = d.Length();
+            if (len < 1e-5f) return this;
+            d /= len;
+            var bx = Mathf.Abs(d.Y) > 0.99f ? Vector3.Right : Vector3.Up.Cross(d).Normalized();
+            var bz = bx.Cross(d);
+            float c0 = Mathf.Min(r0, len * 0.5f), c1 = Mathf.Min(r1, len * 0.5f);
+            var prof = new (float, float)[] { (0f, 0f), (c0 * 0.3f, r0 * 0.72f), (c0, r0), (len - c1, r1), (len - c1 * 0.3f, r1 * 0.72f), (len, 0f) };
+            return Lathe(new Transform3D(new Basis(bx, d, bz), a), prof, 1f, flatten, sides, color);
+        }
+
         // ───────────────────────── 사람·말 ─────────────────────────
 
         public struct Palette
@@ -187,88 +261,172 @@ namespace Samkuk.Game
 
         public enum Outfit { Plain, Archer, Elite, General }
 
-        static Color Darken(Color c, float k) => new Color(c.R * k, c.G * k, c.B * k, 1f);
+        /// <summary>장수의 특징 (얼굴·머리 장식). 적 병사는 None: 눈만 있다.</summary>
+        public enum Feature { None, LiuBei, GuanYu, ZhangFei, CaoCao, LvBu }
 
-        /// <summary>서 있는 사람 (키 1, 머리가 큰 3등신). 다리·팔이 걸을 때 엇갈려 흔들린다.</summary>
-        public static ArrayMesh Humanoid(Palette p, Outfit outfit)
+        static Color Darken(Color c, float k) => new Color(c.R * k, c.G * k, c.B * k, 1f);
+        static readonly Color Ink = new Color(0.10f, 0.08f, 0.09f);        // 눈, 수염
+        static readonly Color Gold = new Color(0.95f, 0.76f, 0.22f);
+
+        /// <summary>서 있는 사람 (키 1, 머리가 키의 40% 인 2.5등신). 다리·팔이 걸을 때 엇갈려 흔들린다.</summary>
+        public static ArrayMesh Humanoid(Palette p, Outfit outfit, Feature feature = Feature.None)
         {
             var m = new LowPolyMesh();
-            AddPerson(m, p, outfit, 0f, 0f, true);
+            AddPerson(m, p, outfit, feature, 0f, 0f, true);
             return m.Build();
         }
 
-        /// <summary>말 탄 사람 (전체 높이 1.25 쯤, 말 길이 1.1). 말 다리 네 개가 엇갈려 흔들린다.</summary>
-        public static ArrayMesh Rider(Palette p, Outfit outfit)
+        /// <summary>말 탄 사람 (전체 높이 1.5 쯤, 말 길이 1.2). 말 다리 네 개가 엇갈려 흔들린다.</summary>
+        public static ArrayMesh Rider(Palette p, Outfit outfit, Feature feature = Feature.None)
         {
             var m = new LowPolyMesh();
-            var horse = p.Mount; var dark = Darken(horse, 0.62f);
-            // 말 다리 (앞뒤 엇갈림)
-            float legTop = 0.42f;
-            m.Limb(1f, legTop).Box(-0.11f, 0f, legTop, 0.30f, 0.09f, 0.10f, dark);
-            m.Limb(-1f, legTop).Box(0.11f, 0f, legTop, 0.30f, 0.09f, 0.10f, dark);
-            m.Limb(-1f, legTop).Box(-0.11f, 0f, legTop, -0.34f, 0.09f, 0.10f, dark);
-            m.Limb(1f, legTop).Box(0.11f, 0f, legTop, -0.34f, 0.09f, 0.10f, dark);
-            // 몸통, 목, 머리, 꼬리
-            m.Body().Box(0f, 0.38f, 0.72f, -0.02f, 0.34f, 0.86f, horse, 0.9f);
-            m.Box(0f, 0.62f, 0.98f, 0.40f, 0.18f, 0.22f, horse, 0.8f, 0.10f);
-            m.Box(0f, 0.86f, 1.04f, 0.60f, 0.17f, 0.34f, horse, 0.85f);
-            m.Box(0f, 0.98f, 1.10f, 0.50f, 0.20f, 0.06f, dark);               // 귀·갈기
-            m.Box(0f, 0.30f, 0.70f, -0.50f, 0.07f, 0.07f, dark, 1.6f, 0.04f);  // 꼬리
-            m.Box(0f, 0.70f, 0.75f, -0.02f, 0.38f, 0.40f, p.Accent);          // 안장
-            AddPerson(m, p, outfit, 0.44f, -0.04f, false);
+            var horse = p.Mount; var dark = Darken(horse, 0.55f);
+            // 말 다리 (앞뒤 엇갈림) + 발굽
+            float legTop = 0.44f;
+            void Leg(float x, float z, float sign)
+            {
+                m.Limb(sign, legTop).Pill(new Vector3(x, 0.06f, z), new Vector3(x, legTop + 0.04f, z), 0.05f, 0.065f, horse);
+                m.Limb(sign, legTop).Ball(new Vector3(x, 0.045f, z + 0.01f), 0.062f, 0.05f, 0.07f, dark, 6, 3);
+            }
+            Leg(-0.11f, 0.30f, 1f); Leg(0.11f, 0.30f, -1f); Leg(-0.11f, -0.34f, -1f); Leg(0.11f, -0.34f, 1f);
+            // 몸통(통통한 타원체), 목, 머리, 귀, 갈기, 꼬리
+            m.Body().Ball(new Vector3(0f, 0.57f, -0.02f), 0.19f, 0.20f, 0.47f, horse, 8, 6);
+            m.Pill(new Vector3(0f, 0.62f, 0.32f), new Vector3(0f, 1.00f, 0.50f), 0.13f, 0.10f, horse);
+            m.Pill(new Vector3(0f, 1.02f, 0.46f), new Vector3(0f, 0.90f, 0.76f), 0.115f, 0.08f, horse);
+            m.Pill(new Vector3(-0.06f, 1.08f, 0.47f), new Vector3(-0.08f, 1.18f, 0.45f), 0.03f, 0.012f, horse, 5);
+            m.Pill(new Vector3(0.06f, 1.08f, 0.47f), new Vector3(0.08f, 1.18f, 0.45f), 0.03f, 0.012f, horse, 5);
+            m.Pill(new Vector3(0f, 1.10f, 0.42f), new Vector3(0f, 0.70f, 0.22f), 0.05f, 0.04f, dark, 5);         // 갈기
+            m.Pill(new Vector3(0f, 0.66f, -0.46f), new Vector3(0f, 0.28f, -0.60f), 0.045f, 0.07f, dark, 5);      // 꼬리
+            m.Ball(new Vector3(-0.07f, 0.98f, 0.66f), 0.018f, 0.026f, 0.018f, Ink, 5, 3);                        // 말 눈
+            m.Ball(new Vector3(0.07f, 0.98f, 0.66f), 0.018f, 0.026f, 0.018f, Ink, 5, 3);
+            m.Ball(new Vector3(0f, 0.75f, -0.02f), 0.205f, 0.06f, 0.24f, p.Accent, 8, 4);                       // 안장
+            AddPerson(m, p, outfit, feature, 0.50f, -0.04f, false);
             return m.Build();
         }
 
         // baseY 위에 사람을 세운다. legs = false 면 다리를 짧게 옆으로(말 탄 자세) 흔들지 않는다
-        static void AddPerson(LowPolyMesh m, Palette p, Outfit outfit, float baseY, float cz, bool legs)
+        static void AddPerson(LowPolyMesh m, Palette p, Outfit outfit, Feature feature, float baseY, float cz, bool legs)
         {
-            float hip = baseY + 0.34f, shoulder = baseY + 0.66f, headTop = baseY + 1.0f;
-            var legColor = p.Legs; var boots = Darken(p.Legs, 0.6f);
+            float hip = baseY + 0.24f, shoulder = baseY + 0.56f, headY = baseY + 0.80f, headTop = baseY + 1.0f;
+            const float headR = 0.215f, headRy = 0.20f, headRz = 0.20f;
+            var legColor = p.Legs; var boots = Darken(p.Legs, 0.55f);
+            var sleeve = Darken(p.Torso, 0.88f);
             if (legs)
             {
-                m.Limb(1f, hip).Box(-0.095f, baseY, baseY + 0.10f, cz + 0.02f, 0.14f, 0.20f, boots);
-                m.Limb(1f, hip).Box(-0.095f, baseY + 0.10f, hip + 0.02f, cz, 0.13f, 0.15f, legColor);
-                m.Limb(-1f, hip).Box(0.095f, baseY, baseY + 0.10f, cz + 0.02f, 0.14f, 0.20f, boots);
-                m.Limb(-1f, hip).Box(0.095f, baseY + 0.10f, hip + 0.02f, cz, 0.13f, 0.15f, legColor);
+                void Leg(float x, float sign)
+                {
+                    m.Limb(sign, hip).Pill(new Vector3(x, baseY + 0.05f, cz), new Vector3(x, hip + 0.04f, cz), 0.07f, 0.075f, legColor);
+                    m.Limb(sign, hip).Ball(new Vector3(x, baseY + 0.05f, cz + 0.035f), 0.075f, 0.05f, 0.105f, boots, 6, 3);
+                }
+                Leg(-0.09f, 1f); Leg(0.09f, -1f);
             }
             else
             {
-                m.Body().Box(-0.21f, baseY + 0.02f, hip, cz + 0.04f, 0.10f, 0.16f, legColor);
-                m.Box(0.21f, baseY + 0.02f, hip, cz + 0.04f, 0.10f, 0.16f, legColor);
+                m.Body().Pill(new Vector3(-0.20f, hip + 0.04f, cz + 0.02f), new Vector3(-0.225f, baseY - 0.02f, cz + 0.08f), 0.07f, 0.06f, legColor);
+                m.Pill(new Vector3(0.20f, hip + 0.04f, cz + 0.02f), new Vector3(0.225f, baseY - 0.02f, cz + 0.08f), 0.07f, 0.06f, legColor);
+                m.Ball(new Vector3(-0.225f, baseY - 0.03f, cz + 0.11f), 0.062f, 0.05f, 0.09f, boots, 6, 3);
+                m.Ball(new Vector3(0.225f, baseY - 0.03f, cz + 0.11f), 0.062f, 0.05f, 0.09f, boots, 6, 3);
             }
-            // 몸통 (아래가 살짝 넓은 옷자락) + 허리띠
-            m.Body().Box(0f, hip - 0.04f, shoulder, cz, 0.40f, 0.24f, p.Torso, 0.9f);
-            m.Box(0f, hip + 0.04f, hip + 0.10f, cz, 0.42f, 0.26f, p.Accent);
-            // 팔 (다리와 반대로)
-            m.Limb(-1f, shoulder - 0.02f).Box(-0.255f, hip + 0.06f, shoulder, cz, 0.10f, 0.12f, Darken(p.Torso, 0.86f));
-            m.Limb(-1f, shoulder - 0.02f).Box(-0.255f, hip + 0.02f, hip + 0.10f, cz, 0.09f, 0.10f, p.Skin);
-            m.Limb(1f, shoulder - 0.02f).WeaponArm().Box(0.255f, hip + 0.06f, shoulder, cz, 0.10f, 0.12f, Darken(p.Torso, 0.86f));
-            m.Limb(1f, shoulder - 0.02f).WeaponArm().Box(0.255f, hip + 0.02f, hip + 0.10f, cz, 0.09f, 0.10f, p.Skin);
-            // 머리 + 머리카락/두건 (뒤와 위를 덮는다)
-            m.Body().Box(0f, shoulder, headTop - 0.06f, cz + 0.01f, 0.32f, 0.28f, p.Skin, 0.94f);
-            m.Box(0f, headTop - 0.14f, headTop, cz - 0.01f, 0.35f, 0.31f, p.Hair, 0.86f);
-            m.Box(0f, shoulder + 0.02f, headTop - 0.10f, cz - 0.13f, 0.34f, 0.07f, p.Hair);
-            // 눈 (정면이 어디인지 읽히게)
-            var eye = new Color(0.08f, 0.07f, 0.07f);
-            m.Box(-0.075f, shoulder + 0.11f, shoulder + 0.16f, cz + 0.155f, 0.045f, 0.012f, eye);
-            m.Box(0.075f, shoulder + 0.11f, shoulder + 0.16f, cz + 0.155f, 0.045f, 0.012f, eye);
+            // 몸통: 아래가 넓은 옷자락(종 모양) + 허리띠
+            float t0 = hip - 0.06f;
+            var robe = new (float, float)[] { (t0, 0f), (t0 + 0.012f, 0.165f), (t0 + 0.10f, 0.185f), (t0 + 0.22f, 0.165f), (shoulder - 0.03f, 0.14f), (shoulder + 0.03f, 0.085f), (shoulder + 0.05f, 0f) };
+            m.Body().Lathe(new Transform3D(Basis.Identity, new Vector3(0f, 0f, cz)), robe, 1f, 0.80f, 8, p.Torso);
+            var belt = new (float, float)[] { (hip + 0.085f, 0.150f), (hip + 0.095f, 0.186f), (hip + 0.145f, 0.180f), (hip + 0.155f, 0.150f) };
+            m.Lathe(new Transform3D(Basis.Identity, new Vector3(0f, 0f, cz)), belt, 1f, 0.80f, 8, p.Accent);
+            // 팔 (다리와 반대로) + 손
+            void Arm(float side, bool weapon)
+            {
+                var top = new Vector3(side * 0.175f, shoulder - 0.01f, cz); var hand = new Vector3(side * 0.235f, hip + 0.085f, cz + 0.01f);
+                m.Limb(side < 0f ? -1f : 1f, shoulder - 0.02f); if (weapon) m.WeaponArm();
+                m.Pill(top, hand, 0.062f, 0.055f, sleeve);
+                m.Ball(hand + new Vector3(0f, -0.02f, 0f), 0.056f, 0.056f, 0.056f, p.Skin, 6, 4);
+            }
+            Arm(-1f, false); Arm(1f, true);
+            // 머리(큰 공) + 머리카락/두건(위와 뒤를 덮는 기울인 덮개)
+            var head = new Vector3(0f, headY, cz + 0.01f);
+            m.Body().Ball(head, headR, headRy, headRz, p.Skin, 10, 6);
+            m.Dome(head + new Vector3(0f, 0.012f, -0.012f), headR * 1.07f, headRy * 1.07f, headRz * 1.08f, p.Hair, 86f, 0.95f, 10, 4);   // 내려다보는 카메라에서 얼굴이 보이게 뒤로 많이 젖힌다
+            // 눈: 세로로 긴 검은 타원 + 흰 반짝임 (정면이 어디인지 읽히게, 큰 머리의 인상)
+            float eyeY = headY + 0.022f, eyeX = 0.082f;   // 내려다보는 카메라에 맞춰 눈을 조금 위에
+            float FaceZ(float x, float y) { float k = 1f - (x * x) / (headR * headR) - ((y - headY) * (y - headY)) / (headRy * headRy); return head.Z + headRz * Mathf.Sqrt(Mathf.Max(0.05f, k)); }
+            for (int side = -1; side <= 1; side += 2)
+            {
+                float z = FaceZ(eyeX, eyeY);
+                m.Ball(new Vector3(side * eyeX, eyeY, z - 0.004f), 0.034f, 0.052f, 0.014f, Ink, 6, 4);
+                m.Ball(new Vector3(side * eyeX + 0.010f, eyeY + 0.018f, z + 0.007f), 0.010f, 0.012f, 0.006f, new Color(1f, 1f, 1f), 5, 3);
+            }
+            // 눈썹: 장수만 (thick = 굵기, slant = 안쪽이 내려간 정도 — 성난 눈썹)
+            void Brows(float thick, float slant, Color color)
+            {
+                for (int side = -1; side <= 1; side += 2)
+                {
+                    float xi = 0.040f, xo = 0.118f, yi = eyeY + 0.088f - slant, yo = eyeY + 0.090f + slant * 0.6f;
+                    m.Pill(new Vector3(side * xi, yi, FaceZ(xi, yi) + 0.004f), new Vector3(side * xo, yo, FaceZ(xo, yo) + 0.004f), thick, thick * 0.7f, color, 5);
+                }
+            }
+
+            float chinY = headY - headRy * 0.80f, chinZ = FaceZ(0f, headY - headRy * 0.80f);
+            switch (feature)
+            {
+                case Feature.GuanYu:    // 가슴까지 내려오는 긴 수염 + 콧수염, 두건은 그림의 녹색(머리 덮개 색)
+                    Brows(0.014f, 0.012f, Ink);
+                    m.Pill(new Vector3(0f, chinY + 0.035f, chinZ - 0.01f), new Vector3(0f, shoulder - 0.20f, cz + 0.165f), 0.085f, 0.022f, Ink, 6, 0.55f);
+                    m.Pill(new Vector3(-0.012f, headY - 0.085f, FaceZ(0f, headY - 0.085f)), new Vector3(-0.105f, headY - 0.125f, FaceZ(0.105f, headY - 0.125f)), 0.018f, 0.008f, Ink, 5);
+                    m.Pill(new Vector3(0.012f, headY - 0.085f, FaceZ(0f, headY - 0.085f)), new Vector3(0.105f, headY - 0.125f, FaceZ(0.105f, headY - 0.125f)), 0.018f, 0.008f, Ink, 5);
+                    m.Pill(new Vector3(0f, headTop - 0.01f, cz - 0.03f), new Vector3(0f, headTop + 0.07f, cz - 0.07f), 0.055f, 0.04f, p.Hair, 6);   // 두건 매듭
+                    break;
+                case Feature.ZhangFei:  // 턱을 두른 뻗친 수염 + 굵고 성난 눈썹
+                    Brows(0.024f, 0.030f, Ink);
+                    m.Ball(new Vector3(0f, headY - 0.125f, cz + 0.045f), headR * 1.02f, 0.085f, headRz * 0.98f, Ink, 10, 4);
+                    for (int i = -2; i <= 2; i++)
+                    {
+                        float a = i * 0.55f;
+                        var from = new Vector3(Mathf.Sin(a) * 0.17f, headY - 0.15f, cz + 0.04f + Mathf.Cos(a) * 0.15f);
+                        m.Pill(from, from + new Vector3(Mathf.Sin(a) * 0.075f, -0.075f, Mathf.Cos(a) * 0.075f), 0.04f, 0.006f, Ink, 5);
+                    }
+                    break;
+                case Feature.LiuBei:    // 관(작은 금빛 상투관 + 가로 비녀)
+                    Brows(0.012f, 0f, Darken(p.Hair, 0.7f));
+                    m.Lathe(new Transform3D(Basis.Identity, new Vector3(0f, 0f, cz - 0.02f)), new (float, float)[] { (headTop - 0.03f, 0.075f), (headTop + 0.07f, 0.066f), (headTop + 0.085f, 0f) }, 1f, 1f, 8, Gold);
+                    m.Pill(new Vector3(-0.15f, headTop + 0.025f, cz - 0.02f), new Vector3(0.15f, headTop + 0.025f, cz - 0.02f), 0.014f, 0.014f, Gold, 5);
+                    break;
+                case Feature.CaoCao:    // 짧은 턱수염·콧수염 + 위가 평평한 검은 관(앞뒤로 긴 판)
+                    Brows(0.014f, 0.016f, Ink);
+                    m.Pill(new Vector3(0f, chinY + 0.03f, chinZ - 0.015f), new Vector3(0f, chinY - 0.055f, chinZ + 0.01f), 0.05f, 0.012f, Ink, 6, 0.6f);
+                    m.Pill(new Vector3(-0.08f, headY - 0.095f, FaceZ(0.08f, headY - 0.095f)), new Vector3(0.08f, headY - 0.095f, FaceZ(0.08f, headY - 0.095f)), 0.014f, 0.014f, Ink, 5);
+                    m.Lathe(new Transform3D(Basis.Identity, new Vector3(0f, 0f, cz - 0.02f)), new (float, float)[] { (headTop - 0.04f, 0.095f), (headTop + 0.06f, 0.085f), (headTop + 0.07f, 0f) }, 1f, 1f, 8, new Color(0.16f, 0.14f, 0.2f));
+                    m.Box(0f, headTop + 0.07f, headTop + 0.095f, cz - 0.02f, 0.20f, 0.36f, new Color(0.16f, 0.14f, 0.2f));
+                    m.Box(0f, headTop + 0.095f, headTop + 0.105f, cz - 0.02f, 0.06f, 0.37f, Gold);
+                    break;
+                case Feature.LvBu:      // 뒤로 길게 휜 꿩 깃 두 가닥 + 금빛 머리 장식
+                    Brows(0.016f, 0.022f, Ink);
+                    m.Ball(new Vector3(0f, headTop + 0.01f, cz - 0.01f), 0.06f, 0.05f, 0.06f, Gold, 6, 4);
+                    for (int side = -1; side <= 1; side += 2)
+                    {
+                        var a0 = new Vector3(side * 0.04f, headTop + 0.02f, cz - 0.01f); var a1 = new Vector3(side * 0.15f, headTop + 0.30f, cz - 0.10f);
+                        var a2 = new Vector3(side * 0.22f, headTop + 0.44f, cz - 0.34f); var a3 = new Vector3(side * 0.25f, headTop + 0.40f, cz - 0.56f);
+                        var red = new Color(0.90f, 0.20f, 0.18f);
+                        m.Pill(a0, a1, 0.020f, 0.024f, red, 5); m.Pill(a1, a2, 0.024f, 0.022f, red, 5); m.Pill(a2, a3, 0.022f, 0.006f, red, 5);
+                    }
+                    break;
+            }
 
             switch (outfit)
             {
-                case Outfit.Archer:   // 등에 멘 활과 화살통
-                    m.Box(0.06f, hip + 0.02f, shoulder + 0.14f, cz - 0.16f, 0.05f, 0.04f, new Color(0.45f, 0.3f, 0.16f), 1f, -0.03f);
-                    m.Box(-0.10f, hip + 0.10f, shoulder + 0.04f, cz - 0.15f, 0.09f, 0.07f, Darken(p.Accent, 0.8f));
+                case Outfit.Archer:   // 등에 비스듬히 멘 활과 화살통
+                    m.Pill(new Vector3(0.14f, hip + 0.02f, cz - 0.17f), new Vector3(-0.10f, shoulder + 0.16f, cz - 0.17f), 0.02f, 0.02f, new Color(0.50f, 0.33f, 0.17f), 5);
+                    m.Pill(new Vector3(-0.11f, hip + 0.10f, cz - 0.17f), new Vector3(-0.03f, shoulder + 0.03f, cz - 0.18f), 0.045f, 0.05f, Darken(p.Accent, 0.8f), 6);
                     break;
-                case Outfit.Elite:    // 어깨 갑옷 + 투구 깃
-                    m.Box(-0.26f, shoulder - 0.06f, shoulder + 0.04f, cz, 0.16f, 0.18f, p.Accent, 0.8f);
-                    m.Box(0.26f, shoulder - 0.06f, shoulder + 0.04f, cz, 0.16f, 0.18f, p.Accent, 0.8f);
-                    m.Box(0f, headTop, headTop + 0.10f, cz - 0.02f, 0.05f, 0.14f, p.Accent, 0.6f);
+                case Outfit.Elite:    // 둥근 어깨 갑옷 + 투구 깃
+                    m.Ball(new Vector3(-0.20f, shoulder + 0.01f, cz), 0.085f, 0.06f, 0.095f, p.Accent, 6, 4);
+                    m.Ball(new Vector3(0.20f, shoulder + 0.01f, cz), 0.085f, 0.06f, 0.095f, p.Accent, 6, 4);
+                    if (feature == Feature.None) m.Pill(new Vector3(0f, headTop - 0.01f, cz - 0.02f), new Vector3(0f, headTop + 0.11f, cz - 0.05f), 0.04f, 0.015f, p.Accent, 5);
                     break;
-                case Outfit.General:  // 어깨 갑옷 + 긴 투구 깃 + 망토
-                    m.Box(-0.27f, shoulder - 0.07f, shoulder + 0.05f, cz, 0.18f, 0.20f, p.Accent, 0.8f);
-                    m.Box(0.27f, shoulder - 0.07f, shoulder + 0.05f, cz, 0.18f, 0.20f, p.Accent, 0.8f);
-                    m.Box(0f, headTop, headTop + 0.20f, cz - 0.04f, 0.05f, 0.10f, p.Accent, 0.5f, -0.08f);
-                    m.Box(0f, hip - 0.10f, shoulder - 0.02f, cz - 0.15f, 0.40f, 0.04f, Darken(p.Accent, 0.75f), 0.8f, 0.02f);
+                case Outfit.General:  // 큰 어깨 갑옷 + 망토, 장수 특징이 없으면 긴 투구 깃
+                    m.Ball(new Vector3(-0.20f, shoulder + 0.01f, cz), 0.085f, 0.06f, 0.095f, p.Accent, 6, 4);
+                    m.Ball(new Vector3(0.20f, shoulder + 0.01f, cz), 0.085f, 0.06f, 0.095f, p.Accent, 6, 4);
+                    if (feature == Feature.None) m.Pill(new Vector3(0f, headTop - 0.01f, cz - 0.03f), new Vector3(0f, headTop + 0.20f, cz - 0.12f), 0.045f, 0.012f, p.Accent, 5);
+                    m.Ball(new Vector3(0f, hip + 0.13f, cz - 0.155f), 0.195f, 0.24f, 0.045f, Darken(p.Accent, 0.72f), 8, 4);
                     break;
             }
         }
@@ -403,28 +561,29 @@ namespace Samkuk.Game
             switch (kind)
             {
                 case WeaponKind.Sword:
-                    m.Box(0f, 0f, 0.22f, 0f, 0.05f, 0.05f, shaft);
-                    m.Box(0f, 0.20f, 0.26f, 0f, 0.26f, 0.07f, accent);
-                    m.Box(0f, 0.26f, 0.86f, 0f, 0.11f, 0.035f, blade);
-                    m.Box(0f, 0.86f, 1.0f, 0f, 0.11f, 0.035f, blade, 0.05f);
+                    m.Pill(new Vector3(0f, 0f, 0f), new Vector3(0f, 0.23f, 0f), 0.032f, 0.032f, shaft, 6);
+                    m.Box(0f, 0.20f, 0.265f, 0f, 0.30f, 0.085f, accent);
+                    m.Box(0f, 0.265f, 0.84f, 0f, 0.15f, 0.045f, blade);
+                    m.Box(0f, 0.84f, 1.0f, 0f, 0.15f, 0.045f, blade, 0.05f);
                     break;
                 case WeaponKind.Spear:
-                    m.Box(0f, 0f, 0.78f, 0f, 0.04f, 0.04f, shaft);
-                    m.Box(0f, 0.74f, 0.80f, 0f, 0.12f, 0.06f, accent);
-                    m.Box(0f, 0.80f, 1.0f, 0f, 0.10f, 0.035f, blade, 0.05f);
+                    m.Pill(new Vector3(0f, 0f, 0f), new Vector3(0f, 0.78f, 0f), 0.026f, 0.026f, shaft, 6);
+                    m.Ball(new Vector3(0f, 0.765f, 0f), 0.07f, 0.035f, 0.07f, accent, 6, 4);
+                    m.Box(0f, 0.78f, 0.86f, 0f, 0.07f, 0.045f, blade, 1.9f);
+                    m.Box(0f, 0.86f, 1.0f, 0f, 0.133f, 0.045f, blade, 0.05f);
                     break;
                 case WeaponKind.Glaive:   // 언월도: 긴 자루 + 한쪽으로 휜 넓은 날
-                    m.Box(0f, 0f, 0.66f, 0f, 0.045f, 0.045f, shaft);
-                    m.Box(0f, 0.62f, 0.68f, 0f, 0.13f, 0.07f, accent);
-                    m.Box(0.04f, 0.68f, 0.90f, 0f, 0.17f, 0.035f, blade, 1.1f);
-                    m.Box(0.06f, 0.90f, 1.0f, 0f, 0.19f, 0.035f, blade, 0.1f);
+                    m.Pill(new Vector3(0f, 0f, 0f), new Vector3(0f, 0.66f, 0f), 0.028f, 0.028f, shaft, 6);
+                    m.Ball(new Vector3(0f, 0.65f, 0f), 0.075f, 0.04f, 0.075f, accent, 6, 4);
+                    m.Box(0.05f, 0.67f, 0.90f, 0f, 0.21f, 0.045f, blade, 1.15f);
+                    m.Box(0.075f, 0.90f, 1.0f, 0f, 0.24f, 0.045f, blade, 0.1f);
                     break;
                 case WeaponKind.Halberd:  // 극: 창날 + 옆의 초승달 날
-                    m.Box(0f, 0f, 0.80f, 0f, 0.045f, 0.045f, shaft);
-                    m.Box(0f, 0.80f, 1.0f, 0f, 0.09f, 0.035f, blade, 0.05f);
-                    m.Box(0.11f, 0.66f, 0.86f, 0f, 0.10f, 0.03f, blade, 0.6f);
-                    m.Box(0.05f, 0.73f, 0.78f, 0f, 0.14f, 0.04f, accent);
-                    m.Box(-0.08f, 0.70f, 0.80f, 0f, 0.07f, 0.03f, blade, 0.4f);
+                    m.Pill(new Vector3(0f, 0f, 0f), new Vector3(0f, 0.80f, 0f), 0.028f, 0.028f, shaft, 6);
+                    m.Box(0f, 0.78f, 1.0f, 0f, 0.11f, 0.045f, blade, 0.05f);
+                    m.Box(0.13f, 0.64f, 0.87f, 0f, 0.13f, 0.04f, blade, 0.6f);
+                    m.Box(0.06f, 0.725f, 0.785f, 0f, 0.17f, 0.05f, accent);
+                    m.Box(-0.09f, 0.69f, 0.81f, 0f, 0.09f, 0.04f, blade, 0.4f);
                     break;
             }
             return m.Build();
