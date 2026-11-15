@@ -35,6 +35,7 @@ namespace Samkuk.Game
         {
             public MultiMesh mesh;
             public MultiMeshInstance3D node;
+            public MultiMeshInstance3D outline;   // 외곽선: 같은 MultiMesh 를 뒤집은 껍질 재질로 한 번 더 (없으면 선 없는 종류)
             public float[] buffer = new float[0];
             public int count, capacity;
             public bool character, hero;
@@ -82,8 +83,73 @@ namespace Samkuk.Game
         readonly Dictionary<string, Batch> byTexture = new Dictionary<string, Batch>();   // 그림 경로 → 묶음 (없으면 null 을 넣어 다시 찾지 않는다)
         readonly Dictionary<SpriteRenderer, State> states = new Dictionary<SpriteRenderer, State>();
         readonly List<SpriteRenderer> dead = new List<SpriteRenderer>();
-        ShaderMaterial material;
+        // 카툰 재질 (G20): 캐릭터·무기는 시간대 색조를 절반만 따르고(저녁에도 장수 색이 구분되게) 소품은 그대로 따른다
+        ShaderMaterial material, propMaterial, lineMaterial, propLineMaterial;
+        /// <summary>외곽선 굵기 (1080p 기준 픽셀): 캐릭터·말·무기 / 서 있는 소품. 풀·꽃은 선이 없다.</summary>
+        public const float LineWidth = 2.5f, PropLineWidth = 1.75f;
+        /// <summary>그림에서 뽑은 색을 모델에 넣을 때의 보정 (채도, 밝기 배율). 살색은 덜 올린다(주황빛 방지). 도트 화면은 그림 그대로다.</summary>
+        public const float VividSaturation = 1.25f, VividValue = 1.1f, SkinSaturation = 1.08f, SkinValue = 1.05f;
         int frame;
+
+        void EnsureMaterials()
+        {
+            if (material != null) return;
+            var toon = GD.Load<Godot.Shader>("res://shaders/toon.gdshader");
+            var line = GD.Load<Godot.Shader>("res://shaders/toon_outline.gdshader");
+            material = new ShaderMaterial { Shader = toon };
+            material.SetShaderParameter("tint_keep", 0.5f);
+            propMaterial = new ShaderMaterial { Shader = toon };
+            propMaterial.SetShaderParameter("tint_keep", 1f);
+            lineMaterial = new ShaderMaterial { Shader = line };
+            lineMaterial.SetShaderParameter("width_px", LineWidth);
+            propLineMaterial = new ShaderMaterial { Shader = line };
+            propLineMaterial.SetShaderParameter("width_px", PropLineWidth);
+        }
+
+        /// <summary>환경광 색 (WorldMirror 가 프레임마다 넣는다): 카툰 재질은 엔진의 환경광을 끄고 이 값을 직접 더한다.</summary>
+        public void SetAmbient(GColor color)
+        {
+            EnsureMaterials();
+            var v = new GVec3(color.R, color.G, color.B);
+            if (v == ambient) return;
+            ambient = v;
+            material.SetShaderParameter("ambient_color", v);
+            propMaterial.SetShaderParameter("ambient_color", v);
+        }
+        GVec3 ambient = new GVec3(-1f, -1f, -1f);
+
+        static GColor Vivid(GColor c, float saturation = VividSaturation, float value = VividValue)
+        {
+            c.ToHsv(out float h, out float s, out float v);
+            return GColor.FromHsv(h, Mathf.Min(1f, s * saturation), Mathf.Min(1f, v * value));
+        }
+
+        // 묶음 하나의 노드: 본 모습 + (line 이 있으면) 외곽선. 외곽선은 그림자를 드리우지 않는다
+        Batch AddBatch(string key, ArrayMesh mesh, Godot.Material main, ShaderMaterial line, bool castShadow)
+        {
+            var multi = new MultiMesh { TransformFormat = MultiMesh.TransformFormatEnum.Transform3D, UseColors = true, UseCustomData = true, Mesh = mesh };
+            var node = new MultiMeshInstance3D
+            {
+                Name = "Model_" + key,
+                Multimesh = multi,
+                MaterialOverride = main,
+                CastShadow = castShadow ? GeometryInstance3D.ShadowCastingSetting.On : GeometryInstance3D.ShadowCastingSetting.Off,
+                ExtraCullMargin = 4096f,   // 인스턴스가 세계 곳곳에 흩어진다: 묶음 전체를 늘 그린다 (인스턴스는 보이는 것만 넣는다)
+            };
+            parent.AddChild(node);
+            var batch = new Batch { mesh = multi, node = node };
+            if (line != null)
+            {
+                batch.outline = new MultiMeshInstance3D
+                {
+                    Name = "Line_" + key, Multimesh = multi, MaterialOverride = line,
+                    CastShadow = GeometryInstance3D.ShadowCastingSetting.Off, ExtraCullMargin = 4096f,
+                };
+                parent.AddChild(batch.outline);
+            }
+            batches[key] = batch;
+            return batch;
+        }
 
         public int InstanceCount { get; private set; }
         /// <summary>점검용 (--shot-poses): 넘어지는 중인 죽은 적이 있는가, 쓰러져 누운 주인공·아군이 있는가, 공격 자세를 잡은 주인공·아군이 있는가.</summary>
@@ -295,8 +361,7 @@ namespace Samkuk.Game
                 float h = sprite.rect.height / sprite.pixelsPerUnit * scale.y * PropHeightScale;
                 int hash = Mathf.RoundToInt(pos.x * 13.7f) * 73856093 ^ Mathf.RoundToInt(pos.y * 11.3f) * 19349663;
                 yaw = (hash & 1023) / 1023f * (Mathf.PI * 2f);
-                sx = w; sy = h; sz = w;
-                if (sr.flipX) sx = -sx;
+                sx = w; sy = h; sz = w;   // 좌우 반전은 하지 않는다: 자리마다 돌려 놓는 데다, 뒤집으면 면의 앞뒤가 바뀌어 외곽선 껍질이 몸을 덮는다
             }
 
             if (batch.count >= batch.capacity) Grow(batch);
@@ -332,6 +397,7 @@ namespace Samkuk.Game
             {
                 total += b.count;
                 b.node.Visible = b.count > 0;
+                if (b.outline != null) b.outline.Visible = b.count > 0;
                 if (b.count == 0) continue;
                 b.mesh.VisibleInstanceCount = b.count;
                 b.mesh.Buffer = b.buffer;
@@ -352,7 +418,7 @@ namespace Samkuk.Game
 
         public void Hide()
         {
-            foreach (var b in batches.Values) b.node.Visible = false;
+            foreach (var b in batches.Values) { b.node.Visible = false; if (b.outline != null) b.outline.Visible = false; }
             InstanceCount = 0;
             ghosts.Clear();
         }
@@ -388,6 +454,7 @@ namespace Samkuk.Game
 
             ArrayMesh mesh;
             bool character = hero || enemy;
+            bool lined = true;
             if (character)
             {
                 bool rider = name.Contains("Cavalry") || name.Contains("Boss_") || name.Contains("General");
@@ -410,28 +477,13 @@ namespace Samkuk.Game
                     // 줄기는 잎과 구별되는 갈색 쪽이어야 한다: 아래쪽도 풀색이면 기본 나무색
                     if (second.G > second.R * 1.05f) second = new GColor(0.42f, 0.29f, 0.17f);
                 }
-                mesh = LowPolyMesh.Prop(kind, main, second, name.GetHashCode() & 0xffff);
+                mesh = LowPolyMesh.Prop(kind, Vivid(main), Vivid(second), name.GetHashCode() & 0xffff);
+                lined = kind != LowPolyMesh.PropKind.Grass && kind != LowPolyMesh.PropKind.Flowers;   // 작고 많은 것에 선을 넣으면 화면이 까맣게 된다
             }
 
-            if (material == null) material = new ShaderMaterial { Shader = GD.Load<Godot.Shader>("res://shaders/lowpoly.gdshader") };
-            var multi = new MultiMesh
-            {
-                TransformFormat = MultiMesh.TransformFormatEnum.Transform3D,
-                UseColors = true,
-                UseCustomData = true,
-                Mesh = mesh,
-            };
-            var node = new MultiMeshInstance3D
-            {
-                Name = "Model_" + name,
-                Multimesh = multi,
-                MaterialOverride = material,
-                CastShadow = GeometryInstance3D.ShadowCastingSetting.On,
-                ExtraCullMargin = 4096f,   // 인스턴스가 세계 곳곳에 흩어진다: 묶음 전체를 늘 그린다 (인스턴스는 보이는 것만 넣는다)
-            };
-            parent.AddChild(node);
-            var batch = new Batch { mesh = multi, node = node, character = character, hero = hero };
-            batches[name] = batch;
+            EnsureMaterials();
+            var batch = AddBatch(name, mesh, character ? material : propMaterial, !lined ? null : character ? lineMaterial : propLineMaterial, true);
+            batch.character = character; batch.hero = hero;
             return batch;
         }
 
@@ -475,11 +527,14 @@ namespace Samkuk.Game
                 Legs = Band(0.8f, 0.97f, new GColor(0.3f, 0.3f, 0.35f)),
             };
             if (p.Skin.R < 0.5f) p.Skin = new GColor(0.93f, 0.76f, 0.6f);   // 얼굴이 수염·투구에 가려 살색을 못 찾으면 기본 살색
+            // 카툰 색 보정: 도트 그림의 차분한 색을 선명하게
+            p.Hair = Vivid(p.Hair); p.Torso = Vivid(p.Torso); p.Legs = Vivid(p.Legs);
+            p.Skin = Vivid(p.Skin, SkinSaturation, SkinValue);
             p.Mount = p.Legs;
             if (rider)
             {
                 Bounds(image, 0, cell * 3, cell, cell, out int hx, out int hy, out int hw, out int hh);
-                p.Mount = Dominant(image, hx + hw / 5, hy + hh * 6 / 10, hw * 3 / 5, Mathf.Max(1, hh * 2 / 10), new GColor(0.45f, 0.3f, 0.2f));
+                p.Mount = Vivid(Dominant(image, hx + hw / 5, hy + hh * 6 / 10, hw * 3 / 5, Mathf.Max(1, hh * 2 / 10), new GColor(0.45f, 0.3f, 0.2f)));
                 p.Legs = new GColor(p.Torso.R * 0.7f, p.Torso.G * 0.7f, p.Torso.B * 0.7f);
             }
             // 강조색: 몸통 색을 밝고 진하게 (허리띠, 어깨 갑옷, 깃)
@@ -782,7 +837,7 @@ namespace Samkuk.Game
                         : n.Contains("SkyPiercer") || n.Contains("Halberd") ? LowPolyMesh.WeaponKind.Halberd
                         : n.Contains("Spear") || n.Contains("Thrust") ? LowPolyMesh.WeaponKind.Spear
                         : LowPolyMesh.WeaponKind.Sword;
-                    mesh = LowPolyMesh.HeldWeapon(kind, blade, shaft, accent);
+                    mesh = LowPolyMesh.HeldWeapon(kind, Vivid(blade, 1f, VividValue), Vivid(shaft), accent);
                     break;
                 }
                 case Role.Arrow: mesh = LowPolyMesh.Arrow(); glow = false; break;
@@ -799,21 +854,10 @@ namespace Samkuk.Game
                 default: return null;
             }
 
-            if (material == null) material = new ShaderMaterial { Shader = GD.Load<Godot.Shader>("res://shaders/lowpoly.gdshader") };
+            EnsureMaterials();
             if (fxMaterial == null) fxMaterial = new ShaderMaterial { Shader = GD.Load<Godot.Shader>("res://shaders/lowpoly_fx.gdshader"), RenderPriority = 20 };
-            var multi = new MultiMesh { TransformFormat = MultiMesh.TransformFormatEnum.Transform3D, UseColors = true, UseCustomData = true, Mesh = mesh };
-            var node = new MultiMeshInstance3D
-            {
-                Name = "Model_" + key,
-                Multimesh = multi,
-                MaterialOverride = glow ? fxMaterial : material,
-                CastShadow = glow ? GeometryInstance3D.ShadowCastingSetting.Off : GeometryInstance3D.ShadowCastingSetting.On,
-                ExtraCullMargin = 4096f,
-            };
-            parent.AddChild(node);
-            var batch = new Batch { mesh = multi, node = node };
-            batches[key] = batch;
-            return batch;
+            // 외곽선은 손에 든 무기에만: 화살·보석·입자·이펙트는 선 없이 깨끗하게
+            return AddBatch(key, mesh, glow ? fxMaterial : material, role == Role.Weapon ? lineMaterial : null, !glow);
         }
     }
 }

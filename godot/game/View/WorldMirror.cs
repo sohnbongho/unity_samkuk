@@ -567,9 +567,10 @@ namespace Samkuk.Game
             // 빛이 없는 장면(타이틀, 내정, 맵 편집기)은 그림 색 그대로 보이게 환경광을 1 로, 전투는 규칙 코드가 정한 환경광
             bool lit = lights.Count > 0;
             var a = RenderSettings.ambientLight;
-            if (IsoField) { env.AmbientLightColor = new GColor(0.5f, 0.52f, 0.56f); env.AmbientLightEnergy = 1f; return; }   // 야전의 3D 화면: 화면 층의 햇빛 + 이 환경광
+            if (IsoField) { env.AmbientLightColor = new GColor(0.5f, 0.52f, 0.56f); env.AmbientLightEnergy = 1f; models.SetAmbient(env.AmbientLightColor); return; }   // 야전의 3D 화면: 화면 층의 햇빛 + 이 환경광
             env.AmbientLightColor = lit ? new GColor(a.r, a.g, a.b) : new GColor(1f, 1f, 1f);
             env.AmbientLightEnergy = 1f;
+            models.SetAmbient(env.AmbientLightColor);   // 카툰 재질은 엔진의 환경광 대신 이 값을 직접 더한다
         }
     }
 }

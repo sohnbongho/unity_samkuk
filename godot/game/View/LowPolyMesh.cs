@@ -8,7 +8,7 @@ namespace Samkuk.Game
     /// 코드로 만드는 로우폴리 모델 (3D 전환 1단계의 임시 모델). 도트 그림이 코드 생성 임시 그림인 것과 같은 자리다.
     /// 모델 좌표: 발이 원점, y 위, +z 가 앞(화면 아래쪽을 볼 때의 정면). 사람 모델은 키 1, 소품 모델은 폭 1 x 높이 1 로 만들고 인스턴스 배율로 키운다.
     /// 면마다 법선을 따로 둬(꼭짓점 공유 없음) 각진 면이 그대로 보이고, 면마다 밝기를 조금씩 달리해 덩어리가 읽히게 한다.
-    /// 걷기: UV.x = 흔들 방향(±1), UV.y = 흔들 축 높이 (shaders/lowpoly.gdshader 가 읽는다).
+    /// 걷기: UV.x = 흔들 방향(±1), UV.y = 흔들 축 높이 (shaders/toon.gdshader 가 읽는다).
     /// 진짜 모델(구매한 번들 등)로 바꿀 때는 <see cref="ModelMirror"/> 의 모델 고르기에서 이 생성기 대신 파일의 메시를 넘기면 된다.
     /// </summary>
     public sealed class LowPolyMesh
@@ -38,16 +38,47 @@ namespace Samkuk.Game
             arrays[(int)Mesh.ArrayType.Color] = colors.ToArray();
             arrays[(int)Mesh.ArrayType.TexUV] = uvs.ToArray();
             arrays[(int)Mesh.ArrayType.TexUV2] = uv2s.ToArray();
+            arrays[(int)Mesh.ArrayType.Custom0] = OutlineNormals();
             var mesh = new ArrayMesh();
-            mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
+            var format = (Mesh.ArrayFormat)((long)Mesh.ArrayCustomFormat.RgbFloat << (int)Mesh.ArrayFormat.FormatCustom0Shift);
+            mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays, null, null, format);
             return mesh;
         }
 
-        // 면마다 밝기를 ±5% 흔든다 (결정적)
+        // 외곽선(뒤집은 껍질)이 꼭짓점을 미는 방향: 같은 자리에 있는 꼭짓점들의 법선(서로 다른 것만)을 더한 것.
+        // 면마다 법선이 따로라 그대로 밀면 모서리에서 껍질이 갈라진다. 얇은 양면 판(풀잎, 깃발)은 서로 지워져 0 → 선이 없다.
+        float[] OutlineNormals()
+        {
+            var sums = new Dictionary<(int, int, int), List<Vector3>>();
+            (int, int, int) Key(Vector3 p) => (Mathf.RoundToInt(p.X * 2000f), Mathf.RoundToInt(p.Y * 2000f), Mathf.RoundToInt(p.Z * 2000f));
+            for (int i = 0; i < positions.Count; i++)
+            {
+                var key = Key(positions[i]);
+                if (!sums.TryGetValue(key, out var list)) sums[key] = list = new List<Vector3>(4);
+                var n = normals[i];
+                bool known = false;
+                for (int k = 0; k < list.Count; k++) if (list[k].Dot(n) > 0.999f) { known = true; break; }
+                if (!known) list.Add(n);
+            }
+            var result = new float[positions.Count * 3];
+            for (int i = 0; i < positions.Count; i++)
+            {
+                var sum = Vector3.Zero;
+                foreach (var n in sums[Key(positions[i])]) sum += n;
+                if (sum.LengthSquared() > 0.01f) sum = sum.Normalized(); else sum = Vector3.Zero;
+                result[i * 3] = sum.X; result[i * 3 + 1] = sum.Y; result[i * 3 + 2] = sum.Z;
+            }
+            return result;
+        }
+
+        /// <summary>면마다 밝기를 흔드는 폭. 카툰 화면은 색면이 고르게 칠해져야 해서 0 (각진 3D 때는 0.05).</summary>
+        public float faceJitter = 0f;
+
+        // 면마다 밝기를 ±faceJitter 흔든다 (결정적)
         Color Shade(Color c)
         {
             faceSeed = faceSeed * 1103515245 + 12345;
-            float k = 0.95f + ((faceSeed >> 16) & 0xff) / 255f * 0.1f;
+            float k = 1f - faceJitter + ((faceSeed >> 16) & 0xff) / 255f * faceJitter * 2f;
             return new Color(Mathf.Clamp(c.R * k, 0f, 1f), Mathf.Clamp(c.G * k, 0f, 1f), Mathf.Clamp(c.B * k, 0f, 1f), 1f);
         }
 
@@ -568,7 +599,7 @@ namespace Samkuk.Game
                     var p0 = new Vector3(cx + Mathf.Sin(b0) * w, 0.02f, cz + Mathf.Cos(b0) * w); var p1 = new Vector3(cx + Mathf.Sin(b1) * w, 0.02f, cz + Mathf.Cos(b1) * w);
                     // 끝(위)만 일렁이게 UV.x 를 켠다
                     m.positions.Add(p0); m.positions.Add(p1); m.positions.Add(top);
-                    for (int v = 0; v < 3; v++) { m.normals.Add(Vector3.Up); m.colors.Add(v == 2 ? white : core); m.uvs.Add(new Vector2(v == 2 ? 1f : 0f, v == 2 ? 0.75f : 0.05f)); }
+                    for (int v = 0; v < 3; v++) { m.normals.Add(Vector3.Up); m.colors.Add(v == 2 ? white : core); m.uvs.Add(new Vector2(v == 2 ? 1f : 0f, v == 2 ? 0.75f : 0.05f)); m.uv2s.Add(Vector2.Zero); }   // uv2 가 빠져 불길 메시가 만들어지지 않았다 (G20 에서 고침)
                 }
             }
             const int sides = 16;

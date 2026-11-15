@@ -12,7 +12,7 @@
 
 ## Godot 전환 (브랜치 `features/godot`, ADR 0004)
 
-마지막 갱신: 2026-11-15. **이 브랜치의 작업 대상은 `godot/` 다.** Unity 프로젝트를 Godot 4.7.2 .NET(C#)으로 전부 옮긴다.
+마지막 갱신: 2026-11-15 (카툰 3D G20). **이 브랜치의 작업 대상은 `godot/` 다.** Unity 프로젝트를 Godot 4.7.2 .NET(C#)으로 전부 옮긴다.
 `Assets/` 등 Unity 파일은 참고 원본이라 **고치지 않는다**(Unity 쪽 개발은 `main`/`features/tilt`). 아래 "진행 상황"부터는 Unity 원본의 기록이다.
 방법·도구·확인이 필요한 것은 `godot/PORTING.md`, 결정은 `docs/adr/0004-godot-conversion.md`, 용어는 `CONTEXT.md` "Godot 전환".
 
@@ -39,6 +39,7 @@
 | G17 | **야전**(남코 삼국지2식 부대 전투)을 옮김 — 유니티 `main` 에만 있던 Step 15-0~15-8(이 브랜치가 그 전에 갈라져 빠져 있었다). `main` 을 합치지 않고 가져옴: 스크립트 19개 → `godot/core/Field/`, 씬·수치·그림은 `tools/godot_port/port_field.py`(`FieldBattleScene.scene.json`, `data/Field/FieldRules.json`, `sprites/Field/` 14장; 다른 데이터는 덮어쓰지 않음), 호환 층 `Camera.WorldToScreenPoint`·`RectTransformUtility`, 테스트 3개 파일 59개 그대로 통과. 타이틀 [야전 테스트](개발용 빌드 `build_windows.sh --dev`). 화면은 2D 아이소메트릭 그대로. 화면으로 확인(준비 → 야전 → 교전 → 결과창). 설계 `docs/FIELD_BATTLE.md`. 옮기지 않은 것: `main` 의 10-9b(무기 그림 앞뒤·쉬는 자세) | 완료 |
 | G18 | **야전의 3D 화면**(화면 층만, `core/Field` 와 테스트 그대로): 2:1 마름모 = 정사각 칸을 30° 로 내려다본 직교 그림이라는 점을 써서 2D 의 (x, y) 를 땅 위의 (x, 깊이 2y) 로 옮기고 직교 카메라를 30° 기울임 → 땅 위의 점이 화면에서 같은 자리라 마우스 고르기·병사 수 라벨은 그대로(`WorldMirror.IsoField`/`SyncIsoSprite`). 부대(`World` 레이어) = 로우폴리 모델(`ModelMirror`, 배율 `IsoUnitScale`), 타일·사거리·선택 테(`Background`) = 땅에 깔고 그림자 받음, 이펙트(`Effect`) = 카메라를 향한 도트 그림 그대로, 화면 층의 햇빛 `IsoSun`. [3D 화면] 끄면 2D. 화면으로 확인. 남은 것: 무기·검기·화살의 3D 화, 무너지는 연출, 공격 자세 | 완료 |
 | G19 | 야전 3D 마무리(화면 층만, `core/Field`·테스트 그대로): 이펙트를 3D 메시로 — 야전의 이펙트는 모두 손 높이(발 + 0.55)에서 나오므로 그만큼 내려 땅으로 옮기고 다시 올린다(`ModelMirror.FieldHandLift`, 화면 자리는 그대로), 방향은 땅 위의 방향으로. 장수가 든 무기·검기·궁병 화살·타격 입자가 서바이버 전투의 메시를 쓴다. **공격 자세**: 화면 층이 `FieldBattleModel.Hit` 을 듣고 때린 부대를 상대 쪽으로 돌려 팔을 내려치게, 내 장수는 무기 쪽으로 숙이고 팔을 든다. **무너짐**: `UnitRouted` 로 마지막 모습을 넘어뜨린 뒤 점묘로 지운다. 화면으로 확인(화살, 입자, 넘어지는 부대, 내려치는 부대, 장수 자세·무기; 검기는 `--dump-sprites` 로만) | 완료 |
+| G20 | **카툰 3D** 1/3 — 툰 셰이딩·외곽선·색 보정(화면 층만, 규칙·테스트 그대로; 사용자 결정: 각진 3D 를 **교체**, [3D 화면] 은 켬/끔 그대로): `shaders/toon.gdshader`(햇빛 두 단 + 드리운 그림자는 그늘 단, 그늘은 푸른 보라 쪽, 점광원은 부드럽게, 환경광은 직접 더해 캐릭터는 시간대 색조를 절반만) + `shaders/toon_outline.gdshader`(뒤집은 껍질: 같은 MultiMesh 를 한 번 더, 화면 기준 굵기 캐릭터·말·무기 2.5px / 소품 1.75px / 풀·꽃·화살·보석·이펙트 없음, 색 `#1a1418`, 미는 방향은 메시의 CUSTOM0 = 같은 자리 꼭짓점의 평균 법선). 그림에서 뽑은 색을 모델에 넣을 때 채도 1.25·밝기 1.1(살색 1.08·1.05), 면마다 밝기 흔들기는 끔. `lowpoly.gdshader` 는 지움. 불길 메시가 만들어지지 않던 오류(uv2 빠짐)도 고침. 성능(적 약 470 + 무기 8종, 1280x720, 수직 동기 끔, 이 PC): 141 → 120 FPS. 화면으로 확인(평야 전투, 야전). 설계 결정·남은 단계는 `godot/PORTING.md` "카툰 3D" | 완료 |
 
 ### Godot 전환 작업 규칙
 
