@@ -534,7 +534,10 @@ namespace Samkuk.Game
                 Legs = Band(0.8f, 0.97f, new GColor(0.3f, 0.3f, 0.35f)),
             };
             // 얼굴이 수염·투구에 가려 살색을 못 찾으면(어둡거나, 흰 눈자위·회색 투구처럼 붉은 기가 없으면) 기본 살색
-            if (p.Skin.R < 0.5f || p.Skin.R - p.Skin.B < 0.3f * p.Skin.R || p.Skin.G < p.Skin.B) p.Skin = new GColor(0.95f, 0.78f, 0.62f);
+            if (p.Skin.R < 0.5f || p.Skin.R - p.Skin.B < 0.3f * p.Skin.R || p.Skin.G < p.Skin.B || p.Skin.B < 0.3f * p.Skin.R) p.Skin = new GColor(0.95f, 0.78f, 0.62f);
+            // 몸통 띠가 살색으로 뽑히면(말 탄 그림은 사람이 작아 띠가 얼굴·팔에 걸린다) 맨몸처럼 보인다: 머리(투구·두건) 색을 어둡게 한 갑옷 색으로
+            if (Mathf.Abs(p.Torso.R - p.Skin.R) + Mathf.Abs(p.Torso.G - p.Skin.G) + Mathf.Abs(p.Torso.B - p.Skin.B) < 0.3f || (p.Torso.R > 0.6f && p.Torso.R > p.Torso.G && p.Torso.G > p.Torso.B && p.Torso.B > 0.3f * p.Torso.R && p.Torso.B < 0.8f * p.Torso.R))
+                p.Torso = new GColor(p.Hair.R * 0.8f, p.Hair.G * 0.8f, p.Hair.B * 0.8f);
             // 카툰 색 보정: 도트 그림의 차분한 색을 선명하게
             p.Hair = Vivid(p.Hair); p.Torso = Vivid(p.Torso); p.Legs = Vivid(p.Legs);
             p.Skin = Vivid(p.Skin, SkinSaturation, SkinValue);

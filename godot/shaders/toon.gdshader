@@ -46,7 +46,10 @@ void fragment() {
 		float threshold = fract(dot(cell, vec2(0.5, 0.25)) + 0.125);   // 2x4 격자
 		if (v_alpha < threshold) discard;
 	}
-	vec3 base = mix(COLOR.rgb, vec3(1.0), clamp(v_flash, 0.0, 1.0));
+	// 꼭짓점 색은 그림에서 뽑은 sRGB 값이다: 선형으로 바꿔야 그림과 같은 색이 나온다 (그대로 쓰면 하얗게 뜬다 — 살색이 흰색으로 보였다)
+	vec3 srgb = COLOR.rgb;
+	vec3 linear = mix(srgb / 12.92, pow((srgb + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), srgb));
+	vec3 base = mix(linear, vec3(1.0), clamp(v_flash, 0.0, 1.0));
 	ALBEDO = base;
 	ROUGHNESS = 1.0;
 	EMISSION = base * soften(ambient_color);
