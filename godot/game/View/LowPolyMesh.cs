@@ -475,13 +475,13 @@ namespace Samkuk.Game
                     m.Ball(top, 0.07f, 0.06f, 0.07f, dark, 6, 4);
                     break;
                 }
-                case PropKind.Willow:   // 둥근 머리 + 늘어진 가지
+                case PropKind.Willow:   // 둥근 머리 + 머리 둘레에 촘촘히 늘어진 짧은 가지 (길고 성기면 다리 달린 것처럼 보인다)
                     m.Pill(new Vector3(0f, -0.02f, 0f), new Vector3(0f, 0.54f, 0f), 0.10f, 0.07f, trunk, 7);
                     m.Ball(new Vector3(0f, 0.72f, 0f), 0.42f, 0.25f, 0.42f, main, 9, 5);
-                    for (int i = 0; i < 7; i++)
+                    for (int i = 0; i < 11; i++)
                     {
-                        float a = Mathf.Tau * i / 7f;
-                        m.Pill(new Vector3(Mathf.Sin(a) * 0.33f, 0.70f, Mathf.Cos(a) * 0.33f), new Vector3(Mathf.Sin(a) * 0.41f, 0.22f, Mathf.Cos(a) * 0.41f), 0.085f, 0.03f, i % 2 == 0 ? dark : light, 6);
+                        float a = Mathf.Tau * i / 11f, low = i % 2 == 0 ? 0.36f : 0.44f;
+                        m.Pill(new Vector3(Mathf.Sin(a) * 0.31f, 0.70f, Mathf.Cos(a) * 0.31f), new Vector3(Mathf.Sin(a) * 0.39f, low, Mathf.Cos(a) * 0.39f), 0.115f, 0.05f, i % 2 == 0 ? dark : main, 6);
                     }
                     break;
                 case PropKind.DeadTree:
