@@ -44,8 +44,9 @@ namespace Samkuk.Game
         readonly Dictionary<TextMesh, TextView> texts = new Dictionary<TextMesh, TextView>();
         readonly Dictionary<SpriteRenderer, TiledView> tiled = new Dictionary<SpriteRenderer, TiledView>();
         // 그림 재질: (텍스처, 컷아웃?, 도트 필터?, 렌더 우선순위, UV 배율) 마다 하나
-        readonly Dictionary<(Godot.Texture2D, bool, bool, int, Godot.Vector2), ShaderMaterial> spriteMaterials = new Dictionary<(Godot.Texture2D, bool, bool, int, Godot.Vector2), ShaderMaterial>();
-        readonly Dictionary<Compat.Material, ShaderMaterial> meshMaterials = new Dictionary<Compat.Material, ShaderMaterial>();
+        readonly Dictionary<(Godot.Texture2D, bool, bool, int, Godot.Vector2, int), ShaderMaterial> spriteMaterials = new Dictionary<(Godot.Texture2D, bool, bool, int, Godot.Vector2, int), ShaderMaterial>();
+        readonly Dictionary<(Compat.Material, bool), ShaderMaterial> meshMaterials = new Dictionary<(Compat.Material, bool), ShaderMaterial>();
+        readonly Dictionary<Godot.Texture2D, GColor> flatColors = new Dictionary<Godot.Texture2D, GColor>();
         // 물(연못, 강물) 재질: (텍스처, 렌더 우선순위) 마다 하나. 물이 아닌 그림 경로는 null 을 넣어 다시 따지지 않는다
         readonly Dictionary<(Godot.Texture2D, int), ShaderMaterial> waterMaterials = new Dictionary<(Godot.Texture2D, int), ShaderMaterial>();
         readonly Dictionary<string, bool> waterPaths = new Dictionary<string, bool>();
@@ -113,13 +114,36 @@ namespace Samkuk.Game
             return shaders[index] = new Godot.Shader { Code = source.Code.Replace("filter_nearest", "filter_linear") };
         }
 
-        ShaderMaterial SpriteMaterial(Godot.Texture2D texture, bool cutout, bool pixel, int priority, Godot.Vector2 uvScale)
+        /// <summary>카툰 3D 의 서바이버 전투인가 (야전의 마름모 타일은 그대로 둔다).</summary>
+        static bool Cartoon => Models3D && TiltView.Active && !IsoField;
+        /// <summary>카툰 3D 의 땅 색 조정 (채도, 밝기, 무늬 대비를 낮추는 정도): 바닥·흙길·얼룩 / 절벽 옆면. 땅은 캐릭터 뒤로 물러나고, 절벽 옆면은 어둡게 눌러 윗면과 또렷이 갈린다.</summary>
+        public static readonly GVec3 GroundGrade = new GVec3(1.18f, 1.10f, 0.38f), CliffGrade = new GVec3(1.05f, 0.74f, 0.30f);
+        const int GradeNone = 0, GradeGround = 1, GradeCliff = 2;
+
+        ShaderMaterial SpriteMaterial(Godot.Texture2D texture, bool cutout, bool pixel, int priority, Godot.Vector2 uvScale, int grade = GradeNone)
         {
-            var key = (texture, cutout, pixel, priority, uvScale);
+            var key = (texture, cutout, pixel, priority, uvScale, grade);
             if (spriteMaterials.TryGetValue(key, out var m)) return m;
             m = new ShaderMaterial { Shader = ShaderFor(cutout, pixel), RenderPriority = priority };
             m.SetShaderParameter("tex", texture);
             m.SetShaderParameter("uv_scale", uvScale);
+            if (grade != GradeNone)
+            {
+                // 무늬를 누를 때 섞는 색 = 그 그림의 가장 흔한 색
+                if (!flatColors.TryGetValue(texture, out var flat))
+                {
+                    flat = new GColor(0.5f, 0.5f, 0.5f);
+                    var image = texture.GetImage();
+                    if (image != null)
+                    {
+                        if (image.IsCompressed()) image.Decompress();
+                        flat = ModelMirror.Dominant(image, 0, 0, image.GetWidth(), image.GetHeight(), flat);
+                    }
+                    flatColors[texture] = flat;
+                }
+                m.SetShaderParameter("grade", grade == GradeCliff ? CliffGrade : GroundGrade);
+                m.SetShaderParameter("flat_color", flat);
+            }
             spriteMaterials[key] = m;
             return m;
         }
@@ -316,7 +340,7 @@ namespace Samkuk.Game
                 int priority = Mathf.Clamp(layer * 15 + Mathf.Clamp(sr.sortingOrder, 0, 14) - 60, -128, 127);
                 node.CastShadow = GeometryInstance3D.ShadowCastingSetting.Off;
                 if (Models3D && TiltView.Active && IsWater(sprite)) node.MaterialOverride = WaterMaterial(texture, priority, System.IO.Path.GetFileName(sprite.path).StartsWith("River_"));   // 물: 움직이는 물 표면
-                else if (pixelShader) node.MaterialOverride = SpriteMaterial(texture, false, pixel, priority, Godot.Vector2.One);   // 바닥 그림: 빛과 그림자를 받는다
+                else if (pixelShader) node.MaterialOverride = SpriteMaterial(texture, false, pixel, priority, Godot.Vector2.One, Cartoon ? GradeGround : GradeNone);   // 바닥 그림: 빛과 그림자를 받는다
                 else
                 {
                     // 이펙트·투사체·보석: 빛을 받지 않는 기본 그림
@@ -403,7 +427,7 @@ namespace Samkuk.Game
             float tileW = sprite.rect.width / sprite.pixelsPerUnit, tileH = sprite.rect.height / sprite.pixelsPerUnit;
             view.node.Visible = true;
             var uvScale = new Godot.Vector2(Mathf.Round(w / Mathf.Max(0.01f, tileW) * 1000f) / 1000f, Mathf.Round(h / Mathf.Max(0.01f, tileH) * 1000f) / 1000f);
-            view.node.MaterialOverride = SpriteMaterial(texture, true, pixel, 0, uvScale);
+            view.node.MaterialOverride = SpriteMaterial(texture, true, pixel, 0, uvScale, Cartoon ? GradeGround : GradeNone);
             var pos = t.position;
             view.node.Position = new GVec3(pos.x, -pos.z, -pos.y);
             var q = t.rotation;
@@ -493,15 +517,18 @@ namespace Samkuk.Game
         ShaderMaterial MeshMaterial(Compat.Material material)
         {
             if (material == null) return null;
-            if (meshMaterials.TryGetValue(material, out var cached)) return cached;
+            bool cartoon = Cartoon;
+            if (meshMaterials.TryGetValue((material, cartoon), out var cached)) return cached;
             ShaderMaterial m = null;
             if (material.mainTexture is Compat.Texture2D tex)
             {
                 var texture = Textures.Of(tex);
                 bool cutout = material.renderQueue < (int)RenderQueue.Transparent;
-                if (texture != null) m = SpriteMaterial(texture, cutout, tex.filterMode == FilterMode.Point, 0, Godot.Vector2.One);
+                // 절벽 옆면 그림(CliffArt: "Cliff_지형")은 어둡게 눌러 윗면과 갈리게, 윗면·흙길은 땅 색 조정
+                int grade = !cartoon ? GradeNone : tex.name != null && tex.name.StartsWith("Cliff_") ? GradeCliff : GradeGround;
+                if (texture != null) m = SpriteMaterial(texture, cutout, tex.filterMode == FilterMode.Point, 0, Godot.Vector2.One, grade);
             }
-            meshMaterials[material] = m;
+            meshMaterials[(material, cartoon)] = m;
             return m;
         }
 

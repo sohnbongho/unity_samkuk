@@ -442,48 +442,57 @@ namespace Samkuk.Game
             var trunk = second; var dark = Darken(main, 0.78f); var light = new Color(Mathf.Min(1f, main.R * 1.12f), Mathf.Min(1f, main.G * 1.12f), Mathf.Min(1f, main.B * 1.1f));
             switch (kind)
             {
-                case PropKind.Tree:
-                    m.Prism(0f, 0f, 0f, 0.46f, 0.085f, 0.06f, 6, trunk);
-                    m.Blob(new Vector3(0f, 0.62f, 0f), 0.44f, 0.30f, 0.44f, main, seed);
-                    m.Blob(new Vector3(0.14f, 0.80f, 0.06f), 0.28f, 0.20f, 0.28f, light, seed + 1);
-                    m.Blob(new Vector3(-0.20f, 0.56f, -0.10f), 0.24f, 0.18f, 0.24f, dark, seed + 2);
+                case PropKind.Tree:     // 굵고 짧은 줄기 + 둥근 잎 덩어리 셋 (seed 로 자리·크기가 조금씩 다르다)
+                {
+                    var rng = new Random(seed);
+                    float J(float k) => ((float)rng.NextDouble() * 2f - 1f) * k;
+                    m.Pill(new Vector3(0f, -0.02f, 0f), new Vector3(J(0.03f), 0.50f, J(0.03f)), 0.12f, 0.085f, trunk, 7);
+                    m.Ball(new Vector3(J(0.04f), 0.66f, J(0.04f)), 0.42f + J(0.03f), 0.31f + J(0.03f), 0.42f + J(0.03f), main, 9, 5);
+                    m.Ball(new Vector3(0.17f + J(0.04f), 0.80f + J(0.03f), 0.08f + J(0.04f)), 0.27f, 0.20f, 0.27f, light, 8, 4);
+                    m.Ball(new Vector3(-0.21f + J(0.04f), 0.57f + J(0.03f), -0.08f + J(0.04f)), 0.25f, 0.19f, 0.25f, dark, 8, 4);
                     break;
-                case PropKind.Pine:
-                    m.Prism(0f, 0f, 0f, 0.28f, 0.07f, 0.055f, 6, trunk);
-                    m.Prism(0f, 0f, 0.20f, 0.58f, 0.40f, 0f, 7, dark, 0.2f);
-                    m.Prism(0f, 0f, 0.42f, 0.80f, 0.31f, 0f, 7, main, 0.6f);
-                    m.Prism(0f, 0f, 0.64f, 1.0f, 0.21f, 0f, 7, light, 1.0f);
+                }
+                case PropKind.Pine:     // 밑이 둥근 원뿔 세 층
+                {
+                    m.Pill(new Vector3(0f, -0.02f, 0f), new Vector3(0f, 0.30f, 0f), 0.085f, 0.065f, trunk, 6);
+                    void Cone(float y0, float y1, float r, Color c) => m.Lathe(Transform3D.Identity, new (float, float)[] { (y0, 0f), (y0 + 0.03f, r), (y0 + 0.09f, r * 0.88f), (y1, 0f) }, 1f, 1f, 8, c);
+                    Cone(0.20f, 0.60f, 0.40f, dark); Cone(0.42f, 0.82f, 0.31f, main); Cone(0.64f, 1.0f, 0.21f, light);
                     break;
-                case PropKind.Palm:
-                    m.Box(0f, 0f, 0.74f, 0f, 0.11f, 0.11f, trunk, 0.7f, 0.10f);
+                }
+                case PropKind.Palm:     // 휜 줄기 + 늘어진 넓은 잎
+                {
+                    var top = new Vector3(0f, 0.76f, 0.10f);
+                    m.Pill(new Vector3(0f, -0.02f, 0f), new Vector3(0.04f, 0.42f, 0.05f), 0.075f, 0.06f, trunk, 6);
+                    m.Pill(new Vector3(0.04f, 0.40f, 0.05f), top, 0.06f, 0.05f, trunk, 6);
                     for (int i = 0; i < 6; i++)
                     {
                         float a = Mathf.Tau * i / 6f + 0.3f;
-                        var dir = new Vector3(Mathf.Sin(a), 0f, Mathf.Cos(a)); var side = new Vector3(dir.Z, 0f, -dir.X) * 0.10f;
-                        var root = new Vector3(0f, 0.76f, 0.10f);
-                        m.Blade(root - side, root + side, root + dir * 0.46f + new Vector3(0f, -0.10f, 0f), i % 2 == 0 ? main : dark);
-                        m.Blade(root - side * 0.6f + new Vector3(0f, 0.05f, 0f), root + side * 0.6f + new Vector3(0f, 0.05f, 0f), root + dir * 0.34f + new Vector3(0f, 0.16f, 0f), light);
+                        var dir = new Vector3(Mathf.Sin(a), 0f, Mathf.Cos(a));
+                        m.Pill(top, top + dir * 0.46f + new Vector3(0f, -0.12f, 0f), 0.085f, 0.02f, i % 2 == 0 ? main : dark, 6, 0.3f);
+                        if (i % 2 == 0) m.Pill(top, top + dir * 0.30f + new Vector3(0f, 0.16f, 0f), 0.07f, 0.02f, light, 6, 0.3f);
                     }
+                    m.Ball(top, 0.07f, 0.06f, 0.07f, dark, 6, 4);
                     break;
-                case PropKind.Willow:
-                    m.Prism(0f, 0f, 0f, 0.50f, 0.09f, 0.06f, 6, trunk);
-                    m.Blob(new Vector3(0f, 0.70f, 0f), 0.42f, 0.24f, 0.42f, main, seed);
-                    for (int i = 0; i < 7; i++)   // 늘어진 가지
+                }
+                case PropKind.Willow:   // 둥근 머리 + 늘어진 가지
+                    m.Pill(new Vector3(0f, -0.02f, 0f), new Vector3(0f, 0.54f, 0f), 0.10f, 0.07f, trunk, 7);
+                    m.Ball(new Vector3(0f, 0.72f, 0f), 0.42f, 0.25f, 0.42f, main, 9, 5);
+                    for (int i = 0; i < 7; i++)
                     {
                         float a = Mathf.Tau * i / 7f;
-                        m.Box(Mathf.Sin(a) * 0.36f, 0.26f, 0.66f, Mathf.Cos(a) * 0.36f, 0.12f, 0.12f, i % 2 == 0 ? dark : light, 1.5f);
+                        m.Pill(new Vector3(Mathf.Sin(a) * 0.33f, 0.70f, Mathf.Cos(a) * 0.33f), new Vector3(Mathf.Sin(a) * 0.41f, 0.22f, Mathf.Cos(a) * 0.41f), 0.085f, 0.03f, i % 2 == 0 ? dark : light, 6);
                     }
                     break;
                 case PropKind.DeadTree:
-                    m.Prism(0f, 0f, 0f, 0.62f, 0.08f, 0.04f, 5, main);
-                    m.Box(0.10f, 0.40f, 0.86f, 0f, 0.05f, 0.05f, main, 0.5f, 0.10f);
-                    m.Box(-0.12f, 0.34f, 0.74f, 0.02f, 0.05f, 0.05f, dark, 0.5f, -0.12f);
-                    m.Box(0.02f, 0.58f, 1.0f, -0.04f, 0.04f, 0.04f, dark, 0.4f, -0.06f);
+                    m.Pill(new Vector3(0f, -0.02f, 0f), new Vector3(0f, 0.64f, 0f), 0.085f, 0.045f, main, 6);
+                    m.Pill(new Vector3(0f, 0.40f, 0f), new Vector3(0.20f, 0.86f, 0.02f), 0.038f, 0.012f, main, 5);
+                    m.Pill(new Vector3(0f, 0.34f, 0f), new Vector3(-0.24f, 0.74f, 0.04f), 0.038f, 0.012f, dark, 5);
+                    m.Pill(new Vector3(0f, 0.58f, 0f), new Vector3(-0.04f, 1.0f, -0.06f), 0.034f, 0.010f, dark, 5);
                     break;
-                case PropKind.Bush:
-                    m.Blob(new Vector3(0f, 0.34f, 0f), 0.46f, 0.38f, 0.42f, main, seed, 0.2f, 0f);
-                    m.Blob(new Vector3(0.20f, 0.52f, 0.08f), 0.26f, 0.26f, 0.26f, light, seed + 1, 0.2f, 0f);
-                    m.Blob(new Vector3(-0.24f, 0.30f, -0.06f), 0.24f, 0.26f, 0.24f, dark, seed + 2, 0.2f, 0f);
+                case PropKind.Bush:     // 땅에 엎은 둥근 덩어리 셋
+                    m.Dome(new Vector3(0f, 0f, 0f), 0.46f, 0.52f, 0.42f, main, 90f, 0f, 9, 4);
+                    m.Dome(new Vector3(0.21f, 0.12f, 0.09f), 0.27f, 0.46f, 0.27f, light, 90f, 0f, 8, 4);
+                    m.Dome(new Vector3(-0.25f, 0f, -0.06f), 0.25f, 0.44f, 0.25f, dark, 90f, 0f, 8, 4);
                     break;
                 case PropKind.Grass:
                 {
@@ -506,36 +515,37 @@ namespace Samkuk.Game
                     {
                         float x = ((float)rng.NextDouble() - 0.5f) * 0.7f, z = ((float)rng.NextDouble() - 0.5f) * 0.5f, h = 0.45f + (float)rng.NextDouble() * 0.4f;
                         m.Box(x, 0f, h, z, 0.04f, 0.04f, second);
-                        m.Prism(x, z, h - 0.02f, h + 0.16f, 0.11f, 0.05f, 5, i % 2 == 0 ? main : light, i);
+                        m.Ball(new Vector3(x, h + 0.05f, z), 0.10f, 0.075f, 0.10f, i % 2 == 0 ? main : light, 6, 3);
                     }
                     break;
                 }
-                case PropKind.Rock:
-                    m.Blob(new Vector3(0f, 0.36f, 0f), 0.48f, 0.56f, 0.40f, main, seed, 0.26f, 0f);
-                    m.Blob(new Vector3(0.24f, 0.22f, 0.14f), 0.26f, 0.30f, 0.24f, dark, seed + 1, 0.26f, 0f);
+                case PropKind.Rock:     // 바위는 각진 덩어리 그대로 (툰 셰이딩이 면마다 끊겨 바위답다)
+                    m.Blob(new Vector3(0f, 0.36f, 0f), 0.48f, 0.56f, 0.40f, main, seed, 0.22f, 0f);
+                    m.Blob(new Vector3(0.24f, 0.22f, 0.14f), 0.26f, 0.30f, 0.24f, dark, seed + 1, 0.22f, 0f);
                     break;
                 case PropKind.Mound:
-                    m.Prism(0f, 0f, 0f, 0.62f, 0.50f, 0.30f, 8, main, 0.2f);
-                    m.Prism(0f, 0f, 0.62f, 1.0f, 0.30f, 0.12f, 7, light, 0.5f);
+                    m.Dome(new Vector3(0f, 0f, 0f), 0.50f, 0.72f, 0.50f, main, 90f, 0f, 10, 4);
+                    m.Dome(new Vector3(0.05f, 0.50f, 0f), 0.27f, 0.50f, 0.27f, light, 90f, 0f, 8, 4);
                     break;
                 case PropKind.Stump:
-                    m.Prism(0f, 0f, 0f, 0.80f, 0.44f, 0.36f, 7, main);
-                    m.Prism(0f, 0f, 0.80f, 0.86f, 0.33f, 0.30f, 7, light);
+                    m.Lathe(Transform3D.Identity, new (float, float)[] { (0f, 0.46f), (0.10f, 0.41f), (0.74f, 0.36f), (0.81f, 0.31f), (0.815f, 0f) }, 1f, 1f, 9, main);
+                    m.Lathe(Transform3D.Identity, new (float, float)[] { (0.816f, 0.27f), (0.822f, 0f) }, 1f, 1f, 9, light);
                     break;
-                case PropKind.Boat:
-                    m.Box(0f, 0.10f, 0.52f, 0f, 0.92f, 0.34f, main, 1.08f);
-                    m.Box(0f, 0.40f, 0.54f, 0f, 0.80f, 0.24f, dark);
-                    m.Box(0.08f, 0.52f, 1.0f, 0f, 0.05f, 0.05f, second);
+                case PropKind.Boat:     // 둥근 선체 + 어두운 갑판 + 돛대
+                    m.Ball(new Vector3(0f, 0.28f, 0f), 0.47f, 0.20f, 0.19f, main, 10, 5);
+                    m.Ball(new Vector3(0f, 0.44f, 0f), 0.36f, 0.06f, 0.12f, dark, 10, 3);
+                    m.Pill(new Vector3(0.08f, 0.44f, 0f), new Vector3(0.08f, 1.0f, 0f), 0.026f, 0.02f, second, 5);
                     break;
-                case PropKind.Yurt:
-                    m.Prism(0f, 0f, 0f, 0.56f, 0.50f, 0.48f, 10, main);
-                    m.Prism(0f, 0f, 0.56f, 0.96f, 0.52f, 0.08f, 10, light);
-                    m.Box(0f, 0f, 0.40f, 0.47f, 0.20f, 0.06f, second);   // 문
+                case PropKind.Yurt:     // 둥근 벽 + 봉긋한 지붕 + 문
+                    m.Lathe(Transform3D.Identity, new (float, float)[] { (0f, 0.49f), (0.50f, 0.50f), (0.57f, 0.46f) }, 1f, 1f, 10, main);
+                    m.Lathe(Transform3D.Identity, new (float, float)[] { (0.53f, 0.54f), (0.60f, 0.51f), (0.88f, 0.14f), (0.96f, 0.07f), (0.98f, 0f) }, 1f, 1f, 10, light);
+                    m.Ball(new Vector3(0f, 0.98f, 0f), 0.07f, 0.05f, 0.07f, second, 6, 4);
+                    m.Box(0f, 0f, 0.40f, 0.48f, 0.20f, 0.06f, second);   // 문
                     break;
                 case PropKind.Banner:
-                    m.Box(0f, 0f, 1.0f, 0f, 0.07f, 0.07f, second);
-                    m.Box(0.24f, 0.52f, 0.96f, 0f, 0.42f, 0.03f, main);
-                    m.Prism(0f, 0f, 1.0f, 1.08f, 0.08f, 0f, 4, light);
+                    m.Pill(new Vector3(0f, -0.02f, 0f), new Vector3(0f, 1.0f, 0f), 0.036f, 0.03f, second, 6);
+                    m.Box(0.24f, 0.52f, 0.96f, 0f, 0.42f, 0.035f, main);
+                    m.Ball(new Vector3(0f, 1.03f, 0f), 0.06f, 0.06f, 0.06f, light, 6, 4);
                     break;
             }
             return m.Build();

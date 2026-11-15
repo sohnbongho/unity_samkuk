@@ -7,10 +7,19 @@ render_mode cull_disabled, specular_disabled, depth_draw_opaque;
 
 uniform sampler2D tex : source_color, filter_nearest, repeat_enable;
 uniform vec2 uv_scale = vec2(1.0, 1.0);
+// 카툰 3D 의 땅 색 조정 (G22): 무늬 대비를 낮추고(가장 흔한 색 쪽으로 grade.z 만큼) 채도 grade.x · 밝기 grade.y. 기본값은 그림 그대로
+uniform vec3 grade = vec3(1.0, 1.0, 0.0);
+uniform vec3 flat_color : source_color = vec3(0.5, 0.5, 0.5);
+
+vec3 graded(vec3 c) {
+	c = mix(c, flat_color, grade.z);
+	float l = dot(c, vec3(0.3, 0.59, 0.11));
+	return max(mix(vec3(l), c, grade.x), vec3(0.0)) * grade.y;
+}
 
 void fragment() {
 	vec4 c = texture(tex, UV * uv_scale) * COLOR;
-	ALBEDO = c.rgb;
+	ALBEDO = graded(c.rgb);
 	ALPHA = c.a;
 	ALPHA_SCISSOR_THRESHOLD = 0.5;
 }

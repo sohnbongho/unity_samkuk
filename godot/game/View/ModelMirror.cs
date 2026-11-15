@@ -534,7 +534,7 @@ namespace Samkuk.Game
                 Legs = Band(0.8f, 0.97f, new GColor(0.3f, 0.3f, 0.35f)),
             };
             // 얼굴이 수염·투구에 가려 살색을 못 찾으면(어둡거나, 흰 눈자위·회색 투구처럼 붉은 기가 없으면) 기본 살색
-            if (p.Skin.R < 0.5f || p.Skin.R - p.Skin.B < 0.25f * p.Skin.R || p.Skin.G < p.Skin.B) p.Skin = new GColor(0.95f, 0.78f, 0.62f);
+            if (p.Skin.R < 0.5f || p.Skin.R - p.Skin.B < 0.3f * p.Skin.R || p.Skin.G < p.Skin.B) p.Skin = new GColor(0.95f, 0.78f, 0.62f);
             // 카툰 색 보정: 도트 그림의 차분한 색을 선명하게
             p.Hair = Vivid(p.Hair); p.Torso = Vivid(p.Torso); p.Legs = Vivid(p.Legs);
             p.Skin = Vivid(p.Skin, SkinSaturation, SkinValue);
