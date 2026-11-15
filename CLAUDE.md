@@ -60,6 +60,7 @@
 - **테스트**: `dotnet test` 통과 722, 보류 4, 실패 0, 미룬 것 0. 보류 4개는 밸런스(타격감 집중 기간의 적 수 때문에 일부러 범위 밖, 원본과 같은 상태). 유니티 원본에서도 실패하던 테스트 21개는 유니티의 Mono 로 실행(`mono_check.sh`)·테스트가 쓰인 커밋의 코드로 실행(`old_snapshot.sh`)해 원래 실패하던 것임을 확인한 뒤 **`godot/tests` 에서 기대를 코드에 맞게 고쳤다**(유니티 원본의 테스트는 그대로). 목록과 이유는 `godot/PORTING.md` "유니티 원본과 달라진 테스트".
 - **유니티 원본의 잠재 버그 두 가지를 Godot 판에서 고쳤다**: 씬 로드 뒤 훅이 한 번만 불려 타이틀로 돌아오면 [맵 편집기]·[협동] 버튼이 없고 시험 전투에 M 키 안내가 붙지 않던 것(`GameRoot` 가 씬마다 부른다). 유니티 쪽에도 같은 문제가 있을 것이다(확인하지 못함).
 - `.gitignore` 의 Unity 규칙(`*.csproj`, `*.sln`)에 `godot/` 예외를 두었다. `godot/.godot/`, `bin/`, `obj/` 는 제외.
+- **Godot 설치 경로는 PC 마다 다르다**: 문서의 `D:\01-AgentLegion\tools\godot\` 는 처음 작업한 PC 의 것이다. 다른 PC 에서는 환경 변수 `GODOT`(콘솔 실행 파일)와 `GODOT_TEMPLATES`(내보내기 템플릿 폴더)를 주면 `build_windows.sh` 가 그 경로로 내보낸다(`export_presets.cfg` 의 경로는 내보내는 동안만 바꾸고 되돌린다, `godot/PORTING.md` "내보내기"). 내보내기가 1분을 넘겨 멈춰 있으면 남은 .NET 컴파일 서버 탓이다(`dotnet build-server shutdown`).
 - .NET 10 SDK 의 `dotnet new sln` 은 `.slnx` 를 만든다. Godot 은 `Samkuk.Game.sln` 을 찾으므로 `--format sln` 으로 만든다.
 
 ---

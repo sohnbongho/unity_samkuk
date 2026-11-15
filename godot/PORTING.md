@@ -142,7 +142,10 @@ tools/godot_port/build_windows.sh     # Builds/godot/Samkuk.exe + Builds/Samkuk-
 ```
 
 - 내보내기 템플릿: 공식 GitHub 릴리스의 `Godot_v4.7.2-stable_mono_export_templates.tpz`(SHA512 확인)를 `D:/01-AgentLegion/tools/godot/templates/` 에 풀어 두었고,
-  `godot/export_presets.cfg` 의 `custom_template` 이 그 경로를 가리킨다(다른 PC 에서는 경로를 고치거나 Godot 에디터로 템플릿을 설치한다).
+  `godot/export_presets.cfg` 의 `custom_template` 이 그 경로를 가리킨다(다른 PC 에서는 환경 변수 `GODOT`(콘솔 실행 파일)와 `GODOT_TEMPLATES`(`windows_*_x86_64.exe` 가 든 폴더)를 주면
+  `build_windows.sh` 가 내보내는 동안만 그 경로로 바꾸고 되돌린다. 에디터의 내보내기 창은 이 경로를 그대로 읽으므로 스크립트를 쓴다).
+- 내보내며 도는 dotnet 빌드가 컴파일 서버를 남기면 Godot 콘솔 실행 파일이 끝나지 않아 스크립트가 멈춘다(내보내기는 1분쯤이면 끝난다).
+  스크립트가 서버를 끄는 환경 변수를 주지만, 이미 떠 있는 서버 때문에 멈추면 `dotnet build-server shutdown`.
 - 데이터 JSON 은 리소스가 아니라서 `include_filter="*.json"` 으로 꾸러미에 넣는다. 게임은 `GodotDataSource` 로 꾸러미 안에서 읽는다.
 - 릴리스 빌드는 `Debug.isDebugBuild` 가 거짓이라 FPS 표시와 F1~F4 치트가 꺼진다. 결과물은 `Samkuk.exe`, `Samkuk.pck`, `data_Samkuk.Game_windows_x86_64/`(.NET) 세 가지가 함께 있어야 한다.
 - 내보낸 실행 파일로 전투가 도는 것까지 확인했다(데이터 132건, 60 FPS).
