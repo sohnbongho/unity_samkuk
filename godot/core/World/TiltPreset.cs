@@ -32,6 +32,14 @@ namespace Samkuk.World
         /// 3D 모델은 그 크기에서 너무 커 보여(사용자 피드백) 조금 더 물러난다: 캐릭터가 19 / 27 ≈ 0.70배로 보이고 그만큼 넓게 보인다.
         /// </summary>
         public const float PerspectiveDistance = 27f;
+        /// <summary>
+        /// 원근 카메라가 내려다보는 각도(도). 직교(<see cref="Pitch"/> 55°)보다 낮다: 카툰 3D 의 큰 머리는 55° 에서 정수리가 얼굴을 누르고 눈썹이 찌그러져 울상으로 보였다(사용자 피드백).
+        /// 머리를 젖히는 대신 카메라를 내려 얼굴이 보이게 한다. 보이는 땅이 세로로 더 깊어져 소품 범위와 적 스폰 링이 그만큼 커진다. 도트 화면(직교)은 그대로다.
+        /// 서 있는 그림의 세로 배율·올림(<see cref="StandScale"/>)은 여전히 <see cref="Pitch"/> 기준이다(도트 그림용 보정이고, 3D 모델의 손 높이·막대 높이가 그 값에 맞춰져 있다).
+        /// </summary>
+        public const float PerspectivePitch = 45f;
+        /// <summary>지금 카메라가 내려다보는 각도: 원근이면 <see cref="PerspectivePitch"/>, 직교면 <see cref="Pitch"/>.</summary>
+        public static float ViewPitch => Perspective ? PerspectivePitch : Pitch;
         /// <summary>지금 카메라가 물러나는 거리: 원근이면 <see cref="PerspectiveDistance"/>, 직교면 <see cref="Distance"/>.</summary>
         public static float ViewDistance => Perspective ? PerspectiveDistance : Distance;
         /// <summary>원근일 때 보이는 땅 범위의 남쪽 여유(유닛): 화면 아래 바깥의 키 큰 것(나무)의 윗부분이 화면 안으로 솟는다.</summary>

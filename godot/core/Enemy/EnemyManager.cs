@@ -50,6 +50,11 @@ namespace Samkuk.Enemies
 
         /// <summary>플레이어에게서 너무 멀어진 적이 있을 때 호출된다 (재배치/제거는 구독자가 결정).</summary>
         public event Action<Enemy> EnemyTooFar;
+        Camera ringCamera;
+        /// <summary>스폰 링 바깥으로 이만큼 더 멀어져야 "너무 멀다"고 본다 (스폰 여유 1.5 + 나무 밖으로 밀려남 + 주인공이 달아나는 동안의 여유).</summary>
+        public const float TooFarMargin = 6f;
+        /// <summary>재배치 거리: 설정값과 (스폰 링 반지름 + 여유) 가운데 큰 쪽.</summary>
+        public static float TooFarFor(float configured, float ringRadius) => Mathf.Max(configured, ringRadius + TooFarMargin);
 
         void Awake() => Array.Fill(head, -1);
 
@@ -123,7 +128,15 @@ namespace Samkuk.Enemies
 
             Vector2 tp = target.position;
             float dt = Time.fixedDeltaTime;
-            float tooFarSqr = tooFarDistance * tooFarDistance;
+            // 2.5D 틸트(특히 원근 카메라)는 스폰 링이 넓다. "너무 멀다"의 거리가 링보다 작으면 적이 태어나자마자 다시 배치되기를 되풀이해 영영 오지 못한다
+            // (Godot 판에서 원근 카메라를 45° 로 내리며 링이 25.8 로 커져 실제로 그랬다) → 링보다 늘 멀게 잡는다
+            float tooFar = tooFarDistance;
+            if (TiltView.Active)
+            {
+                if (ringCamera == null || ringCamera.destroyed) ringCamera = Camera.main;
+                tooFar = TooFarFor(tooFarDistance, TiltView.SpawnRadius(ringCamera != null ? ringCamera.aspect : 16f / 9f));
+            }
+            float tooFarSqr = tooFar * tooFar;
             bool canHurtPlayer = playerHealth != null && playerHealth.CanTakeContactDamage;
             var terrain = TerrainCollision.Active;
 

@@ -58,7 +58,7 @@ namespace Samkuk.Core
             if (TiltView.Active)
             {
                 var look = new Vector3(basePos.x, basePos.y, 0f);
-                TiltPreset.CameraPose(look, TiltPreset.Pitch, TiltPreset.ViewDistance, out var pos, out var rot);
+                TiltPreset.CameraPose(look, TiltPreset.ViewPitch, TiltPreset.ViewDistance, out var pos, out var rot);
                 appliedPos = pos + TiltView.Right * offset.x + TiltView.CameraUp * offset.y;
                 transform.SetPositionAndRotation(appliedPos, rot);
             }

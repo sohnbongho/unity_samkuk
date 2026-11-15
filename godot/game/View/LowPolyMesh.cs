@@ -275,8 +275,8 @@ namespace Samkuk.Game
         static Color Darken(Color c, float k) => new Color(c.R * k, c.G * k, c.B * k, 1f);
         static readonly Color Ink = new Color(0.10f, 0.08f, 0.09f);        // 눈, 수염
         static readonly Color Gold = new Color(0.95f, 0.76f, 0.22f);
-        /// <summary>머리를 뒤로 젖히는 각 (라디안, 약 29°).</summary>
-        public const float HeadTilt = 0.5f;
+        /// <summary>머리를 뒤로 젖히는 각 (라디안). 한때 0.5(약 29°)로 얼굴을 카메라 쪽으로 들었다.</summary>
+        public const float HeadTilt = 0f;   // 고개를 든 모습이 어색하다는 피드백으로 0: 대신 원근 카메라를 내렸다 (TiltPreset.PerspectivePitch)
 
         /// <summary>서 있는 사람 (키 1, 머리가 키의 40% 인 2.5등신). 다리·팔이 걸을 때 엇갈려 흔들린다.</summary>
         public static ArrayMesh Humanoid(Palette p, Outfit outfit, Feature feature = Feature.None)
@@ -357,9 +357,9 @@ namespace Samkuk.Game
             // 젖히면 얼굴이 카메라를 향해 만든 모양 그대로 보이고 화면에서 얼굴이 차지하는 넓이도 커진다. 야전(30° 로 내려다봄)에서는 거의 정면이다
             var head = new Vector3(0f, headY, cz + 0.01f);
             m.Body().Tilt(HeadTilt, shoulder + 0.03f, cz).Ball(head, headR, headRy, headRz, p.Skin, 10, 6);
-            m.Dome(head + new Vector3(0f, 0.012f, -0.012f), headR * 1.07f, headRy * 1.07f, headRz * 1.08f, p.Hair, 92f, 0.62f, 10, 4);   // 덮개는 머리 위·뒤를 덮는다 (머리째 젖히므로 덮개만 많이 젖힐 필요는 없다)
+            m.Dome(head + new Vector3(0f, 0.012f, -0.012f), headR * 1.07f, headRy * 1.07f, headRz * 1.08f, p.Hair, 88f, 0.88f, 10, 4);   // 덮개는 머리 위·뒤를 덮는다 (머리째 젖히므로 덮개만 많이 젖힐 필요는 없다)
             // 눈: 세로로 긴 검은 타원 + 흰 반짝임 (정면이 어디인지 읽히게, 큰 머리의 인상)
-            float eyeY = headY + 0.004f, eyeX = 0.082f;
+            float eyeY = headY + 0.018f, eyeX = 0.082f;   // 내려다보는 카메라(45°)에 맞춰 눈을 조금 위에
             float FaceZ(float x, float y) { float k = 1f - (x * x) / (headR * headR) - ((y - headY) * (y - headY)) / (headRy * headRy); return head.Z + headRz * Mathf.Sqrt(Mathf.Max(0.05f, k)); }
             for (int side = -1; side <= 1; side += 2)
             {
@@ -381,14 +381,14 @@ namespace Samkuk.Game
             switch (feature)
             {
                 case Feature.GuanYu:    // 가슴까지 내려오는 긴 수염 + 콧수염, 두건은 그림의 녹색(머리 덮개 색)
-                    Brows(0.019f, 0.004f, Ink);   // 관우: 길고 평평한 눈썹 (엄숙)
+                    Brows(0.019f, -0.004f, Ink);   // 관우: 길고 평평한 눈썹 (엄숙)
                     m.Pill(new Vector3(0f, chinY + 0.035f, chinZ - 0.01f), new Vector3(0f, shoulder - 0.20f, cz + 0.165f), 0.085f, 0.022f, Ink, 6, 0.55f);
                     m.Pill(new Vector3(-0.012f, headY - 0.085f, FaceZ(0f, headY - 0.085f)), new Vector3(-0.105f, headY - 0.125f, FaceZ(0.105f, headY - 0.125f)), 0.018f, 0.008f, Ink, 5);
                     m.Pill(new Vector3(0.012f, headY - 0.085f, FaceZ(0f, headY - 0.085f)), new Vector3(0.105f, headY - 0.125f, FaceZ(0.105f, headY - 0.125f)), 0.018f, 0.008f, Ink, 5);
                     m.Pill(new Vector3(0f, headTop - 0.01f, cz - 0.03f), new Vector3(0f, headTop + 0.07f, cz - 0.07f), 0.055f, 0.04f, p.Hair, 6);   // 두건 매듭
                     break;
                 case Feature.ZhangFei:  // 턱을 두른 뻗친 수염 + 굵고 성난 눈썹
-                    Brows(0.026f, 0.032f, Ink);   // 장비: 굵고 치켜 올라간 눈썹 (성남)
+                    Brows(0.026f, 0.026f, Ink);   // 장비: 굵고 치켜 올라간 눈썹 (성남)
                     m.Ball(new Vector3(0f, headY - 0.125f, cz + 0.045f), headR * 1.02f, 0.085f, headRz * 0.98f, Ink, 10, 4);
                     for (int i = -2; i <= 2; i++)
                     {
@@ -398,12 +398,12 @@ namespace Samkuk.Game
                     }
                     break;
                 case Feature.LiuBei:    // 관(작은 금빛 상투관 + 가로 비녀)
-                    Brows(0.015f, -0.006f, Darken(p.Hair, 0.7f));   // 유비: 평평하고 순한 눈썹 (온화)
+                    Brows(0.015f, -0.012f, Darken(p.Hair, 0.7f));   // 유비: 평평하고 순한 눈썹 (온화)
                     m.Lathe(new Transform3D(Basis.Identity, new Vector3(0f, 0f, cz - 0.02f)), new (float, float)[] { (headTop - 0.03f, 0.075f), (headTop + 0.07f, 0.066f), (headTop + 0.085f, 0f) }, 1f, 1f, 8, Gold);
                     m.Pill(new Vector3(-0.15f, headTop + 0.025f, cz - 0.02f), new Vector3(0.15f, headTop + 0.025f, cz - 0.02f), 0.014f, 0.014f, Gold, 5);
                     break;
                 case Feature.CaoCao:    // 짧은 턱수염·콧수염 + 위가 평평한 검은 관(앞뒤로 긴 판)
-                    Brows(0.012f, 0.012f, Ink);   // 조조: 가늘고 살짝 올라간 눈썹 (날카로움)
+                    Brows(0.012f, 0.004f, Ink);   // 조조: 가늘고 살짝 올라간 눈썹 (날카로움)
                     m.Pill(new Vector3(0f, chinY + 0.03f, chinZ - 0.015f), new Vector3(0f, chinY - 0.055f, chinZ + 0.01f), 0.05f, 0.012f, Ink, 6, 0.6f);
                     m.Pill(new Vector3(-0.08f, headY - 0.095f, FaceZ(0.08f, headY - 0.095f)), new Vector3(0.08f, headY - 0.095f, FaceZ(0.08f, headY - 0.095f)), 0.014f, 0.014f, Ink, 5);
                     m.Lathe(new Transform3D(Basis.Identity, new Vector3(0f, 0f, cz - 0.02f)), new (float, float)[] { (headTop - 0.04f, 0.095f), (headTop + 0.06f, 0.085f), (headTop + 0.07f, 0f) }, 1f, 1f, 8, new Color(0.16f, 0.14f, 0.2f));
@@ -411,7 +411,7 @@ namespace Samkuk.Game
                     m.Box(0f, headTop + 0.095f, headTop + 0.105f, cz - 0.02f, 0.06f, 0.37f, Gold);
                     break;
                 case Feature.LvBu:      // 뒤로 길게 휜 꿩 깃 두 가닥 + 금빛 머리 장식
-                    Brows(0.018f, 0.022f, Ink);   // 여포: 짙고 올라간 눈썹 (사나움)
+                    Brows(0.018f, 0.014f, Ink);   // 여포: 짙고 올라간 눈썹 (사나움)
                     m.Ball(new Vector3(0f, headTop + 0.01f, cz - 0.01f), 0.06f, 0.05f, 0.06f, Gold, 6, 4);
                     for (int side = -1; side <= 1; side += 2)
                     {

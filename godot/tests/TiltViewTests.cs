@@ -86,7 +86,7 @@ namespace Samkuk.Tests
         public void Preset_PerspectiveFootprint_IsWiderAndFartherToTheNorth_AndKeepsTheSizeAroundThePlayer()
         {
             Assert.IsTrue(TiltPreset.Perspective, "Godot 판의 기본은 원근");
-            var r = TiltPreset.GroundFootprint(TiltPreset.Pitch, TiltPreset.OrthoSize, 16f / 9f);
+            var r = TiltPreset.GroundFootprint(TiltPreset.ViewPitch, TiltPreset.OrthoSize, 16f / 9f);
             Assert.IsTrue(r.Contains(Vector2.zero), "바라보는 점은 화면 안");
             Assert.Greater(r.yMax, -r.yMin - TiltPreset.PerspectiveSouthMargin, "북쪽(먼 곳)이 남쪽보다 멀리 보인다");
             Assert.Greater(r.xMax, 10f, "먼 곳은 직교 때(폭 20)보다 넓게 보인다");
@@ -98,16 +98,29 @@ namespace Samkuk.Tests
             Assert.That(TiltPreset.PerspectiveDistance / TiltPreset.Distance, Is.InRange(1f, 1.5f));
 
             // 화면 위쪽 가운데 광선이 땅과 만나는 점이 북쪽 끝이다 (직접 계산해 맞춰 본다)
-            TiltPreset.CameraPose(Vector3.zero, TiltPreset.Pitch, TiltPreset.ViewDistance, out var cam, out _);
-            var ray = TiltPreset.Forward(TiltPreset.Pitch) + TiltPreset.Up(TiltPreset.Pitch) * Mathf.Tan(TiltPreset.FieldOfView * 0.5f * Mathf.Deg2Rad);
+            TiltPreset.CameraPose(Vector3.zero, TiltPreset.ViewPitch, TiltPreset.ViewDistance, out var cam, out _);
+            var ray = TiltPreset.Forward(TiltPreset.ViewPitch) + TiltPreset.Up(TiltPreset.ViewPitch) * Mathf.Tan(TiltPreset.FieldOfView * 0.5f * Mathf.Deg2Rad);
             float t = -cam.z / ray.z;
             Assert.AreEqual((cam + ray * t).y, r.yMax, 1e-3f);
+        }
+
+        // 스폰 링이 "너무 멀면 다시 배치" 거리(씬 값 25)보다 커지면 적이 태어나자마자 다시 배치되어 영영 오지 못한다 (원근 카메라를 45° 로 내리며 실제로 일어났다)
+        [Test]
+        public void Preset_SpawnRing_StaysInsideTheTooFarDistance()
+        {
+            Assert.IsTrue(TiltPreset.Perspective);
+            foreach (float aspect in new[] { 4f / 3f, 16f / 9f, 21f / 9f })
+            {
+                float ring = TiltPreset.SpawnRadius(TiltPreset.GroundFootprint(TiltPreset.ViewPitch, TiltPreset.OrthoSize, aspect));
+                Assert.Greater(Samkuk.Enemies.EnemyManager.TooFarFor(25f, ring), ring + 1.5f + 2f, $"비율 {aspect}: 링(+스폰 여유)보다 재배치 거리가 멀어야 한다");
+            }
+            Assert.AreEqual(25f, Samkuk.Enemies.EnemyManager.TooFarFor(25f, 12f), "링이 작으면 설정값 그대로");
         }
 
         [Test]
         public void Preset_SpawnRadius_IsBeyondEveryCorner()
         {
-            var r = TiltPreset.GroundFootprint(TiltPreset.Pitch, TiltPreset.OrthoSize, 16f / 9f);
+            var r = TiltPreset.GroundFootprint(TiltPreset.ViewPitch, TiltPreset.OrthoSize, 16f / 9f);
             float radius = TiltPreset.SpawnRadius(r);
             foreach (var corner in new[] { new Vector2(r.xMin, r.yMin), new Vector2(r.xMax, r.yMin), new Vector2(r.xMin, r.yMax), new Vector2(r.xMax, r.yMax) })
                 Assert.LessOrEqual(corner.magnitude, radius + 1e-4f);
@@ -154,7 +167,7 @@ namespace Samkuk.Tests
                 Assert.AreEqual(1, changed);
                 Assert.AreEqual(TiltPreset.StandUp * TiltPreset.StandScale(TiltPreset.Pitch), TiltView.Lift(1f), "올리는 방향은 수직(-z), 세로 배율을 곱한다");
                 Assert.AreEqual(1f / Mathf.Cos(TiltPreset.Pitch * Mathf.Deg2Rad), TiltView.StandScale, 1e-4f);
-                Assert.AreEqual(TiltPreset.Up(TiltPreset.Pitch), TiltView.CameraUp);
+                Assert.AreEqual(TiltPreset.Up(TiltPreset.ViewPitch), TiltView.CameraUp);
                 Assert.AreEqual(TiltPreset.GroundZ, TiltView.GroundZ(0.5f));
                 Assert.AreEqual(TiltPreset.StandRotation, TiltView.StandingRotation);
                 Assert.AreEqual(1f, Vector3.Dot(TiltView.StandingRotation * Vector3.up, Vector3.back), 1e-4f, "세운 그림의 위는 -z");
@@ -187,7 +200,7 @@ namespace Samkuk.Tests
             TiltView.SetReady(true);
             var go = new GameObject("Cam");
             toDestroy.Add(go);
-            TiltPreset.CameraPose(new Vector3(5f, 7f, 0f), TiltPreset.Pitch, TiltPreset.ViewDistance, out var pos, out var rot);
+            TiltPreset.CameraPose(new Vector3(5f, 7f, 0f), TiltPreset.ViewPitch, TiltPreset.ViewDistance, out var pos, out var rot);
             go.transform.SetPositionAndRotation(pos, rot);
             var look = TiltView.LookPoint(go.transform);
             Assert.AreEqual(5f, look.x, 1e-4f);
@@ -320,7 +333,7 @@ namespace Samkuk.Tests
 
             TiltView.SetReady(true);
             follow.SnapToTarget();
-            TiltPreset.CameraPose(new Vector3(3f, 4f, 0f), TiltPreset.Pitch, TiltPreset.ViewDistance, out var pos, out var rot);
+            TiltPreset.CameraPose(new Vector3(3f, 4f, 0f), TiltPreset.ViewPitch, TiltPreset.ViewDistance, out var pos, out var rot);
             Assert.AreEqual(pos.x, camGo.transform.position.x, 1e-4f);
             Assert.AreEqual(pos.y, camGo.transform.position.y, 1e-4f);
             Assert.AreEqual(pos.z, camGo.transform.position.z, 1e-4f);

@@ -62,11 +62,11 @@ namespace Samkuk.World
         // ───────────────────────── 기하 ─────────────────────────
 
         /// <summary>카메라가 보는 방향 (틸트와 무관한 상수).</summary>
-        public static Vector3 Forward => TiltPreset.Forward(TiltPreset.Pitch);
+        public static Vector3 Forward => TiltPreset.Forward(TiltPreset.ViewPitch);
         /// <summary>서 있는 그림의 위쪽(수직, -z). 꺼져 있으면 2D 의 위(+y).</summary>
         public static Vector3 Up => Active ? TiltPreset.StandUp : Vector3.up;
         /// <summary>카메라의 위쪽 (화면 흔들림용). 꺼져 있으면 +y.</summary>
-        public static Vector3 CameraUp => Active ? TiltPreset.Up(TiltPreset.Pitch) : Vector3.up;
+        public static Vector3 CameraUp => Active ? TiltPreset.Up(TiltPreset.ViewPitch) : Vector3.up;
         public static Vector3 Right => Vector3.right;
         /// <summary>서 있는 그림의 회전. 꺼져 있으면 회전 없음. 트랜스폼을 직접 돌리는 것(데미지 숫자)만 쓴다 — 스프라이트는 셰이더가 세운다.</summary>
         public static Quaternion StandingRotation => Active ? TiltPreset.StandRotation : Quaternion.identity;
@@ -98,7 +98,7 @@ namespace Samkuk.World
 
         /// <summary>바라보는 점 기준으로 화면에 보이는 땅의 범위.</summary>
         public static Rect GroundFootprint(float aspect) =>
-            TiltPreset.GroundFootprint(TiltPreset.Pitch, TiltPreset.OrthoSize, aspect);
+            TiltPreset.GroundFootprint(TiltPreset.ViewPitch, TiltPreset.OrthoSize, aspect);
 
         /// <summary>바라보는 점에서 화면 밖까지의 거리 (적 스폰 링).</summary>
         public static float SpawnRadius(float aspect) => TiltPreset.SpawnRadius(GroundFootprint(aspect));
